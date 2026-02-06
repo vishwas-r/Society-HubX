@@ -45,6 +45,33 @@ if (!empty($data['pending_payment_requests'])) {
         }
     }
 }
+
+// Helper for Indian Numbering Format
+function sgvx_in_fmt($num, $decimals = 2) {
+    $num = (float)$num;
+    if (class_exists('NumberFormatter')) {
+        $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
+        $fmt->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+        $fmt->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+        $res = $fmt->format($num);
+        if ($res !== false) return $res;
+    }
+
+    // Manual Fallback for Indian Numbering System
+    $negative = $num < 0;
+    $num = abs($num);
+    $explated = explode('.', (string)number_format($num, $decimals, '.', ''));
+    $int = $explated[0];
+    $dec = isset($explated[1]) ? '.' . $explated[1] : '';
+
+    $last_three = substr($int, -3);
+    $rest = substr($int, 0, -3);
+    if ($rest != '') {
+        $rest = preg_replace("/\B(?=(\d{2})+(?!\d))/", ",", $rest) . ",";
+    }
+    $formatted = $rest . $last_three . $dec;
+    return ($negative ? '-' : '') . $formatted;
+}
 ?>
 
 <!-- Nonce for AJAX Requests -->
@@ -92,7 +119,7 @@ if (!empty($data['pending_payment_requests'])) {
                          <h3 class="opacity-75 small fw-medium mb-0">Total Dues</h3>
                          <i class="<?php echo $card_icon; ?> fs-4 opacity-50"></i>
                      </div>
-                     <div class="fs-2 fw-bold mb-3">₹<?php echo number_format($total_dues); ?></div>
+                     <div class="fs-2 fw-bold mb-3">₹<?php echo sgvx_in_fmt($total_dues, 0); ?></div>
                       <?php if($has_pending_total_payment): ?>
                          <div class="d-flex align-items-center gap-2 bg-white bg-opacity-15 rounded-2 px-3 py-2">
                              <div class="spinner-grow spinner-grow-sm" role="status" style="width: 0.75rem; height: 0.75rem;">
@@ -594,7 +621,7 @@ if (!empty($data['pending_payment_requests'])) {
                         <div class="facility-card bg-white rounded-3 border border-light p-3 shadow-sm d-flex justify-content-between align-items-center" data-search="<?php echo esc_attr(strtolower($f['name'])); ?>">
                             <div>
                                 <div class="fw-medium text-dark"><?php echo esc_html( $f['name'] ); ?></div>
-                                <div class="small text-secondary">₹<?php echo esc_html( $f['rate'] ?? 0 ); ?> / <?php echo esc_html( $f['rate_unit'] ?? 'hr' ); ?></div>
+                                <div class="small text-secondary">₹<?php echo sgvx_in_fmt( $f['rate'] ?? 0 ); ?> / <?php echo esc_html( $f['rate_unit'] ?? 'hr' ); ?></div>
                             </div>
                             <button class="js-open-booking btn btn-sm btn-outline-success rounded-pill px-3 shadow-none" 
                                     data-facility-id="<?php echo esc_attr($f['id']); ?>"
@@ -646,50 +673,54 @@ if (!empty($data['pending_payment_requests'])) {
                  </div>
              </div>
          </div>
-    </div>
-
-    <!-- 4. ACCOUNTS TAB & 5. EXPENSES  (Simplified for length, applying grid fixes) -->
-    <!-- Due to file size limits, I'm providing the structure. The full implementation follows the same Bootstrap Grid pattern. -->
+    </div>   
     
+        <!-- 4. ACCOUNTS TAB -->
     <div id="tab-accounts" class="tab-content d-none">
+        <!-- Reordered: Cards First -->
         <div class="row g-4 mb-4">
              <div class="col-md-6">
-                 <div class="bg-primary text-white rounded-3 shadow-sm p-4 position-relative overflow-hidden h-100">
-                     <div class="position-relative z-10">
-                         <div class="d-flex justify-content-between align-items-start mb-3">
-                             <div>
-                                 <p class="opacity-75 small fw-bold text-uppercase mb-1">Your Pending Dues</p>
-                                 <h2 class="display-6 fw-bold m-0">₹<?php echo number_format($total_dues); ?></h2>
-                             </div>
-                             <div class="p-2 bg-white bg-opacity-25 rounded-3">
-                              <i class="bi bi-exclamation-triangle-fill fs-3 text-white"></i>
-                          </div>
+                  <div class="bg-primary text-white rounded-3 shadow-sm p-4 position-relative overflow-hidden h-100">
+                      <div class="position-relative z-10">
+                          <div class="d-flex justify-content-between align-items-start">
+                              <div>
+                                  <p class="opacity-75 small fw-bold text-uppercase mb-1">Your Pending Dues</p>
+                                  <h2 class="display-6 fw-bold m-0">₹<?php echo sgvx_in_fmt($total_dues, 0); ?></h2>
+                              </div>
+                              <div class="p-2 bg-white bg-opacity-25 rounded-3">
+                               <i class="bi bi-exclamation-triangle-fill fs-3 text-white"></i>
+                           </div>
+                       </div>
+                       <?php if($has_pending_total_payment): ?>
+                          <div class="text-white-50 small text-center">Awaiting Admin Verification</div>
+                       <?php elseif($total_dues > 0): ?>
+                           <button data-bs-toggle="modal" data-bs-target="#sgvx51PaymentModal" 
+                                   data-amount="<?php echo esc_attr($total_dues); ?>"
+                                   class="js-btn-pay btn btn-light w-100 fw-bold text-primary shadow-sm rounded-3">Pay Now</button>
+                       <?php else: ?>
+                          <div class="text-white-50 small text-center">No Outstanding Dues</div>
+                       <?php endif; ?>
                       </div>
-                      <?php if($has_pending_total_payment): ?>
-                         <div class="text-white-50 small text-center">Awaiting Admin Verification</div>
-                      <?php elseif($total_dues > 0): ?>
-                          <button data-bs-toggle="modal" data-bs-target="#sgvx51PaymentModal" 
-                                  data-amount="<?php echo esc_attr($total_dues); ?>"
-                                  class="js-btn-pay btn btn-light w-100 fw-bold text-primary shadow-sm rounded-3">Pay Now</button>
-                      <?php else: ?>
-                         <div class="text-white-50 small text-center">No Outstanding Dues</div>
-                      <?php endif; ?>
-                     </div>
-                 </div>
+                  </div>
              </div>
              <div class="col-md-6">
-                 <div class="bg-white rounded-3 shadow-sm border border-light p-4 h-100">
-                     <h4 class="fw-bold text-dark mb-3 small d-flex align-items-center gap-2">
-                        <span class="rounded-circle bg-primary" style="width: 8px; height: 8px;"></span> Account Summary
-                     </h4>
-                     <ul class="list-unstyled m-0 d-flex flex-column gap-3">
-                         <li class="d-flex justify-content-between border-bottom border-light pb-2">
-                             <span class="text-secondary small">Unpaid Invoices</span>
-                             <span class="fw-bold text-dark small"><?php echo count(array_filter($data['invoices'], function($i){return $i['status']!=='paid';})); ?></span>
-                         </li>
-                     </ul>
-                 </div>
+                  <div class="bg-white rounded-3 shadow-sm border border-light p-4 h-100">
+                      <h4 class="fw-bold text-dark mb-3 small d-flex align-items-center gap-2">
+                         <span class="rounded-circle bg-primary" style="width: 8px; height: 8px;"></span> Account Summary
+                      </h4>
+                      <ul class="list-unstyled m-0 d-flex flex-column gap-3">
+                          <li class="d-flex justify-content-between border-bottom border-light pb-2">
+                              <span class="text-secondary small">Unpaid Invoices</span>
+                              <span class="fw-bold text-dark small"><?php echo count(array_filter($data['invoices'], function($i){return $i['status']!=='paid';})); ?></span>
+                          </li>
+                      </ul>
+                  </div>
              </div>
+        </div>
+
+        <!-- Resident Payment History Chart (Moved Below Cards) -->
+        <div class="bg-white rounded-3 shadow-sm border border-light p-4 mb-4">
+            <div id="paymentHistoryChart" style="height: 300px; width: 100%;"></div>
         </div>
         
         <!-- Billing History Table -->
@@ -703,8 +734,6 @@ if (!empty($data['pending_payment_requests'])) {
                      <tbody>
                           <?php foreach ( $data['invoices'] as $inv ) : 
                               $is_paid = $inv['status'] === 'paid'; 
-                              
-                              // Calculate outstanding amount
                               $paid = 0;
                               if(!empty($inv['payments'])) {
                                   $payments = is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments'];
@@ -713,26 +742,18 @@ if (!empty($data['pending_payment_requests'])) {
                                   }
                               }
                               $outstanding = floatval($inv['amount']) - $paid;
-                              
-                              // Check for pending payment request
                               $pending_request = null;
                               if (!empty($data['pending_payment_requests'])) {
                                   foreach($data['pending_payment_requests'] as $pr) {
                                       $p_payload = json_decode($pr['payload'], true);
-                                      if(($p_payload['invoice_id'] ?? '') === $inv['id']) {
-                                          $pending_request = $pr;
-                                          break;
-                                      }
+                                      if(($p_payload['invoice_id'] ?? '') === $inv['id']) { $pending_request = $pr; break; }
                                   }
                               }
-                              
-                              // Determine if button should be disabled
-                              $disable_pay = $is_paid || $outstanding <= 0 || ($pending_request && floatval($pending_request['payload'] ? json_decode($pending_request['payload'], true)['amount'] : 0) >= $outstanding);
                           ?>
                             <tr>
                                 <td class="ps-4 fw-medium text-dark"><?php echo date('M Y', strtotime($inv['month'])); ?></td>
                                 <td class="text-truncate text-secondary" style="max-width: 150px;"><?php echo esc_html($inv['description']); ?></td>
-                                <td class="font-monospace text-dark">₹<?php echo number_format($inv['amount']); ?></td>
+                                <td class="font-monospace text-dark">₹<?php echo sgvx_in_fmt($inv['amount'], 0); ?></td>
                                 <td>
                                     <?php if($is_paid): ?><span class="badge bg-success-subtle text-success rounded-pill">Paid</span>
                                     <?php elseif($pending_request): ?><span class="badge bg-info-subtle text-info rounded-pill">Pending Verification</span>
@@ -755,24 +776,44 @@ if (!empty($data['pending_payment_requests'])) {
         </div>
     </div>
 
-    <!-- 5. EXPENSES TAB -->
+        <!-- 5. SOCIETY FINANCE (EXPENSES) TAB -->
     <div id="tab-expenses" class="tab-content d-none">
-          <div class="card border-0 shadow-sm text-white rounded-3 mb-4" style="background: #1e293b;">
-              <div class="card-body p-4">
-                   <p class="text-secondary small fw-bold text-uppercase mb-1" style="color: #94a3b8 !important;">Total Society Funds</p>
-                   <h2 class="display-6 fw-bold mb-3">₹<?php echo number_format($data['current_balance']['total'] ?? 0, 2); ?></h2>
-                   <div class="row pt-3 border-top border-secondary">
-                       <div class="col-6">
-                           <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important;">Bank</div>
-                           <div class="fw-bold text-primary">₹<?php echo number_format($data['current_balance']['bank'] ?? 0, 2); ?></div>
-                       </div>
-                       <div class="col-6">
-                           <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important;">Cash</div>
-                           <div class="fw-bold text-warning">₹<?php echo number_format($data['current_balance']['cash'] ?? 0, 2); ?></div>
-                       </div>
-                   </div>
+          <!-- Financial Overview Row: Funds Card (5) + Chart (7) -->
+          <div class="row g-4 mb-4 align-items-stretch">
+              <!-- Society Funds Card -->
+              <div class="col-md-5">
+                  <div class="card border-0 shadow-sm text-white rounded-3 h-100" style="background: #1e293b; min-height: 250px;">
+                      <div class="card-body p-4 d-flex flex-column justify-content-between">
+                           <div>
+                               <p class="text-secondary small fw-bold text-uppercase mb-1" style="color: #94a3b8 !important;">Total Society Funds</p>
+                               <h2 class="display-6 fw-bold mb-0">₹<?php echo sgvx_in_fmt($data['current_balance']['total'] ?? 0); ?></h2>
+                           </div>
+                           
+                           <div class="pt-3 border-top border-secondary">
+                                <div class="row">
+                                     <div class="col-6">
+                                         <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Bank</div>
+                                         <div class="fw-bold text-primary">₹<?php echo sgvx_in_fmt($data['current_balance']['bank'] ?? 0); ?></div>
+                                     </div>
+                                     <div class="col-6 border-start border-secondary">
+                                         <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Cash</div>
+                                         <div class="fw-bold text-warning">₹<?php echo sgvx_in_fmt($data['current_balance']['cash'] ?? 0); ?></div>
+                                     </div>
+                                </div>
+                           </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Society Expense Trend Visualization -->
+              <div class="col-md-7">
+                  <div class="bg-white rounded-3 shadow-sm border border-light p-4 h-100" style="min-height: 250px;">
+                      <h6 class="fw-bold text-dark mb-3 small text-uppercase">Monthly Expense Trend</h6>
+                      <div id="expensesChart" style="height: 200px; width: 100%;"></div>
+                  </div>
               </div>
           </div>
+
           <!-- Tabs for Expenses Sub-views -->
           <ul class="nav nav-tabs mb-3 border-light">
               <li class="nav-item">
@@ -783,38 +824,17 @@ if (!empty($data['pending_payment_requests'])) {
               </li>
           </ul>
           
+          <!-- Sub-tab 1: Maintenance Status -->
           <div id="sub-tab-fin-maintenance" class="sub-tab-content d-block">
-              <!-- Maintenance Transparency Grid moved here -->
               <div class="bg-white rounded-3 shadow-sm border border-light p-4">
                   <h5 class="fw-bold mb-3 small text-uppercase text-secondary">Flat Payment Status</h5>
                   <div class="row g-2">
                        <?php foreach($data['monthly_summary'] as $s):  
                            $bg = $s['status'] === 'paid' ? 'bg-success' : ($s['status'] === 'partial' ? 'bg-warning' : 'bg-light');
                            $txt = $s['status'] === 'unpaid' ? 'text-secondary' : 'text-white';
-                           
-                           // Prepare tooltip content
-                           $tooltip_content = "Flat: " . esc_attr($s['flat_no']) . "\n";
-                           $tooltip_content .= "Status: " . ucfirst($s['status']) . "\n";
-                           if (isset($s['amount'])) {
-                               $tooltip_content .= "Amount: ₹" . number_format($s['amount'], 2) . "\n";
-                           }
-                           if (isset($s['paid'])) {
-                               $tooltip_content .= "Paid: ₹" . number_format($s['paid'], 2) . "\n";
-                           }
-                           if (isset($s['balance']) && $s['balance'] > 0) {
-                               $tooltip_content .= "Balance: ₹" . number_format($s['balance'], 2) . "\n";
-                           }
-                           if (isset($s['payment_date'])) {
-                               $tooltip_content .= "Payment Date: " . date('d M, Y', strtotime($s['payment_date']));
-                           }
                        ?>
                         <div class="col-auto">
-                            <div class="<?php echo $bg . ' ' . $txt; ?> p-2 rounded text-center position-relative" 
-                                 style="min-width: 60px; cursor: help;"
-                                 data-bs-toggle="tooltip" 
-                                 data-bs-placement="top" 
-                                 data-bs-html="true"
-                                 title="<?php echo esc_attr(nl2br($tooltip_content)); ?>">
+                            <div class="<?php echo $bg . ' ' . $txt; ?> p-2 rounded text-center position-relative" style="min-width: 60px;">
                                 <div class="fw-bold small" style="font-size: 0.7rem;"><?php echo esc_html($s['flat_no']); ?></div>
                             </div>
                         </div>
@@ -823,6 +843,7 @@ if (!empty($data['pending_payment_requests'])) {
               </div>
           </div>
 
+          <!-- Sub-tab 2: Expenses List -->
           <div id="sub-tab-fin-expenses" class="sub-tab-content d-none">
               <div class="bg-white rounded-3 shadow-sm border border-light overflow-hidden">
                   <div class="table-responsive">
@@ -847,7 +868,7 @@ if (!empty($data['pending_payment_requests'])) {
                                               <div class="small text-muted" style="font-size: 10px;"><?php echo esc_html($ex['payee'] ?? 'General Vendor'); ?></div>
                                           </td>
                                           <td><span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1" style="font-size: 9px;"><?php echo esc_html($ex['category']); ?></span></td>
-                                          <td class="text-end pe-4 fw-bold">₹<?php echo number_format($ex['amount'], 2); ?></td>
+                                          <td class="text-end pe-4 fw-bold">₹<?php echo sgvx_in_fmt($ex['amount']); ?></td>
                                       </tr>
                                   <?php endforeach; ?>
                               <?php endif; ?>

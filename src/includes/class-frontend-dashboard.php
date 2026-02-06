@@ -243,14 +243,35 @@ class SGVX51_Frontend_Dashboard {
 
 
 		// Prepare Chart Data
-		$chart_data = [];
+		$expense_chart_data = [];
 		if ( ! empty( $data['detailed_expenses'] ) ) {
 			foreach ( $data['detailed_expenses'] as $ex ) {
-				$month_key = date('F', strtotime($ex['date']));
-				if ( ! isset( $chart_data[$month_key] ) ) $chart_data[$month_key] = 0;
-				$chart_data[$month_key] += (float) $ex['amount'];
+				$month_key = date('M Y', strtotime($ex['date']));
+				if ( ! isset( $expense_chart_data[$month_key] ) ) $expense_chart_data[$month_key] = 0;
+				$expense_chart_data[$month_key] += (float) $ex['amount'];
 			}
 		}
+        // Limit to last 12 months
+        $expense_chart_data = array_slice($expense_chart_data, -12, null, true);
+
+        // Resident Payment History
+        $payment_history = [];
+        if ( ! empty( $data['invoices'] ) ) {
+            foreach ( $data['invoices'] as $inv ) {
+                $month_key = date('M Y', strtotime($inv['month']));
+                if (!isset($payment_history[$month_key])) $payment_history[$month_key] = 0;
+                
+                if ( ! empty( $inv['payments'] ) ) {
+                    $payments = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
+                    if ( is_array( $payments ) ) {
+                        foreach ( $payments as $p ) {
+                            $payment_history[$month_key] += (float) $p['amount'];
+                        }
+                    }
+                }
+            }
+        }
+        $payment_history = array_slice($payment_history, -12, null, true);
 
 		// 3. Render Template.
          wp_enqueue_script( 'sgvx51-frontend-js', SGVX51_PLUGIN_URL . 'assets/js/frontend.js', array('sgvx51-html2canvas'), SGVX51_VERSION, true );
@@ -258,8 +279,9 @@ class SGVX51_Frontend_Dashboard {
          
          // Localize Data for Dashboard
          wp_localize_script( 'sgvx51-dashboard-js', 'sgvxDashboardData', array(
-            'chartData' => $chart_data,
-            'nonce'     => wp_create_nonce('sgvx51_facility_nonce')
+            'expenseChartData' => $expense_chart_data,
+            'paymentHistory'   => $payment_history,
+            'nonce'            => wp_create_nonce('sgvx51_facility_nonce')
          ));
         
 		ob_start();

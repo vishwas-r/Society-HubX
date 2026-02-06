@@ -331,12 +331,12 @@ add_action('sgvx51_admin_modals', function() {
 
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                             <label class="form-label small fw-bold text-secondary">Date</label>
+                             <label class="form-label small fw-bold text-secondary">Date <span class="text-danger">*</span></label>
                              <input type="date" name="date" class="form-control shadow-none rounded-3 border-light" value="<?php echo date('Y-m-d'); ?>" required>
                         </div>
                          <div class="col-6">
-                             <label class="form-label small fw-bold text-secondary">Category</label>
-                             <select name="category" class="form-select shadow-none rounded-3 border-light">
+                             <label class="form-label small fw-bold text-secondary">Category <span class="text-danger">*</span></label>
+                             <select name="category" class="form-select shadow-none rounded-3 border-light" required>
                                 <option>Maintenance</option><option>Repairs</option><option>Electricity</option>
                                 <option>Security</option><option>Water</option><option>Events</option><option>Others</option>
                              </select>
@@ -352,8 +352,8 @@ add_action('sgvx51_admin_modals', function() {
 
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label class="form-label small fw-bold text-secondary">Amount (₹)</label>
-                            <input type="number" step="0.01" name="amount" class="form-control shadow-none rounded-3 border-light" required>
+                            <label class="form-label small fw-bold text-secondary">Amount (₹) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="amount" class="form-control shadow-none rounded-3 border-light" min="0.01" required placeholder="Enter amount">
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Payee / Vendor</label>
@@ -362,8 +362,8 @@ add_action('sgvx51_admin_modals', function() {
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Description</label>
-                        <textarea name="description" class="form-control shadow-none rounded-3 border-light" rows="2"></textarea>
+                        <label class="form-label small fw-bold text-secondary">Description <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control shadow-none rounded-3 border-light" rows="2" required placeholder="Enter expense details..."></textarea>
                     </div>
 
                     <div class="mb-0">

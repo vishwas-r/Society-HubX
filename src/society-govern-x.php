@@ -215,6 +215,7 @@ final class Society_Govern_X {
         // 5. External Libs & App JS
         wp_enqueue_script( 'sgvx51-html2canvas', SGVX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
         wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
+		wp_enqueue_script( 'sgvx51-canvasjs', SGVX51_PLUGIN_URL . 'assets/js/lib/canvasjs.min.js', array(), '2.0.8', true );
         wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
         wp_enqueue_script( 'sgvx51-admin-app', SGVX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'sgvx51-html2canvas', 'sgvx51-search-init'), time(), true );
 

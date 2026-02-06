@@ -110,13 +110,32 @@
                         // ensure action present
                         if (!formData.get('action')) formData.append('action', 'sgvx51_add_expense');
 
-                        // attach nonce if localized
-                        if (window.sgvxExpensesData && window.sgvxExpensesData.addNonce) formData.append('_wpnonce', window.sgvxExpensesData.addNonce);
+                        // Only add nonce if form doesn't already have it AND it's available in localized data
+                        if (!formData.get('_wpnonce') && window.sgvxExpensesData && window.sgvxExpensesData.addNonce) {
+                            formData.append('_wpnonce', window.sgvxExpensesData.addNonce);
+                        }
+
+                        // Debug: Log what we're sending
+                        console.log('=== EXPENSE FORM SUBMISSION DEBUG ===');
+                        console.log('Action:', formData.get('action'));
+                        console.log('Nonce:', formData.get('_wpnonce'));
+                        console.log('Category:', formData.get('category'));
+                        console.log('Amount:', formData.get('amount'));
+                        console.log('Description:', formData.get('description'));
+                        console.log('Date:', formData.get('date'));
+                        console.log('Account Type:', formData.get('account_type'));
 
                         const response = await fetch(ajaxurl, { method: 'POST', body: formData });
                         const text = await response.text();
+
+                        console.log('Response Status:', response.status);
+                        console.log('Response Text:', text);
+
                         let result = {};
-                        try { result = JSON.parse(text); } catch (e) { }
+                        try { result = JSON.parse(text); } catch (e) {
+                            console.error('Failed to parse response as JSON:', e);
+                            console.log('Raw response:', text);
+                        }
 
                         if (result && result.success) {
                             window.sgvxShowToast(result.data && result.data.message ? result.data.message : 'Expense saved', 'success');

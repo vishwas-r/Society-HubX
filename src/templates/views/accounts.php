@@ -16,6 +16,33 @@ $pending_reqs = array_filter($db->get('requests'), function($r) {
     return (($r['module'] ?? '') === 'accounts' || ($r['entity_type'] ?? '') === 'accounts') && ($r['status'] === 'pending');
 });
 
+// Helper for Indian Numbering Format
+function sgvx_in_fmt($num, $decimals = 2) {
+    $num = (float)$num;
+    if (class_exists('NumberFormatter')) {
+        $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
+        $fmt->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+        $fmt->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+        $res = $fmt->format($num);
+        if ($res !== false) return $res;
+    }
+
+    // Manual Fallback for Indian Numbering System (Lakhs/Crores)
+    $negative = $num < 0;
+    $num = abs($num);
+    $explated = explode('.', (string)number_format($num, $decimals, '.', ''));
+    $int = $explated[0];
+    $dec = isset($explated[1]) ? '.' . $explated[1] : '';
+
+    $last_three = substr($int, -3);
+    $rest = substr($int, 0, -3);
+    if ($rest != '') {
+        $rest = preg_replace("/\B(?=(\d{2})+(?!\d))/", ",", $rest) . ",";
+    }
+    $formatted = $rest . $last_three . $dec;
+    return ($negative ? '-' : '') . $formatted;
+}
+
 // New Consolidated Stats
 $total_credit = 0; $total_debit = 0;
 $opening_bank = floatval(get_option('sgvx51_opening_bank_' . $selected_year, 0));
@@ -52,6 +79,50 @@ foreach($invoices as $inv) {
 }
 $collection_pct = ($total_demand > 0) ? round(($total_collected / $total_demand) * 100) : 0;
 
+// ==== CHART DATA PREPARATION ====
+// 1. Monthly Cash Flow Data
+$monthly_data = [];
+foreach($ledger_entries as $entry) {
+    $month = date('M Y', strtotime($entry['date']));
+    if(!isset($monthly_data[$month])) {
+        $monthly_data[$month] = ['income' => 0, 'expense' => 0, 'net' => 0];
+    }
+    if($entry['type'] === 'Credit') {
+        $monthly_data[$month]['income'] += $entry['amount'];
+    } else if($entry['type'] === 'Debit') {
+        $monthly_data[$month]['expense'] += $entry['amount'];
+    }
+}
+// Calculate net and limit to last 12 months
+$monthly_data = array_slice($monthly_data, -12, null, true);
+foreach($monthly_data as $month => &$data) {
+    $data['net'] = $data['income'] - $data['expense'];
+}
+unset($data);
+
+// 2. Collection Rate Breakdown (for doughnut)
+$paid_count = 0;
+$unpaid_count = 0;
+$partial_count = 0;
+foreach($invoices as $inv) {
+    if (date('Y', strtotime($inv['month'])) == $selected_year) {
+        $inv_status = $inv['status'] ?? 'unpaid';
+        if($inv_status === 'paid') $paid_count++;
+        else if($inv_status === 'partial') $partial_count++;
+        else $unpaid_count++;
+    }
+}
+
+// 3. Expense Category Data (for pie)
+$category_data = [];
+foreach($ledger_entries as $e) {
+    if($e['type'] === 'Debit') {
+        $cat = $e['category'] ?? 'Others';
+        if(!isset($category_data[$cat])) $category_data[$cat] = 0;
+        $category_data[$cat] += $e['amount'];
+    }
+}
+
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'invoices';
 $success_msg = '';
 if ( isset( $_GET['success'] ) ) {
@@ -66,6 +137,17 @@ if ( isset( $_GET['success'] ) ) {
     var sgvx51AdminNonce = '<?php echo wp_create_nonce( 'sgvx51_nonce' ); ?>';
     var sgvx51RequestNonce = '<?php echo wp_create_nonce( 'sgvx51_request_action' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+    
+    // Chart Data
+    var sgvxAccountsChartData = {
+        monthlyData: <?php echo json_encode($monthly_data); ?>,
+        collectionData: {
+            paid: <?php echo $paid_count; ?>,
+            unpaid: <?php echo $unpaid_count; ?>,
+            partial: <?php echo $partial_count; ?>
+        },
+        categoryData: <?php echo json_encode($category_data); ?>
+    };
 </script>
 
     <!-- Global Messages (Outside Cards) -->
@@ -119,12 +201,12 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Revenue (Inflow)</p>
                     <i class="bi bi-graph-up-arrow text-success fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo number_format($total_credit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo sgvx_in_fmt($total_credit, 0); ?></h3>
                 <div class="progress mt-3" style="height: 4px;">
                     <div class="progress-bar bg-success" style="width: <?php echo $collection_pct; ?>%"></div>
                 </div>
                 <div class="small text-muted mt-2" style="font-size: 10px;">
-                    COLLECTED: ₹<?php echo number_format($total_collected); ?> / DEMAND: ₹<?php echo number_format($total_demand); ?> (<?php echo $collection_pct; ?>%)
+                    COLLECTED: ₹<?php echo sgvx_in_fmt($total_collected); ?> / DEMAND: ₹<?php echo sgvx_in_fmt($total_demand); ?> (<?php echo $collection_pct; ?>%)
                 </div>
             </div>
         </div>
@@ -134,7 +216,7 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Expenses (Outflow)</p>
                     <i class="bi bi-graph-down-arrow text-danger fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo number_format($total_debit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo sgvx_in_fmt($total_debit, 0); ?></h3>
                 <div class="small text-danger fw-bold mt-2" style="font-size: 10px;">TOTAL APPROVED COSTS</div>
             </div>
         </div>
@@ -144,7 +226,7 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-uppercase tracking-wider m-0">System Balance</p>
                     <i class="bi bi-calculator fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold m-0">₹<?php echo number_format($net_balance, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo sgvx_in_fmt($net_balance, 0); ?></h3>
                 <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">OPENING + CREDIT - DEBIT</div>
             </div>
         </div>
@@ -154,20 +236,45 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-uppercase tracking-wider m-0">Physical Funds</p>
                     <i class="bi bi-safe2 fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold m-0">₹<?php echo number_format($actual_total, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo sgvx_in_fmt($actual_total, 0); ?></h3>
                 <div class="d-flex gap-2 mt-2">
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo number_format($actual_bank); ?></span>
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo number_format($actual_cash); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo sgvx_in_fmt($actual_bank); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo sgvx_in_fmt($actual_cash); ?></span>
                 </div>
                 <?php if(abs($variance) > 1): ?>
                     <div class="mt-2 small fw-bold text-white" style="font-size: 10px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo number_format($variance); ?>
+                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo sgvx_in_fmt($variance); ?>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 
+
+    <!-- Financial Charts Section -->
+    <div class="row g-4 mb-4">
+        <!-- Cash Flow Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark m-0">Monthly Cash Flow</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary active" id="btn-chart-view-monthly" onclick="switchChartView('monthly')">Monthly</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-chart-view-yearly" onclick="switchChartView('yearly')">Yearly</button>
+                    </div>
+                </div>
+                <div id="cashFlowChart" style="height: 350px; width: 100%;"></div>
+            </div>
+        </div>
+        
+        <!-- Collection Efficiency Doughnut -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 bg-white p-4">
+                <h5 class="fw-bold text-dark mb-3">Collection Efficiency</h5>
+                <div id="collectionChart" style="height: 350px; width: 100%;"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content Card -->
     <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden mb-4">
@@ -273,9 +380,9 @@ if ( isset( $_GET['success'] ) ) {
                                             <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
-                                            <div class="fw-bold text-dark">₹<?php echo number_format($inv['amount'], 2); ?></div>
+                                            <div class="fw-bold text-dark">₹<?php echo sgvx_in_fmt($inv['amount']); ?></div>
                                             <?php if($paid > 0 && $paid < $inv['amount']): ?>
-                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo number_format($paid); ?></div>
+                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo sgvx_in_fmt($paid); ?></div>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -330,6 +437,27 @@ if ( isset( $_GET['success'] ) ) {
 
             <?php elseif ($active_tab === 'ledger'): ?>
                 <!-- LEDGER TAB CONTENT -->
+                <div class="p-4 border-bottom border-light bg-light bg-opacity-10">
+                    <div class="row align-items-center">
+                        <div class="col-md-5 border-end border-light">
+                            <h6 class="fw-bold text-dark mb-3 text-uppercase small tracking-wider">Expense Breakdown by Category</h6>
+                            <div id="expenseCategoryChart" style="height: 250px; width: 100%;"></div>
+                        </div>
+                        <div class="col-md-7 ps-md-5">
+                             <div class="alert bg-white border-light shadow-sm mb-0">
+                                 <div class="d-flex align-items-center gap-3">
+                                     <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                                         <i class="bi bi-info-circle fs-4"></i>
+                                     </div>
+                                     <div>
+                                         <div class="fw-bold text-dark">Monthly Analysis</div>
+                                         <p class="small text-muted m-0">The chart on the left illustrates the distribution of society expenses across various categories for the selected period.</p>
+                                     </div>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light border-bottom border-light">
@@ -367,12 +495,12 @@ if ( isset( $_GET['success'] ) ) {
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-success <?php echo ($ln['type'] ?? '') === 'Credit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? number_format($ln['amount'], 2) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? sgvx_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-danger <?php echo ($ln['type'] ?? '') === 'Debit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? number_format($ln['amount'], 2) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? sgvx_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -382,8 +510,8 @@ if ( isset( $_GET['success'] ) ) {
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex flex-column align-items-end">
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo number_format($ln['bank_balance'], 2); ?></span></span>
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo number_format($ln['cash_balance'], 2); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo sgvx_in_fmt($ln['bank_balance']); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo sgvx_in_fmt($ln['cash_balance']); ?></span></span>
                                             </div>
                                         </td>
                                     </tr>
@@ -969,5 +1097,199 @@ window.downloadReceipt = function(event) {
         // Clear search when switching tabs
         searchInput.value = '';
     }
+
+    
+// ===== CHART RENDERING =====
+let cashFlowChart = null;
+let categoryChart = null;
+let collectionChart = null;
+let currentChartView = 'monthly';
+
+function initCharts() {
+    if (!window.CanvasJS || !window.sgvxAccountsChartData) {
+        console.log('CanvasJS or chart data not available');
+        return;
+    }
+
+    renderCashFlowChart();
+    renderCollectionChart();
+    renderCategoryChart();
+}
+
+function renderCashFlowChart() {
+    const container = document.getElementById("cashFlowChart");
+    if (!container) return;
+
+    const chartData = window.sgvxAccountsChartData.monthlyData;
+    if (!chartData) return;
+
+    const dataPoints = [];
+
+    // Process each month - show both income and expense as separate entries
+    for (const [month, data] of Object.entries(chartData)) {
+        // Add income as positive
+        if (data.income > 0) {
+            dataPoints.push({
+                label: `${month} Income`,
+                y: data.income,
+                color: "#10b981"
+            });
+        }
+
+        // Add expense as negative
+        if (data.expense > 0) {
+            dataPoints.push({
+                label: `${month} Expense`,
+                y: -data.expense,
+                color: "#ef4444"
+            });
+        }
+    }
+
+    // Add cumulative total at the end
+    dataPoints.push({
+        label: "Net Balance",
+        isCumulativeSum: true,
+        color: "#3b82f6"
+    });
+
+    if (cashFlowChart) {
+        cashFlowChart.destroy();
+    }
+
+    cashFlowChart = new CanvasJS.Chart("cashFlowChart", {
+        animationEnabled: true,
+        theme: "light2",
+        title: {
+            text: "Society Cash Flow (Waterfall)",
+            fontSize: 16,
+            fontFamily: "Inter, sans-serif",
+            fontWeight: "normal",
+            padding: 5
+        },
+        axisY: {
+            title: "Amount (₹)",
+            prefix: "₹",
+            valueFormatString: "#,##,##0",
+            gridThickness: 1,
+            gridColor: "#f3f4f6"
+        },
+        axisX: {
+            labelAngle: -45,
+            labelFontSize: 10,
+            interval: 1
+        },
+        toolTip: {
+            shared: false,
+            content: "{label}: ₹{y}"
+        },
+        data: [{
+            type: "waterfall",
+            indexLabel: "₹{y}",
+            indexLabelFontSize: 11,
+            indexLabelFontColor: "#333",
+            dataPoints: dataPoints
+        }]
+    });
+
+    cashFlowChart.render();
+}
+
+
+function renderCollectionChart() {
+    const container = document.getElementById("collectionChart");
+    if (!container) return;
+
+    const data = window.sgvxAccountsChartData.collectionData;
+    if (!data) return;
+
+    const total = data.paid + data.unpaid + data.partial;
+    if (total === 0) return;
+
+    if (collectionChart) {
+        collectionChart.destroy();
+    }
+
+    collectionChart = new CanvasJS.Chart("collectionChart", {
+        animationEnabled: true,
+        theme: "light2",
+        data: [{
+            type: "doughnut",
+            startAngle: 60,
+            innerRadius: "60%",
+            indexLabelFontSize: 14,
+            name: "{name}: {y}",
+            showInLegend: true,
+            toolTipContent: "<b>{name}</b>: {y} ({percentage}%)",
+            dataPoints: [
+                { y: data.paid, name: "Paid", color: "#10b981", percentage: Math.round((data.paid / total) * 100) },
+                { y: data.partial, name: "Partial", color: "#f59e0b", percentage: Math.round((data.partial / total) * 100) },
+                { y: data.unpaid, name: "Unpaid", color: "#ef4444", percentage: Math.round((data.unpaid / total) * 100) }
+            ]
+        }]
+    });
+
+    collectionChart.render();
+}
+
+function renderCategoryChart() {
+    const container = document.getElementById("expenseCategoryChart");
+    if (!container) return;
+
+    const data = window.sgvxAccountsChartData.categoryData;
+    if (!data || Object.keys(data).length === 0) return;
+
+    const dataPoints = [];
+    for (const [cat, val] of Object.entries(data)) {
+        dataPoints.push({ y: val, name: cat });
+    }
+
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
+
+    categoryChart = new CanvasJS.Chart("expenseCategoryChart", {
+        animationEnabled: true,
+        theme: "light2",
+        data: [{
+            type: "pie",
+            startAngle: 240,
+            yValueFormatString: "₹#,##,##0",
+            indexLabel: "{name}: {y}",
+            toolTipContent: "<b>{name}</b>: ₹{y}",
+            dataPoints: dataPoints
+        }]
+    });
+
+    categoryChart.render();
+}
+
+function switchChartView(view) {
+    currentChartView = view;
+
+    // Update button states
+    const btnMonthly = document.getElementById('btn-chart-view-monthly');
+    const btnYearly = document.getElementById('btn-chart-view-yearly');
+
+    if (view === 'monthly') {
+        if(btnMonthly) btnMonthly.classList.add('active');
+        if(btnYearly) btnYearly.classList.remove('active');
+    } else {
+        if(btnYearly) btnYearly.classList.add('active');
+        if(btnMonthly) btnMonthly.classList.remove('active');
+    }
+
+    renderCashFlowChart();
+}
+
+// Initialize charts on page load
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.CanvasJS) {
+        initCharts();
+    } else {
+        console.error('CanvasJS not loaded');
+    }
+});
+
 
 </script>

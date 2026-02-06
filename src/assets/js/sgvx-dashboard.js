@@ -3,49 +3,96 @@
 
     // State
     let expensesChart = null;
+    let paymentChart = null;
     let dirFuse = null;
+    let facFuse = null;
+    let bookingFuse = null;
     let dirActiveFilter = 'all';
 
     // --- Chart Logic ---
-    function initChart() {
-        const chartContainer = document.getElementById('expensesChart');
-        if (!chartContainer || !window.CanvasJS || !window.sgvxDashboardData) {
+    function initCharts() {
+        if (!window.CanvasJS || !window.sgvxDashboardData) {
             return;
         }
 
-        const chartData = window.sgvxDashboardData.chartData || {};
-        const dps = [];
+        // 1. Society Expense Trend
+        const expenseContainer = document.getElementById('expensesChart');
+        if (expenseContainer && window.sgvxDashboardData.expenseChartData) {
+            const expenseData = window.sgvxDashboardData.expenseChartData;
+            const dps = [];
 
-        for (const [label, y] of Object.entries(chartData)) {
-            dps.push({ label: label, y: y });
+            for (const [label, y] of Object.entries(expenseData)) {
+                dps.push({ label: label, y: y });
+            }
+
+            if (dps.length > 0) {
+                expensesChart = new CanvasJS.Chart("expensesChart", {
+                    animationEnabled: true,
+                    theme: "light2",
+                    title: {
+                        text: "Monthly Society Expense Trend",
+                        fontSize: 16,
+                        fontFamily: "Inter, sans-serif"
+                    },
+                    axisY: {
+                        title: "Amount (₹)",
+                        includeZero: true,
+                        prefix: "₹",
+                        valueFormatString: "#,##,##0"
+                    },
+                    data: [{
+                        type: "column",
+                        color: "#6366f1",
+                        indexLabel: "{y}",
+                        yValueFormatString: "₹#,##,##0",
+                        dataPoints: dps
+                    }]
+                });
+
+                // Only render if tab is visible
+                const expensesTab = document.getElementById('tab-expenses');
+                if (expensesTab && !expensesTab.classList.contains('d-none')) {
+                    expensesChart.render();
+                }
+            }
         }
 
-        if (dps.length > 0) {
-            expensesChart = new CanvasJS.Chart("expensesChart", {
-                animationEnabled: true,
-                theme: "light2",
-                title: {
-                    text: "Monthly Expense Trend",
-                    fontSize: 18,
-                    fontFamily: "Inter, sans-serif"
-                },
-                axisY: {
-                    title: "Amount (₹)",
-                    includeZero: true,
-                    prefix: "₹"
-                },
-                data: [{
-                    type: "column",
-                    indexLabel: "{y}",
-                    yValueFormatString: "₹#,##0",
-                    dataPoints: dps
-                }]
-            });
+        // 2. Resident Payment History
+        const paymentContainer = document.getElementById('paymentHistoryChart');
+        if (paymentContainer && window.sgvxDashboardData.paymentHistory) {
+            const paymentData = window.sgvxDashboardData.paymentHistory;
+            const dps = [];
 
-            // Only render immediately if the tab is visible
-            const expensesTab = document.getElementById('tab-expenses');
-            if (expensesTab && !expensesTab.classList.contains('d-none')) {
-                expensesChart.render();
+            for (const [label, y] of Object.entries(paymentData)) {
+                dps.push({ label: label, y: y });
+            }
+
+            if (dps.length > 0) {
+                paymentChart = new CanvasJS.Chart("paymentHistoryChart", {
+                    animationEnabled: true,
+                    theme: "light2",
+                    title: {
+                        text: "My Payment History",
+                        fontSize: 16,
+                        fontFamily: "Inter, sans-serif"
+                    },
+                    axisY: {
+                        title: "Amount (₹)",
+                        includeZero: true,
+                        prefix: "₹",
+                        valueFormatString: "#,##,##0"
+                    },
+                    data: [{
+                        type: "area",
+                        color: "#10b981",
+                        markerSize: 8,
+                        yValueFormatString: "₹#,##,##0",
+                        dataPoints: dps
+                    }]
+                });
+
+                // Render immediately (usually home tab is visible)
+                paymentChart.render();
             }
         }
     }
@@ -73,18 +120,38 @@
 
     // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', function () {
-        // Init Chart
-        initChart();
+        // Init Charts
+        initCharts();
 
         // Hook into Tab Switching for Chart Re-render
-        // Strategy: Listen to tab clicks (generic delegation or specific ID)
         const btnExpenses = document.getElementById('btn-tab-expenses');
         if (btnExpenses) {
             btnExpenses.addEventListener('click', function () {
-                // Wait for transition/visibility change
                 setTimeout(function () {
                     if (expensesChart) {
                         expensesChart.render();
+                    }
+                }, 100);
+            });
+        }
+
+        const btnHome = document.getElementById('btn-tab-home');
+        if (btnHome) {
+            btnHome.addEventListener('click', function () {
+                setTimeout(function () {
+                    if (paymentChart) {
+                        paymentChart.render();
+                    }
+                }, 100);
+            });
+        }
+
+        const btnAccounts = document.getElementById('btn-tab-accounts');
+        if (btnAccounts) {
+            btnAccounts.addEventListener('click', function () {
+                setTimeout(function () {
+                    if (paymentChart) {
+                        paymentChart.render();
                     }
                 }, 100);
             });
@@ -119,6 +186,58 @@
             dirSearch.addEventListener('input', window.filterDirectory);
             dirSearch.addEventListener('focus', function () {
                 if (window.sgvxCreateFuse) dirFuse = window.sgvxCreateFuse('.dir-card');
+            });
+        }
+
+        // Facility Search (Available Facilities)
+        const facilitySearch = document.getElementById('facility-dashboard-search');
+        if (facilitySearch) {
+            facilitySearch.addEventListener('input', function () {
+                const val = this.value.trim().toLowerCase();
+                if (!facFuse && window.sgvxCreateFuse) {
+                    facFuse = window.sgvxCreateFuse('.facility-card');
+                }
+
+                const matches = val && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(facFuse, val) : null;
+
+                document.querySelectorAll('.facility-card').forEach(card => {
+                    const isMatch = !val || (matches && matches.has(card));
+                    if (isMatch) {
+                        card.classList.remove('d-none');
+                        card.classList.add('d-flex');
+                    } else {
+                        card.classList.add('d-none');
+                        card.classList.remove('d-flex');
+                    }
+                });
+            });
+            facilitySearch.addEventListener('focus', function () {
+                if (window.sgvxCreateFuse) facFuse = window.sgvxCreateFuse('.facility-card');
+            });
+        }
+
+        // Booking Search (My Bookings)
+        const bookingSearch = document.getElementById('booking-dashboard-search');
+        if (bookingSearch) {
+            bookingSearch.addEventListener('input', function () {
+                const val = this.value.trim().toLowerCase();
+                if (!bookingFuse && window.sgvxCreateFuse) {
+                    bookingFuse = window.sgvxCreateFuse('.booking-dash-row');
+                }
+
+                const matches = val && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(bookingFuse, val) : null;
+
+                document.querySelectorAll('.booking-dash-row').forEach(row => {
+                    const isMatch = !val || (matches && matches.has(row));
+                    if (isMatch) {
+                        row.classList.remove('d-none');
+                    } else {
+                        row.classList.add('d-none');
+                    }
+                });
+            });
+            bookingSearch.addEventListener('focus', function () {
+                if (window.sgvxCreateFuse) bookingFuse = window.sgvxCreateFuse('.booking-dash-row');
             });
         }
     });
