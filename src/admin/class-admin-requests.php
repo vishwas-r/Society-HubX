@@ -1,0 +1,94 @@
+<?php
+/**
+ * Class: Admin Requests
+ * Handles the "Requests" admin page and generalized approval logic.
+ *
+ * @package Society_Govern_X
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class SGVX51_Admin_Requests {
+
+	private $db;
+
+	public function __construct() {
+		$this->db = new SGVX51_DB_Router();
+		
+		add_action( 'admin_menu', array( $this, 'register_menu' ) );
+		add_action( 'admin_post_sgvx51_approve_request', array( $this, 'handle_approve' ) );
+		add_action( 'admin_post_sgvx51_reject_request', array( $this, 'handle_reject' ) );
+	}
+
+	public function register_menu() {
+		// Get pending count for badge
+		$requests = $this->db->get( 'requests' );
+		$pending_count = 0;
+		foreach ( $requests as $req ) {
+			if ( isset( $req['status'] ) && $req['status'] === 'pending' ) {
+				$pending_count++;
+			}
+		}
+
+		$badge = $pending_count > 0 ? " <span class='update-plugins count-$pending_count'><span class='plugin-count'>" . number_format_i18n( $pending_count ) . "</span></span>" : "";
+
+		add_submenu_page(
+			'sgvx51-settings',
+			'Approval Requests',
+			'Requests' . $badge,
+			'manage_options',
+			'sgvx51-requests',
+			array( $this, 'render_page' )
+		);
+	}
+
+	public function handle_approve() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+		check_admin_referer( 'sgvx51_request_action' );
+
+		$request_id = sanitize_text_field( $_GET['id'] );
+		$redirect   = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : '';
+		
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SGVX51_Request_Manager();
+		$result = $rm->approve_request( $request_id );
+
+		if ( is_wp_error( $result ) ) {
+			wp_die( $result->get_error_message() );
+		}
+
+		if ( $redirect ) {
+			wp_redirect( $redirect );
+		} else {
+			wp_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=approved' ) );
+		}
+		exit;
+	}
+
+	public function handle_reject() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+		check_admin_referer( 'sgvx51_request_action' );
+
+		$request_id = sanitize_text_field( $_POST['id'] );
+		$note = sanitize_textarea_field( $_POST['admin_note'] );
+		$redirect = isset($_POST['redirect_to']) ? esc_url_raw($_POST['redirect_to']) : '';
+
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SGVX51_Request_Manager();
+		$result = $rm->reject_request( $request_id, $note );
+
+		if ( $redirect ) {
+			wp_redirect( $redirect );
+		} else {
+			wp_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=rejected' ) );
+		}
+		exit;
+	}
+
+	public function render_page() {
+        $requests = $this->db->get( 'requests' );
+		SGVX51_Admin_App::render_view( 'requests', array( 'requests' => $requests ) );
+	}
+}

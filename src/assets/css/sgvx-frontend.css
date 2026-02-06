@@ -1,0 +1,116 @@
+/* 
+ * Society GoVernX - Frontend CSS
+ * Pure Bootstrap 5 Based Theme with Custom Components
+ */
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* --- Custom Components --- */
+
+/* Modern Tabs */
+.nav-tabs-custom {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 2px solid #dee2e6;
+    gap: 2rem;
+    scrollbar-width: none;
+    margin-bottom: 1.5rem;
+}
+
+.nav-tabs-custom::-webkit-scrollbar {
+    display: none;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 1rem 0;
+    color: #6c757d;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #212529;
+}
+
+.tab-btn.active {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Tab Content Logic */
+.tab-content,
+.sub-tab-content {
+    display: none;
+}
+
+.tab-content.d-block,
+.sub-tab-content.d-block {
+    display: block;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tab-content.d-none,
+.sub-tab-content.d-none {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Hover Effects */
+.card-hover {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08) !important;
+    border-color: #0d6efd !important;
+}
+
+/* Custom Scrollbar for Containers */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 10px;
+}
+
+/* Tooltip/Badge Extra Small */
+.badge-xs {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .nav-tabs-custom {
+        gap: 1.25rem;
+    }
+}

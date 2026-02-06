@@ -1,0 +1,59 @@
+/**
+ * Society GoVernX: Surgical WP Style Buster
+ * 
+ * This shim uses high-specificity selectors to "bust" the properties 
+ * WordPress forces on standard input tags. It unsets ONLY the 
+ * layout-breaking values, allowing Bootstrap's classes to apply naturally.
+ * 
+ * Scope: #sgvx51-app-root
+ */
+
+/* Target the specific attribute selectors WordPress uses */
+#sgvx51-app-root input[type="text"],
+#sgvx51-app-root input[type="search"],
+#sgvx51-app-root input[type="number"],
+#sgvx51-app-root input[type="email"],
+#sgvx51-app-root input[type="password"],
+#sgvx51-app-root input[type="tel"],
+#sgvx51-app-root input[type="url"],
+#sgvx51-app-root input[type="date"],
+#sgvx51-app-root select,
+#sgvx51-app-root textarea {
+    /* Nullify WP's forced metrics */
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+    border-width: 1px;
+    /* Reset WP's 1px solid #8c8f94 */
+    max-width: 100%;
+}
+
+/* Specific Select Fix: WP adds a Dashicon arrow background image */
+#sgvx51-app-root select {
+    background-image: none;
+    padding-right: 0;
+}
+
+/* Clear WP Typography leaks */
+#sgvx51-app-root h1,
+#sgvx51-app-root h2,
+#sgvx51-app-root h3,
+#sgvx51-app-root h4,
+#sgvx51-app-root h5,
+#sgvx51-app-root h6,
+#sgvx51-app-root p {
+    margin: 0;
+}
+
+/* Clear WP Card constraints */
+#sgvx51-app-root .card {
+    max-width: none !important;
+    margin: 0;
+}

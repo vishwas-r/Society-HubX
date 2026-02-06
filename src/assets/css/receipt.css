@@ -1,0 +1,190 @@
+/**
+ * Society GoVernX - Receipt Styling
+ * Standardized A4 Design for Admin & Resident
+ */
+
+/* Modal Container Adjustments */
+.modal-lg.modal-receipt {
+    max-width: 850px;
+}
+
+/* The A4 Receipt Container */
+.receipt {
+    background: #ffffff !important;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    position: relative;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    color: #1e293b;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+
+/* Ensure modal body allows scrolling if A4 is too tall */
+.modal-body-receipt {
+    background-color: #f1f5f9;
+    padding: 2rem !important;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+/* Receipt Typography */
+.receipt h2,
+.receipt h5 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* Header Section */
+.receipt-header-standard {
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+/* Info Grid */
+.receipt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.receipt-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.receipt-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #0f172a;
+}
+
+/* Tables */
+.receipt-table {
+    width: 100%;
+    margin-bottom: 3rem;
+    border-collapse: collapse;
+}
+
+.receipt-table th {
+    background: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.receipt-table td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9375rem;
+}
+
+/* Summary Section */
+.receipt-summary {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    margin-left: auto;
+    width: 300px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+
+.summary-row.grand-total {
+    border-top: 2px solid #e2e8f0;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: #0d6efd;
+}
+
+/* Status Badge */
+.receipt-status-wrap {
+    text-align: center;
+    margin-bottom: 6rem;
+}
+
+.receipt-badge {
+    display: inline-block;
+    padding: 0.5rem 2rem;
+    border-radius: 99px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Footer Section */
+.receipt-footer-standard {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    position: absolute;
+    bottom: 10mm;
+    left: 20mm;
+    right: 20mm;
+}
+
+/* Print Specifics */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .receipt,
+    .receipt * {
+        visibility: visible;
+    }
+
+    .receipt {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .modal-dialog,
+    .modal-content,
+    .modal-body {
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+}
+
+/* Responsiveness for small screens */
+@media (max-width: 991px) {
+    .receipt {
+        width: 100%;
+        min-height: auto;
+        padding: 1.5rem;
+    }
+
+    .receipt-footer-standard {
+        position: static;
+        margin-top: 3rem;
+    }
+}

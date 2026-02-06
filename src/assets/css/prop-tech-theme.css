@@ -1,0 +1,125 @@
+/* 
+ * Society GoVernX - Premium Frontend Theme
+ * Design System: "PropTech Modern"
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --pt-primary: #2563eb;
+    --pt-bg: #f3f4f6;
+    --pt-surface: #ffffff;
+    --pt-text: #1f2937;
+    --pt-muted: #6b7280;
+    --pt-border: #e5e7eb;
+    --pt-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+.sgvx51-dashboard {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--pt-bg);
+    padding: 40px 0;
+    color: var(--pt-text);
+}
+
+/* 1. Header & Welcome */
+.sgvx51-dashboard h1,
+.sgvx51-dashboard h2,
+.sgvx51-dashboard h3 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* 2. Premium Tabs (Replacing Button Look) */
+.sgvx51-dashboard .nav-pills {
+    background: #fff;
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    display: inline-flex;
+    gap: 8px;
+    border: 1px solid var(--pt-border);
+}
+
+.sgvx51-dashboard .nav-pills .nav-link {
+    border-radius: 8px;
+    color: var(--pt-muted);
+    font-weight: 500;
+    padding: 10px 24px;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.sgvx51-dashboard .nav-pills .nav-link:hover {
+    color: var(--pt-primary);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.sgvx51-dashboard .nav-pills .nav-link.active {
+    background-color: var(--pt-primary);
+    color: #fff;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+/* 3. Cards */
+.sgvx51-card {
+    border: none;
+    border-radius: 20px;
+    background: var(--pt-surface);
+    box-shadow: var(--pt-shadow);
+    transition: transform 0.2s ease;
+    overflow: hidden;
+}
+
+.sgvx51-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #f3f4f6;
+    padding: 24px;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.sgvx51-card .card-body {
+    padding: 24px;
+}
+
+/* 4. Action Buttons (Modern) */
+.btn-primary {
+    background: var(--pt-primary);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+/* 5. Directory Search Bar */
+.sgvx51-directory-search {
+    border: none;
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+.sgvx51-directory-search:focus {
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+
+/* 6. Utility Badges */
+.badge {
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}

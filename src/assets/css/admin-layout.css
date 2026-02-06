@@ -1,0 +1,744 @@
+/* 
+ * Society GoVernX - Admin Layout (Bootstrap Migration)
+ * Replacing Tailwind utilities with custom classes + Bootstrap 5
+ */
+
+:root {
+    /* Tailwind Slate Palette Mapping */
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+
+    /* Custom Primary Theme */
+    --custom-primary-color: #6366f1;
+    --custom-primary-hover: #4f46e5;
+    --custom-primary-shadow: rgba(79, 70, 229, 0.3);
+}
+
+/* Fix WordPress Card Conflict */
+#sgvx51-app-root .card {
+    max-width: none !important;
+}
+
+/* App Root Overlay */
+#sgvx51-app-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    background-color: var(--slate-100);
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--slate-900);
+}
+
+/* Sidebar */
+.sgvx-sidebar {
+    height: 100vh;
+    position: relative;
+    z-index: 20;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff !important;
+}
+
+.sgvx-sidebar hr {
+    opacity: 0.1;
+}
+
+.sgvx-sidebar .nav-link {
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: all 0.2s ease;
+    color: var(--slate-600);
+}
+
+.sgvx-sidebar .nav-link.active {
+    background-color: var(--slate-100) !important;
+    color: var(--indigo-700) !important;
+}
+
+.sgvx-sidebar .nav-link:not(.active):hover {
+    background-color: var(--slate-50) !important;
+    color: var(--slate-900) !important;
+}
+
+.sgvx-sidebar .hover-indigo:hover {
+    color: var(--indigo-600) !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--slate-200);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--slate-300);
+}
+
+.hover-bg-slate-50:hover {
+    background-color: var(--slate-50) !important;
+}
+
+.custom-scrollbar-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar-sidebar::-webkit-scrollbar-thumb {
+    background: var(--slate-200);
+    border-radius: 10px;
+}
+
+/* Main Content */
+.sgvx-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--slate-50);
+    height: 100vh;
+    overflow: hidden;
+    /* Prevent body scroll, container handles scroll */
+}
+
+.sgvx-top-header {
+    height: 64px;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    z-index: 10;
+}
+
+.sgvx-page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--slate-800);
+    margin: 0;
+}
+
+/* User Profile */
+.sgvx-user-avatar {
+    height: 2rem;
+    /* h-8 */
+    width: 2rem;
+    /* w-8 */
+    border-radius: 9999px;
+    /* rounded-full */
+    background-color: var(--slate-200);
+    border: 1px solid #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    /* shadow-sm */
+    overflow: hidden;
+}
+
+.sgvx-content-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    background-color: var(--slate-50);
+}
+
+.rounded-2xl {
+    border-radius: 1rem !important;
+}
+
+.shadow-soft {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+}
+
+
+
+/* --- Utility Layer (Tailwind Mimic) --- */
+
+/* Sizing (Rem based) */
+.w-3 {
+    width: 0.75rem !important;
+}
+
+.h-3 {
+    height: 0.75rem !important;
+}
+
+.w-4 {
+    width: 1rem !important;
+}
+
+.h-4 {
+    height: 1rem !important;
+}
+
+.w-5 {
+    width: 1.25rem !important;
+}
+
+.h-5 {
+    height: 1.25rem !important;
+}
+
+.w-6 {
+    width: 1.5rem !important;
+}
+
+.h-6 {
+    height: 1.5rem !important;
+}
+
+.w-8 {
+    width: 2rem !important;
+}
+
+.h-8 {
+    height: 2rem !important;
+}
+
+.w-10 {
+    width: 2.5rem !important;
+}
+
+.h-10 {
+    height: 2.5rem !important;
+}
+
+.w-12 {
+    width: 3rem !important;
+}
+
+.h-12 {
+    height: 3rem !important;
+}
+
+/* Flexbox & Layout */
+.flex {
+    display: flex !important;
+}
+
+.flex-col {
+    flex-direction: column !important;
+}
+
+.flex-wrap {
+    flex-wrap: wrap !important;
+}
+
+.items-center {
+    align-items: center !important;
+}
+
+.items-start {
+    align-items: flex-start !important;
+}
+
+.justify-between {
+    justify-content: space-between !important;
+}
+
+.justify-end {
+    justify-content: flex-end !important;
+}
+
+.flex-1 {
+    flex: 1 1 0% !important;
+}
+
+/* Gaps */
+.gap-1 {
+    gap: 0.25rem !important;
+}
+
+.gap-2 {
+    gap: 0.5rem !important;
+}
+
+.gap-3 {
+    gap: 0.75rem !important;
+}
+
+.gap-4 {
+    gap: 1rem !important;
+}
+
+.gap-6 {
+    gap: 1.5rem !important;
+}
+
+/* Spacing */
+.p-4 {
+    padding: 1rem !important;
+}
+
+.p-6 {
+    padding: 1.5rem !important;
+}
+
+.px-6 {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+.py-3 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+}
+
+.py-4 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem !important;
+}
+
+.mt-1 {
+    margin-top: 0.25rem !important;
+}
+
+/* Colors - Text */
+.text-slate-400 {
+    color: var(--slate-400) !important;
+}
+
+.text-slate-500 {
+    color: var(--slate-500) !important;
+}
+
+.text-slate-600 {
+    color: var(--slate-600) !important;
+}
+
+.text-slate-700 {
+    color: var(--slate-700) !important;
+}
+
+.text-slate-800 {
+    color: var(--slate-800) !important;
+}
+
+.text-indigo-600 {
+    color: var(--indigo-600) !important;
+}
+
+.text-indigo-700 {
+    color: var(--indigo-700) !important;
+}
+
+.text-emerald-500 {
+    color: #10b981 !important;
+}
+
+.text-red-500 {
+    color: #ef4444 !important;
+}
+
+.text-amber-400 {
+    color: #fbbf24 !important;
+}
+
+/* Colors - Background */
+.bg-white {
+    background-color: #ffffff !important;
+}
+
+.bg-slate-50 {
+    background-color: var(--slate-50) !important;
+}
+
+.bg-slate-100 {
+    background-color: var(--slate-100) !important;
+}
+
+.bg-indigo-50 {
+    background-color: var(--indigo-50) !important;
+}
+
+.bg-indigo-600 {
+    background-color: var(--indigo-600) !important;
+}
+
+.bg-indigo-100 {
+    background-color: #e0e7ff !important;
+}
+
+.bg-emerald-50 {
+    background-color: var(--emerald-50) !important;
+}
+
+.text-emerald-600 {
+    color: var(--emerald-600) !important;
+}
+
+.bg-orange-50 {
+    background-color: var(--orange-50) !important;
+}
+
+.text-orange-600 {
+    color: var(--orange-600) !important;
+}
+
+.bg-blue-50 {
+    background-color: var(--blue-50) !important;
+}
+
+.text-blue-600 {
+    color: var(--blue-600) !important;
+}
+
+.bg-teal-50 {
+    background-color: var(--teal-50) !important;
+}
+
+.text-teal-600 {
+    color: var(--teal-600) !important;
+}
+
+.bg-teal-100 {
+    background-color: #ccfbf1 !important;
+}
+
+.text-teal-700 {
+    color: #0f766e !important;
+}
+
+/* Other Utilities */
+.rounded-xl {
+    border-radius: 0.75rem !important;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem !important;
+}
+
+.rounded-full {
+    border-radius: 9999px !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.border-slate-200 {
+    border-color: var(--slate-200) !important;
+}
+
+.font-semibold {
+    font-weight: 600 !important;
+}
+
+.text-sm {
+    font-size: 0.875rem !important;
+}
+
+.text-xs {
+    font-size: 0.75rem !important;
+}
+
+.uppercase {
+    text-transform: uppercase !important;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em !important;
+}
+
+.btn-white {
+    background-color: #ffffff !important;
+    color: var(--slate-900) !important;
+}
+
+.btn-white:hover {
+    background-color: var(--slate-50) !important;
+}
+
+.hover-translate-y:hover {
+    transform: translateY(-2px) !important;
+}
+
+.hover-underline:hover {
+    text-decoration: underline !important;
+}
+
+/* --- View Specific Consistency Refinements --- */
+
+/* Badge System (High Contrast) */
+.badge-owner {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+.badge-tenant {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #fde68a !important;
+}
+
+.badge-indigo-subtle {
+    background-color: #e0e7ff !important;
+    color: #4338ca !important;
+    border: 1px solid #c7d2fe !important;
+}
+
+.badge-success-subtle {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+.badge-danger-subtle {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #fecaca !important;
+}
+
+.badge-warning-subtle {
+    background-color: #ffedd5 !important;
+    color: #9a3412 !important;
+    border: 1px solid #fed7aa !important;
+}
+
+.badge-primary-subtle {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+/* Custom Component States */
+.resident-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.flat-card:hover {
+    border-color: var(--indigo-300) !important;
+    transform: translateY(-2px);
+}
+
+.status-occupied {
+    border-left: 4px solid #10b981 !important;
+}
+
+.status-vacant {
+    border-left: 4px solid var(--slate-300) !important;
+}
+
+/* Table Enhancements */
+.table-warning-subtle {
+    background-color: #fffbeb !important;
+}
+
+/* Navigation Refinements */
+.nav-tabs .nav-link {
+    transition: all 0.2s;
+    cursor: pointer;
+    border-bottom: 2px solid transparent !important;
+}
+
+.nav-tabs .nav-link.active {
+    border-bottom-color: var(--indigo-600) !important;
+    color: var(--indigo-700) !important;
+    font-weight: 700 !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--indigo-600) !important;
+    border-bottom-color: var(--indigo-200) !important;
+}
+
+/* Modal & Form Fixes */
+.sgvx-form-max {
+    max-width: 800px;
+}
+
+/* Bootstrap Form Overrides (Specificity Bridge) */
+#sgvx51-app-root .form-control,
+#sgvx51-app-root .form-select,
+#sgvx51-modals-root .form-control,
+#sgvx51-modals-root .form-select {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--slate-800);
+    background-color: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease-in-out;
+    height: auto;
+}
+
+#sgvx51-app-root .form-control:focus,
+#sgvx51-app-root .form-select:focus,
+#sgvx51-modals-root .form-control:focus,
+#sgvx51-modals-root .form-select:focus {
+    color: var(--slate-900);
+    background-color: #fff;
+    border-color: var(--custom-primary-color);
+    box-shadow: 0 0 0 4px var(--custom-primary-shadow);
+    outline: 0;
+}
+
+#sgvx51-app-root .form-label,
+#sgvx51-modals-root .form-label {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Modal Styling (Top-level) */
+.modal-content {
+    border: 0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 1.25rem;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--slate-100);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    padding: 1.25rem 2rem;
+    background-color: var(--slate-50);
+    border-top: 1px solid var(--slate-100);
+}
+
+.btn-close {
+    background-size: 0.8rem;
+    opacity: 0.4;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 0.8;
+}
+
+/* Transitions */
+.transition-all {
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* Specific Buttons */
+.btn-custom-primary {
+    background: var(--custom-primary-color) !important;
+    color: #fff !important;
+}
+
+.btn-custom-primary:hover {
+    background: var(--custom-primary-hover) !important;
+    color: #fff !important;
+}
+
+.btn-outline-custom-primary {
+    color: var(--custom-primary-color) !important;
+    border-color: var(--custom-primary-color) !important;
+    background: transparent !important;
+}
+
+.btn-outline-custom-primary:hover {
+    background: var(--custom-primary-color) !important;
+    color: white !important;
+}
+
+.shadow-custom-primary {
+    box-shadow: 0 4px 14px 0 var(--custom-primary-shadow) !important;
+}
+
+/* Resident List Docs */
+.resident-item:hover {
+    background-color: #f8fafc;
+}
+
+.resident-item.active {
+    background-color: #eef2ff !important;
+    border-left: 4px solid var(--indigo-600) !important;
+}
+
+/* Modal Background & Layering Fixes */
+.modal-backdrop {
+    z-index: 100050 !important;
+}
+
+.modal {
+    z-index: 100060 !important;
+}
+
+/* Tab Active Color Fix */
+.nav-link.active.text-indigo-600 {
+    color: var(--custom-primary-color) !important;
+    border-color: var(--custom-primary-color) !important;
+}
+
+/* Toast Custom Colors (Tailwind compatibility & Visibility Fix) */
+#sgvx-global-toast .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+    /* Make close button white */
+}
+
+#sgvx-toast-message {
+    color: #ffffff !important;
+}
+
+#sgvx-toast-icon {
+    color: #ffffff !important;
+}
+
+/* Theme Utilities Sweep */
+.text-indigo-600 {
+    color: var(--custom-primary-color) !important;
+}
+
+.text-indigo-700 {
+    color: var(--custom-primary-hover) !important;
+}
+
+.bg-indigo-600 {
+    background-color: var(--custom-primary-color) !important;
+}
+
+.bg-indigo-50 {
+    background-color: var(--custom-primary-subtle) !important;
+}
+
+.border-indigo-600 {
+    border-color: var(--custom-primary-color) !important;
+}
+
+.badge-indigo-subtle {
+    background-color: var(--custom-primary-subtle) !important;
+    color: var(--custom-primary-color) !important;
+    border-color: var(--custom-primary-subtle) !important;
+}

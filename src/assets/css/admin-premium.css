@@ -1,0 +1,338 @@
+/* 
+ * Society GoVernX - Premium Admin Theme 
+ * Design System: "Slate & Glass"
+ */
+
+/* 1. Typography & Reset */
+@import url('../lib/inter-fonts.css');
+
+:root {
+    --sgvx-bg: #f8fafc;
+    --sgvx-card-bg: #ffffff;
+    --sgvx-primary: #3b82f6;
+    /* Blue 500 */
+    --sgvx-primary-dark: #2563eb;
+    /* Blue 600 */
+    --sgvx-text-main: #0f172a;
+    /* Slate 900 */
+    --sgvx-text-muted: #64748b;
+    /* Slate 500 */
+    --sgvx-border: #e2e8f0;
+    /* Slate 200 */
+    --sgvx-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --sgvx-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --sgvx-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --sgvx-radius: 16px;
+}
+
+body.settings_page_sgvx51-settings,
+body.society-govern-x-settings_page_sgvx51-documents,
+body.toplevel_page_sgvx51-residents {
+    background-color: var(--sgvx-bg);
+}
+
+.sgvx51-admin-wrap {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--sgvx-text-main);
+    padding: 32px;
+    margin-left: -20px;
+    min-height: 100vh;
+}
+
+/* --- FIX: Protect Admin Sidebar from Bootstrap --- */
+#adminmenuwrap *,
+#adminmenu *,
+#adminmenuback,
+#wpadminbar * {
+    box-sizing: content-box;
+    /* Bootstrap sets global border-box, WP expects content-box for menu */
+}
+
+/* Revert Bootstrap link styles for admin menu */
+#adminmenu a {
+    text-decoration: none !important;
+}
+
+/* Fix for icons if Bootstrap overrides */
+#adminmenu .dashicons,
+#adminmenu .wp-menu-image:before {
+    box-sizing: content-box;
+}
+
+#wpfooter {
+    position: relative;
+    /* Bootstrap sometimes messes with footer positioning if body is relative */
+}
+
+/* --- END FIX --- */
+
+/* 2. Premium Cards */
+/* 2. Premium Layers (Replaces Cards) */
+.sgvx-layer {
+    background: #ffffff;
+    border: 1px solid var(--sgvx-border);
+    border-radius: var(--sgvx-radius);
+    box-shadow: var(--sgvx-shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 100% !important;
+    position: relative;
+    box-sizing: border-box;
+    /* Explicitly set border-box for our components */
+}
+
+.sgvx-layer:hover {
+    box-shadow: var(--sgvx-shadow-md);
+    border-color: #cbd5e1;
+}
+
+.sgvx-layer .layer-header {
+    background: #fff;
+    border-bottom: 1px solid var(--sgvx-border);
+    padding: 20px 24px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--sgvx-text-main);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sgvx-layer .layer-body {
+    padding: 24px;
+    width: 100%;
+}
+
+/* Force override global .card in case it creeps in */
+.sgvx51-admin-wrap .card {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.sgvx51-card .card-body {
+    padding: 24px;
+}
+
+/* 3. Inputs & Forms */
+.sgvx51-admin-wrap .form-control,
+.sgvx51-admin-wrap .form-select {
+    border-radius: 10px;
+    border: 1px solid var(--sgvx-border);
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    color: var(--sgvx-text-main);
+    box-shadow: var(--sgvx-shadow-sm);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.sgvx51-admin-wrap .form-control:focus,
+.sgvx51-admin-wrap .form-select:focus {
+    border-color: var(--sgvx-primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    outline: 0;
+}
+
+.sgvx51-admin-wrap label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--sgvx-text-muted);
+    font-size: 0.9rem;
+    display: block;
+}
+
+/* 4. Buttons */
+.btn-primary,
+.btn-sgvx51-primary {
+    background-color: var(--sgvx-primary) !important;
+    border-color: var(--sgvx-primary) !important;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    box-shadow: var(--sgvx-shadow-sm);
+    transition: all 0.2s;
+}
+
+.btn-primary:hover,
+.btn-sgvx51-primary:hover {
+    background-color: var(--sgvx-primary-dark) !important;
+    border-color: var(--sgvx-primary-dark) !important;
+    box-shadow: var(--sgvx-shadow-md);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    border-color: var(--sgvx-border);
+    color: var(--sgvx-text-muted);
+    border-radius: 8px;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #f1f5f9;
+    color: var(--sgvx-text-main);
+    border-color: #cbd5e1;
+}
+
+/* 5. Alerts & Badges */
+.alert {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--sgvx-shadow-sm);
+    font-size: 0.95rem;
+}
+
+.alert-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alert-warning {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* 6. Page Header */
+.wp-heading-inline {
+    font-weight: 700;
+    color: var(--sgvx-text-main);
+    font-size: 1.75rem;
+    margin-bottom: 0px;
+}
+
+.wp-header-end {
+    display: none;
+}
+
+/* Hide WP default HR */
+
+/* 7. Document Vault Custom */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid var(--sgvx-border);
+    padding: 16px 20px;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item.active {
+    background-color: #eff6ff;
+    color: var(--sgvx-primary-dark);
+    font-weight: 600;
+    border-color: transparent;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8fafc;
+}
+
+/* 8. Soft Utilities */
+.bg-primary-soft {
+    background-color: #eff6ff !important;
+}
+
+.bg-info-soft {
+    background-color: #ecfeff !important;
+}
+
+.bg-success-soft {
+    background-color: #dcfce7 !important;
+}
+
+.bg-secondary-soft {
+    background-color: #f1f5f9 !important;
+}
+
+.text-primary {
+    color: var(--sgvx-primary) !important;
+}
+
+.text-info {
+    color: #06b6d4 !important;
+}
+
+.text-success {
+    color: #166534 !important;
+}
+
+.text-muted {
+    color: var(--sgvx-text-muted) !important;
+}
+
+/* 9. Premium Tables */
+/* 9. Premium Tables */
+.sgvx51-admin-wrap .table thead th {
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sgvx-text-muted);
+    border-bottom: 1px solid var(--sgvx-border);
+    background-color: #f8fafc;
+}
+
+.sgvx51-admin-wrap .table tbody td {
+    vertical-align: middle;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--sgvx-text-main);
+    font-size: 0.95rem;
+}
+
+.sgvx51-admin-wrap .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.sgvx51-admin-wrap .table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* 10. File Explorer & Layout Fixes */
+.sgvx51-admin-wrap {
+    width: 100%;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.sgvx-sticky-sidebar {
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 40px);
+    overflow-y: hidden;
+    /* Scroll handled internally */
+    display: flex;
+    flex-direction: column;
+}
+
+.sgvx-scrollable-list {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.file-card {
+    transition: all 0.2s ease;
+    border: 1px solid var(--sgvx-border) !important;
+    background: #fff;
+}
+
+.file-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sgvx-shadow-md) !important;
+    border-color: var(--sgvx-primary) !important;
+}
+
+.file-card .dashicons {
+    color: var(--sgvx-text-muted);
+    transition: color 0.2s;
+}
+
+.file-card:hover .dashicons {
+    color: var(--sgvx-primary);
+}

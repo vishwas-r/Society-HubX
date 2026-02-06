@@ -1,0 +1,365 @@
+<?php
+/**
+ * Plugin Name: Society GoVernX
+ * Plugin URI:  https://www.vishwas.me
+ * Description: A "No-Database" Society Management System using Google Sheets & Drive. Features Facilities, Assets, Expenses, and Document Vault.
+ * Version:     1.0.0
+ * Author:      Vishwas R
+ * Author URI:  https://www.vishwas.me
+ * Text Domain: society-govern-x
+ * License:     GPL-2.0+
+ */
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Define Constants.
+define( 'SGVX51_VERSION', '1.0.0' );
+define( 'SGVX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'SGVX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'SGVX51_PREFIX', 'sgvx51' );
+
+/**
+ * Main Plugin Class.
+ */
+final class Society_Govern_X {
+	/**
+	 * Instance of this class.
+	 *
+	 * @var object
+	 */
+	protected static $instance = null;
+
+	/**
+	 * Database Router Instance.
+	 *
+	 * @var SGVX51_DB_Router
+	 */
+	public $db = null;
+
+	/**
+	 * Return an instance of this class.
+	 *
+	 * @return object A single instance of this class.
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Constructor.
+	 */
+	private function __construct() {
+		$this->includes();
+		$this->init_hooks();
+	}
+
+	/**
+	 * Include required files.
+	 */
+	private function includes() {
+		// Core Classes
+		require_once SGVX51_PLUGIN_DIR . 'includes/interface-module.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-google-api-handler.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-db-router.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-db-schema.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-drive-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-receipt-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-settings.php';
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-requests.php';
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-ajax-handler.php';
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-ui-helper.php';
+		
+		// Initialize
+		$this->db = new SGVX51_DB_Router();
+
+		// Initialize Admin Settings
+		if ( is_admin() ) {
+			new SGVX51_Admin_Settings();
+			new SGVX51_Admin_Requests();
+			new SGVX51_AJAX_Handler();
+		}
+		
+						
+		// Load Modules
+		require_once SGVX51_PLUGIN_DIR . 'modules/flats/class-flat-manager.php'; // New Master Data
+		new SGVX51_Flat_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/residents/class-resident-manager.php';
+		new SGVX51_Resident_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/vehicles/class-vehicle-manager.php';
+		new SGVX51_Vehicle_Manager();
+		
+		require_once SGVX51_PLUGIN_DIR . 'modules/documents/class-document-manager.php';
+		new SGVX51_Document_Manager();
+		
+		require_once SGVX51_PLUGIN_DIR . 'modules/facilities/class-facility-manager.php';
+		new SGVX51_Facility_Manager();
+		
+		require_once SGVX51_PLUGIN_DIR . 'modules/finance/class-expense-manager.php';
+		new SGVX51_Expense_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+		new SGVX51_Account_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/assets/class-asset-manager.php';
+		new SGVX51_Asset_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/notices/class-notice-board.php';
+		new SGVX51_Notice_Board();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		new SGVX51_Ledger_Manager();
+
+		require_once SGVX51_PLUGIN_DIR . 'modules/democracy/class-poll-manager.php';
+		new SGVX51_Poll_Manager();
+
+        require_once SGVX51_PLUGIN_DIR . 'modules/staff/class-staff-manager.php';
+		new SGVX51_Staff_Manager();
+
+		// Frontend
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-frontend-dashboard.php';
+		new SGVX51_Frontend_Dashboard();
+
+		// Register// 2. Initialization & Activation
+		register_activation_hook( __FILE__, array( 'SGVX51_DB_Schema', 'create_tables' ) );
+	}
+
+	/**
+	 * Hook into actions and filters.
+	 */
+	private function init_hooks() {
+		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ), 9999 );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ) );
+		
+
+		// 3. User Sync Filters
+		add_filter( 'theme_page_templates', array( $this, 'register_page_templates' ), 10, 4 );
+		add_filter( 'template_include', array( $this, 'load_page_template' ) );
+	}
+
+	/**
+	 * Localization and setup.
+	 */
+	public function on_plugins_loaded() {
+		load_plugin_textdomain( 'society-govern-x', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		
+		// Redirect after Login
+		add_filter( 'login_redirect', array( $this, 'custom_login_redirect' ), 10, 3 );
+	}
+
+	/**
+	 * Custom Login Redirect.
+	 */
+	public function custom_login_redirect( $redirect_to, $request, $user ) {
+		// Is there a user to check?
+		if ( isset( $user->roles ) && is_array( $user->roles ) ) {
+			// Check for admins
+			if ( in_array( 'administrator', $user->roles ) ) {
+				// Redirect to plugin settings page
+				return admin_url( 'admin.php?page=sgvx51-settings' );
+			} else {
+				// Redirect normal users to a page with our dashboard shortcode
+				// Optimally, we should know the URL. For now, we search for a page with the shortcode 
+				// or default to home.
+				
+				// Try to find the dashboard page ID
+				$page = get_page_by_path( 'resident-dashboard' ); // Common slug
+				if ( $page ) {
+					return get_permalink( $page->ID );
+				}
+				
+				return home_url( '/resident-dashboard/' ); // Logical default
+			}
+		}
+		return $redirect_to;
+	}
+
+	/**
+	 * Enqueue Admin Assets.
+	 */
+	public function enqueue_admin_assets() {
+        // Only load on our plugin pages to avoid breaking global WP Admin
+        if ( ! isset($_GET['page']) || strpos($_GET['page'], 'sgvx51') === false ) {
+            return;
+        }
+
+        // 0. WP Reset Shim (Load first to clear the path)
+        //wp_enqueue_style( 'sgvx51_wp_reset_shim', SGVX51_PLUGIN_URL . 'assets/css/wp-reset-shim.css', array(), SGVX51_VERSION );
+
+		// 1. Google Fonts (Inter & Outfit) - Enqueue early
+        wp_enqueue_style( 'sgvx51_fonts', 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap', array(), '1.0' );
+
+		// 2. Bootstrap 5 (Local) - Load late to naturally override WP styles
+		wp_enqueue_style( 'sgvx51_bootstrap_css', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
+		wp_enqueue_script( 'sgvx51_bootstrap_js', SGVX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
+
+        // 3. Bootstrap Icons
+        wp_enqueue_style( 'sgvx51_bootstrap_icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', array('sgvx51_bootstrap_css'), '1.11.1' );
+
+        // 4. Custom Admin Styles (Final Overrides)
+		wp_enqueue_style( 'sgvx51_admin_layout', SGVX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('sgvx51_bootstrap_css', 'sgvx51_bootstrap_icons'), time() );
+
+		// 5. Receipt Styling
+		wp_enqueue_style( 'sgvx51_receipt_css', SGVX51_PLUGIN_URL . 'assets/css/receipt.css', array(), time() );
+
+        // 5. External Libs & App JS
+        wp_enqueue_script( 'sgvx51-html2canvas', SGVX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
+        wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
+        wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
+        wp_enqueue_script( 'sgvx51-admin-app', SGVX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'sgvx51-html2canvas', 'sgvx51-search-init'), time(), true );
+
+        // Standard Nonces for global actions
+        wp_localize_script( 'sgvx51-admin-app', 'sgvx51_vars', array(
+            'request_nonce' => wp_create_nonce( 'sgvx51_request_action' )
+        ));
+        // Add global JS variable for convenience
+        wp_add_inline_script( 'sgvx51-admin-app', 'var sgvx51RequestNonce = "' . wp_create_nonce( 'sgvx51_request_action' ) . '";', 'before' );
+
+        // Residents View Specific JS
+        if ( $_GET['page'] === 'sgvx51-residents' ) {
+            wp_enqueue_script( 'sgvx51-residents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-residents.js', array('jquery'), time(), true );
+            
+            $residents = $this->db->get('residents');
+            $flat_owners = array();
+            if(!empty($residents)) {
+                foreach($residents as $r) {
+                    if(isset($r['type']) && strtolower($r['type']) === 'owner') {
+                        $flat_owners[$r['flat_no']] = array('name' => $r['name'], 'id' => $r['id'] ?? '');
+                    }
+                }
+            }
+
+            // Note: Nonces are now fetched dynamically via AJAX in sgvx-residents.js
+            // wp_localize_script is no longer needed since we fetch config at runtime
+        }
+
+		// Facilities View Specific JS
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-facilities' ) {
+			wp_enqueue_script( 'sgvx51-facilities-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-facilities.js', array('jquery', 'sgvx51-admin-app'), time(), true );
+			// Config fetched dynamically via AJAX
+		}
+
+        // Flats View Specific JS
+        if ( $_GET['page'] === 'sgvx51-flats' ) {
+            wp_enqueue_script( 'sgvx51-flats-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-flats.js', array('jquery'), time(), true );
+            // Config fetched dynamically via AJAX
+        }
+
+        // Vehicles View Specific JS
+        if ( $_GET['page'] === 'sgvx51-vehicles' ) {
+            wp_enqueue_script( 'sgvx51-vehicles-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-vehicles.js', array('jquery'), time(), true );
+            // Config fetched dynamically via AJAX
+        }
+
+        // Staff View Specific JS
+        if ( $_GET['page'] === 'sgvx51-staff' ) {
+            wp_enqueue_script( 'sgvx51-staff-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-staff.js', array('jquery'), time(), true );
+            // Config fetched dynamically via AJAX
+        }
+
+		// Notices View Specific JS
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-notices' ) {
+			wp_enqueue_script( 'sgvx51-notices-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-notices.js', array('jquery', 'sgvx51-admin-app'), time(), true );
+			// Config fetched dynamically via AJAX
+		}
+
+		// Documents View Specific JS
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-documents' ) {
+			wp_enqueue_script( 'sgvx51-documents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-documents.js', array('jquery', 'sgvx51-admin-app'), time(), true );
+			// Config fetched dynamically via AJAX
+		}
+
+		// Expenses View Specific JS
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-expenses' ) {
+			wp_enqueue_script( 'sgvx51-expenses-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-expenses.js', array('jquery', 'sgvx51-admin-app'), time(), true );
+			// Config fetched dynamically via AJAX
+		}
+
+		// Accounts View Specific JS (Invoices & Ledger)
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-accounts' ) {
+			wp_enqueue_script( 'sgvx51-accounts-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-accounts.js', array('jquery', 'sgvx51-admin-app'), time(), true );
+			// Config fetched dynamically via AJAX
+		}
+	}
+
+	/**
+	 * Enqueue Frontend Assets.
+	 */
+	public function enqueue_frontend_assets() {
+		// Bootstrap 5 & jQuery (if needed, but we use Tailwind mostly - NOW MIGRATED TO BOOTSTRAP)
+        wp_enqueue_style( 'sgvx51-bootstrap', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
+		wp_enqueue_script( 'sgvx51-bootstrap', SGVX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
+
+        // 0. Bootstrap Icons
+        wp_enqueue_style( 'sgvx51-bootstrap-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', array('sgvx51-bootstrap'), '1.11.1' );
+
+        // Custom Frontend CSS (Tailwind Replacement)
+        wp_enqueue_style( 'sgvx51-frontend-css', SGVX51_PLUGIN_URL . 'assets/css/sgvx-frontend.css', array('sgvx51-bootstrap', 'sgvx51-fonts', 'sgvx51-bootstrap-icons'), SGVX51_VERSION );
+        
+        // Receipt CSS
+        wp_enqueue_style( 'sgvx51-receipt-css', SGVX51_PLUGIN_URL . 'assets/css/receipt.css', array('sgvx51-bootstrap'), SGVX51_VERSION );
+        
+        // Fonts
+        wp_enqueue_style( 'sgvx51-fonts', SGVX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
+
+		// 1. CanvasJS for Charts (Local)
+		wp_enqueue_script( 'sgvx51-canvasjs', SGVX51_PLUGIN_URL . 'assets/js/lib/canvasjs.min.js', array(), '1.0.0', true );
+
+		// 2. html2canvas for Receipts
+		wp_enqueue_script( 'sgvx51-html2canvas', SGVX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
+
+        // 3. Fuse.js & Search Init
+        wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
+        wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
+	}
+
+	/**
+	 * Register Custom Page Templates.
+	 */
+	public function register_page_templates( $templates, $theme = null, $post = null, $post_type = null ) {
+		// Key must look like a file to be selected
+		$templates['society-app.php'] = 'Society App (Full Width)';
+		return $templates;
+	}
+
+	/**
+	 * Load Custom Page Templates.
+	 * Logic:
+	 * 1. If explicit template is selected in dropdown.
+	 * 2. OR if the page contains string '[society_govern_x_dashboard]' - AUTO APPLY.
+	 */
+	public function load_page_template( $template ) {
+		global $post;
+		$target = get_page_template_slug();
+
+		// 1. Check if manually selected
+		if ( $target === 'society-app.php' ) {
+			return SGVX51_PLUGIN_DIR . 'templates/page-society-app.php';
+		}
+
+		// 2. Auto-detect Shortcode (Fallback if user can't select template)
+		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'society_govern_x_dashboard' ) ) {
+			 return SGVX51_PLUGIN_DIR . 'templates/page-society-app.php';
+		}
+
+		return $template;
+	}
+}
+
+/**
+ * Initialize the plugin.
+ */
+function sgvx51_init() {
+	return Society_Govern_X::get_instance();
+}
+add_action( 'plugins_loaded', 'sgvx51_init' );
