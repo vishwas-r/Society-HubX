@@ -445,14 +445,23 @@
     function handleEditVehicle(btn) {
         const payload = JSON.parse(btn.dataset.payload);
         const form = document.querySelector('#vehicleModal form');
+        if (!form) return;
 
-        form.querySelector('[name="number"]').value = payload.number;
-        form.querySelector('[name="type"]').value = payload.type;
-        form.querySelector('[name="brand"]').value = payload.brand;
-        form.querySelector('[name="model"]').value = payload.model;
+        const setVal = (name, val) => {
+            const el = form.querySelector(`[name="${name}"]`);
+            if (el) el.value = val || '';
+        };
 
-        form.querySelector('[name="action"]').value = 'sgvx51_edit_vehicle_frontend';
-        form.querySelector('[name="vehicle_id"]').value = payload.id;
+        setVal('number', payload.number);
+        setVal('type', payload.type);
+        setVal('brand', payload.brand);
+        setVal('model', payload.model);
+
+        const actionField = form.querySelector('[name="action"]');
+        if (actionField) actionField.value = 'sgvx51_edit_vehicle_frontend';
+
+        const idField = form.querySelector('[name="vehicle_id"]');
+        if (idField) idField.value = payload.id;
 
         let modal = document.querySelector('#vehicleModal');
         modal.querySelector('.modal-title').innerText = 'Edit Vehicle';

@@ -69,6 +69,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             if($exists) {
                 return $this->db->update('vehicles', ['status' => 'approved'], ['id' => $id]);
             } else {
+                $payload['status'] = 'approved';
                 return $this->perform_save_vehicle( $payload, false );
             }
         } elseif ( $action === 'edit' ) {

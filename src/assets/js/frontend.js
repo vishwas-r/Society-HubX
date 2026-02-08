@@ -163,15 +163,113 @@
                 const data = JSON.parse(vehicleBtn.getAttribute('data-payload'));
                 const m = document.getElementById('vehicleModal');
                 if (m) {
-                    m.querySelector('[name="action"]').value = 'sgvx51_edit_vehicle';
+                    m.querySelector('[name="action"]').value = 'sgvx51_edit_vehicle_frontend';
                     const idField = m.querySelector('[name="id"]') || m.querySelector('[name="vehicle_id"]');
                     if (idField) idField.value = data.id || '';
                     if (m.querySelector('[name="number"]')) m.querySelector('[name="number"]').value = data.number || '';
                     if (m.querySelector('[name="type"]')) m.querySelector('[name="type"]').value = data.type || '';
                     if (m.querySelector('[name="brand"]')) m.querySelector('[name="brand"]').value = data.brand || '';
+                    if (m.querySelector('[name="model"]')) m.querySelector('[name="model"]').value = data.model || '';
                     toggleBootstrapModal('vehicleModal', true);
                 }
                 return;
+            }
+
+            // Vehicle Delete
+            const delVehicleBtn = e.target.closest('.js-delete-vehicle-frontend');
+            if (delVehicleBtn) {
+                e.preventDefault();
+                if (!confirm('Are you sure you want to deregister this vehicle?')) return;
+
+                const id = delVehicleBtn.getAttribute('data-id');
+                const nonce = delVehicleBtn.getAttribute('data-nonce');
+                const originalText = delVehicleBtn.innerHTML;
+                delVehicleBtn.disabled = true;
+                delVehicleBtn.innerHTML = '...';
+
+                const formData = new FormData();
+                formData.append('action', 'sgvx51_delete_vehicle_frontend');
+                formData.append('id', id);
+                formData.append('_wpnonce', nonce);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Vehicle deregistration request submitted!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.data || 'Failed to delete vehicle'));
+                            delVehicleBtn.disabled = false;
+                            delVehicleBtn.innerHTML = originalText;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Delete error:', err);
+                        alert('An error occurred.');
+                        delVehicleBtn.disabled = false;
+                        delVehicleBtn.innerHTML = originalText;
+                    });
+                return;
+            }
+
+            // Family Delete
+            const delFamilyBtn = e.target.closest('.js-delete-family-frontend');
+            if (delFamilyBtn) {
+                e.preventDefault();
+                handleDelete(delFamilyBtn, 'sgvx51_delete_family_frontend', 'Remove this member?');
+                return;
+            }
+
+            // Help Delete
+            const delHelpBtn = e.target.closest('.js-delete-help-frontend');
+            if (delHelpBtn) {
+                e.preventDefault();
+                handleDelete(delHelpBtn, 'sgvx51_delete_daily_help_frontend', 'Remove this entry?');
+                return;
+            }
+
+            /**
+             * Generic Delete Handler
+             */
+            function handleDelete(btn, action, confirmMsg) {
+                if (!confirm(confirmMsg)) return;
+
+                const id = btn.getAttribute('data-id');
+                const nonce = btn.getAttribute('data-nonce');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '...';
+
+                const formData = new FormData();
+                formData.append('action', action);
+                formData.append('id', id);
+                formData.append('_wpnonce', nonce);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Request submitted successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.data.message || data.data || 'Failed to delete'));
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Delete error:', err);
+                        alert('An error occurred.');
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    });
             }
 
             // View Receipt Button
@@ -579,6 +677,88 @@
                 btn.innerHTML = originalText;
             });
         };
+
+        // --- 8. Vehicle Form Submission ---
+        const vehicleForm = document.querySelector('#vehicleModal form');
+        if (vehicleForm) {
+            vehicleForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleFormSubmit(vehicleForm, 'sgvx51_add_vehicle_frontend', '#vehicleModal');
+            });
+        }
+
+        // --- 9. Family Form Submission ---
+        const familyForm = document.querySelector('#familyModal form');
+        if (familyForm) {
+            familyForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleFormSubmit(familyForm, 'sgvx51_add_family_frontend', '#familyModal');
+            });
+        }
+
+        // --- 10. Help Form Submission ---
+        const helpForm = document.querySelector('#helpModal form');
+        if (helpForm) {
+            helpForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleFormSubmit(helpForm, 'sgvx51_add_help_frontend', '#helpModal');
+            });
+        }
+
+        // --- 11. Family Edit Form Submission ---
+        const editFamilyForm = document.querySelector('#editFamilyModal form');
+        if (editFamilyForm) {
+            editFamilyForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleFormSubmit(editFamilyForm, 'sgvx51_edit_family_frontend', '#editFamilyModal');
+            });
+        }
+
+        // --- 12. Help Edit Form Submission ---
+        const editHelpForm = document.querySelector('#editHelpModal form');
+        if (editHelpForm) {
+            editHelpForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                handleFormSubmit(editHelpForm, 'sgvx51_edit_help_frontend', '#editHelpModal');
+            });
+        }
+
+        /**
+         * Generic Form Handler
+         */
+        function handleFormSubmit(form, defaultAction, modalId) {
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            const formData = new FormData(form);
+            // Force set the action to ensure we use the AJAX handler, overriding any legacy form input
+            formData.set('action', defaultAction);
+
+            fetch(ajaxurl, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.data.message || 'Request submitted successfully!');
+                        toggleBootstrapModal(modalId.replace('#', ''), false);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.data.message || data.data || 'Failed to save'));
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                })
+                .catch(err => {
+                    console.error('Save error:', err);
+                    alert('An error occurred. Please try again.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        }
 
     });
 })();

@@ -252,12 +252,11 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
                                                         <li><button class="dropdown-item js-edit-family small" data-payload="<?php echo esc_attr(json_encode($fam)); ?>">Edit</button></li>
                                                         <li>
-                                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onsubmit="return confirm('Remove this member?');">
-                                                                <input type="hidden" name="action" value="sgvx51_delete_family">
-                                                                <input type="hidden" name="id" value="<?php echo esc_attr($fam['id']); ?>">
-                                                                <?php wp_nonce_field('sgvx51_delete_family_nonce'); ?>
-                                                                <button type="submit" class="dropdown-item text-danger small">Remove</button>
-                                                            </form>
+                                                            <button class="dropdown-item text-danger small js-delete-family-frontend" 
+                                                                    data-id="<?php echo esc_attr($fam['id']); ?>" 
+                                                                    data-nonce="<?php echo wp_create_nonce('sgvx51_delete_family_nonce'); ?>">
+                                                                Remove
+                                                            </button>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -312,13 +311,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                                     <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
                                                         <li><button class="dropdown-item js-edit-help small" data-payload="<?php echo esc_attr(json_encode($help)); ?>">Edit</button></li>
-                                                         <li>
-                                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onsubmit="return confirm('Remove this entry?');">
-                                                                <input type="hidden" name="action" value="sgvx51_delete_daily_help">
-                                                                <input type="hidden" name="id" value="<?php echo esc_attr($help['id']); ?>">
-                                                                <?php wp_nonce_field('sgvx51_delete_help_nonce'); ?>
-                                                                <button type="submit" class="dropdown-item text-danger small">Remove</button>
-                                                            </form>
+                                                        <li>
+                                                            <button class="dropdown-item text-danger small js-delete-help-frontend" 
+                                                                    data-id="<?php echo esc_attr($help['id']); ?>" 
+                                                                    data-nonce="<?php echo wp_create_nonce('sgvx51_delete_help_nonce'); ?>">
+                                                                Remove
+                                                            </button>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -380,18 +378,17 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                             </div>
                                         </div>
                                         <div>
-                                            <?php if(!in_array($v['status'] ?? '', ['deletion_pending', 'archived'])): ?>
+                                            <?php if(isset($v['status']) && $v['status'] === 'approved'): ?>
                                                 <div class="dropdown">
                                                     <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
                                                         <li><button class="dropdown-item js-edit-vehicle small" data-payload="<?php echo esc_attr(json_encode($v)); ?>">Edit</button></li>
-                                                         <li>
-                                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onsubmit="return confirm('Deregister this vehicle?');">
-                                                                <input type="hidden" name="action" value="sgvx51_delete_vehicle_frontend">
-                                                                <input type="hidden" name="id" value="<?php echo esc_attr($v['id']); ?>">
-                                                                <?php wp_nonce_field('sgvx51_delete_vehicle_frontend_nonce'); ?>
-                                                                <button type="submit" class="dropdown-item text-danger small">Deregister</button>
-                                                            </form>
+                                                        <li>
+                                                            <button class="dropdown-item text-danger small js-delete-vehicle-frontend" 
+                                                                    data-id="<?php echo esc_attr($v['id']); ?>" 
+                                                                    data-nonce="<?php echo wp_create_nonce('sgvx51_delete_vehicle_frontend_nonce'); ?>">
+                                                                Deregister
+                                                            </button>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -1028,6 +1025,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
          <input type="hidden" name="document_url" value="">
           <?php wp_nonce_field('sgvx51_add_help_nonce', '_wpnonce_add_help'); ?>
           <?php wp_nonce_field('sgvx51_edit_help_nonce', '_wpnonce_edit_help'); ?>
+          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('sgvx51_add_help_nonce')); ?>">
          
          <div class="row g-3 mb-3">
              <div class="col-md-7">
@@ -1108,8 +1106,8 @@ function sgvx_in_fmt($num, $decimals = 2) {
              <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number</label>
              <input type="text" name="number" class="form-control rounded-3 border-light shadow-none font-monospace" placeholder="KA52AB1234" required>
          </div>
-         <div class="row g-3 mb-3">
-             <div class="col-6">
+          <div class="row g-3 mb-3">
+             <div class="col-md-4">
                  <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>
                  <select name="type" class="form-select rounded-3 border-light shadow-none">
                      <option>Bike</option>
@@ -1117,15 +1115,154 @@ function sgvx_in_fmt($num, $decimals = 2) {
                      <option>Others</option>
                  </select>
              </div>
+             <div class="col-md-4">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Brand</label>
+                 <input type="text" name="brand" class="form-control rounded-3 border-light shadow-none" placeholder="Ducati">
+             </div>
+             <div class="col-md-4">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Model</label>
+                 <input type="text" name="model" class="form-control rounded-3 border-light shadow-none" placeholder="Monster 821">
+             </div>
+          </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light text-secondary rounded-3 px-4 shadow-none" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Add Vehicle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Edit Family Modal -->
+<div class="modal fade" id="editFamilyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content border-0 shadow-lg rounded-3" method="POST">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark">Edit Family Member</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <input type="hidden" name="action" value="sgvx51_edit_family_frontend">
+         <input type="hidden" name="member_id" value="">
+         <?php wp_nonce_field('sgvx51_edit_family_nonce'); ?>
+         
+         <div class="mb-3">
+             <label class="form-label small fw-bold text-secondary text-uppercase">Name</label>
+             <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
+         </div>
+         <div class="row g-3 mb-3">
              <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Brand / Model</label>
-                 <input type="text" name="brand" class="form-control rounded-3 border-light shadow-none" placeholder="Ducati Monster 821">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation</label>
+                 <select name="relation" class="form-select rounded-3 border-light shadow-none">
+                     <option>Spouse</option>
+                     <option>Child</option>
+                     <option>Parent</option>
+                     <option>Sibling</option>
+                     <option>Other</option>
+                 </select>
+             </div>
+             <div class="col-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Age</label>
+                 <input type="number" name="age" class="form-control rounded-3 border-light shadow-none">
+             </div>
+         </div>
+         <div class="row g-3 mb-3">
+             <div class="col-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Blood Group</label>
+                 <select name="blood_group" class="form-select rounded-3 border-light shadow-none">
+                     <option value="">Select</option>
+                     <option>A+</option>
+                     <option>A-</option>
+                     <option>B+</option>
+                     <option>B-</option>
+                     <option>AB+</option>
+                     <option>AB-</option>
+                     <option>O+</option>
+                     <option>O-</option>
+                 </select>
+             </div>
+             <div class="col-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
+                 <input type="tel" name="phone" class="form-control rounded-3 border-light shadow-none" placeholder="Optional">
              </div>
          </div>
       </div>
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-light text-secondary rounded-3 px-4 shadow-none" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Add Vehicle</button>
+        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Help Modal -->
+<div class="modal fade" id="editHelpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content border-0 shadow-lg rounded-3" method="POST" enctype="multipart/form-data">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-dark">Edit Daily Help</h5>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+         <input type="hidden" name="action" value="sgvx51_edit_help_frontend">
+         <input type="hidden" name="help_id" value="">
+         <?php wp_nonce_field('sgvx51_edit_help_nonce'); ?>
+         
+         <div class="row g-3 mb-3">
+             <div class="col-md-7">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName</label>
+                 <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
+             </div>
+             <div class="col-md-5">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type</label>
+                 <select name="category" class="form-select rounded-3 border-light shadow-none">
+                     <option value="Support Staff">Support Staff</option>
+                     <option value="Management">Management</option>
+                 </select>
+             </div>
+         </div>
+
+         <div class="row g-3 mb-3">
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Role</label>
+                 <select name="role" class="form-select rounded-3 border-light shadow-none" required>
+                     <option value="Maid">Maid</option><option value="Cook">Cook</option>
+                     <option value="Driver">Driver</option><option value="Nanny">Nanny</option>
+                     <option value="Guard">Security Guard</option><option value="Cleaner">Cleaner</option>
+                     <option value="Gardener">Gardener</option><option value="Manager">Manager</option>
+                     <option value="Other">Other</option>
+                 </select>
+             </div>
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
+                 <input type="text" name="phone" class="form-control rounded-3 border-light shadow-none" required>
+             </div>
+         </div>
+
+         <div class="row g-3 mb-3">
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender</label>
+                 <select name="sex" class="form-select rounded-3 border-light shadow-none">
+                     <option value="Male">Male</option>
+                     <option value="Female">Female</option>
+                     <option value="Other">Other</option>
+                 </select>
+             </div>
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Visiting Hours</label>
+                 <input type="text" name="visiting_hours" class="form-control rounded-3 border-light shadow-none" placeholder="e.g. 7 AM - 10 AM">
+             </div>
+         </div>
+
+         <div class="mb-0">
+             <label class="form-label small fw-bold text-secondary text-uppercase">ID Proof (Optional Update)</label>
+             <input type="file" name="doc_file" accept="image/*" class="form-control shadow-none rounded-3 border-light">
+         </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light text-secondary rounded-3 px-4 shadow-none" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Save Changes</button>
       </div>
     </form>
   </div>

@@ -340,6 +340,14 @@ final class Society_Govern_X {
         // 3. Fuse.js & Search Init
         wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
         wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
+
+		// Localize AJAX URL for frontend (needed for resident login)
+		wp_localize_script( 'sgvx51-bootstrap', 'sgvx51_frontend', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'version' => SGVX51_VERSION
+		) );
+		// Ensure global ajaxurl fallback for legacy fetch in resident-login.php
+		wp_add_inline_script( 'sgvx51-bootstrap', 'var ajaxurl = "' . admin_url( 'admin-ajax.php' ) . '";', 'before' );
 	}
 
 	/**
