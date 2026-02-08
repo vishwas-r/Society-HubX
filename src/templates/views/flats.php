@@ -45,7 +45,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <button class="btn btn-primary px-3 px-sm-4 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openFlatModal()">
+                    <button id="addFlat" class="btn btn-primary px-3 px-sm-4 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openFlatModal()">
                         <i class="bi bi-plus-circle-fill fs-5"></i>
                         <span>Add Unit</span>
                     </button>
@@ -83,7 +83,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
             </ul>
         </div>
 
-        <div class="table-responsive">
+        <div id="flatContainer" class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
                     <tr>
@@ -161,11 +161,11 @@ add_action('sgvx51_admin_modals', function() {
                     
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                             <label class="form-label small fw-bold text-secondary">Block</label>
+                             <label class="form-label small fw-bold text-secondary">Block <span class="text-danger">*</span></label>
                              <input type="text" name="block" class="form-control shadow-none rounded-3 border-light" placeholder="A" required>
                         </div>
                         <div class="col-6">
-                             <label class="form-label small fw-bold text-secondary">Flat Number</label>
+                             <label class="form-label small fw-bold text-secondary">Flat Number <span class="text-danger">*</span></label>
                              <input type="text" name="flat_number" class="form-control shadow-none rounded-3 border-light" placeholder="101" required>
                         </div>
                     </div>

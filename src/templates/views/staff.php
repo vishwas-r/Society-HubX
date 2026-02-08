@@ -80,7 +80,7 @@ $all_flats = $flats;
                         <i class="bi bi-funnel"></i>
                         <span class="d-none d-sm-inline">Filters</span>
                     </button>
-                    <button class="btn btn-primary px-3 px-sm-4 fw-bold shadow-sm rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openStaffModal()">
+                    <button id="addStaff" class="btn btn-primary px-3 px-sm-4 fw-bold shadow-sm rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openStaffModal()">
                         <i class="bi bi-person-plus-fill fs-5"></i>
                         <span>Add Staff</span>
                     </button>
@@ -134,7 +134,7 @@ $all_flats = $flats;
                 </li>
             </ul>
         </div>
-        <div class="table-responsive">
+        <div id="staffContainer" class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
                     <tr>
@@ -327,11 +327,11 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
                 <div class="modal-body p-4">
                     <div class="row g-3 mb-3">
                         <div class="col-md-7">
-                            <label class="form-label small fw-bold text-secondary">FullName</label>
+                            <label class="form-label small fw-bold text-secondary">FullName <span class="text-danger">*</span></label>
                             <input type="text" name="name" id="staff-name" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-bold text-secondary">Primary Role</label>
+                            <label class="form-label small fw-bold text-secondary">Primary Role <span class="text-danger">*</span></label>
                             <select name="role" id="staff-role" class="form-select shadow-none rounded-3 border-light" required>
                                 <option value="Maid">Maid</option><option value="Cook">Cook</option>
                                 <option value="Driver">Driver</option><option value="Nanny">Nanny</option>
@@ -354,7 +354,7 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold text-secondary">Phone</label>
+                            <label class="form-label small fw-bold text-secondary">Phone <span class="text-danger">*</span></label>
                             <input type="text" name="phone" id="staff-phone" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-md-6">

@@ -52,7 +52,7 @@ if (!isset($flats)) $flats = array();
                         <i class="bi bi-funnel"></i>
                         <span class="d-none d-sm-inline">Filters</span>
                     </button>
-                    <button class="js-open-resident-modal btn btn-primary px-3 px-sm-4 fw-bold shadow-sm rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="height: 48px;">
+                    <button id="addResident" class="js-open-resident-modal btn btn-primary px-3 px-sm-4 fw-bold shadow-sm rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="height: 48px;">
                         <i class="bi bi-person-plus-fill fs-5"></i>
                         <span>Add Resident</span>
                     </button>
@@ -115,7 +115,7 @@ if (!isset($flats)) $flats = array();
 
 
         <!-- Table Content -->
-        <div class="table-responsive">
+        <div id="residentContainer" class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr class="bg-light">
@@ -312,13 +312,13 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary text-uppercase">Full Name</label>
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Full Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" required class="form-control shadow-none rounded-3">
                     </div>
                     <div class="row g-3">
                         <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Unit No</label>
-                            <select name="flat_no" class="form-select shadow-none rounded-3">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Unit No <span class="text-danger">*</span></label>
+                            <select name="flat_no" required class="form-select shadow-none rounded-3">
                                 <option value="">Select</option>
                                 <?php foreach($flats as $f): ?>
                                     <option value="<?php echo esc_attr($f['id']); ?>"><?php echo esc_html($f['id']); ?></option>
@@ -326,8 +326,8 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                             </select>
                         </div>
                         <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>
-                            <select name="type" class="form-select shadow-none rounded-3">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
+                            <select name="type" required class="form-select shadow-none rounded-3">
                                 <option value="owner">Owner</option>
                                 <option value="tenant">Tenant</option>
                                 <option value="family">Family</option>
@@ -336,8 +336,8 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                     </div>
                     <div class="row g-3">
                         <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
-                            <input type="text" name="phone" class="form-control shadow-none rounded-3">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Phone <span class="text-danger">*</span></label>
+                            <input type="text" name="phone" required class="form-control shadow-none rounded-3">
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label small fw-bold text-secondary text-uppercase">Email</label>

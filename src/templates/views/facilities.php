@@ -39,7 +39,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                 <p class="text-secondary m-0 mt-1">Configure society amenities and manage resident reservations.</p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <button onclick="openBookingModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                <button id="addBooking" onclick="openBookingModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                     <i class="bi bi-calendar-plus fs-5"></i>
                     <span>New Booking</span>
                 </button>
@@ -64,7 +64,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                         <?php wp_nonce_field( 'sgvx51_facility_nonce' ); ?>
                         
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-secondary">Facility Name</label>
+                            <label class="form-label small fw-bold text-secondary">Facility Name <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control bg-light border-0 shadow-none rounded-3" style="height: 44px;" placeholder="e.g. Community Clubhouse" required>
                         </div>
 
@@ -112,7 +112,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                         <input id="facility-list-search" type="text" class="form-control shadow-none border-0 bg-transparent" placeholder="Search facilities...">
                     </div>
                 </div>
-                <div class="list-group list-group-flush">
+                <div id="facilityContainer" class="list-group list-group-flush">
                     <?php if(empty($facilities)): ?>
                         <div class="list-group-item text-center py-5 text-muted">
                             <i class="bi bi-wind fs-2 d-block opacity-25 mb-2"></i>
@@ -177,7 +177,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                         </div>
                     </div>
                 </div>
-                <div class="table-responsive flex-grow-1">
+                <div id="bookingContainer" class="table-responsive flex-grow-1">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light border-bottom border-light">
                             <tr>
@@ -269,7 +269,7 @@ add_action('sgvx51_admin_modals', function() use ($facilities, $residents) {
                     <?php wp_nonce_field( 'sgvx51_facility_nonce' ); ?>
                     
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Pick Amenity</label>
+                        <label class="form-label small fw-bold text-secondary">Pick Amenity <span class="text-danger">*</span></label>
                         <select name="facility_id" class="form-select shadow-none rounded-3 border-light" required>
                             <?php foreach ( $facilities as $f ) : ?>
                                 <option value="<?php echo esc_attr( $f['id'] ); ?>"><?php echo esc_html( $f['name'] ); ?></option>
@@ -278,7 +278,7 @@ add_action('sgvx51_admin_modals', function() use ($facilities, $residents) {
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Select Resident</label>
+                        <label class="form-label small fw-bold text-secondary">Select Resident <span class="text-danger">*</span></label>
                         <select name="resident_id" class="form-select shadow-none rounded-3 border-light" required>
                             <?php foreach ( $residents as $r ) : ?>
                                 <option value="<?php echo esc_attr( $r['flat_no'] ); ?>"><?php echo esc_html( $r['flat_no'] . ' - ' . $r['name'] ); ?></option>
@@ -289,11 +289,11 @@ add_action('sgvx51_admin_modals', function() use ($facilities, $residents) {
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold text-secondary">From</label>
+                            <label class="form-label small fw-bold text-secondary">From <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="start_time" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold text-secondary">To</label>
+                            <label class="form-label small fw-bold text-secondary">To <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="end_time" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                     </div>

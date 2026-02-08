@@ -341,10 +341,20 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
         $rm = new SGVX51_Request_Manager();
         $unified = $rm->get_unified_data( 'vehicles', 'vehicles' );
         
+        $flats = $this->db->get('flats');
+        $residents = $this->db->get('residents');
+
+        // Sort flats naturally
+        usort($flats, function($a, $b) {
+            return strnatcmp($a['id'] ?? '', $b['id'] ?? '');
+        });
+
 		SGVX51_Admin_App::render_view('vehicles', [
             'vehicles' => $unified['active'],
             'pending'  => $unified['pending'],
-            'history'  => array_filter($unified['active'], function($v){ return ($v['status'] ?? '') === 'archived'; })
+            'history'  => array_filter($unified['active'], function($v){ return ($v['status'] ?? '') === 'archived'; }),
+            'flats'    => $flats,
+            'residents'=> $residents
         ]);
 	}
 }

@@ -204,12 +204,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
              
             <!-- Family Members -->
             <div class="col-md-4">
-                <div class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
+                <div id="familyContainer" class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
                     <div class="px-4 py-3 border-bottom border-light bg-light d-flex justify-content-between align-items-center rounded-top-3">
                         <h3 class="fw-semibold text-dark d-flex align-items-center gap-2 m-0 fs-6">
                             <i class="bi bi-people-fill text-primary"></i> Family Members
                         </h3>
-                         <button id="btn-add-family" data-bs-toggle="modal" data-bs-target="#familyModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
+                         <button id="addFamily" data-bs-toggle="modal" data-bs-target="#familyModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
                     </div>
                     <div class="p-4 flex-grow-1">
                         <?php if(empty($data['family'])): ?>
@@ -272,12 +272,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
             <!-- Daily Help -->
             <div class="col-md-4">
-                <div class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
+                <div id="dailyHelpContainer" class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
                     <div class="px-4 py-3 border-bottom border-light bg-light d-flex justify-content-between align-items-center rounded-top-3">
                         <h3 class="fw-semibold text-dark d-flex align-items-center gap-2 m-0 fs-6">
                             <i class="bi bi-person-badge text-info"></i> Daily Help
                         </h3>
-                        <button id="btn-add-help" data-bs-toggle="modal" data-bs-target="#helpModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
+                        <button id="addDailyHelp" data-bs-toggle="modal" data-bs-target="#helpModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
                     </div>
                     <div class="p-4 flex-grow-1">
                         <?php if(empty($data['daily_help'])): ?>
@@ -339,12 +339,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
             <!-- Vehicles -->
             <div class="col-md-4">
-                <div class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
+                <div id="vehicleContainer" class="bg-white rounded-3 shadow-sm border border-light h-100 d-flex flex-column">
                     <div class="px-4 py-3 border-bottom border-light bg-light d-flex justify-content-between align-items-center rounded-top-3">
                         <h3 class="fw-semibold text-dark d-flex align-items-center gap-2 m-0 fs-6">
                              <i class="bi bi-car-front-fill text-primary"></i> My Vehicles
                         </h3>
-                        <button id="btn-add-vehicle" data-bs-toggle="modal" data-bs-target="#vehicleModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
+                        <button id="addVehicle" data-bs-toggle="modal" data-bs-target="#vehicleModal" class="btn btn-sm btn-primary rounded-3 fw-medium">+ Add</button>
                     </div>
                     <div class="p-4 flex-grow-1">
                         <?php if(empty($data['vehicles'])): ?>
@@ -404,7 +404,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
          </div>
 
          <!-- Bottom Row: Documents -->
-         <div class="bg-white rounded-3 shadow-sm border border-light overflow-hidden mb-4">
+         <div id="documentContainer" class="bg-white rounded-3 shadow-sm border border-light overflow-hidden mb-4">
             <div class="px-4 py-3 border-bottom border-light d-flex justify-content-between align-items-center bg-white">
                 <div class="d-flex items-center gap-3">
                     <div class="bg-primary bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center text-primary" style="width: 40px; height: 40px;">
@@ -415,7 +415,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
                         <p class="text-secondary m-0" style="font-size: 0.75rem;">Manage your flat documents</p>
                     </div>
                 </div>
-                <button id="btn-upload-doc" data-bs-toggle="modal" data-bs-target="#uploadDocModal" class="btn btn-sm btn-dark rounded-3 fw-medium d-flex align-items-center gap-2">
+                <button id="addDocument" data-bs-toggle="modal" data-bs-target="#uploadDocModal" class="btn btn-sm btn-dark rounded-3 fw-medium d-flex align-items-center gap-2">
                     <i class="bi bi-cloud-upload"></i>
                     Upload Document
                 </button>
@@ -954,13 +954,13 @@ function sgvx_in_fmt($num, $decimals = 2) {
          <?php wp_nonce_field('sgvx51_edit_family_nonce', '_wpnonce_edit_family', true, true); ?>
          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('sgvx51_add_family_nonce')); ?>">
          <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Name</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Name <span class="text-danger">*</span></label>
              <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
          </div>
          <div class="row g-3 mb-3">
              <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation</label>
-                 <select name="relation" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
+                 <select name="relation" class="form-select rounded-3 border-light shadow-none" required>
                      <option>Spouse</option>
                      <option>Child</option>
                      <option>Parent</option>
@@ -969,8 +969,8 @@ function sgvx_in_fmt($num, $decimals = 2) {
                  </select>
              </div>
              <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Age</label>
-                 <input type="number" name="age" class="form-control rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Age <span class="text-danger">*</span></label>
+                 <input type="number" name="age" class="form-control rounded-3 border-light shadow-none" required>
              </div>
          </div>
          <div class="row g-3 mb-3">
@@ -1029,12 +1029,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
          
          <div class="row g-3 mb-3">
              <div class="col-md-7">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName <span class="text-danger">*</span></label>
                  <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
              </div>
              <div class="col-md-5">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type</label>
-                 <select name="category" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type <span class="text-danger">*</span></label>
+                 <select name="category" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Support Staff">Support Staff</option>
                      <option value="Management">Management</option>
                  </select>
@@ -1043,7 +1043,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
          <div class="row g-3 mb-3">
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Role</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Role <span class="text-danger">*</span></label>
                  <select name="role" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Maid">Maid</option><option value="Cook">Cook</option>
                      <option value="Driver">Driver</option><option value="Nanny">Nanny</option>
@@ -1053,15 +1053,15 @@ function sgvx_in_fmt($num, $decimals = 2) {
                  </select>
              </div>
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone <span class="text-danger">*</span></label>
                  <input type="text" name="phone" class="form-control rounded-3 border-light shadow-none" required>
              </div>
          </div>
 
          <div class="row g-3 mb-3">
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender</label>
-                 <select name="sex" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender <span class="text-danger">*</span></label>
+                 <select name="sex" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Male">Male</option>
                      <option value="Female">Female</option>
                      <option value="Other">Other</option>
@@ -1103,7 +1103,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
          <?php wp_nonce_field('sgvx51_add_vehicle_frontend_nonce'); ?>
          <?php wp_nonce_field('sgvx51_edit_vehicle_action', 'sgvx51_edit_vehicle_token', true, true); ?>
          <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number <span class="text-danger">*</span></label>
              <input type="text" name="number" class="form-control rounded-3 border-light shadow-none font-monospace" placeholder="KA52AB1234" required>
          </div>
           <div class="row g-3 mb-3">
@@ -1148,13 +1148,13 @@ function sgvx_in_fmt($num, $decimals = 2) {
          <?php wp_nonce_field('sgvx51_edit_family_nonce'); ?>
          
          <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Name</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Name <span class="text-danger">*</span></label>
              <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
          </div>
          <div class="row g-3 mb-3">
              <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation</label>
-                 <select name="relation" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
+                 <select name="relation" class="form-select rounded-3 border-light shadow-none" required>
                      <option>Spouse</option>
                      <option>Child</option>
                      <option>Parent</option>
@@ -1163,8 +1163,8 @@ function sgvx_in_fmt($num, $decimals = 2) {
                  </select>
              </div>
              <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Age</label>
-                 <input type="number" name="age" class="form-control rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Age <span class="text-danger">*</span></label>
+                 <input type="number" name="age" class="form-control rounded-3 border-light shadow-none" required>
              </div>
          </div>
          <div class="row g-3 mb-3">
@@ -1211,12 +1211,12 @@ function sgvx_in_fmt($num, $decimals = 2) {
          
          <div class="row g-3 mb-3">
              <div class="col-md-7">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName <span class="text-danger">*</span></label>
                  <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
              </div>
              <div class="col-md-5">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type</label>
-                 <select name="category" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type <span class="text-danger">*</span></label>
+                 <select name="category" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Support Staff">Support Staff</option>
                      <option value="Management">Management</option>
                  </select>
@@ -1225,7 +1225,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
          <div class="row g-3 mb-3">
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Role</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Role <span class="text-danger">*</span></label>
                  <select name="role" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Maid">Maid</option><option value="Cook">Cook</option>
                      <option value="Driver">Driver</option><option value="Nanny">Nanny</option>
@@ -1235,15 +1235,15 @@ function sgvx_in_fmt($num, $decimals = 2) {
                  </select>
              </div>
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone <span class="text-danger">*</span></label>
                  <input type="text" name="phone" class="form-control rounded-3 border-light shadow-none" required>
              </div>
          </div>
 
          <div class="row g-3 mb-3">
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender</label>
-                 <select name="sex" class="form-select rounded-3 border-light shadow-none">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender <span class="text-danger">*</span></label>
+                 <select name="sex" class="form-select rounded-3 border-light shadow-none" required>
                      <option value="Male">Male</option>
                      <option value="Female">Female</option>
                      <option value="Other">Other</option>
@@ -1280,11 +1280,11 @@ function sgvx_in_fmt($num, $decimals = 2) {
          <input type="hidden" name="action" value="sgvx51_frontend_upload_doc">
          <?php wp_nonce_field('sgvx51_upload_doc_nonce'); ?>
          <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Document Name</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Document Name <span class="text-danger">*</span></label>
              <input type="text" name="doc_name" class="form-control rounded-3 border-light shadow-none" placeholder="Maintenance Bill/Possession Letter" required>
          </div>
          <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">File (PDF/Image)</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">File (PDF/Image) <span class="text-danger">*</span></label>
              <input type="file" name="doc_file" class="form-control rounded-3 border-light shadow-none" required>
          </div>
       </div>
@@ -1379,11 +1379,11 @@ $qr_url    = get_option('sgvx51_bank_qr');
             <input type="hidden" name="invoice_id" id="confirm-invoice-id">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">Amount Paid (₹)</label>
+                    <label class="form-label small fw-bold text-secondary">Amount Paid (₹) <span class="text-danger">*</span></label>
                     <input type="number" name="amount" id="confirm-amount" class="form-control shadow-none rounded-3" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">Payment Date</label>
+                    <label class="form-label small fw-bold text-secondary">Payment Date <span class="text-danger">*</span></label>
                     <input type="date" name="date" id="confirm-date" class="form-control shadow-none rounded-3" value="<?php echo date('Y-m-d'); ?>" required>
                 </div>
                 <div class="col-md-6">
@@ -1395,7 +1395,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">Ref / Txn ID</label>
+                    <label class="form-label small fw-bold text-secondary">Ref / Txn ID <span class="text-danger">*</span></label>
                     <input type="text" name="reference" class="form-control shadow-none rounded-3" placeholder="UTR Number" required>
                 </div>
             </div>
@@ -1423,7 +1423,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
          <?php wp_nonce_field('sgvx51_facility_nonce'); ?>
          
          <div class="mb-4">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Facility</label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Facility <span class="text-danger">*</span></label>
              <select name="facility_id" id="booking-facility-select" class="form-select rounded-3 border-light shadow-none" required>
                  <?php foreach ( $data['facilities'] as $f ) : ?>
                     <option value="<?php echo esc_attr($f['id']); ?>"><?php echo esc_html($f['name']); ?></option>
@@ -1433,11 +1433,11 @@ $qr_url    = get_option('sgvx51_bank_qr');
 
          <div class="row g-3 mb-4">
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Start Time</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Start Time <span class="text-danger">*</span></label>
                  <input type="datetime-local" name="start_time" class="form-control rounded-3 border-light shadow-none" required>
              </div>
              <div class="col-md-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">End Time</label>
+                 <label class="form-label small fw-bold text-secondary text-uppercase">End Time <span class="text-danger">*</span></label>
                  <input type="datetime-local" name="end_time" class="form-control rounded-3 border-light shadow-none" required>
              </div>
          </div>
@@ -1531,13 +1531,13 @@ $qr_url    = get_option('sgvx51_bank_qr');
           <div class="row g-3">
             <!-- Name -->
             <div class="col-md-6">
-              <label for="profileName" class="form-label text-dark fw-medium">Full Name</label>
+              <label for="profileName" class="form-label text-dark fw-medium">Full Name <span class="text-danger">*</span></label>
               <input type="text" class="form-control rounded-2 border-light shadow-sm" id="profileName" placeholder="Your name" value="<?php echo esc_attr( $r['name'] ?? '' ); ?>">
             </div>
 
             <!-- Email -->
             <div class="col-md-6">
-              <label for="profileEmail" class="form-label text-dark fw-medium">Email</label>
+              <label for="profileEmail" class="form-label text-dark fw-medium">Email <span class="text-danger">*</span></label>
               <input type="email" class="form-control rounded-2 border-light shadow-sm" id="profileEmail" placeholder="your@email.com" value="<?php echo esc_attr( $r['email'] ?? '' ); ?>">
             </div>
 

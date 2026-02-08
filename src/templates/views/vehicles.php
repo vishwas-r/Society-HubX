@@ -54,7 +54,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="sgvxBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
-                    <button class="js-open-vehicle-modal btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                    <button id="addVehicle" class="js-open-vehicle-modal btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                         <i class="bi bi-plus-lg"></i>
                         <span>Add Vehicle</span>
                     </button>
@@ -79,7 +79,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
 
 
         <!-- Table Content -->
-        <div class="table-responsive">
+        <div id="vehicleContainer" class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr class="bg-light">
@@ -211,13 +211,13 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                     <?php wp_nonce_field( 'sgvx51_add_vehicle_nonce' ); ?>
                     
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary">Number Plate</label>
-                        <input type="text" name="number" id="v-number" placeholder="KA-01-AB-1234" class="form-control shadow-none rounded-3 border-light" required>
+                        <label class="form-label small fw-bold text-secondary">Number Plate <span class="text-danger">*</span></label>
+                        <input type="text" name="number" id="v-number" placeholder="KA52AB1234" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-7">
-                            <label class="form-label small fw-bold text-secondary">Assigned Flat/Unit</label>
+                            <label class="form-label small fw-bold text-secondary">Assigned Flat/Unit <span class="text-danger">*</span></label>
                             <select name="flat_no" id="v-flat" class="form-select shadow-none rounded-3 border-light" required>
                                 <option value="">Select Unit...</option>
                                 <?php foreach($flats as $f): ?>
@@ -226,8 +226,8 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                             </select>
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small fw-bold text-secondary">Vehicle Type</label>
-                            <select name="type" id="v-type" class="form-select shadow-none rounded-3 border-light">
+                            <label class="form-label small fw-bold text-secondary">Vehicle Type <span class="text-danger">*</span></label>
+                            <select name="type" id="v-type" class="form-select shadow-none rounded-3 border-light" required>
                                 <option>Car</option><option>Bike / Scooter</option><option>Others</option>
                             </select>
                         </div>

@@ -198,6 +198,12 @@
                 if (id) window.deleteVehicle(id);
             });
 
+            // Add Vehicle Button Listener
+            $('#addVehicle').on('click', function (e) {
+                e.preventDefault();
+                window.openVehicleModal();
+            });
+
             const $form = $('#add-vehicle-form');
             if ($form.length) {
                 $form.on('submit', async function (e) {

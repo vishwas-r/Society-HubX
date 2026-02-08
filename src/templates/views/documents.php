@@ -106,7 +106,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
                     <?php if($selected_flat): ?>
-                        <button onclick="openUploadModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                        <button id="addDocument" onclick="openUploadModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                             <i class="bi bi-cloud-upload fs-5"></i>
                             <span>Upload to <?php echo esc_html($selected_flat); ?></span>
                         </button>
@@ -156,7 +156,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                         </div>
                     </div>
 
-                    <div class="p-5 flex-grow-1 overflow-y-auto">
+                    <div id="documentContainer" class="p-5 flex-grow-1 overflow-y-auto">
                         <!-- Critical Alerts inside context -->
                         <?php if ( ! empty( $pending_uploads ) && array_filter($pending_uploads, function($d) use($selected_flat){ return $d['flat_no'] === $selected_flat; }) ) : ?>
                             <div class="alert badge-orange-subtle border-0 shadow-sm rounded-xl py-3 px-4 mb-4 small d-flex align-items-center gap-3">

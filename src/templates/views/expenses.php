@@ -87,7 +87,7 @@ if(!empty($expenses)) {
                         </select>
                     </form>
                 </div>
-                <button onclick="openExpenseModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                <button id="addExpense" onclick="openExpenseModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                     <i class="bi bi-plus-circle-fill fs-5"></i>
                     <span>Add Expense</span>
                 </button>
@@ -154,7 +154,7 @@ if(!empty($expenses)) {
 
         <!-- Main Content Table Card -->
         <div class="col-lg-9">
-            <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden h-100 d-flex flex-column">
+            <div id="expenseContainer" class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden h-100 d-flex flex-column">
                 
                 <!-- Consolidated Toolbar -->
                 <div class="p-4 px-md-5 border-bottom border-light bg-white">
