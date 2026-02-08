@@ -21,9 +21,12 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
     <!-- Global Messages (Outside Cards) -->
 
     <!-- Page Header (Outside Card) -->
-    <div class="mb-5 px-1">
-        <h1 class="h3 fw-bold text-dark m-0" style="letter-spacing: -0.02em;">Society Units</h1>
-        <p class="text-secondary m-0 mt-1">Management of blocks, flats, and occupancy status.</p>
+    <div class="mb-4 mb-lg-5 px-1 px-sm-2">
+        <h1 class="h3 fw-bold text-dark m-0 d-flex align-items-center gap-2" style="letter-spacing: -0.02em;">
+            <i class="bi bi-building text-primary d-sm-none"></i>
+            Society Units
+        </h1>
+        <p class="text-secondary m-0 mt-1 small">Management of blocks, flats, and occupancy status.</p>
     </div>
 
     <!-- Main Content Card -->
@@ -33,7 +36,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
         <div class="p-4 px-md-5 border-bottom border-light bg-white">
             <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center">
                 <!-- Smart Search -->
-                <div class="flex-grow-1 position-relative">
+                <div class="flex-grow-1 position-relative mb-2 mb-md-0">
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                     <input type="text" id="filter-search" placeholder="Search by Flat No, Owner Name..." 
                            class="form-control ps-5 bg-light border-0 shadow-none rounded-3 fw-medium" 
@@ -42,11 +45,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <!-- <button class="btn btn-light px-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center gap-2 hover-bg-light" style="height: 48px;" type="button" data-bs-toggle="collapse" data-bs-target="#filter-section">
-                        <i class="bi bi-funnel"></i>
-                        <span>Filters</span>
-                    </button> -->
-                    <button class="btn btn-primary px-4 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm" style="height: 48px;" onclick="openFlatModal()">
+                    <button class="btn btn-primary px-3 px-sm-4 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openFlatModal()">
                         <i class="bi bi-plus-circle-fill fs-5"></i>
                         <span>Add Unit</span>
                     </button>
@@ -67,8 +66,8 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
         </div> -->
 
         <!-- Navigation Tabs (Integrated) -->
-        <div class="border-bottom border-light px-5 bg-white">
-            <ul class="nav nav-tabs border-0 gap-5" id="flatTabs">
+        <div class="border-bottom border-light px-3 px-md-5 bg-white overflow-x-auto no-scrollbar">
+            <ul class="nav nav-tabs border-0 gap-3 gap-md-5 text-nowrap flex-nowrap" id="flatTabs">
                 <li class="nav-item">
                     <button onclick="switchTab('all')" class="nav-link tab-btn active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" data-tab="all" style="background:none;">All Units</button>
                 </li>
@@ -88,11 +87,11 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
                     <tr>
-                        <th class="ps-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Unit No</th>
-                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Block</th>
-                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Occupancy</th>
-                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Parking</th>
-                        <th class="pe-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-end">Operations</th>
+                        <th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Unit No</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Block</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Occupancy</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Parking</th>
+                        <th class="pe-3 pe-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-end">Ops</th>
                     </tr>
                 </thead>
                 <tbody id="flatsTableBody" class="border-top-0">
@@ -101,7 +100,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         $p_status = strtolower($f['parking_status'] ?? 'vacant');
                     ?>
                     <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($f['owner_name']??''))); ?>">
-                        <td class="ps-5 py-4 fw-bold text-dark"><?php echo esc_html( $f['id'] ); ?></td>
+                        <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $f['id'] ); ?></td>
                         <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ); ?></td>
                         <td class="px-4 py-4 text-center">
                             <?php if($status === 'occupied'): ?>
@@ -120,7 +119,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                                 <span class="text-muted opacity-25">-</span>
                             <?php endif; ?>
                         </td>
-                        <td class="pe-5 py-4 text-end">
+                        <td class="pe-3 pe-md-5 py-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
                                 <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(json_encode($f)); ?>">
                                     <i class="bi bi-pencil-square fs-6"></i>

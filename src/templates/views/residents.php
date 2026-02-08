@@ -15,9 +15,12 @@ if (!isset($flats)) $flats = array();
 
 
     <!-- Page Header (Outside Card) -->
-    <div class="mb-5 px-1">
-        <h1 class="h3 fw-bold text-dark m-0" style="letter-spacing: -0.02em;">Residents Directory</h1>
-        <p class="text-secondary m-0 mt-1">Efficiently manage all society homeowners and tenants.</p>
+    <div class="mb-4 mb-lg-5 px-1 px-sm-2">
+        <h1 class="h3 fw-bold text-dark m-0 d-flex align-items-center gap-2" style="letter-spacing: -0.02em;">
+            <i class="bi bi-people-fill text-primary d-sm-none"></i>
+            Residents Directory
+        </h1>
+        <p class="text-secondary m-0 mt-1 small">Efficiently manage all society homeowners and tenants.</p>
     </div>
 
     <!-- Main Content Card -->
@@ -27,7 +30,7 @@ if (!isset($flats)) $flats = array();
         <div class="p-4 px-md-5 border-bottom border-light bg-white">
             <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center">
                 <!-- Smart Search -->
-                <div class="flex-grow-1 position-relative">
+                <div class="flex-grow-1 position-relative mb-2 mb-md-0">
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                     <input type="text" id="filter-search" placeholder="Search by name, flat, phone..." 
                            class="form-control ps-5 bg-light border-0 shadow-none rounded-3 fw-medium" 
@@ -45,11 +48,11 @@ if (!isset($flats)) $flats = array();
                             <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="sgvxBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
-                    <button class="js-toggle-filters btn btn-light px-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                    <button class="js-toggle-filters btn btn-light px-3 px-sm-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center gap-2" style="height: 48px;">
                         <i class="bi bi-funnel"></i>
-                        <span>Filters</span>
+                        <span class="d-none d-sm-inline">Filters</span>
                     </button>
-                    <button class="js-open-resident-modal btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
+                    <button class="js-open-resident-modal btn btn-primary px-3 px-sm-4 fw-bold shadow-sm rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" style="height: 48px;">
                         <i class="bi bi-person-plus-fill fs-5"></i>
                         <span>Add Resident</span>
                     </button>
@@ -87,22 +90,25 @@ if (!isset($flats)) $flats = array();
         </div>
 
         <!-- Navigation Tabs (Integrated) -->
-        <div class="px-5 bg-white border-bottom border-light">
-            <ul class="nav nav-tabs border-0 gap-5" id="residentsTabs">
+        <div class="px-3 px-md-5 bg-white border-bottom border-light overflow-x-auto no-scrollbar">
+            <ul class="nav nav-tabs border-0 gap-3 gap-md-5 text-nowrap flex-nowrap" id="residentsTabs">
                 <li class="nav-item">
-                    <button class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" data-tab="all" style="background:none;">All Residents</button>
+                    <button class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary tab-btn" data-tab="all" style="background:none;">All Residents</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" data-tab="owner" style="background:none;">Owners</button>
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="pending" style="background:none;">Pending Requests</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" data-tab="tenant" style="background:none;">Tenants</button>
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="owner" style="background:none;">Owners</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" data-tab="family" style="background:none;">Family</button>
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="tenant" style="background:none;">Tenants</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" data-tab="archive" style="background:none;">Archive</button>
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="family" style="background:none;">Family</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="archived" style="background:none;">Archive</button>
                 </li>
             </ul>
         </div>
@@ -113,32 +119,64 @@ if (!isset($flats)) $flats = array();
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr class="bg-light">
-                        <th class="ps-5 py-4 border-0" style="width: 40px;">
+                        <th class="ps-3 ps-md-5 py-4 border-0" style="width: 40px;">
                             <input type="checkbox" id="bulk-select-all" class="form-check-input shadow-none">
                         </th>
-                        <th class="ps-2 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider" style="font-size: 10px;">Resident Details</th>
-                        <th class="px-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider" style="font-size: 10px;">Flat / Unit</th>
-                        <th class="px-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider" style="font-size: 10px;">Status</th>
-                        <th class="px-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider" style="font-size: 10px;">Contact Info</th>
-                        <th class="pe-5 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider text-end" style="font-size: 10px;">Operations</th>
+                        <th class="ps-0 ps-md-2 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Resident Details</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Flat / Unit</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Society Role</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Status</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Contact Info</th>
+                        <th class="pe-3 pe-md-5 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider text-end">Ops</th>
                     </tr>
                 </thead>
                 <tbody class="border-top-0">
                     <?php 
-                    // Prepare all rows
-                    $all_rows = array();
-                    
-                    // Add Residents (Active & Pending)
+                    // 1. Index active residents
+                    $rows_by_entity = array();
                     if ( ! empty( $residents ) ) {
                         foreach ( $residents as $r ) {
-                            $status = $r['status'] ?? 'approved';
-                            $r['is_request'] = in_array($status, ['pending', 'rejected']);
-                            $r['is_archived'] = ($status === 'archived');
-                            $all_rows[] = $r;
+                            $r_id = $r['id'] ?? '';
+                            if (!$r_id) continue;
+                            
+                            $r_status = $r['status'] ?? 'approved';
+                            $r['is_request'] = in_array($r_status, ['pending', 'rejected']);
+                            $r['is_archived'] = ($r_status === 'archived');
+                            $r['request_id'] = '';
+                            $rows_by_entity[$r_id] = $r;
                         }
                     }
 
-                    // Add Archived from History Table (if any)
+                    // 2. Merge Pending Requests to deduplicate
+                    if ( ! empty( $pending ) ) {
+                        foreach ( $pending as $p ) {
+                            $payload = json_decode($p['payload'], true) ?: [];
+                            $entity_id = $p['entity_id'] ?? '';
+                            $request_id = $p['id'];
+                            
+                            if ( $entity_id && isset($rows_by_entity[$entity_id]) ) {
+                                // OVERLAY
+                                if ($p['request_type'] === 'delete') {
+                                    $rows_by_entity[$entity_id]['status'] = 'deletion_pending';
+                                } else {
+                                    $rows_by_entity[$entity_id] = array_merge($rows_by_entity[$entity_id], $payload);
+                                    $rows_by_entity[$entity_id]['status'] = 'pending'; 
+                                }
+                                $rows_by_entity[$entity_id]['is_request'] = true;
+                                $rows_by_entity[$entity_id]['request_id'] = $request_id;
+                            } else {
+                                // NEW ADDITION
+                                $payload['id'] = $request_id;
+                                $payload['status'] = 'pending';
+                                $payload['is_request'] = true;
+                                $payload['request_id'] = $request_id;
+                                $rows_by_entity[$request_id] = $payload;
+                            }
+                        }
+                    }
+
+                    // 3. Add Archived from History
+                    $all_rows = array_values($rows_by_entity);
                     if ( ! empty( $history ) ) {
                         foreach ( $history as $h ) {
                             $h['status'] = 'archived';
@@ -159,24 +197,30 @@ if (!isset($flats)) $flats = array();
                             </td>
                         </tr>
                     <?php else : ?>
-                        <?php foreach ( $all_rows as $row ) : 
+                        <?php 
+                        foreach ( $all_rows as $row ) : 
                              $is_archived = $row['is_archived'] ?? false;
                              $is_request  = $row['is_request'] ?? false;
-                             $status      = $row['status'] ?? 'approved';
+                             $status      = strtolower($row['status'] ?? 'approved');
                              $type        = strtolower($row['type'] ?? 'owner'); 
                              $type_label  = ucfirst($type);
+                             $request_id  = !empty($row['request_id']) ? $row['request_id'] : $row['id'];
+                             
+                             // Badge and class logic
+                             $is_deletion_pending = ($status === 'deletion_pending');
+                             $is_update_pending   = ($is_request && $status === 'pending' && !empty($row['entity_id']));
                         ?>
                         <tr class="resident-row border-bottom border-light" 
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-type="<?php echo esc_attr($type); ?>"
                             data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['name']??''))); ?>">
-                            <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($row['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none" <?php echo !$is_request ? 'disabled' : ''; ?>>
+                            <td class="ps-3 ps-md-5 py-4">
+                                <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none">
                             </td>
-                            <td class="ps-2 py-4">
+                            <td class="ps-0 ps-md-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="flex-shrink-0 <?php echo $is_archived ? 'bg-light text-muted' : ($status === 'rejected' ? 'bg-danger-subtle text-danger' : ($is_request ? 'bg-warning-subtle text-warning' : 'bg-primary-subtle text-primary')); ?> rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                                        <?php echo substr($row['name'] ?? 'U', 0, 1); ?>
+                                        <?php echo strtoupper(substr($row['name'] ?? 'U', 0, 1)); ?>
                                     </div>
                                     <div>
                                         <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>"><?php echo esc_html( $row['name'] ); ?></div>
@@ -191,15 +235,31 @@ if (!isset($flats)) $flats = array();
                                 </div>
                             </td>
                             <td class="px-4 py-4">
-                                <?php echo SGVX51_Admin_UI::render_status_badge( $status ); ?>
+                                <?php if(!empty($row['roles'])): ?>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html($row['roles']); ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">Resident</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-4 py-4">
+                                <?php 
+                                if ($is_deletion_pending) {
+                                    echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
+                                } else if ($is_update_pending) {
+                                    echo SGVX51_Admin_UI::render_status_badge( 'pending' );
+                                    echo '<div class="small text-warning mt-1" style="font-size: 10px; font-weight: 600;">UPDATE PENDING</div>';
+                                } else {
+                                    echo SGVX51_Admin_UI::render_status_badge( $status ); 
+                                }
+                                ?>
                             </td>
                             <td class="px-4 py-4">
                                 <div class="text-secondary fw-bold small"><?php echo esc_html( $row['phone'] ?? '-' ); ?></div>
                             </td>
-                            <td class="pe-5 py-4 text-end">
+                            <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
-                                    <?php if ( $status === 'pending' ) : ?>
-                                        <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $row['id'], 'residents' ); ?>
+                                    <?php if ( $is_request ) : ?>
+                                        <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
@@ -283,6 +343,19 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                             <label class="form-label small fw-bold text-secondary text-uppercase">Email</label>
                             <input type="email" name="email" class="form-control shadow-none rounded-3">
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Society Role</label>
+                        <select name="role" class="form-select shadow-none rounded-3">
+                            <option value="">None / Resident</option>
+                            <option value="President">President</option>
+                            <option value="Vice-President">Vice-President</option>
+                            <option value="Secretary">Secretary</option>
+                            <option value="Treasurer">Treasurer</option>
+                            <option value="Committee Member">Committee Member</option>
+                            <option value="Management">Management</option>
+                            <option value="Others">Others</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">

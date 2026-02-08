@@ -53,7 +53,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
         <div class="col-lg-4">
             <!-- Add/Edit Facility Form -->
             <div class="card border-0 shadow-sm rounded-3 mb-5 overflow-hidden bg-white p-0">
-                <div class="p-4 bg-primary bg-opacity-10 border-bottom border-primary text-primary d-flex justify-content-between align-items-center">
+                <div class="p-4 bg-primary bg-opacity-10 border-0 text-primary d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold m-0" id="form-title">Add New Amenity</h5>
                     <button type="button" onclick="resetFacilityForm()" id="cancel-edit-btn" class="btn btn-link btn-sm text-danger fw-bold p-0 text-decoration-none d-none">Reset</button>
                 </div>
@@ -103,8 +103,8 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
 
             <!-- List of Facilities -->
             <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden p-0">
-                <div class="p-4 bg-primary bg-opacity-10 border-bottom border-primary text-primary">
-                    <span class="small fw-bold text-secondary text-uppercase tracking-wider">Active Resource List</span>
+                <div class="p-4 bg-primary bg-opacity-10 border-0 text-primary">
+                    <span class="small fw-bold text-uppercase tracking-wider">Active Resource List</span>
                 </div>
                 <div class="p-3 px-4 border-bottom border-light">
                     <div class="input-group flex-nowrap bg-light rounded-3 overflow-hidden">

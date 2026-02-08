@@ -141,7 +141,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
                     'brand'   => $brand ?: ($existing['brand'] ?? ''),
                     'model'   => $model ?: ($existing['model'] ?? ''),
                     'sticker' => $sticker ?: ($existing['sticker'] ?? ''),
-                    'status'  => $data['status'] ?? ($existing['status'] ?? 'approved'),
+                    'status'  => 'approved', // Reset to approved upon edit approval or admin edit
                     'owner_name' => $owner_name ?: ($existing['owner_name'] ?? ''),
                     'flat_no'    => $flat_no ?: ($existing['flat_no'] ?? '')
                 );

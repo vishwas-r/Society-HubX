@@ -13,9 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SGVX51_Staff_Manager implements SGVX51_Module {
 
 	private $db;
+	private $drive;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
+		$this->db    = new SGVX51_DB_Router();
+		$this->drive = new SGVX51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ), 200 );
 
@@ -36,6 +38,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 			$this->db->verify_column( 'daily_help', 'visiting_hours', 'varchar(50) DEFAULT "" NOT NULL' );
 			$this->db->verify_column( 'daily_help', 'created_by', 'bigint(20) DEFAULT 0 NOT NULL' );
             $this->db->verify_column( 'daily_help', 'flat_no', 'varchar(50) DEFAULT "" NOT NULL' ); // Legacy flat link
+            $this->db->verify_column( 'daily_help', 'category', 'varchar(50) DEFAULT "" NOT NULL' );
 		}
 
         // Register Module
@@ -75,6 +78,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 		$db_data = array(
 			'name'           => sanitize_text_field( $data['name'] ),
 			'role'           => sanitize_text_field( $data['role'] ),
+            'category'       => isset($data['category']) ? sanitize_text_field( $data['category'] ) : 'Support Staff',
 			'phone'          => sanitize_text_field( $data['phone'] ),
 			'sex'            => sanitize_text_field( $data['sex'] ),
 			'visiting_hours' => sanitize_text_field( $data['visiting_hours'] ),
@@ -82,8 +86,18 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 			'created_at'     => current_time( 'mysql' ),
             'id'             => isset($data['id']) ? $data['id'] : uniqid('staff_'),
             'status'         => isset($data['status']) ? $data['status'] : 'approved',
-            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ''
+            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : '',
+            'document_url'   => isset($data['document_url']) ? esc_url_raw($data['document_url']) : ''
 		);
+
+        // Handle File Upload
+        if ( ! empty( $_FILES['doc_file'] ) && ! empty( $_FILES['doc_file']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['doc_file'] );
+            if ( ! is_wp_error( $uploaded ) ) {
+                $db_data['document_url'] = $uploaded;
+            }
+        }
+
 		return $this->db->insert( 'daily_help', $db_data );
     }
 
@@ -103,15 +117,26 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
         $update_data = array(
             'name'           => isset($data['name']) ? sanitize_text_field( $data['name'] ) : ($existing['name'] ?? ''),
             'role'           => isset($data['role']) ? sanitize_text_field( $data['role'] ) : ($existing['role'] ?? ''),
+            'category'       => isset($data['category']) ? sanitize_text_field( $data['category'] ) : ($existing['category'] ?? 'Support Staff'),
             'phone'          => isset($data['phone']) ? sanitize_text_field( $data['phone'] ) : ($existing['phone'] ?? ''),
             'sex'            => isset($data['sex']) ? sanitize_text_field( $data['sex'] ) : ($existing['sex'] ?? ''),
             'visiting_hours' => isset($data['visiting_hours']) ? sanitize_text_field( $data['visiting_hours'] ) : ($existing['visiting_hours'] ?? ''),
             // Preserve other fields
             'flats_served'   => isset($data['flats_served']) ? $data['flats_served'] : ($existing['flats_served'] ?? '[]'),
-            'status'         => $existing['status'] ?? 'approved',
+            'status'         => 'approved', // Reset to approved upon edit approval or admin edit
             'created_by'     => $existing['created_by'] ?? '',
-            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? '')
+            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? ''),
+            'document_url'   => isset($data['document_url']) ? esc_url_raw($data['document_url']) : ($existing['document_url'] ?? '')
         );
+
+        // Handle File Upload
+        if ( ! empty( $_FILES['doc_file'] ) && ! empty( $_FILES['doc_file']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['doc_file'] );
+            if ( ! is_wp_error( $uploaded ) ) {
+                $update_data['document_url'] = $uploaded;
+            }
+        }
+
         return $this->db->update( 'daily_help', $update_data, ['id' => $id] );
     }
 
@@ -196,7 +221,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 
            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
            $rm = new SGVX51_Request_Manager();
-           $res = $rm->create_request( 'daily_help', 'add', $_POST, $_POST['id'] );
+           $res = $rm->create_request( 'daily_help', 'add', $_POST, $_POST['id'], 'daily_help', $_POST['flat_no'] ?? '' );
            if ( wp_doing_ajax() ) {
                if ( is_wp_error( $res ) ) {
                    wp_send_json_error(['message' => $res->get_error_message()]);
@@ -232,7 +257,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
-            $res = $rm->create_request( 'daily_help', 'edit', $_POST, $id );
+            $res = $rm->create_request( 'daily_help', 'edit', $_POST, $id, 'daily_help', $_POST['flat_no'] ?? '' );
             if ( wp_doing_ajax() ) {
                 if ( is_wp_error( $res ) ) {
                     wp_send_json_error(['message' => $res->get_error_message()]);
@@ -268,7 +293,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
-            $res = $rm->create_request( 'daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id );
+            $res = $rm->create_request( 'daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $_POST['flat_no'] ?? '' );
             if ( wp_doing_ajax() ) {
                 if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
                 wp_send_json_success(['message' => 'Deletion request submitted for approval']);

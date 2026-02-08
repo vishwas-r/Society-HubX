@@ -76,7 +76,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var sgvx51_nonce = '<?php echo wp_create_nonce( 'sgvx51_facility_nonce' ); ?>';
+    var sgvx51_nonce = '<?php echo wp_create_nonce( 'sgvx51_nonce' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
 </script>
 
@@ -293,8 +293,10 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                         <div class="flex-grow-1">
                                             <div class="d-flex align-items-center gap-2">
                                                 <div class="fw-bold text-dark small"><?php echo esc_html($help['name']); ?></div>
-                                                <?php if(isset($help['status']) && $help['status'] === 'pending'): ?>
+                                                 <?php if(isset($help['status']) && $help['status'] === 'pending'): ?>
                                                     <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.6rem;">PENDING</span>
+                                                <?php elseif(isset($help['status']) && $help['status'] === 'deletion_pending'): ?>
+                                                    <span class="badge bg-danger text-white rounded-pill" style="font-size: 0.6rem;">DELETION PENDING</span>
                                                 <?php elseif(isset($help['status']) && $help['status'] === 'rejected'): ?>
                                                     <span class="badge bg-danger text-white rounded-pill" style="font-size: 0.6rem;">REJECTED</span>
                                                 <?php endif; ?>
@@ -318,6 +320,13 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                                                 <button type="submit" class="dropdown-item text-danger small">Remove</button>
                                                             </form>
                                                         </li>
+                                                    </ul>
+                                                </div>
+                                            <?php elseif(isset($help['status']) && $help['status'] === 'rejected'): ?>
+                                                 <div class="dropdown">
+                                                    <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
+                                                        <li><button class="dropdown-item js-edit-help small" data-payload="<?php echo esc_attr(json_encode($help)); ?>">Edit / Fix</button></li>
                                                     </ul>
                                                 </div>
                                             <?php endif; ?>
@@ -365,6 +374,8 @@ function sgvx_in_fmt($num, $decimals = 2) {
                                                     <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size: 0.6rem;">PENDING</span>
                                                 <?php elseif(isset($v['status']) && $v['status']==='rejected'): ?>
                                                     <span class="badge bg-danger text-white rounded-pill ms-1" style="font-size: 0.6rem;">REJECTED</span>
+                                                <?php elseif(isset($v['status']) && $v['status']==='deletion_pending'): ?>
+                                                    <span class="badge bg-danger rounded-pill ms-1" style="font-size: 0.6rem;">DEL PENDING</span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -1006,26 +1017,69 @@ function sgvx_in_fmt($num, $decimals = 2) {
 <!-- Help Modal -->
 <div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST">
+    <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold text-dark">Daily Help Details</h5>
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body p-4">
          <input type="hidden" name="action" value="sgvx51_add_daily_help">
-         <?php wp_nonce_field('sgvx51_add_help_nonce'); ?>
-         <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Name</label>
-             <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
-         </div>
-         <div class="row g-3">
-             <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Role</label>
-                 <input type="text" name="role" class="form-control rounded-3 border-light shadow-none" placeholder="Maid/Driver/etc">
+         <input type="hidden" name="help_id" value="">
+         <input type="hidden" name="document_url" value="">
+          <?php wp_nonce_field('sgvx51_add_help_nonce', '_wpnonce_add_help'); ?>
+          <?php wp_nonce_field('sgvx51_edit_help_nonce', '_wpnonce_edit_help'); ?>
+         
+         <div class="row g-3 mb-3">
+             <div class="col-md-7">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">FullName</label>
+                 <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
              </div>
-             <div class="col-6">
+             <div class="col-md-5">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Staff Type</label>
+                 <select name="category" class="form-select rounded-3 border-light shadow-none">
+                     <option value="Support Staff">Support Staff</option>
+                     <option value="Management">Management</option>
+                 </select>
+             </div>
+         </div>
+
+         <div class="row g-3 mb-3">
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Role</label>
+                 <select name="role" class="form-select rounded-3 border-light shadow-none" required>
+                     <option value="Maid">Maid</option><option value="Cook">Cook</option>
+                     <option value="Driver">Driver</option><option value="Nanny">Nanny</option>
+                     <option value="Guard">Security Guard</option><option value="Cleaner">Cleaner</option>
+                     <option value="Gardener">Gardener</option><option value="Manager">Manager</option>
+                     <option value="Other">Other</option>
+                 </select>
+             </div>
+             <div class="col-md-6">
                  <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
-                 <input type="text" name="phone" class="form-control rounded-3 border-light shadow-none">
+                 <input type="text" name="phone" class="form-control rounded-3 border-light shadow-none" required>
+             </div>
+         </div>
+
+         <div class="row g-3 mb-3">
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Gender</label>
+                 <select name="sex" class="form-select rounded-3 border-light shadow-none">
+                     <option value="Male">Male</option>
+                     <option value="Female">Female</option>
+                     <option value="Other">Other</option>
+                 </select>
+             </div>
+             <div class="col-md-6">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Visiting Hours</label>
+                 <input type="text" name="visiting_hours" class="form-control rounded-3 border-light shadow-none" placeholder="e.g. 7 AM - 10 AM">
+             </div>
+         </div>
+
+         <div class="mb-0">
+             <label class="form-label small fw-bold text-secondary text-uppercase">ID Proof (Photo/Document)</label>
+             <input type="file" name="doc_file" accept="image/*" capture="environment" class="form-control shadow-none rounded-3 border-light">
+             <div id="current-help-doc-preview" class="mt-2 d-none">
+                 <a href="#" target="_blank" class="small text-primary fw-bold"><i class="bi bi-file-earmark-check me-1"></i>View Current Proof</a>
              </div>
          </div>
       </div>

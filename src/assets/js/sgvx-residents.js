@@ -50,8 +50,13 @@
 
             // Tab logic
             let matchesTab = false;
-            if (status === 'archived') {
-                matchesTab = (State.currentTab === 'archive');
+            const isArchived = (status === 'archived');
+            const isPending = (status === 'pending' || status === 'rejected' || status === 'deletion_pending');
+
+            if (isArchived) {
+                matchesTab = (State.currentTab === 'archived');
+            } else if (State.currentTab === 'pending') {
+                matchesTab = isPending;
             } else {
                 matchesTab = (State.currentTab === 'all') || (type === State.currentTab);
             }
@@ -148,6 +153,7 @@
             setVal('type', r.type);
             setVal('phone', r.phone);
             setVal('email', r.email);
+            setVal('role', r.roles || '');
 
             setVal('action', 'sgvx51_edit_resident');
             setVal('resident_id', r.id);

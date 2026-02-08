@@ -78,16 +78,50 @@ $nav_items = [
         .dropdown-toggle-no-caret::after {
             display: none !important;
         }
+
+        @media (min-width: 992px) {
+            .sgvx-sidebar {
+                width: 280px !important;
+                min-width: 280px !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+        }
+        .sgvx-sidebar.collapsed {
+            width: 80px !important;
+            min-width: 80px !important;
+        }
+        .sgvx-sidebar.collapsed .fw-bold, 
+        .sgvx-sidebar.collapsed .text-nowrap,
+        .sgvx-sidebar.collapsed hr,
+        .sgvx-sidebar.collapsed .sgvx-sidebar-footer-text {
+            display: none !important;
+        }
+        .sgvx-sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .sgvx-sidebar.collapsed .nav-link i {
+            margin: 0 !important;
+        }
     </style>
 
+    <!-- Sidebar Backdrop for Mobile -->
+    <div id="sgvx-sidebar-backdrop" class="position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50 d-lg-none d-none" style="z-index: 1040;"></div>
+
     <!-- Sidebar -->
-    <aside class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end sgvx-sidebar overflow-x-hidden" style="width: 280px; min-width: 280px;">
-        <a href="<?php echo admin_url('admin.php?page=sgvx51-settings'); ?>" class="d-flex align-items-center mb-0 text-custom-primary text-decoration-none gap-3 px-1">
-            <div class="bg-primary rounded-xl d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                <i class="bi bi-building-fill text-white" style="font-size: 1.1rem;"></i>
-            </div>
-            <span class="fs-4 fw-bold tracking-tight" style="letter-spacing: -0.02em;">Society GoVernX</span>
-        </a>
+    <aside id="sgvx-sidebar" class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end sgvx-sidebar overflow-x-hidden transition-all" style="z-index: 1050;">
+        <div class="d-flex align-items-center justify-content-between px-3 mb-2">
+            <a href="<?php echo admin_url('admin.php?page=sgvx51-settings'); ?>" class="d-flex align-items-center text-custom-primary text-decoration-none gap-2 gap-sm-3">
+                <div class="bg-primary rounded-xl d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+                    <i class="bi bi-building-fill text-white" style="font-size: 1rem;"></i>
+                </div>
+                <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Society GoVernX</span>
+            </a>
+            <button id="sgvx-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">
+                <i class="bi bi-x-lg fs-5"></i>
+            </button>
+        </div>
         <hr class="opacity-5">
         <div class="flex-grow-1 overflow-y-auto custom-scrollbar-sidebar">
             <ul class="nav nav-pills flex-column mb-auto px-1">
@@ -105,9 +139,9 @@ $nav_items = [
         </div>
         <hr class="mt-4 mb-4 opacity-5">
         <div class="mb-2 px-1">
-            <a href="<?php echo admin_url(); ?>" class="d-flex align-items-center text-slate-400 text-decoration-none hover-indigo transition-all small fw-bold">
+            <a href="<?php echo admin_url(); ?>" class="d-flex align-items-center text-slate-400 text-decoration-none hover-indigo transition-all small fw-bold px-3">
                 <i class="bi bi-arrow-left-short fs-4 me-1"></i>
-                <span>Exit to WordPress</span>
+                <span class="sgvx-sidebar-footer-text">Exit to WordPress</span>
             </a>
         </div>
     </aside>
@@ -115,9 +149,12 @@ $nav_items = [
     <!-- Main Content Area -->
     <main class="sgvx-main flex-grow-1 d-flex flex-column">
         <!-- Top Header -->
-        <header class="sgvx-top-header d-flex align-items-center justify-content-between px-5 bg-white border-bottom" style="height: 72px;">
-            <div>
-                <h1 class="h5 fw-bold text-slate-900 m-0"><?php echo esc_html( ucfirst( isset($nav_items[$current_view]) ? $nav_items[$current_view][0] : $current_view ) ); ?></h1>
+        <header class="sgvx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom" style="height: 72px;">
+            <div class="d-flex align-items-center gap-3">
+                <button id="sgvx-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50" style="width: 40px; height: 40px;">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+                <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block"><?php echo esc_html( ucfirst( isset($nav_items[$current_view]) ? $nav_items[$current_view][0] : $current_view ) ); ?></h1>
             </div>
             <div class="d-flex align-items-center gap-4">
                 <?php if ($pending_count > 0): ?>
@@ -135,12 +172,12 @@ $nav_items = [
 
                 <div class="dropdown">
                     <button class="d-flex align-items-center gap-3 border-0 bg-transparent p-0 dropdown-toggle-no-caret shadow-none px-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="text-end d-none d-md-block border-start ps-4">
-                            <div class="small fw-bold text-dark">Welcome, <?php $user = wp_get_current_user(); echo esc_html($user->display_name); ?></div>
-                            <div class="small text-secondary" style="font-size: 11px;">Administrator</div>
+                        <div class="text-end d-none d-lg-block border-start ps-3">
+                            <div class="small fw-bold text-dark text-nowrap">Welcome, <?php $user = wp_get_current_user(); echo esc_html($user->display_name); ?></div>
+                            <div class="small text-secondary" style="font-size: 10px;">Administrator</div>
                         </div>
-                        <div class="sgvx-user-avatar border shadow-sm" style="width: 40px; height: 40px;">
-                            <?php echo get_avatar( get_current_user_id(), 40, '', '', ['class' => 'rounded-full'] ); ?>
+                        <div class="sgvx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
+                            <?php echo get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ); ?>
                         </div>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 py-2 px-2" style="min-width: 180px;">
@@ -163,7 +200,7 @@ $nav_items = [
         </header>
 
         <!-- View Content Scroll -->
-        <div class="sgvx-content-scroll flex-grow-1 overflow-y-auto p-5 bg-slate-50">
+        <div class="sgvx-content-scroll flex-grow-1 overflow-y-auto p-3 p-lg-5 bg-slate-50">
             <div class="container p-0">
                 <?php 
                     $view_path = SGVX51_PLUGIN_DIR . 'templates/views/' . $current_view . '.php';

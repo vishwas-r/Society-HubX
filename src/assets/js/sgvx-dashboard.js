@@ -177,6 +177,11 @@
             vehicleModal.addEventListener('hidden.bs.modal', window.resetVehicleModal);
         }
 
+        const helpModal = document.getElementById('helpModal');
+        if (helpModal) {
+            helpModal.addEventListener('hidden.bs.modal', window.resetHelpModal);
+        }
+
         // Community Directory Listeners
         initDirectoryCardListeners();
         initDirectoryFilterListeners();
@@ -363,29 +368,79 @@
             const form = document.querySelector('#helpModal form');
 
             // Populate
-            form.querySelector('[name="name"]').value = payload.name;
-            form.querySelector('[name="role"]').value = payload.role;
-            form.querySelector('[name="phone"]').value = payload.phone;
-            form.querySelector('[name="visiting_hours"]').value = payload.visiting_hours;
+            form.querySelector('[name="name"]').value = payload.name || '';
+            form.querySelector('[name="role"]').value = payload.role || 'Maid';
+            form.querySelector('[name="phone"]').value = payload.phone || '';
+
+            const categoryField = form.querySelector('[name="category"]');
+            if (categoryField) categoryField.value = payload.category || 'Support Staff';
+
+            const sexField = form.querySelector('[name="sex"]');
+            if (sexField) sexField.value = payload.sex || 'Male';
+
+            const vhField = form.querySelector('[name="visiting_hours"]');
+            if (vhField) vhField.value = payload.visiting_hours || '';
+
+            const docUrlField = form.querySelector('[name="document_url"]');
+            if (docUrlField) docUrlField.value = payload.document_url || '';
+
+            const preview = document.getElementById('current-help-doc-preview');
+            if (preview) {
+                if (payload.document_url) {
+                    preview.classList.remove('d-none');
+                    preview.querySelector('a').href = payload.document_url;
+                } else {
+                    preview.classList.add('d-none');
+                }
+            }
 
             // Set Action
             form.querySelector('[name="action"]').value = 'sgvx51_edit_daily_help';
 
             // Set ID
-            let idInput = form.querySelector('input[name="staff_id"]');
+            let idInput = form.querySelector('[name="help_id"]');
             if (!idInput) {
                 idInput = document.createElement('input');
-                idInput.type = 'd-none';
-                idInput.name = 'staff_id';
+                idInput.type = 'hidden';
+                idInput.name = 'help_id';
                 form.appendChild(idInput);
             }
             idInput.value = payload.id;
 
-            form.querySelector('h3').innerText = 'Edit Daily Help';
-            form.querySelector('button[type="submit"]').innerText = 'Update';
-            openModal('helpModal');
-        } catch (e) { console.error(e); }
+            const modalTitle = form.querySelector('.modal-title');
+            if (modalTitle) modalTitle.innerText = 'Edit Daily Help';
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.innerText = 'Update Help';
+
+            // Open modal using Bootstrap API
+            const modalEl = document.getElementById('helpModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        } catch (e) { console.error('handleEditHelp Error:', e); }
     }
+
+    // Helper to reset help modal
+    window.resetHelpModal = function () {
+        const form = document.querySelector('#helpModal form');
+        if (!form) return;
+        form.reset();
+        form.querySelector('[name="action"]').value = 'sgvx51_add_daily_help';
+        const idInput = form.querySelector('[name="help_id"]');
+        if (idInput) idInput.value = '';
+        const docUrlInput = form.querySelector('[name="document_url"]');
+        if (docUrlInput) docUrlInput.value = '';
+
+        const preview = document.getElementById('current-help-doc-preview');
+        if (preview) preview.classList.add('d-none');
+
+        const modalTitle = form.querySelector('.modal-title');
+        if (modalTitle) modalTitle.innerText = 'Add Daily Help';
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.innerText = 'Save Help';
+    };
 
     function handleEditVehicle(btn) {
         const payload = JSON.parse(btn.dataset.payload);

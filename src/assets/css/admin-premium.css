@@ -23,6 +23,23 @@
     --sgvx-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --sgvx-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --sgvx-radius: 16px;
+    --sgvx-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-all {
+    transition: var(--sgvx-transition) !important;
+}
+
+.rounded-xl {
+    border-radius: 12px;
+}
+
+.hover-bg-slate-50:hover {
+    background-color: #f8fafc;
+}
+
+.hover-bg-slate-100:hover {
+    background-color: #f1f5f9;
 }
 
 body.settings_page_sgvx51-settings,
@@ -135,10 +152,10 @@ body.toplevel_page_sgvx51-residents {
 }
 
 .sgvx51-admin-wrap label {
-    font-weight: 500;
-    margin-bottom: 8px;
+    font-weight: 600;
+    margin-bottom: 6px;
     color: var(--sgvx-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: block;
 }
 
@@ -335,4 +352,153 @@ body.toplevel_page_sgvx51-residents {
 
 .file-card:hover .dashicons {
     color: var(--sgvx-primary);
+}
+
+/* 11. Responsive Overrides */
+
+/* Mobile & Tablet Sidebar Overlay */
+@media (max-width: 991.98px) {
+    #sgvx-sidebar {
+        position: fixed !important;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 280px !important;
+        min-width: 280px !important;
+        height: 100vh;
+        z-index: 1060;
+        box-shadow: none;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex !important;
+        /* Ensure it's flex but off-screen */
+    }
+
+    #sgvx-sidebar.show {
+        left: 0;
+        box-shadow: var(--sgvx-shadow-lg);
+    }
+
+    #sgvx-sidebar-backdrop {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(15, 23, 42, 0.5) !important;
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    #sgvx-sidebar-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+        display: block !important;
+    }
+
+    /* Important: When sidebar is fixed, main content should take full width */
+    .sgvx-main {
+        width: 100% !important;
+        margin-left: 0 !important;
+        flex: 1 1 100% !important;
+    }
+
+    .sgvx-sidebar.collapsed {
+        width: 280px !important;
+        min-width: 280px !important;
+    }
+
+    .sgvx-top-header {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        height: 64px !important;
+    }
+
+    .sgvx-content-scroll {
+        padding: 1.25rem 1rem !important;
+    }
+
+    /* Stack Toolbar Utility */
+    .sgvx-staff-v2 .p-4.px-md-5,
+    .sgvx-residents-v2 .p-4.px-md-5,
+    .sgvx-flats-v2 .p-4.px-md-5 {
+        padding: 1rem !important;
+    }
+}
+
+/* Table Responsiveness Hack */
+.table-responsive {
+    border-radius: var(--sgvx-radius);
+    overflow-x: auto !important;
+    border: 1px solid var(--sgvx-border);
+}
+
+/* Card Adjustments for Small Screens */
+@media (max-width: 575.98px) {
+    .sgvx-layer .layer-header {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .sgvx-layer .layer-body {
+        padding: 16px;
+    }
+
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group>.btn {
+        border-radius: 8px !important;
+        margin-bottom: 4px;
+    }
+
+    /* Global Padding Overrides for Mobile */
+    .sgvx51-admin-wrap .p-4,
+    .sgvx51-admin-wrap .p-5,
+    .sgvx51-admin-wrap .px-5,
+    .sgvx51-admin-wrap .px-md-5,
+    .sgvx51-admin-wrap .py-4,
+    .sgvx51-admin-wrap .py-5 {
+        padding: 1rem !important;
+    }
+
+    .sgvx51-admin-wrap .ps-5 {
+        padding-left: 1rem !important;
+    }
+
+    .sgvx51-admin-wrap .pe-5 {
+        padding-right: 1rem !important;
+    }
+
+    .sgvx51-admin-wrap .gap-5 {
+        gap: 1rem !important;
+    }
+
+    /* Table adjustments */
+    .sgvx51-admin-wrap .table tbody td,
+    .sgvx51-admin-wrap .table thead th {
+        padding: 12px 16px !important;
+        white-space: nowrap;
+    }
+
+    /* Header adjustments */
+    .sgvx51-admin-wrap .mb-5 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    .sgvx51-admin-wrap h1.h3 {
+        font-size: 1.25rem;
+    }
 }

@@ -113,7 +113,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
        $rm = new SGVX51_Request_Manager();
-       $res = $rm->create_request( 'residents', 'add', $_POST, $_POST['id'] );
+       $res = $rm->create_request( 'residents', 'add', $_POST, $_POST['id'], 'residents', $_POST['flat_no'] ?? '' );
        
        if ( wp_doing_ajax() ) {
            if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
@@ -152,7 +152,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     } else {
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
-        $res = $rm->create_request( 'residents', 'edit', $_POST, $id );
+        $res = $rm->create_request( 'residents', 'edit', $_POST, $id, 'residents', $_POST['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
             if ( is_wp_error( $res ) ) {
@@ -169,6 +169,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 }
 
     private function perform_edit_resident( $data ) {
+        error_log("SGVX51 Debug: perform_edit_resident called with data: " . print_r($data, true));
 		$original_flat_no = isset($data['original_flat_no']) ? sanitize_text_field( $data['original_flat_no'] ) : '';
 		$flat_no = isset($data['flat_no']) ? sanitize_text_field( $data['flat_no'] ) : '';
         $original_name = isset( $data['original_name'] ) ? sanitize_text_field( $data['original_name'] ) : '';
@@ -213,7 +214,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'blood_group'   => isset($data['blood_group']) ? sanitize_text_field( $data['blood_group'] ) : ($existing_resident['blood_group'] ?? ''),
             'relation'      => isset($data['relation']) ? sanitize_text_field( $data['relation'] ) : ($existing_resident['relation'] ?? ''),
             'age'           => isset($data['age']) ? sanitize_text_field( $data['age'] ) : ($existing_resident['age'] ?? ''),
-			'roles'         => (isset($data['roles']) && is_array($data['roles'])) ? json_encode(array_map('sanitize_text_field', $data['roles'])) : ($existing_resident['roles'] ?? ''),
+			'roles'         => isset($data['role']) ? sanitize_text_field($data['role']) : ($existing_resident['roles'] ?? ''),
+            'status'        => 'approved', // Reset to approved upon edit approval or admin edit
 		);
 
 		// 1. Maintain 1 owner/tenant per flat rule during edits
@@ -289,7 +291,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
-        $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id );
+        $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
 
         if ( wp_doing_ajax() ) {
             wp_send_json_success(['message' => 'Request archived successfully']);
@@ -468,7 +470,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'blood_group'   => isset($post_data['blood_group']) ? sanitize_text_field( $post_data['blood_group'] ) : '',
             'relation'      => isset($post_data['relation']) ? sanitize_text_field( $post_data['relation'] ) : '',
             'age'           => isset($post_data['age']) ? sanitize_text_field( $post_data['age'] ) : '',
-			'roles'         => (isset($post_data['roles']) && is_array($post_data['roles'])) ? json_encode(array_map('sanitize_text_field', $post_data['roles'])) : '',
+			'roles'         => isset($post_data['role']) ? sanitize_text_field($post_data['role']) : '',
 		'status'        => isset($post_data['status']) ? $post_data['status'] : 'approved',
 		'wp_user_id'    => '', 
 		'id'            => isset($post_data['id']) ? $post_data['id'] : uniqid('res_'), 

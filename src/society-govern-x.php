@@ -145,6 +145,9 @@ final class Society_Govern_X {
 		// 3. User Sync Filters
 		add_filter( 'theme_page_templates', array( $this, 'register_page_templates' ), 10, 4 );
 		add_filter( 'template_include', array( $this, 'load_page_template' ) );
+
+		// 4. Access Control
+		add_action( 'admin_init', array( $this, 'redirect_residents_from_admin' ) );
 	}
 
 	/**
@@ -185,6 +188,20 @@ final class Society_Govern_X {
 	}
 
 	/**
+	 * Redirect Residents from Admin.
+	 */
+	public function redirect_residents_from_admin() {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'administrator' ) && ( current_user_can( 'subscriber' ) || current_user_can( 'resident' ) ) ) {
+			wp_redirect( home_url( '/resident-dashboard/' ) );
+			exit;
+		}
+	}
+
+	/**
 	 * Enqueue Admin Assets.
 	 */
 	public function enqueue_admin_assets() {
@@ -208,6 +225,7 @@ final class Society_Govern_X {
 
         // 4. Custom Admin Styles (Final Overrides)
 		wp_enqueue_style( 'sgvx51_admin_layout', SGVX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('sgvx51_bootstrap_css', 'sgvx51_bootstrap_icons'), time() );
+		wp_enqueue_style( 'sgvx51_admin_premium', SGVX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('sgvx51_bootstrap_css', 'sgvx51_admin_layout'), time() );
 
 		// 5. Receipt Styling
 		wp_enqueue_style( 'sgvx51_receipt_css', SGVX51_PLUGIN_URL . 'assets/css/receipt.css', array(), time() );

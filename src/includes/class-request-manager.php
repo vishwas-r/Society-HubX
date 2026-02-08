@@ -22,6 +22,11 @@ class SGVX51_Request_Manager {
         add_action( 'wp_ajax_sgvx51_approve_request', array( $this, 'handle_ajax_approve' ) );
         add_action( 'wp_ajax_sgvx51_reject_request', array( $this, 'handle_ajax_reject' ) );
         add_action( 'wp_ajax_sgvx51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
+
+        // Self-Heal Schema
+        if ( is_admin() ) {
+            $this->db->verify_column( 'requests', 'flat_no', 'varchar(50) NOT NULL' );
+        }
 	}
 
     /**
@@ -100,15 +105,21 @@ class SGVX51_Request_Manager {
     /**
      * Create a new request.
      */
-    public function create_request( $module_slug, $action, $payload, $entity_id = '' ) {
+    public function create_request( $module_slug, $action, $payload, $entity_id = '', $entity_type = '', $flat_no = '' ) {
         // 1. Validation 
         if(empty($module_slug) || empty($action)) return new WP_Error('invalid_args', 'Module and Action required');
+
+        // Extract flat_no from payload if not provided
+        if ( empty( $flat_no ) && isset( $payload['flat_no'] ) ) {
+            $flat_no = $payload['flat_no'];
+        }
 
         // 2. Prepare Data
         $data = array(
             'module'       => $module_slug,
+            'flat_no'      => $flat_no,
             'request_type' => $action,
-            'entity_type'  => $module_slug, 
+            'entity_type'  => !empty($entity_type) ? $entity_type : $module_slug, 
             'entity_id'    => $entity_id,
             'payload'      => json_encode( $payload ),
             'status'       => 'pending',
@@ -121,6 +132,7 @@ class SGVX51_Request_Manager {
         $res = $this->db->insert( 'requests', $data );
         if($res && !is_wp_error($res)) {
             $this->log_audit('request_created', $module_slug, $data['id'], "Action: $action, Created by: " . $data['created_by']);
+            return $data['id']; // Return the custom request ID
         }
         return $res;
     }
@@ -129,6 +141,7 @@ class SGVX51_Request_Manager {
 	 * Process a request by its ID.
 	 */
 	public function approve_request( $request_id ) {
+        error_log("SGVX51 Debug: approve_request called for ID: $request_id");
 		$requests = $this->db->get( 'requests' );
 		$target_request = null;
 
@@ -172,7 +185,7 @@ class SGVX51_Request_Manager {
 
         $result = $module_instance->execute_request( $action, $payload );
 
-		if ( ! is_wp_error( $result ) && $result ) {
+		if ( ! is_wp_error( $result ) && $result !== false ) {
 			$actual_request_id = $target_request['id'];
 			$update_data = array(
 				'status'       => 'approved',
@@ -180,6 +193,43 @@ class SGVX51_Request_Manager {
 				'processed_by' => get_current_user_id(),
 			);
 			$this->db->update( 'requests', $update_data, array( 'id' => $actual_request_id ) );
+
+            // Robust Fallback: Ensure the main table status is updated to 'approved' (or 'archived' for delete)
+            if ( ! empty( $target_request['entity_id'] ) ) {
+                $table_map = array(
+                    'vehicles'   => 'vehicles',
+                    'vehicle'    => 'vehicles',
+                    'residents'  => 'residents',
+                    'family'     => 'residents',
+                    'staff'      => 'daily_help',
+                    'staffs'     => 'daily_help',
+                    'daily_help' => 'daily_help',
+                );
+                $target_table = $table_map[$module_slug] ?? '';
+                if ( $target_table ) {
+                    $new_status = ($action === 'delete') ? 'archived' : 'approved';
+                    $this->db->update( $target_table, array( 'status' => $new_status ), array( 'id' => $target_request['entity_id'] ) );
+                }
+            }
+            
+            // If this was a deletion, mark any OTHER pending requests for this entity as 'processed' (stale)
+            if ($action === 'delete' && !empty($target_request['entity_id'])) {
+                $all_requests = $this->db->get('requests');
+                foreach($all_requests as $other_req) {
+                    if (isset($other_req['id']) && $other_req['id'] !== $actual_request_id && 
+                        isset($other_req['entity_id']) && $other_req['entity_id'] === $target_request['entity_id'] && 
+                        ($other_req['status'] ?? '') === 'pending') {
+                        
+                        $this->db->update('requests', [
+                            'status' => 'cancelled',
+                            'admin_note' => 'Auto-cancelled because the record was deleted.',
+                            'processed_at' => current_time('mysql'),
+                            'processed_by' => get_current_user_id()
+                        ], ['id' => $other_req['id']]);
+                    }
+                }
+            }
+
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
 			return true;
 		}

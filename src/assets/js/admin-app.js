@@ -66,7 +66,73 @@
                 } catch (err) { }
             });
         });
+
+        // 4. Sidebar Toggle Logic
+        const sidebar = document.getElementById('sgvx-sidebar');
+        const sidebarToggle = document.getElementById('sgvx-sidebar-toggle');
+        const sidebarClose = document.getElementById('sgvx-sidebar-close');
+        const sidebarBackdrop = document.getElementById('sgvx-sidebar-backdrop');
+
+        if (sidebar && sidebarToggle) {
+            // Restore state from localStorage
+            const isCollapsed = localStorage.getItem('sgvx_sidebar_collapsed') === 'true';
+            if (isCollapsed && window.innerWidth >= 992) {
+                sidebar.classList.add('collapsed');
+            }
+
+            sidebarToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.innerWidth < 992) {
+                    // Mobile: Toggle overlay
+                    const isOpening = !sidebar.classList.contains('show');
+                    sidebar.classList.toggle('show');
+                    sidebarBackdrop.classList.toggle('show');
+                    sidebarBackdrop.classList.toggle('d-none');
+
+                    // Body lock
+                    document.body.style.overflow = isOpening ? 'hidden' : '';
+                } else {
+                    // Desktop: Toggle collapse
+                    sidebar.classList.toggle('collapsed');
+                    localStorage.setItem('sgvx_sidebar_collapsed', sidebar.classList.contains('collapsed'));
+                }
+            });
+        }
+
+        if (sidebarClose && sidebarBackdrop) {
+            const closeSidebar = () => {
+                sidebar.classList.remove('show');
+                sidebarBackdrop.classList.remove('show');
+                sidebarBackdrop.classList.add('d-none');
+                document.body.style.overflow = '';
+            };
+
+            sidebarClose.addEventListener('click', closeSidebar);
+            sidebarBackdrop.addEventListener('click', closeSidebar);
+        }
+
+        // 5. Global Chart Responsiveness (CanvasJS)
+        window.addEventListener('resize', debounce(() => {
+            if (window.sgvxCharts && Array.isArray(window.sgvxCharts)) {
+                window.sgvxCharts.forEach(chart => {
+                    if (typeof chart.render === 'function') chart.render();
+                });
+            }
+        }, 200));
     };
+
+    // Helper: Debounce
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
     // Robust Startup
     if (document.readyState === 'loading') {
@@ -95,11 +161,25 @@
      * @returns {Promise}
      */
     window.sgvxApiRequest = async function (action, data = {}) {
-        const formData = new FormData();
-        formData.append('action', action);
+        let formData;
+
+        if (data instanceof FormData) {
+            formData = data;
+        } else {
+            formData = new FormData();
+            for (const [key, val] of Object.entries(data)) {
+                if (Array.isArray(val)) {
+                    val.forEach(item => formData.append(key + '[]', item));
+                } else if (val !== null && val !== undefined) {
+                    formData.append(key, val);
+                }
+            }
+        }
+
+        if (!formData.has('action')) formData.append('action', action);
 
         // 1. Determine the Nonce
-        let finalNonce = data._wpnonce || '';
+        let finalNonce = formData.get('_wpnonce') || '';
 
         // 2. Auto-inject fallbacks if payload nonce is missing
         if (!finalNonce) {
@@ -114,19 +194,11 @@
             else if (window.sgvxStaffData) finalNonce = window.sgvxStaffData.nonce;
         }
 
-        if (finalNonce) {
+        if (finalNonce && !formData.has('_wpnonce')) {
             formData.append('_wpnonce', finalNonce);
-        }
-
-        // 3. Append remaining data (excluding action and _wpnonce to avoid duplicates)
-        for (const [key, val] of Object.entries(data)) {
-            if (key !== 'action' && key !== '_wpnonce') {
-                if (Array.isArray(val)) {
-                    val.forEach(item => formData.append(key + '[]', item));
-                } else if (val !== null && val !== undefined) {
-                    formData.append(key, val);
-                }
-            }
+        } else if (finalNonce && formData.has('_wpnonce') && !formData.get('_wpnonce')) {
+            // If it's empty string, update it
+            formData.set('_wpnonce', finalNonce);
         }
 
         try {
@@ -347,4 +419,10 @@
         }
     }
 
+    // --- Startup ---
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
+    }
 })();

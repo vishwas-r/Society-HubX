@@ -245,7 +245,7 @@ $activities = array_slice($activities, 0, 10);
 
         <!-- Sidebar Actions -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-3 h-100 bg-primary bg-opacity-10 border border-primary border-opacity-10 overflow-hidden">
+            <div class="card border-0 shadow-sm rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-10 overflow-hidden">
                 <div class="p-4 p-md-5 d-flex flex-column h-100">
                     <h5 class="fw-bold text-primary mb-4" style="letter-spacing: -0.01em;">Quick Actions</h5>
                     <div class="d-flex flex-column gap-3">

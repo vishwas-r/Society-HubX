@@ -37,24 +37,15 @@ window.sgvxGetFuzzyMatches = function (fuse, query) {
     if (!query || !fuse) return null;
     try {
         const results = fuse.search(query);
-        console.log(`sgvxGetFuzzyMatches: query="${query}", results=${results.length}`);
+        // Fuse.js returns results as [{ item: { el, text }, refIndex: ... }]
+        // but some older versions or configs might return items directly.
+        const mapped = results.map(r => {
+            if (r.item && r.item.el) return r.item.el;
+            if (r.el) return r.el;
+            return null;
+        }).filter(el => el !== null);
 
-        if (results.length > 0) {
-            console.log('First result structure:', results[0]);
-            console.log('Has el directly?', !!results[0].el);
-        }
-
-        // Fuse stores matched items directly on result object when using keys=['text']
-        const filtered = results.filter(r => r && r.el);
-        console.log('After filter (r && r.el):', filtered.length);
-
-        const mapped = filtered.map(r => r.el);
-        console.log('After map to el:', mapped.length, mapped);
-
-        const resultSet = new Set(mapped);
-        console.log('Final Set size:', resultSet.size);
-
-        return resultSet;
+        return new Set(mapped);
     } catch (e) {
         console.error('sgvxGetFuzzyMatches Error:', e);
         return new Set();

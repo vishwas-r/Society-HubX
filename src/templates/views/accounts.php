@@ -196,7 +196,7 @@ if ( isset( $_GET['success'] ) ) {
     <!-- Global Stats Grid -->
     <div class="row g-4 mb-5">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white border-start border-4 border-success">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white border-start border-5 border-success">
                 <div class="d-flex justify-content-between mb-2">
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Revenue (Inflow)</p>
                     <i class="bi bi-graph-up-arrow text-success fs-5"></i>
@@ -211,7 +211,7 @@ if ( isset( $_GET['success'] ) ) {
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white border-start border-4 border-danger">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white border-start border-5 border-danger">
                 <div class="d-flex justify-content-between mb-2">
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Expenses (Outflow)</p>
                     <i class="bi bi-graph-down-arrow text-danger fs-5"></i>
@@ -221,7 +221,7 @@ if ( isset( $_GET['success'] ) ) {
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-dark text-white border-start border-4 border-secondary">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-dark text-white border-start border-5 border-secondary">
                 <div class="d-flex justify-content-between mb-2 text-white-50">
                     <p class="small fw-bold text-uppercase tracking-wider m-0">System Balance</p>
                     <i class="bi bi-calculator fs-5"></i>
@@ -231,7 +231,7 @@ if ( isset( $_GET['success'] ) ) {
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 <?php echo abs($variance) < 10 ? 'bg-primary' : 'bg-warning'; ?> text-white border-start border-4 border-white-50 shadow-sm">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 <?php echo abs($variance) < 10 ? 'bg-primary' : 'bg-warning'; ?> text-white border-start border-5 border-white-50 shadow-sm">
                 <div class="d-flex justify-content-between mb-2 text-white-50">
                     <p class="small fw-bold text-uppercase tracking-wider m-0">Physical Funds</p>
                     <i class="bi bi-safe2 fs-5"></i>
@@ -1175,7 +1175,7 @@ function renderCashFlowChart() {
             gridColor: "#f3f4f6"
         },
         axisX: {
-            labelAngle: -45,
+            //labelAngle: -45,
             labelFontSize: 10,
             interval: 1
         },

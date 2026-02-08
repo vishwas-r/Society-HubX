@@ -59,16 +59,25 @@
         }
     };
 
+    // --- Filter Logic ---
+    window.toggleStaffFilters = function () {
+        const section = document.getElementById('staff-filter-section');
+        if (section) {
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(section);
+            bsCollapse.toggle();
+        }
+    };
+
     window.switchTab = function (tab) {
         currentTab = tab;
         $('.tab-btn').each(function () {
             const $btn = $(this);
             if ($btn.data('tab') === tab) {
-                $btn.addClass('active border-primary text-primary')
-                    .removeClass('border-transparent text-muted');
+                $btn.addClass('active border-primary text-primary fw-bold')
+                    .removeClass('border-transparent text-muted fw-semibold');
             } else {
-                $btn.removeClass('active border-primary text-primary')
-                    .addClass('border-transparent text-muted');
+                $btn.removeClass('active border-primary text-primary fw-bold')
+                    .addClass('border-transparent text-muted fw-semibold');
             }
         });
         applyFilters();
@@ -76,7 +85,12 @@
 
     window.applyFilters = function () {
         const searchInput = document.getElementById('staff-search-input');
+        const categoryFilter = document.getElementById('filter-staff-category');
+        const statusFilter = document.getElementById('filter-staff-status');
+
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const categoryVal = categoryFilter ? categoryFilter.value : 'all';
+        const statusVal = statusFilter ? statusFilter.value : 'all';
 
         if (!fuse && window.sgvxCreateFuse) {
             fuse = window.sgvxCreateFuse('.staff-row');
@@ -87,24 +101,41 @@
         $('.staff-row').each(function () {
             const $row = $(this);
             const status = $row.data('status');
+            const category = $row.data('category');
 
-            let matchTab = false;
+            // Tab logic
+            let matchesTab = false;
             if (currentTab === 'archived') {
-                matchTab = (status === 'archived');
+                matchesTab = (status === 'archived');
+            } else if (currentTab === 'pending') {
+                matchesTab = (status === 'pending');
+            } else if (currentTab === 'approved') {
+                matchesTab = (status === 'approved');
             } else if (currentTab === 'all') {
-                matchTab = (status !== 'archived');
-            } else {
-                matchTab = (status === currentTab);
+                matchesTab = (status !== 'archived');
             }
 
-            let matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(this));
+            // Advanced Filters logic
+            let matchesCategory = (categoryVal === 'all') || (category === categoryVal);
+            let matchesStatus = (statusVal === 'all' && status !== 'archived') || (statusVal === 'archived' && status === 'archived') || (status === statusVal);
+            let matchesSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(this));
 
-            if (matchTab && matchSearch) {
+            if (matchesTab && matchesCategory && matchesStatus && matchesSearch) {
                 $row.show();
             } else {
                 $row.hide();
             }
         });
+    };
+
+    window.clearStaffFilters = function () {
+        const searchInput = document.getElementById('staff-search-input');
+        if (searchInput) searchInput.value = '';
+        const catFilter = document.getElementById('filter-staff-category');
+        if (catFilter) catFilter.value = 'all';
+        const statusFilter = document.getElementById('filter-staff-status');
+        if (statusFilter) statusFilter.value = 'all';
+        applyFilters();
     };
 
     window.editStaff = function (staff) {
@@ -116,7 +147,20 @@
         $form.find('[name="phone"]').val(staff.phone || '');
         $form.find('[name="sex"]').val(staff.sex || '');
         $form.find('[name="visiting_hours"]').val(staff.visiting_hours || '');
+        $form.find('[name="document_url"]').val(staff.document_url || '');
+
+        const preview = document.getElementById('current-doc-preview');
+        if (preview) {
+            if (staff.document_url) {
+                preview.classList.remove('d-none');
+                preview.querySelector('a').href = staff.document_url;
+            } else {
+                preview.classList.add('d-none');
+            }
+        }
+
         $form.find('[name="flat_no"]').val(staff.flat_no || '');
+        $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
         $form.find('[name="action"]').val('sgvx51_edit_staff');
 
@@ -128,6 +172,9 @@
         const $form = $('#add-staff-form');
         $form[0].reset();
         $form.find('[name="action"]').val('sgvx51_add_staff');
+        $form.find('[name="document_url"]').val('');
+        const preview = document.getElementById('current-doc-preview');
+        if (preview) preview.classList.add('d-none');
         $('#staffModalTitle').text('Add New Staff');
     }
 
@@ -203,6 +250,17 @@
                 if (window.sgvxCreateFuse) fuse = window.sgvxCreateFuse('.staff-row');
             });
 
+            // Filter Buttons
+            $(document).on('click', '.js-toggle-staff-filters', function (e) { e.preventDefault(); toggleStaffFilters(); });
+            $(document).on('click', '.js-apply-staff-filters', function (e) { e.preventDefault(); applyFilters(); });
+            $(document).on('click', '.js-clear-staff-filters', function (e) { e.preventDefault(); clearStaffFilters(); });
+
+            // Tab Buttons
+            $(document).on('click', '#staffTabs .tab-btn', function (e) {
+                e.preventDefault();
+                switchTab($(this).data('tab'));
+            });
+
             const $form = $('#add-staff-form');
             if ($form.length) {
                 $form.on('submit', async function (e) {
@@ -213,9 +271,7 @@
 
                     try {
                         const formData = new FormData($form[0]);
-                        const data = Object.fromEntries(formData.entries());
-
-                        await sgvxApiRequest(data.action, data);
+                        await sgvxApiRequest(formData.get('action'), formData);
 
                         closeStaffModal();
                         window.location.reload();
