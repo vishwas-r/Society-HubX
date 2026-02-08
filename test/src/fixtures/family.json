@@ -1,0 +1,9 @@
+{
+    "validMember": {
+        "name": "Jane Doe",
+        "relation": "Spouse",
+        "age": 30,
+        "bloodGroup": "O+",
+        "phone": "9876543210"
+    }
+}

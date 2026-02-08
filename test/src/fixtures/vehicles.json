@@ -1,0 +1,12 @@
+{
+    "validVehicle": {
+        "number": "MH-12-SG-5100",
+        "type": "Car",
+        "brand": "Tesla",
+        "model": "Model 3"
+    },
+    "updatedVehicle": {
+        "brand": "Tesla",
+        "model": "Model X"
+    }
+}
