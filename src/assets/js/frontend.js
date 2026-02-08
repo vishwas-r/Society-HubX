@@ -683,9 +683,71 @@
         if (vehicleForm) {
             vehicleForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                handleFormSubmit(vehicleForm, 'sgvx51_add_vehicle_frontend', '#vehicleModal');
+                // Determine action based on hidden ID
+                const vid = vehicleForm.querySelector('input[name="vehicle_id"]').value;
+                const action = vid ? 'sgvx51_edit_vehicle_frontend' : 'sgvx51_add_vehicle_frontend';
+                // Also update the hidden action field for consistency
+                const actField = vehicleForm.querySelector('input[name="action"]');
+                if (actField) actField.value = action;
+
+                handleFormSubmit(vehicleForm, action, '#vehicleModal');
             });
         }
+
+        // --- 8.1 Vehicle Edit Handler ---
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('js-edit-vehicle')) {
+                e.preventDefault();
+                try {
+                    const data = JSON.parse(e.target.dataset.payload);
+                    const modalEl = document.getElementById('vehicleModal');
+                    if (!modalEl) return;
+
+                    const form = modalEl.querySelector('form');
+                    // Populate Form
+                    form.querySelector('input[name="vehicle_id"]').value = data.id || '';
+                    form.querySelector('input[name="number"]').value = data.number || data.plate_no || '';
+                    // Handle Select (Type)
+                    const typeSelect = form.querySelector('select[name="type"]');
+                    if (typeSelect && data.type) typeSelect.value = data.type;
+
+                    form.querySelector('input[name="brand"]').value = data.brand || '';
+                    form.querySelector('input[name="model"]').value = data.model || '';
+
+                    // Change UI text
+                    modalEl.querySelector('.modal-title').textContent = 'Edit Vehicle';
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Update Vehicle';
+
+                    // Show Modal
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                } catch (err) {
+                    console.error('Error parsing vehicle data', err);
+                }
+            }
+        });
+
+        // --- 8.2 Vehicle Add Reset Handler ---
+        // We need to reset the form when opening for "Add"
+        document.addEventListener('show.bs.modal', function (event) {
+            if (event.target.id === 'vehicleModal') {
+                // If triggered by a button that is NOT js-edit-vehicle
+                const trigger = event.relatedTarget;
+                if (trigger && !trigger.classList.contains('js-edit-vehicle')) {
+                    // Reset Form
+                    const form = event.target.querySelector('form');
+                    form.reset();
+                    form.querySelector('input[name="vehicle_id"]').value = '';
+                    form.querySelector('input[name="action"]').value = 'sgvx51_add_vehicle_frontend';
+
+                    // Reset UI
+                    event.target.querySelector('.modal-title').textContent = 'Register Vehicle';
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) submitBtn.textContent = 'Add Vehicle';
+                }
+            }
+        });
 
         // --- 9. Family Form Submission ---
         const familyForm = document.querySelector('#familyModal form');
