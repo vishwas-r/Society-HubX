@@ -67,14 +67,23 @@ $total_collected = 0;
 foreach($invoices as $inv) {
     if (date('Y', strtotime($inv['month'])) == $selected_year) {
         $total_demand += $inv['amount'];
+        
+        $collected_this_inv = 0;
         if(!empty($inv['payments'])) {
             $payments = is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments'];
-            if(is_array($payments)) {
+            if(is_array($payments) && !empty($payments)) {
                 foreach($payments as $p) {
-                   if(date('Y', strtotime($p['date'])) == $selected_year) $total_collected += $p['amount'];
+                   if(date('Y', strtotime($p['date'])) == $selected_year) $collected_this_inv += $p['amount'];
                 }
             }
         }
+        
+        // Fallback: If status is PAID but no payments found in JSON (Imported Data)
+        if($collected_this_inv == 0 && (strtolower($inv['status'] ?? '') === 'paid')) {
+            $collected_this_inv = $inv['amount'];
+        }
+        
+        $total_collected += $collected_this_inv;
     }
 }
 $collection_pct = ($total_demand > 0) ? round(($total_collected / $total_demand) * 100) : 0;
@@ -226,8 +235,23 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-uppercase tracking-wider m-0">System Balance</p>
                     <i class="bi bi-calculator fs-5"></i>
                 </div>
+                <!-- Yearly Balance -->
                 <h3 class="h2 fw-bold m-0">₹<?php echo sgvx_in_fmt($net_balance, 0); ?></h3>
-                <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">OPENING + CREDIT - DEBIT</div>
+                <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">YEAR END POSITION</div>
+                
+                <!-- Overall Live Balance (Added) -->
+                <?php 
+                    $live_bal = $ledger_mgr->get_current_balance(); 
+                    $is_current_year = ($selected_year == date('Y'));
+                ?>
+                <?php if(!$is_current_year): ?>
+                    <div class="mt-3 pt-3 border-top border-white-50">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small fw-bold text-white-50" style="font-size: 10px;">LIVE BALANCE</span>
+                            <span class="fw-bold text-white">₹<?php echo sgvx_in_fmt($live_bal['total'] ?? 0, 0); ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         <div class="col-md-3">
@@ -345,6 +369,11 @@ if ( isset( $_GET['success'] ) ) {
                                             if(is_array($payments)) {
                                                 foreach($payments as $p) $paid += floatval($p['amount']);
                                             }
+                                        }
+
+                                        // Fallback for Imported Data
+                                        if($paid == 0 && (strtolower($inv['status'] ?? '') === 'paid')) {
+                                            $paid = floatval($inv['amount']);
                                         }
 
                                         // Check for pending request

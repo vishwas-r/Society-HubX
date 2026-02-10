@@ -85,25 +85,53 @@ class SGVX51_Ledger_Manager {
 		$invoices = $this->db->get( 'invoices' );
 		if ( ! empty( $invoices ) ) {
 			foreach ( $invoices as $inv ) {
+				$entries_added = false;
+
+				// Priority 1: Check `payments` JSON column (Partial payments or multiple entries)
 				if ( ! empty( $inv['payments'] ) ) {
-					// Payments might be JSON string from DB, parse if needed
 					$payments_list = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-					if ( ! is_array( $payments_list ) ) $payments_list = array();
-					foreach ( $payments_list as $pay ) {
-						// Filter by Year of Payment
-						if ( date( 'Y', strtotime( $pay['date'] ) ) == $year ) {
-							$entries[] = array(
-								'date'        => $pay['date'],
-								'type'        => 'Credit',
-								'description' => 'Payment for ' . $inv['description'] . ' (' . $inv['month'] . ')',
-								'amount'      => floatval( $pay['amount'] ),
-								'bank_balance' => 0,
-								'cash_balance' => 0,
-								'ref_id'      => isset($pay['id']) ? strtoupper($pay['id']) : 'PAY-' . $inv['flat_no'],
-                                'entity'      => 'Flat ' . $inv['flat_no'],
-                                'account_type'=> $pay['account_type'] ?? ( (strtolower($pay['method'] ?? '') === 'cash') ? 'cash' : 'bank' )
-							);
+					
+					// Validate JSON decode
+					if ( is_array( $payments_list ) && ! empty( $payments_list ) ) {
+						foreach ( $payments_list as $pay ) {
+							if ( date( 'Y', strtotime( $pay['date'] ) ) == $year ) {
+								$entries[] = array(
+									'date'        => $pay['date'],
+									'type'        => 'Credit',
+									'description' => 'Payment for ' . $inv['description'] . ' (' . $inv['month'] . ')',
+									'amount'      => floatval( $pay['amount'] ),
+									'bank_balance' => 0,
+									'cash_balance' => 0,
+									'ref_id'      => isset($pay['id']) ? strtoupper($pay['id']) : 'PAY-' . $inv['flat_no'],
+									'entity'      => 'Flat ' . $inv['flat_no'],
+									'account_type'=> $pay['account_type'] ?? ( (strtolower($pay['method'] ?? '') === 'cash') ? 'cash' : 'bank' )
+								);
+								$entries_added = true;
+							}
 						}
+					}
+				}
+
+				// Priority 2: Fallback to Main Table Columns (Imported Data or Simple Paid Status)
+				// If NO entries were added from JSON, but status is PAID, use the main row data.
+				if ( ! $entries_added && (strtolower($inv['status'] ?? '') === 'paid') ) {
+					$pay_date = !empty($inv['payment_date']) && $inv['payment_date'] !== '0000-00-00 00:00:00' 
+								? date('Y-m-d', strtotime($inv['payment_date'])) 
+								: ($inv['created_at'] ? date('Y-m-d', strtotime($inv['created_at'])) : date('Y-m-d'));
+					
+					// Filter by Year
+					if ( date( 'Y', strtotime( $pay_date ) ) == $year ) {
+						$entries[] = array(
+							'date'        => $pay_date,
+							'type'        => 'Credit',
+							'description' => 'Payment for ' . $inv['description'] . ' (' . $inv['month'] . ')',
+							'amount'      => floatval( $inv['amount'] ), // Full Amount
+							'bank_balance' => 0,
+							'cash_balance' => 0,
+							'ref_id'      => !empty($inv['payment_ref']) ? $inv['payment_ref'] : 'PAY-' . $inv['flat_no'],
+							'entity'      => 'Flat ' . $inv['flat_no'],
+							'account_type'=> 'bank' // Default to bank for imported bulk data
+						);
 					}
 				}
 			}
@@ -114,29 +142,28 @@ class SGVX51_Ledger_Manager {
 			return strtotime( $a['date'] ) - strtotime( $b['date'] );
 		});
 
-		        // Initial Balances (Opening Balances)
-        $opening_bank = floatval( get_option( 'sgvx51_opening_bank_' . $year, get_option( 'sgvx51_opening_bank', 0 ) ) );
-        $opening_cash = floatval( get_option( 'sgvx51_opening_cash_' . $year, get_option( 'sgvx51_opening_cash', 0 ) ) );
-        
-        // Prepend Opening Balance Entry
-        array_unshift($entries, array(
-            'date'         => $year . '-01-01',
-            'type'         => 'Opening',
-            'description'  => 'Opening Balance for ' . $year,
-            'amount'       => 0,
-            'bank_balance' => $opening_bank,
-            'cash_balance' => $opening_cash,
-            'ref_id'       => 'START-' . $year,
-            'entity'       => 'System'
-        ));
+		$opening_bank = floatval( get_option( 'sgvx51_opening_bank_' . $year, get_option( 'sgvx51_opening_bank', 0 ) ) );
+		$opening_cash = floatval( get_option( 'sgvx51_opening_cash_' . $year, get_option( 'sgvx51_opening_cash', 0 ) ) );
+		
+		// Prepend Opening Balance Entry
+		array_unshift($entries, array(
+			'date'         => $year . '-01-01',
+			'type'         => 'Opening',
+			'description'  => 'Opening Balance for ' . $year,
+			'amount'       => 0,
+			'bank_balance' => $opening_bank,
+			'cash_balance' => $opening_cash,
+			'ref_id'       => 'START-' . $year,
+			'entity'       => 'System'
+		));
 
 		$bank_bal = $opening_bank; 
 		$cash_bal = $opening_cash; 
-        $first = true;
+		$first = true;
 		foreach ( $entries as &$entry ) {
-            if($first) { $first = false; continue; }
-            
-            $acc = $entry['account_type'] ?? 'bank';
+			if($first) { $first = false; continue; }
+			
+			$acc = $entry['account_type'] ?? 'bank';
 			if ( $entry['type'] === 'Credit' ) {
 				if($acc === 'cash') $cash_bal += $entry['amount']; else $bank_bal += $entry['amount'];
 			} else {
@@ -184,11 +211,12 @@ class SGVX51_Ledger_Manager {
             $paid_amt = 0;
             $due_amt = 0;
 
-            // Match invoice by flat ID (A-101, etc.)
-            $flat_id = $f['id'] ?? ($f['flat_no'] ?? 'N/A');
+            // Match invoice by Flat Number (e.g. 101) instead of ID (flat_A_101)
+            $flat_id = $f['flat_number'] ?? ($f['id'] ?? 'N/A'); 
 
             foreach($invoices as $inv) {
-                if(isset($inv['flat_no']) && $inv['flat_no'] === $flat_id && isset($inv['month']) && $inv['month'] === $month && ($inv['type'] ?? '') === 'maintenance') {
+                // Use loose comparison for string/int match
+                if(isset($inv['flat_no']) && (string)$inv['flat_no'] === (string)$flat_id && isset($inv['month']) && $inv['month'] === $month && ($inv['type'] ?? '') === 'maintenance') {
                     $status = $inv['status'] ?? 'unpaid';
                     $due_amt = $inv['amount'] ?? 0;
                     if (!empty($inv['payments'])) {
@@ -197,6 +225,11 @@ class SGVX51_Ledger_Manager {
                         if ( is_array( $payments_list ) ) {
                             foreach($payments_list as $p) $paid_amt += ($p['amount'] ?? 0);
                         }
+                    }
+                    
+                    // Fallback for Imported Data
+                    if($paid_amt == 0 && (strtolower($status) === 'paid')) {
+                        $paid_amt = $due_amt;
                     }
                     break;
                 }

@@ -58,12 +58,27 @@
               <h5 class="fw-bold mb-3 small text-uppercase text-secondary">Flat Payment Status</h5>
               <div class="row g-2">
                    <?php foreach(($data['monthly_summary'] ?? []) as $s):  
-                       $bg = ($s['status'] ?? '') === 'paid' ? 'bg-success' : (($s['status'] ?? '') === 'partial' ? 'bg-warning' : 'bg-light');
-                       $txt = ($s['status'] ?? '') === 'unpaid' ? 'text-secondary' : 'text-white';
+                       $status = strtolower($s['status'] ?? 'unpaid');
+                       
+                       $bg_class = 'bg-secondary text-white'; // Default Unpaid (Grey)
+                       if($status === 'paid') {
+                           $bg_class = 'bg-success text-white shadow-sm';
+                       } elseif($status === 'partial') {
+                           $bg_class = 'bg-warning text-dark shadow-sm';
+                       }
+                       
+                       $tooltip = ($s['resident'] ?? 'Unknown') . " - " . ucfirst($status) . " (Paid: ₹" . ($s['paid'] ?? 0) . ")";
                    ?>
-                    <div class="col-auto">
-                        <div class="<?php echo $bg . ' ' . $txt; ?> p-2 rounded text-center position-relative" style="min-width: 60px;">
-                            <div class="fw-bold small" style="font-size: 0.7rem;"><?php echo esc_html($s['flat_no'] ?? 'N/A'); ?></div>
+                    <div class="col-4 col-sm-3 col-md-2 col-lg-1">
+                        <div class="<?php echo $bg_class; ?> p-2 rounded-2 text-center position-relative h-100 d-flex flex-column justify-content-center align-items-center cursor-pointer transition-transform hover-scale shadow-sm" 
+                             style="min-height: 70px;"
+                             title="<?php echo esc_attr($tooltip); ?>" data-bs-toggle="tooltip">
+                            <div class="fw-bold lh-1" style="font-size: 0.85rem;"><?php echo esc_html($s['flat_no'] ?? 'N/A'); ?></div>
+                            <?php if($status !== 'paid'): ?>
+                                <div class="opacity-75 mt-1 fw-bold" style="font-size: 0.6rem;">Due</div>
+                            <?php else: ?>
+                                <div class="opacity-75 mt-1" style="font-size: 0.6rem;"><i class="bi bi-check-lg"></i></div>
+                            <?php endif; ?>
                         </div>
                     </div>
                    <?php endforeach; ?>

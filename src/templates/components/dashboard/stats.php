@@ -7,15 +7,13 @@
 $total_dues = 0;
 if ( ! empty( $data['invoices'] ) ) {
     foreach ( $data['invoices'] as $inv ) {
-        $paid = 0;
-        $payments = $inv['payments'] ?? [];
-        if ( is_string( $payments ) ) {
-            $payments = json_decode( $payments, true );
+        // Simple Dues Logic: Trust the Status
+        if ( strtolower(trim($inv['status'] ?? '')) === 'paid' ) {
+             continue; // No Dues
         }
-        if ( is_array( $payments ) ) {
-            foreach ( $payments as $p ) $paid += (float) ( $p['amount'] ?? 0 );
-        }
-        $balance = (float) ( $inv['amount'] ?? 0 ) - $paid;
+
+        // If not paid, full amount is due (ignoring partial payments as per request)
+        $balance = (float) ( $inv['amount'] ?? 0 );
         if ( $balance > 0 ) $total_dues += $balance;
     }
 }

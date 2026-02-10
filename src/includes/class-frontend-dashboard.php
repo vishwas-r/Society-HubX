@@ -219,6 +219,7 @@ class SGVX51_Frontend_Dashboard {
 		}
 
 		if ( ! $resident ) {
+			error_log("SGVX51 Debug: Resident NOT found in render_dashboard for user_id: " . $user_id);
 			if ( current_user_can( 'manage_options' ) ) {
 				return '<div class="sgvx51-alert alert alert-info">
 							<h4>Welcome Admin!</h4>
@@ -228,6 +229,8 @@ class SGVX51_Frontend_Dashboard {
 			}
 			return '<div class="sgvx51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
 		}
+
+		error_log("SGVX51 Debug: Resident FOUND in render_dashboard: " . ($resident['id'] ?? 'NO_ID') . " | Name: " . ($resident['name'] ?? 'NO_NAME'));
 
 		// Success Message
         if ( isset( $_GET['request_submitted'] ) ) {
@@ -268,7 +271,7 @@ class SGVX51_Frontend_Dashboard {
 			'facilities' => $this->db->get( 'facilities' ),
 			'my_bookings'=> $this->get_my_bookings( $resident['flat_no'] ), // Using Flat No as ID for now
 			'expenses'   => $this->db->get( 'expenses' ), // Summary only
-			'invoices'   => $this->get_my_invoices( $resident['flat_no'] ),
+			'invoices'   => $this->get_my_invoices( isset($my_flat['flat_number']) ? $my_flat['flat_number'] : $resident['flat_no'] ),
 			'detailed_expenses' => $this->get_expenses_filtered(),
             'current_balance'   => $ledger_mgr->get_current_balance(),
             'monthly_summary'   => $ledger_mgr->get_monthly_summary($summary_month),
@@ -291,22 +294,30 @@ class SGVX51_Frontend_Dashboard {
         $expense_chart_data = array_slice($expense_chart_data, -12, null, true);
 
         // Resident Payment History
-        $payment_history = [];
-        if ( ! empty( $data['invoices'] ) ) {
-            foreach ( $data['invoices'] as $inv ) {
-                $month_key = date('M Y', strtotime($inv['month']));
-                if (!isset($payment_history[$month_key])) $payment_history[$month_key] = 0;
-                
-                if ( ! empty( $inv['payments'] ) ) {
-                    $payments = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-                    if ( is_array( $payments ) ) {
-                        foreach ( $payments as $p ) {
-                            $payment_history[$month_key] += (float) $p['amount'];
-                        }
-                    }
-                }
-            }
-        }
+       $payment_history = [];
+       if ( ! empty( $data['invoices'] ) ) {
+           foreach ( $data['invoices'] as $inv ) {
+               $month_key = date('M Y', strtotime($inv['month']));
+               if (!isset($payment_history[$month_key])) $payment_history[$month_key] = 0;
+               
+               $paid_amount = 0;
+               if ( ! empty( $inv['payments'] ) ) {
+                   $payments = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
+                   if ( is_array( $payments ) ) {
+                       foreach ( $payments as $p ) {
+                           $paid_amount += (float) $p['amount'];
+                       }
+                   }
+               }
+               
+               // Fallback for imported data
+               if ( $paid_amount == 0 && (strtolower($inv['status'] ?? '') === 'paid') ) {
+                   $paid_amount = (float) $inv['amount'];
+               }
+               
+               $payment_history[$month_key] += $paid_amount;
+           }
+       }
         $payment_history = array_slice($payment_history, -12, null, true);
 
 		// 3. Prepare $data for template
@@ -1191,7 +1202,7 @@ class SGVX51_Frontend_Dashboard {
 		$all = $this->db->get( 'invoices' );
 		$mine = array();
 		foreach ( $all as $inv ) {
-			if ( $inv['flat_no'] === $flat_no ) {
+			if ( (string)$inv['flat_no'] === (string)$flat_no ) {
 				$mine[] = $inv;
 			}
 		}

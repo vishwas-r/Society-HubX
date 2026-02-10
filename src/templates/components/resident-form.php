@@ -72,8 +72,12 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
              <select name="flat_no" class="form-select rounded-3 border-light shadow-none" required>
                 <option value="">Select Flat</option>
                 <?php if(!empty($args['flats'])): ?>
-                    <?php foreach($args['flats'] as $f): ?>
-                        <option value="<?php echo esc_attr($f['id']); ?>" <?php selected($flat_no, $f['id']); ?>><?php echo esc_html($f['id']); ?></option>
+                    <?php foreach($args['flats'] as $f): 
+                        $val = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                        // Smart Select: Match either the new Value OR the legacy ID
+                        $is_sel = ($flat_no == $val) || ($flat_no == $f['id']);
+                    ?>
+                        <option value="<?php echo esc_attr($val); ?>" <?php echo $is_sel ? 'selected' : ''; ?>><?php echo esc_html($val); ?></option>
                     <?php endforeach; ?>
                 <?php endif; ?>
              </select>
