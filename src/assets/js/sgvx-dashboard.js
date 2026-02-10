@@ -454,6 +454,82 @@
             });
         }
 
+        // 2. Help Form Submit
+        const helpForm = document.querySelector('#helpModal form');
+        if (helpForm) {
+            helpForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const btn = helpForm.querySelector('button[type="submit"]');
+                if (!btn) return;
+                const originalText = btn.innerText;
+                btn.disabled = true;
+                btn.innerText = 'Saving...';
+
+                const formData = new FormData(helpForm);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.data.message || 'Saved successfully');
+                            location.reload();
+                        } else {
+                            const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
+                            alert('Error: ' + msg);
+                            btn.disabled = false;
+                            btn.innerText = originalText;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Fetch Error:', err);
+                        alert('Network error occurred.');
+                        btn.disabled = false;
+                        btn.innerText = originalText;
+                    });
+            });
+        }
+
+        // 3. Vehicle Form Submit
+        const vehicleForm = document.querySelector('#vehicleModal form');
+        if (vehicleForm) {
+            vehicleForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const btn = vehicleForm.querySelector('button[type="submit"]');
+                if (!btn) return;
+                const originalText = btn.innerText;
+                btn.disabled = true;
+                btn.innerText = 'Requesting...';
+
+                const formData = new FormData(vehicleForm);
+
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.data.message || 'Request submitted successfully');
+                            location.reload();
+                        } else {
+                            const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
+                            alert('Error: ' + msg);
+                            btn.disabled = false;
+                            btn.innerText = originalText;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Fetch Error:', err);
+                        alert('Network error occurred.');
+                        btn.disabled = false;
+                        btn.innerText = originalText;
+                    });
+            });
+        }
+
         // --- Helper to open Modal (Tailwind/Custom) ---
         function openModal(modalId) {
             const m = document.getElementById(modalId);
@@ -619,7 +695,7 @@
                 }
 
                 // Set Action
-                form.querySelector('[name="action"]').value = 'sgvx51_edit_daily_help';
+                form.querySelector('[name="action"]').value = 'sgvx51_edit_help_frontend';
 
                 // Set ID
                 let idInput = form.querySelector('[name="help_id"]');
@@ -630,6 +706,11 @@
                     form.appendChild(idInput);
                 }
                 idInput.value = payload.id;
+
+                // Swap Nonce
+                const editNonce = form.querySelector('[name="_wpnonce_edit_help"]');
+                const mainNonce = form.querySelector('[name="_wpnonce"]');
+                if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
                 const modalTitle = form.querySelector('.modal-title');
                 if (modalTitle) modalTitle.innerText = 'Edit Daily Help';
@@ -683,13 +764,17 @@
         // Helper to reset help modal
         window.resetHelpModal = function () {
             const form = document.querySelector('#helpModal form');
-            if (!form) return;
             form.reset();
             form.querySelector('[name="action"]').value = 'sgvx51_add_daily_help';
             const idInput = form.querySelector('[name="help_id"]');
             if (idInput) idInput.value = '';
             const docUrlInput = form.querySelector('[name="document_url"]');
             if (docUrlInput) docUrlInput.value = '';
+
+            // Reset Nonce to Add
+            const addNonce = form.querySelector('[name="_wpnonce_add_help"]');
+            const mainNonce = form.querySelector('[name="_wpnonce"]');
+            if (addNonce && mainNonce) mainNonce.value = addNonce.value;
 
             const preview = document.getElementById('current-help-doc-preview');
             if (preview) preview.classList.add('d-none');
@@ -721,10 +806,22 @@
             const idField = form.querySelector('[name="vehicle_id"]');
             if (idField) idField.value = payload.id;
 
-            let modal = document.querySelector('#vehicleModal');
-            modal.querySelector('.modal-title').innerText = 'Edit Vehicle';
-            modal.querySelector('button[type="submit"]').innerText = 'Update';
-            openModal('vehicleModal');
+            // Swap Nonce
+            const editNonce = form.querySelector('[name="sgvx51_edit_vehicle_token"]');
+            const mainNonce = form.querySelector('[name="_wpnonce"]');
+            if (editNonce && mainNonce) mainNonce.value = editNonce.value;
+
+            const modalTitle = form.querySelector('.modal-title');
+            if (modalTitle) modalTitle.innerText = 'Edit Vehicle';
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.innerText = 'Update';
+
+            // Open modal using Bootstrap API
+            const modalEl = document.getElementById('vehicleModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
         }
 
         // --- Reset Vehicle Modal for Add ---
@@ -735,13 +832,10 @@
             // Reset form fields
             form.reset();
 
-            // Clear vehicle_id field
-            const idInput = form.querySelector('input[name="vehicle_id"]');
-            if (idInput) idInput.value = '';
-
-            // Reset action to add
-            const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'sgvx51_add_vehicle_frontend';
+            // Reset Nonce to Add
+            const addNonce = form.querySelector('[name="_wpnonce_add_vehicle_frontend"]');
+            const mainNonce = form.querySelector('[name="_wpnonce"]');
+            if (addNonce && mainNonce) mainNonce.value = addNonce.value;
 
             // Reset title and button
             const modal = document.querySelector('#vehicleModal');
@@ -770,7 +864,7 @@
             if (btn) { e.preventDefault(); handleDeleteFamily(btn); return; }
 
             btn = e.target.closest('.js-delete-help-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'sgvx51_delete_help_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'sgvx51_delete_daily_help_frontend'); return; }
 
             btn = e.target.closest('.js-delete-vehicle-frontend');
             if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'sgvx51_delete_vehicle_frontend'); return; }
@@ -834,7 +928,7 @@
         // --- Open Directory Modal ---
         window.openDirModal = function (card) {
             if (!card || !card.dataset.json) return;
-
+            console.log(card)
             try {
                 const data = JSON.parse(card.dataset.json);
                 const modal = document.getElementById('communityDetailModal');

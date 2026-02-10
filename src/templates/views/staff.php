@@ -178,7 +178,7 @@ $all_flats = $flats;
                                 if ($p['request_type'] === 'delete') {
                                     $rows_by_entity[$entity_id]['status'] = 'deletion_pending';
                                 } else {
-                                    // Merge payload fields (name, role, etc. but preserve ID and internal status if needed)
+                                    // Merge payload fields
                                     $rows_by_entity[$entity_id] = array_merge($rows_by_entity[$entity_id], $payload);
                                     $rows_by_entity[$entity_id]['status'] = 'pending'; // Mark as pending update
                                 }
@@ -186,13 +186,11 @@ $all_flats = $flats;
                                 $rows_by_entity[$entity_id]['request_id'] = $request_id;
                             } else {
                                 // NEW: This is likely a new staff member addition
-                                $payload['id'] = $request_id; // For UI actions, use request ID
-                                $payload['entity_id'] = $entity_id;
+                                $payload['id'] = $entity_id ? $entity_id : $request_id; // Priority to entity_id if exists
                                 $payload['status'] = 'pending';
                                 $payload['is_request'] = true;
                                 $payload['request_id'] = $request_id;
                                 
-                                // Avoid double-adding if ID matches (rare if entity_id missing)
                                 $rows_by_entity[$request_id] = $payload;
                             }
                         }
@@ -219,10 +217,10 @@ $all_flats = $flats;
                                 data-status="<?php echo esc_attr($status); ?>" 
                                 data-category="<?php echo esc_attr($category); ?>"
                                 data-search="<?php echo esc_attr(strtolower(($s['name']??'') . ' ' . ($s['role']??'') . ' ' . ($s['phone']??''))); ?>">
-                                <td class="ps-3 ps-md-5 py-4">
-                                    <input type="checkbox" value="<?php echo esc_attr($s['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none" <?php echo !$is_request ? 'disabled' : ''; ?>>
+                                <td class="ps-5 py-4">
+                                    <input type="checkbox" value="<?php echo esc_attr(!empty($s['request_id']) ? $s['request_id'] : $s['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none">
                                 </td>
-                                <td class="ps-0 ps-md-2 py-4">
+                                <td class="ps-3 ps-md-5 py-4">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="flex-shrink-0 <?php echo $status === 'pending' ? 'bg-warning' : ($status === 'rejected' ? 'bg-danger' : ($status === 'archived' ? 'bg-secondary' : 'bg-primary')); ?> bg-opacity-10 <?php echo $status === 'pending' ? 'text-warning' : ($status === 'rejected' ? 'text-danger' : ($status === 'archived' ? 'text-secondary' : 'text-primary')); ?> rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
                                             <?php echo substr($s['name'] ?? 'U', 0, 1); ?>
@@ -240,23 +238,29 @@ $all_flats = $flats;
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4">
+                                <td class="px-3 px-md-4 py-4">
                                     <span class="badge <?php echo ($s['category'] ?? '') === 'Management' ? 'bg-dark' : 'bg-secondary'; ?> bg-opacity-10 <?php echo ($s['category'] ?? '') === 'Management' ? 'text-dark' : 'text-secondary'; ?> border border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.05em;">
                                         <?php echo esc_html( $s['category'] ?? 'Support Staff' ); ?>
                                     </span>
                                 </td>
-                                <td class="px-4 py-4">
+                                <td class="px-3 px-md-4 py-4">
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.05em;">
                                         <?php echo esc_html( $s['role'] ); ?>
                                     </span>
                                 </td>
-                                <td class="px-4 py-4">
-                                    <?php echo SGVX51_Admin_UI::render_status_badge( $status ); ?>
+                                <td class="px-3 px-md-4 py-4">
+                                    <?php 
+                                    if ($status === 'deletion_pending') {
+                                        echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
+                                    } else {
+                                        echo SGVX51_Admin_UI::render_status_badge( $status ); 
+                                    }
+                                    ?>
                                 </td>
-                                <td class="px-4 py-4">
+                                <td class="px-3 px-md-4 py-4">
                                     <div class="text-dark fw-bold small"><?php echo esc_html( $s['phone'] ); ?></div>
                                 </td>
-                                 <td class="px-4 py-4">
+                                <td class="px-3 px-md-4 py-4">
                                     <?php 
                                         $served_flats_raw = $s['flats_served'] ?? '';
                                         $served_flats = is_array($served_flats_raw) ? $served_flats_raw : (!empty($served_flats_raw) ? json_decode($served_flats_raw, true) : []);
@@ -274,8 +278,8 @@ $all_flats = $flats;
                                 </td>
                                 <td class="pe-3 pe-md-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2 text-nowrap">
-                                        <?php if ($status === 'pending'): ?>
-                                            <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $s['id'], 'daily_help' ); ?>
+                                        <?php if ($is_request && !empty($s['request_id'])): ?>
+                                            <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
                                         <?php elseif ($status === 'rejected'): ?>
                                             <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>

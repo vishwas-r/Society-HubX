@@ -215,12 +215,13 @@
                                             <div class="dropdown">
                                                 <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
-                                                    <li><button class="dropdown-item js-edit-vehicle small" data-payload="<?php echo esc_attr(json_encode($v)); ?>">Edit</button></li>
+                                                    <li><button class="dropdown-item js-edit-vehicle small" data-payload="<?php echo esc_attr(json_encode($v)); ?>"><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
+                                                    <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
                                                         <button class="dropdown-item text-danger small js-delete-vehicle-frontend" 
                                                                 data-id="<?php echo esc_attr($v['id']); ?>" 
                                                                 data-nonce="<?php echo wp_create_nonce('sgvx51_delete_vehicle_frontend_nonce'); ?>">
-                                                            Deregister
+                                                            <i class="bi bi-trash3 me-2"></i> Remove
                                                         </button>
                                                     </li>
                                                 </ul>

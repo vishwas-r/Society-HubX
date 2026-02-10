@@ -181,8 +181,9 @@ $qr_url    = get_option('sgvx51_bank_qr');
       <div class="modal-body">
          <input type="hidden" name="action" value="sgvx51_add_vehicle_frontend">
          <input type="hidden" name="vehicle_id" value="">
-         <?php wp_nonce_field('sgvx51_add_vehicle_frontend_nonce'); ?>
+         <?php wp_nonce_field('sgvx51_add_vehicle_frontend_nonce', '_wpnonce_add_vehicle_frontend'); ?>
          <?php wp_nonce_field('sgvx51_edit_vehicle_action', 'sgvx51_edit_vehicle_token', true, true); ?>
+         <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('sgvx51_add_vehicle_frontend_nonce')); ?>">
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number <span class="text-danger">*</span></label>
              <input type="text" name="number" class="form-control rounded-3 border-light shadow-none font-monospace" placeholder="KA52AB1234" required>

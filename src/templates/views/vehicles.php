@@ -105,16 +105,51 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                         }
                     }
 
-                    // Prepare all rows
-                    $all_rows = array();
-                    
+                    // 1. Index active vehicles
+                    $rows_by_entity = array();
                     if ( ! empty( $vehicles ) ) {
                         foreach ( $vehicles as $v ) {
+                            $v_id = $v['id'] ?? '';
+                            if (!$v_id) continue;
+                            
                             $v_status = $v['status'] ?? 'approved';
                             $v['is_request'] = in_array($v_status, ['pending', 'rejected']);
-                            $all_rows[] = $v;
+                            $v['request_id'] = '';
+                            $rows_by_entity[$v_id] = $v;
                         }
                     }
+
+                    // 2. Merge Pending Requests (from requests table) to deduplicate
+                    if ( ! empty( $pending ) ) {
+                        foreach ( $pending as $p ) {
+                            $payload = json_decode($p['payload'], true) ?: [];
+                            $entity_id = $p['entity_id'] ?? '';
+                            $request_id = $p['id'];
+                            
+                            if ( $entity_id && isset($rows_by_entity[$entity_id]) ) {
+                                // OVERLAY: This is an edit/delete for an existing record
+                                if ($p['request_type'] === 'delete') {
+                                    $rows_by_entity[$entity_id]['status'] = 'deletion_pending';
+                                } else {
+                                    // Merge payload fields
+                                    $rows_by_entity[$entity_id] = array_merge($rows_by_entity[$entity_id], $payload);
+                                    $rows_by_entity[$entity_id]['status'] = 'pending'; // Mark as pending update
+                                }
+                                $rows_by_entity[$entity_id]['is_request'] = true;
+                                $rows_by_entity[$entity_id]['request_id'] = $request_id;
+                            } else {
+                                // NEW: This is likely a new vehicle addition
+                                $payload['id'] = $entity_id ? $entity_id : $request_id;
+                                $payload['status'] = 'pending';
+                                $payload['is_request'] = true;
+                                $payload['request_id'] = $request_id;
+                                
+                                $rows_by_entity[$request_id] = $payload;
+                            }
+                        }
+                    }
+
+                    $all_rows = array_values($rows_by_entity);
 
                     if ( empty( $all_rows ) ) : ?>
                         <tr>
@@ -136,7 +171,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??''))); ?>">
                             <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($v['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none" <?php echo !$is_request ? 'disabled' : ''; ?>>
+                                <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none">
                             </td>
                             <td class="ps-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
@@ -150,8 +185,14 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                 </div>
                             </td>
                             <td class="px-4 py-4">
-                                <?php echo SGVX51_Admin_UI::render_status_badge( $status ); ?>
-                            </td>
+                                    <?php 
+                                    if ($status === 'deletion_pending') {
+                                        echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
+                                    } else {
+                                        echo SGVX51_Admin_UI::render_status_badge( $status ); 
+                                    }
+                                    ?>
+                                </td>
                             <td class="px-4 py-4">
                                 <div class="fw-bold text-dark small"><?php echo esc_html( !empty($v['owner_name']) ? $v['owner_name'] : ($flat_owners[$v['flat_no']] ?? 'System Admin') ); ?></div>
                                 <div class="text-secondary small" style="font-size: 11px;">Flat <?php echo esc_html( $v['flat_no'] ); ?></div>
@@ -159,10 +200,10 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             <td class="px-4 py-4 text-center">
                                 <span class="badge bg-light text-dark fw-bold px-3 py-2 border rounded-3" style="font-size: 11px;">#<?php echo esc_html( $v['sticker'] ?? '---' ); ?></span>
                             </td>
-                            <td class="pe-5 py-4 text-end">
+                                <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 text-nowrap">
-                                    <?php if ($status === 'pending'): ?>
-                                        <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $v['id'], 'vehicles' ); ?>
+                                    <?php if ($is_request && !empty($v['request_id'])): ?>
+                                        <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
                                     <?php elseif ($status === 'rejected'): ?>
                                         <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(json_encode($v)); ?>">
                                             <i class="bi bi-pencil-square"></i>

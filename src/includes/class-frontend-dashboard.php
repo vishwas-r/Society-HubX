@@ -56,7 +56,7 @@ class SGVX51_Frontend_Dashboard {
         add_action( 'wp_ajax_sgvx51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
         add_action( 'wp_ajax_sgvx51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
 
-        add_action( 'wp_ajax_sgvx51_add_help_frontend', array( $this, 'handle_add_daily_help' ) );
+        add_action( 'wp_ajax_sgvx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
         add_action( 'wp_ajax_sgvx51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
         add_action( 'wp_ajax_sgvx51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
 		
@@ -662,7 +662,11 @@ class SGVX51_Frontend_Dashboard {
 
 	public function handle_add_daily_help() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'sgvx51_add_help_nonce' );
+            // JS sends _wpnonce from the form
+            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            if ( ! wp_verify_nonce( $nonce, 'sgvx51_add_help_nonce' ) ) {
+                wp_send_json_error( 'Security check failed' );
+            }
         } else {
             if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( $_POST['_wpnonce_add_help'], 'sgvx51_add_help_nonce' ) ) {
                 // Success
@@ -876,7 +880,10 @@ class SGVX51_Frontend_Dashboard {
 
 	public function handle_edit_daily_help() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'sgvx51_edit_help_nonce' );
+            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            if ( ! wp_verify_nonce( $nonce, 'sgvx51_edit_help_nonce' ) ) {
+                wp_send_json_error( 'Security check failed' );
+            }
         } else {
             if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( $_POST['_wpnonce_edit_help'], 'sgvx51_edit_help_nonce' ) ) {
                 // Success
@@ -942,23 +949,30 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	public function handle_edit_vehicle() {
-        // Use explicit nonce verification to avoid conflict with other forms
-        $nonce_ok = false;
-        if ( ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( $_POST['sgvx51_edit_vehicle_token'], 'sgvx51_edit_vehicle_action' ) ) {
-            $nonce_ok = true;
+        if ( wp_doing_ajax() ) {
+            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            if ( ! wp_verify_nonce( $nonce, 'sgvx51_edit_vehicle_action' ) ) {
+                wp_send_json_error( 'Security check failed' );
+            }
+        } else {
+            // Use explicit nonce verification to avoid conflict with other forms
+            $nonce_ok = false;
+            if ( ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( $_POST['sgvx51_edit_vehicle_token'], 'sgvx51_edit_vehicle_action' ) ) {
+                $nonce_ok = true;
+            }
+            // Also accept canonical _wpnonce if JS did not set the custom token
+            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_vehicle_action' ) ) {
+                $nonce_ok = true;
+            }
+            if ( ! $nonce_ok ) {
+                 // Try standard check as fallback
+                 if(check_admin_referer('sgvx51_edit_vehicle_action')) {
+                     $nonce_ok = true;
+                 }
+            }
+            
+            if(!$nonce_ok) wp_die( 'Security check failed' );
         }
-        // Also accept canonical _wpnonce if JS did not set the custom token
-        if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_vehicle_action' ) ) {
-            $nonce_ok = true;
-        }
-        if ( ! $nonce_ok ) {
-             // Try standard check as fallback
-             if(check_admin_referer('sgvx51_edit_vehicle_action')) {
-                 $nonce_ok = true;
-             }
-        }
-        
-        if(!$nonce_ok) wp_send_json_error( 'Security check failed' );
 		
 		$flat_no = $this->get_my_flat_number();
 		$id = sanitize_text_field( $_POST['vehicle_id'] );
@@ -1652,6 +1666,8 @@ class SGVX51_Frontend_Dashboard {
                             $flat_help[$number_only][] = $help_data;
                         }
                     }
+                    // Handle "101" -> "A-101" if block is known? 
+                    // Better to just ensure directory lookup tries both.
                 }
             }
         }
@@ -1805,7 +1821,6 @@ class SGVX51_Frontend_Dashboard {
 		}
 		return $show;
 	}
-
 	/**
 	 * Handle Resident Login AJAX.
 	 */
