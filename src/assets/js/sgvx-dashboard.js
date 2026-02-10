@@ -1362,6 +1362,7 @@
                 setVal('phone', r.phone);
                 setVal('dob', r.dob);
                 setVal('blood_group', r.blood_group);
+                setVal('flat_no', r.flat_no);
 
                 // Handle Photo Preview if exists
                 if (r.profile_photo) {

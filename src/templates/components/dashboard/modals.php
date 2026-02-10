@@ -471,6 +471,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
 
 <script>
     window.sgvxDashboardData = {
+        resident: <?php echo json_encode($r); ?>,
         expenseChartData: <?php echo json_encode($data['expenseChartData'] ?? []); ?>,
         paymentHistory: <?php echo json_encode($data['paymentHistory'] ?? []); ?>
     };

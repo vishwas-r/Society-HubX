@@ -89,7 +89,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     <?php elseif($is_profile): ?>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
-            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($flat_no); ?>" disabled>
+            <input type="text" name="flat_no" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($flat_no); ?>" disabled>
         </div>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>
