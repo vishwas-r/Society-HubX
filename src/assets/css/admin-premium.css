@@ -4,7 +4,7 @@
  */
 
 /* 1. Typography & Reset */
-@import url('../lib/inter-fonts.css');
+@import url('lib/inter-fonts.css');
 
 :root {
     --sgvx-bg: #f8fafc;

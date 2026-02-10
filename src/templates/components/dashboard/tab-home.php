@@ -28,7 +28,16 @@
                                 <li class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center gap-3">
                                         <?php echo SGVX51_Admin_UI::render_avatar($fam['name'], $fam['email'] ?? '', $fam['profile_photo'] ?? '', 40); ?>
-                                        <div>
+                                        <div data-bs-toggle="modal"
+                                            data-bs-target="#viewFamilyModal"
+                                            data-name="<?php echo esc_attr($fam['name']); ?>"
+                                            data-relation="<?php echo esc_attr($fam['relation']); ?>"
+                                            data-dob="<?php echo esc_attr($fam['dob'] ?? ''); ?>"
+                                            data-blood="<?php echo esc_attr($fam['blood_group'] ?? ''); ?>"
+                                            data-phone="<?php echo esc_attr($fam['phone'] ?? ''); ?>"
+                                            data-email="<?php echo esc_attr($fam['email'] ?? ''); ?>"
+                                            data-photo="<?php echo esc_attr($fam['profile_photo'] ?? ''); ?>"
+                                            class="cursor-pointer">
                                             <div class="fw-bold text-dark small lh-sm"><?php echo esc_html($fam['name']); ?></div>
                                             <div class="small text-secondary d-flex align-items-center gap-1 mt-1" style="font-size: 0.75rem;">
                                                 <span class="fw-medium text-dark"><?php echo esc_html($fam['relation']); ?></span>
