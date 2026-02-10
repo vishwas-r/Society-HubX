@@ -84,6 +84,7 @@ class SGVX51_Flat_Manager {
 			'block'        => sanitize_text_field( $_POST['block'] ),
 			'flat_number'  => sanitize_text_field( $_POST['flat_number'] ),
 			'floor'        => sanitize_text_field( $_POST['floor'] ),
+			'sq_foot'      => floatval( $_POST['sq_foot'] ),
 			'parking_slot' => sanitize_text_field( $_POST['parking_slot'] ),
 			'type'         => sanitize_text_field( $_POST['type'] ),
 			'status'       => sanitize_text_field( $_POST['status'] ),
@@ -183,7 +184,7 @@ class SGVX51_Flat_Manager {
 		$errors = 0;
 
 		foreach ( $rows as $row ) {
-			// Format: Block, FlatNo, Type, Floor, Parking
+			// Format: Block, FlatNo, Type, Floor, Parking, SqFoot
 			$cols = str_getcsv( trim( $row ) );
 			if ( count( $cols ) < 2 ) continue;
 
@@ -193,6 +194,7 @@ class SGVX51_Flat_Manager {
 				'type'         => isset( $cols[2] ) ? sanitize_text_field( $cols[2] ) : '2BHK',
 				'floor'        => isset( $cols[3] ) ? sanitize_text_field( $cols[3] ) : '',
 				'parking_slot' => isset( $cols[4] ) ? sanitize_text_field( $cols[4] ) : '',
+				'sq_foot'      => isset( $cols[5] ) ? floatval( $cols[5] ) : 0.00,
 			);
 
 			$res = $this->process_add_flat( $p );
@@ -215,6 +217,7 @@ class SGVX51_Flat_Manager {
 			'block'        => $post_data['block'],
 			'flat_number'  => $post_data['flat_number'],
 			'floor'        => isset($post_data['floor']) ? $post_data['floor'] : '',
+			'sq_foot'      => isset($post_data['sq_foot']) ? floatval( $post_data['sq_foot'] ) : 0.00,
 			'parking_slot' => isset($post_data['parking_slot']) ? $post_data['parking_slot'] : '',
 			'type'         => isset($post_data['type']) ? $post_data['type'] : '2BHK',
 			'status'       => isset($post_data['status']) ? sanitize_text_field($post_data['status']) : 'vacant',

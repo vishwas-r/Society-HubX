@@ -87,8 +87,9 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
                     <tr>
-                        <th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Unit No</th>
+                        						<th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Unit No</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Block</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Area (SqFt)</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Occupancy</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Parking</th>
                         <th class="pe-3 pe-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-end">Ops</th>
@@ -98,10 +99,12 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                     <?php foreach ( $flats as $f ) : 
                         $status = strtolower($f['status'] ?? 'vacant');
                         $p_status = strtolower($f['parking_status'] ?? 'vacant');
+						$sq_foot = isset($f['sq_foot']) ? $f['sq_foot'] : 0;
                     ?>
                     <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($f['owner_name']??''))); ?>">
                         <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $f['id'] ); ?></td>
                         <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ); ?></td>
+                        <td class="px-4 py-4 text-center text-secondary"><?php echo esc_html( $sq_foot ); ?></td>
                         <td class="px-4 py-4 text-center">
                             <?php if($status === 'occupied'): ?>
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-3 py-1.5 fw-bold" style="font-size: 10px;">Occupied</span>
@@ -178,8 +181,8 @@ add_action('sgvx51_admin_modals', function() {
                              </select>
                         </div>
                         <div class="col-6">
-                             <label class="form-label small fw-bold text-secondary">Floor</label>
-                             <input type="text" name="floor" class="form-control shadow-none rounded-3 border-light">
+                             <label class="form-label small fw-bold text-secondary">Sq. Foot</label>
+                             <input type="number" step="0.01" name="sq_foot" class="form-control shadow-none rounded-3 border-light" placeholder="1200.00">
                         </div>
                     </div>
 
@@ -192,13 +195,17 @@ add_action('sgvx51_admin_modals', function() {
                             </select>
                         </div>
                          <div class="col-6">
-                            <label class="form-label small fw-bold text-secondary">Parking Slot</label>
-                            <input type="text" name="parking_slot" class="form-control shadow-none rounded-3 border-light" placeholder="P-101">
+                            <label class="form-label small fw-bold text-secondary">Floor</label>
+                            <input type="text" name="floor" class="form-control shadow-none rounded-3 border-light">
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-12">
+                    <div class="row g-3 mb-3 mt-1">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-secondary">Parking Slot</label>
+                            <input type="text" name="parking_slot" class="form-control shadow-none rounded-3 border-light" placeholder="P-101">
+                        </div>
+                        <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Parking Status</label>
                             <select name="parking_status" class="form-select shadow-none rounded-3 border-light">
                                 <option value="available">Available</option>

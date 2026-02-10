@@ -47,6 +47,58 @@ class SGVX51_Admin_UI {
         return sprintf( '<span class="%s" style="%s">%s</span>', esc_attr( $classes ), esc_attr( $style ), esc_html( $label ) );
     }
 
+    /**
+     * Render a consistent avatar/profile picture.
+     * Fallback order: Profile URL -> Gravatar -> Stylish Initials.
+     */
+    public static function render_avatar( $name, $email = '', $photo_url = '', $size = 44 ) {
+        $radius = 8; // rounded-3 equivalent
+        $style = sprintf('width: %dpx; height: %dpx; font-size: %frem; flex-shrink: 0;', $size, $size, ($size / 40));
+        
+        // 1. Profile Photo Case
+        if ( ! empty( $photo_url ) ) {
+            return sprintf(
+                '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s font-size: 0px;">
+                    <img src="%s" class="w-100 h-100 object-fit-cover" alt="%s" onerror="this.parentElement.innerHTML=\'%s\'">
+                </div>',
+                $style,
+                esc_url( $photo_url ),
+                esc_attr( $name ),
+                $email ? get_avatar( $email, $size, '', '', ['class' => 'w-100 h-100']) : strtoupper(substr($name ?? 'U', 0, 1))
+            );
+        }
+
+        // 2. Gravatar Fallback (if email exists)
+        if ( ! empty( $email ) ) {
+            $gravatar = get_avatar_url( $email, ['size' => $size] );
+            // Check if it's a default/mystery man (approximate check)
+            if ( strpos($gravatar, 'd=mm') === false && strpos($gravatar, 'd=mp') === false && strpos($gravatar, 'd=blank') === false ) {
+                 return sprintf(
+                    '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s font-size: 0px;">
+                        <img src="%s" class="w-100 h-100 object-fit-cover" alt="%s">
+                    </div>',
+                    $style,
+                    esc_url( $gravatar ),
+                    esc_attr( $name )
+                );
+            }
+        }
+
+        // 3. Initial Fallback
+        $initial = strtoupper( substr( $name ?? 'U', 0, 1 ) );
+        $bg_colors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#6f42c1', '#fd7e14', '#20c997'];
+        $bg_color = $bg_colors[ord($initial) % count($bg_colors)];
+
+        return sprintf(
+            '<div class="rounded-3 d-flex align-items-center justify-content-center fw-bold text-white shadow-sm" style="background-color: %s; %s">
+                %s
+            </div>',
+            $bg_color,
+            $style,
+            $initial
+        );
+    }
+
     public static function render_inline_actions( $status, $id, $module = '' ) {
         $html = '<div class="d-flex justify-content-end gap-1 sgvx-inline-actions">';
         

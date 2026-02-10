@@ -88,6 +88,11 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                         <i class="bi bi-database-fill me-2"></i>Sync & Database
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-portability" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-arrow-left-right me-2"></i>Data Portability
+                    </button>
+                </li>
             </ul>
         </div>
         
@@ -281,7 +286,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 <div class="tab-pane fade" id="tab-database">
                     <div class="sgvx-form-max">
                         <!-- Mode Switch -->
-                        <div class="card border border-primary border-opacity-10 bg-primary bg-opacity-10 rounded-3 mb-4 overflow-hidden">
+                        <!-- <div class="card border border-primary border-opacity-10 bg-primary bg-opacity-10 rounded-3 mb-4 overflow-hidden">
                             <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
                                 <div>
                                     <h5 class="fw-bold text-primary m-0">Primary Storage Mode</h5>
@@ -296,9 +301,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                                     <button type="submit" class="btn btn-sm btn-primary fw-bold px-3 rounded-3">Apply Mode</button>
                                 </form>
                             </div>
-                        </div>
+                        </div> -->
 
-                        <div class="row g-4 mb-5">
+                        <!-- <div class="row g-4 mb-5">
                             <div class="col-md-6">
                                 <div class="card h-100 text-white border border-success bg-success rounded-3 border-opacity-25">
                                     <div class="card-body p-4 d-flex flex-column justify-content-between">
@@ -331,7 +336,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
 
                         <div class="card border-0 shadow-sm bg-danger bg-opacity-10 rounded-3 overflow-hidden">
                             <div class="card-body p-4 border-start border-4 border-danger">
@@ -350,10 +355,115 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                                         <?php wp_nonce_field( 'sgvx51_reset_nonce' ); ?>
                                         <button type="submit" onclick="return confirm('Delete all JSON data files? (Non-reversible)')" class="btn btn-sm btn-outline-danger fw-bold px-3 rounded-3 shadow-none">Delete Storage Files</button>
                                     </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                <!-- Tab: Data Portability -->
+                <div class="tab-pane fade" id="tab-portability">
+                    <div class="sgvx-form-max">
+                        
+                        <!-- Import/Export Messages -->
+                        <?php if ( isset($_GET['imported']) ) : ?>
+                            <div class="alert bg-success bg-opacity-10 text-success border-success border-opacity-10 alert-dismissible shadow-sm border-0 rounded-3 mb-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                    <div>
+                                        <div class="fw-bold">Import Successful</div>
+                                        <div class="small opacity-75">Processed <?php echo intval($_GET['imported']); ?> records. (Errors: <?php echo intval($_GET['errors'] ?? 0); ?>)</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ( isset($_GET['error']) && $_GET['error'] === 'no_file' ) : ?>
+                            <div class="alert bg-danger bg-opacity-10 text-danger border-danger border-opacity-10 alert-dismissible shadow-sm border-0 rounded-3 mb-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                    <span class="fw-bold">Error: No file selected for import.</span>
+                                </div>
+                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="row g-4 mb-5">
+                            <!-- Export Card -->
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm bg-light rounded-3 overflow-hidden">
+                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-3 mb-3">
+                                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                                                    <i class="bi bi-cloud-download-fill fs-4"></i>
+                                                </div>
+                                                <h5 class="fw-bold text-dark m-0">Export Data</h5>
+                                            </div>
+                                            <p class="text-secondary small mb-4">
+                                                Download a complete archive of your society's data. 
+                                                The ZIP file contains individual CSV files for each table (Residents, Vehicles, Expenses, etc.) and a full JSON dump for backup.
+                                            </p>
+                                        </div>
+                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                            <input type="hidden" name="action" value="sgvx51_export_data">
+                                            <?php wp_nonce_field( 'sgvx51_export_nonce' ); ?>
+                                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm">
+                                                <i class="bi bi-file-earmark-zip me-2"></i>Download Data Archive (.zip)
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Import Card -->
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm bg-white rounded-3 overflow-hidden border">
+                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-3 mb-3">
+                                                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
+                                                    <i class="bi bi-cloud-upload-fill fs-4"></i>
+                                                </div>
+                                                <h5 class="fw-bold text-dark m-0">Import CSV</h5>
+                                            </div>
+                                            <p class="text-secondary small mb-4">
+                                                Bulk import records into a specific module. The CSV must have headers matching the database columns.
+                                            </p>
+                                        </div>
+                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
+                                            <input type="hidden" name="action" value="sgvx51_import_data">
+                                            <?php wp_nonce_field( 'sgvx51_import_nonce' ); ?>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-secondary">Target Module</label>
+                                                <select name="target_table" class="form-select shadow-none rounded-3 border-light bg-light">
+                                                    <?php 
+                                                    $tables = SGVX51_DB_Router::TABLES;
+                                                    foreach($tables as $t) {
+                                                        // Pretty name
+                                                        $name = ucwords(str_replace('_', ' ', $t));
+                                                        echo "<option value='{$t}'>{$name}</option>";
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-secondary">Select CSV File</label>
+                                                <input type="file" name="import_file" accept=".csv" class="form-control shadow-none rounded-3 border-light" required>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-outline-success w-100 fw-bold py-2 rounded-3">
+                                                <i class="bi bi-upload me-2"></i>Import Records
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                 </div>
 
             </div>

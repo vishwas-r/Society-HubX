@@ -29,6 +29,7 @@ class SGVX51_DB_Schema {
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_number varchar(20) DEFAULT '' NOT NULL,
 			floor varchar(10) DEFAULT '' NOT NULL,
+			sq_foot decimal(10,2) DEFAULT 0.00 NOT NULL,
 			status varchar(20) DEFAULT 'unoccupied' NOT NULL,
 			parking_slot varchar(50) DEFAULT '' NOT NULL,
 			parking_status varchar(20) DEFAULT '' NOT NULL,
@@ -42,11 +43,12 @@ class SGVX51_DB_Schema {
 			id varchar(50) NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
+			profile_photo text NOT NULL,
 			email varchar(100) DEFAULT '' NOT NULL,
 			phone varchar(20) DEFAULT '' NOT NULL,
 			type varchar(20) DEFAULT 'owner' NOT NULL,
 			relation varchar(50) DEFAULT '' NOT NULL,
-			age int(3) DEFAULT 0 NOT NULL,
+			dob DATE DEFAULT NULL,
 			wp_user_id bigint(20) DEFAULT 0 NOT NULL,
 			members_count int(5) DEFAULT 1 NOT NULL,
 			blood_group varchar(5) DEFAULT '' NOT NULL,
@@ -66,7 +68,7 @@ class SGVX51_DB_Schema {
 			phone varchar(20) DEFAULT '' NOT NULL,
 			type varchar(20) DEFAULT 'owner' NOT NULL,
 			relation varchar(50) DEFAULT '' NOT NULL,
-			age int(3) DEFAULT 0 NOT NULL,
+			dob DATE DEFAULT NULL,
 			wp_user_id bigint(20) DEFAULT 0 NOT NULL,
 			members_count int(5) DEFAULT 1 NOT NULL,
 			blood_group varchar(5) DEFAULT '' NOT NULL,
@@ -225,9 +227,10 @@ class SGVX51_DB_Schema {
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			role varchar(50) DEFAULT '' NOT NULL,
+			category varchar(50) DEFAULT 'Support Staff' NOT NULL,
 			phone varchar(20) DEFAULT '' NOT NULL,
 			flats_served text NOT NULL,
-			document_url text NOT NULL,
+			profile_photo text NOT NULL,
 			status varchar(20) DEFAULT 'pending' NOT NULL,
 			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 			PRIMARY KEY  (id)
@@ -239,6 +242,7 @@ class SGVX51_DB_Schema {
 			title varchar(255) NOT NULL,
 			category varchar(50) DEFAULT 'other' NOT NULL,
 			file_path text NOT NULL,
+			profile_photo text DEFAULT '' NOT NULL,
 			drive_id varchar(100) DEFAULT '' NOT NULL,
 			access_level varchar(20) DEFAULT 'admin' NOT NULL,
 			uploaded_by bigint(20) NOT NULL,
@@ -277,6 +281,16 @@ class SGVX51_DB_Schema {
 			details text NOT NULL,
 			created_at datetime NOT NULL,
 			PRIMARY KEY  (id)
+		) $charset_collate;";
+
+		// 17. Meta Table (Key-Value Store)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_meta (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			meta_key varchar(255) NOT NULL,
+			meta_value longtext NOT NULL,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY meta_key (meta_key)
 		) $charset_collate;";
 
 		foreach ( $tables as $sql ) {

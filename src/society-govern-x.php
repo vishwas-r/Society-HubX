@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Society GoVernX
  * Plugin URI:  https://www.vishwas.me
- * Description: A "No-Database" Society Management System using Google Sheets & Drive. Features Facilities, Assets, Expenses, and Document Vault.
+ * Description: A Society Management System. Features Facilities, Assets, Expenses, and Document Vault.
  * Version:     1.0.0
  * Author:      Vishwas R
  * Author URI:  https://www.vishwas.me
@@ -69,6 +69,7 @@ final class Society_Govern_X {
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-db-router.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-db-schema.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-drive-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-media-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-receipt-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-settings.php';
@@ -85,6 +86,10 @@ final class Society_Govern_X {
 			new SGVX51_Admin_Settings();
 			new SGVX51_Admin_Requests();
 			new SGVX51_AJAX_Handler();
+			
+			// Data Portability (Export/Import)
+			require_once SGVX51_PLUGIN_DIR . 'admin/class-data-portability.php';
+			new SGVX51_Data_Portability();
 		}
 		
 						
@@ -340,6 +345,9 @@ final class Society_Govern_X {
         // 3. Fuse.js & Search Init
         wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
         wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
+
+        // 4. Dashboard Logic
+        wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-bootstrap', 'sgvx51-canvasjs', 'sgvx51-search-init'), time(), true );
 
 		// Localize AJAX URL for frontend (needed for resident login)
 		wp_localize_script( 'sgvx51-bootstrap', 'sgvx51_frontend', array(

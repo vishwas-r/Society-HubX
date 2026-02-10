@@ -14,10 +14,12 @@ class SGVX51_Frontend_Dashboard {
 
 	private $db;
 	private $drive;
+	private $media;
 
 	public function __construct() {
 		$this->db = new SGVX51_DB_Router();
 		$this->drive = new SGVX51_Drive_Manager();
+		$this->media = new SGVX51_Media_Manager();
 		
 		add_shortcode( 'society_govern_x_dashboard', array( $this, 'render_dashboard' ) );
 		add_shortcode( 'society_govern_x_notices', array( $this, 'render_notices' ) );
@@ -49,7 +51,9 @@ class SGVX51_Frontend_Dashboard {
         add_action( 'wp_ajax_sgvx51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
 
         add_action( 'wp_ajax_sgvx51_add_family_frontend', array( $this, 'handle_add_family' ) );
+        add_action( 'wp_ajax_sgvx51_add_family', array( $this, 'handle_add_family' ) ); // Fix: Alias for frontend value
         add_action( 'wp_ajax_sgvx51_edit_family_frontend', array( $this, 'handle_edit_family' ) );
+        add_action( 'wp_ajax_sgvx51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
         add_action( 'wp_ajax_sgvx51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
 
         add_action( 'wp_ajax_sgvx51_add_help_frontend', array( $this, 'handle_add_daily_help' ) );
@@ -95,6 +99,18 @@ class SGVX51_Frontend_Dashboard {
 				'email'       => $email,
 				'blood_group' => $blood_group
 			);
+
+			// Handle Photo Upload
+			if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+				$photo_url = $this->media->upload_profile_photo( 
+					$_FILES['profile_photo'], 
+					$target_resident['flat_no'], 
+					$target_resident['name'] 
+				);
+				if ( ! is_wp_error( $photo_url ) ) {
+					$update_data['profile_photo'] = $photo_url;
+				}
+			}
 			
 			$where = array( 'id' => $target_resident['id'] );
 			$this->db->update( 'residents', $update_data, $where );
@@ -294,13 +310,14 @@ class SGVX51_Frontend_Dashboard {
         $payment_history = array_slice($payment_history, -12, null, true);
 
 		// 3. Render Template.
-         wp_enqueue_script( 'sgvx51-frontend-js', SGVX51_PLUGIN_URL . 'assets/js/frontend.js', array('sgvx51-html2canvas'), SGVX51_VERSION, true );
-         wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-canvasjs'), current_time('U'), true );
+         
+         wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-canvasjs', 'sgvx51-html2canvas'), current_time('U'), true );
          
          // Localize Data for Dashboard
          wp_localize_script( 'sgvx51-dashboard-js', 'sgvxDashboardData', array(
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
+            'resident'         => $resident, // Pass resident data
             'nonce'            => wp_create_nonce('sgvx51_nonce')
          ));
         
@@ -403,14 +420,17 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	private function get_my_family( $flat_no ) {
-		// 1. Approved Residents
-		$all = $this->db->get( 'residents' );
-		$mine = array();
-		foreach ( $all as $r ) {
-			if ( $r['flat_no'] === $flat_no && isset($r['type']) && $r['type'] === 'family' ) {
-				$mine[] = array_merge($r, ['status' => 'approved']);
-			}
+		// 1. Approved Residents (only)
+	$all = $this->db->get( 'residents' );
+	$mine = array();
+	foreach ( $all as $r ) {
+		if ( $r['flat_no'] === $flat_no && isset($r['type']) && $r['type'] === 'family' ) {
+            $status = $r['status'] ?? 'approved';
+            if ($status === 'approved' || $status === 'deletion_pending') {
+			    $mine[] = $r;
+            }
 		}
+	}
 
 		// 2. Pending Requests
 		$requests = $this->db->get('requests');
@@ -491,7 +511,10 @@ class SGVX51_Frontend_Dashboard {
 			if ( in_array($flat_no, $served) ) {
                 $status = strtolower($h['status'] ?? 'approved');
                 if ($status === 'archived') continue; // Exclude archived from active dashboard list
-				$mine[] = array_merge($h, ['status' => $status]);
+                // Include approved and deletion_pending
+				if ($status === 'approved' || $status === 'deletion_pending') {
+                    $mine[] = array_merge($h, ['status' => $status]);
+                }
 			}
 		}
 
@@ -551,13 +574,30 @@ class SGVX51_Frontend_Dashboard {
 	// --- Form Handlers ---
 
 	public function handle_add_family() {
+        error_log("SGVX51 Debug: Entering handle_add_family. POST: " . print_r($_POST, true));
+
 		if ( wp_doing_ajax() ) {
             check_ajax_referer( 'sgvx51_add_family_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'sgvx51_add_family_nonce' ) ) wp_die( 'Security check failed' );
+            // Robust Nonce Check
+            $nonce_ok = false;
+            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( $_POST['_wpnonce_add_family'], 'sgvx51_add_family_nonce' ) ) {
+                $nonce_ok = true;
+            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_add_family_nonce' ) ) {
+                $nonce_ok = true;
+            } elseif ( check_admin_referer( 'sgvx51_add_family_nonce' ) ) {
+                $nonce_ok = true;
+            }
+
+		    if ( ! $nonce_ok ) {
+                error_log("SGVX51 Debug: Nonce verification failed for add_family");
+                wp_die( 'Security check failed' );
+            }
         }
 		
 		$flat_no = $this->get_my_flat_number();
+        error_log("SGVX51 Debug: Found Flat No: " . $flat_no);
+
 		if(!$flat_no) {
             if(wp_doing_ajax()) wp_send_json_error('Flat not found');
             wp_die('Flat not found for user.');
@@ -565,17 +605,27 @@ class SGVX51_Frontend_Dashboard {
 
 		$name = sanitize_text_field( $_POST['name'] );
 		$relation = sanitize_text_field( $_POST['relation'] );
-		$age = sanitize_text_field( $_POST['age'] );
+		$dob = sanitize_text_field( $_POST['dob'] );
 		$blood_group = sanitize_text_field( $_POST['blood_group'] );
 		$phone = sanitize_text_field( $_POST['phone'] );
+
+        // Handle Photo Upload
+       $photo_url = '';
+       if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+           $url = $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name );
+           if ( ! is_wp_error( $url ) ) {
+               $photo_url = $url;
+           }
+       }
 
         $payload = array(
 			'name'    => $name,
 			'flat_no' => $flat_no,
 			'type'    => 'family',
 			'relation'=> $relation,
-			'age'     => $age,
+			'dob'     => $dob,
 			'blood_group' => $blood_group,
+			'profile_photo' => $photo_url,
 			'phone'   => $phone, 
             'created_at' => current_time('mysql')
         );
@@ -593,6 +643,7 @@ class SGVX51_Frontend_Dashboard {
         $request_id = $rm->create_request( 'residents', 'add', $payload, $new_id, 'family', $flat_no );
 
          if ( is_wp_error( $request_id ) ) {
+            error_log("SGVX51 Error: Request creation failed: " . $request_id->get_error_message());
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
             wp_die($request_id->get_error_message());
         }
@@ -747,11 +798,16 @@ class SGVX51_Frontend_Dashboard {
             $nonce_ok = false;
             if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            }
-            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( $_POST['_wpnonce_edit_family'], 'sgvx51_edit_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( $_POST['_wpnonce_edit_family'], 'sgvx51_edit_family_nonce' ) ) {
+                $nonce_ok = true;
+            } elseif ( check_admin_referer( 'sgvx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
             }
-            if ( ! $nonce_ok ) wp_die( 'Security check failed' );
+
+            if ( ! $nonce_ok ) {
+                error_log("SGVX51 Debug: Nonce verification failed for edit_family");
+                wp_die( 'Security check failed' );
+            }
         }
 		
         try {
@@ -760,15 +816,28 @@ class SGVX51_Frontend_Dashboard {
             
             error_log("SGVX51 Debug: Flat: $flat_no, ID: $id");
 
+            // Handle Photo Upload
+           $photo_url = '';
+           if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+               $url = $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, sanitize_text_field( $_POST['name'] ?? '' ) );
+               if ( ! is_wp_error( $url ) ) {
+                   $photo_url = $url;
+               }
+           }
+
             // Payload with proposed changes
             $update_payload = array(
                 'name'       => sanitize_text_field( $_POST['name'] ?? '' ),
                 'relation'   => sanitize_text_field( $_POST['relation'] ?? '' ),
-                'age'        => sanitize_text_field( $_POST['age'] ?? '' ),
+                'dob'        => sanitize_text_field( $_POST['dob'] ?? '' ),
                 'blood_group'=> sanitize_text_field( $_POST['blood_group'] ?? '' ),
                 'phone'      => sanitize_text_field( $_POST['phone'] ?? '' ),
                 'flat_no'    => $flat_no
             );
+
+            if ( $photo_url ) {
+                $update_payload['profile_photo'] = $photo_url;
+            }
 
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
@@ -994,6 +1063,37 @@ class SGVX51_Frontend_Dashboard {
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Deletion request submitted']);
             wp_redirect( wp_get_referer() . '?request_submitted=1' );
+        }
+        exit;
+    }
+
+    public function handle_delete_family_frontend() {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_delete_family_nonce' ) ) {
+             wp_send_json_error( 'Security check failed' ); 
+        }
+
+        $flat_no = $this->get_my_flat_number();
+        $id = sanitize_text_field( $_POST['id'] );
+
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        
+        // Double-Write: Mark as deletion_pending
+        // Note: For family, we update the main resident record status
+        $this->db->update('residents', ['status' => 'deletion_pending'], ['id' => $id]);
+
+        $request_id = $rm->create_request( 'residents', 'delete', ['id' => $id], $id, 'family', $flat_no );
+
+         if ( is_wp_error( $request_id ) ) {
+            wp_send_json_error( $request_id->get_error_message() );
+        }
+
+        // Check for Auto-Approval
+        if (get_option('sgvx51_approval_family', 'manual') === 'auto') {
+            $rm->approve_request($request_id);
+             wp_send_json_success( ['message' => 'Family member removed successfully'] );
+        } else {
+             wp_send_json_success( ['message' => 'Deletion request submitted'] );
         }
         exit;
     }
@@ -1409,11 +1509,10 @@ class SGVX51_Frontend_Dashboard {
         foreach ( $all as $v ) {
             if ( $v['flat_no'] === $flat_no ) {
                 $status = isset($v['status']) ? $v['status'] : 'approved';
-                // Hide archived from resident
-                if ( $status === 'archived' ) continue;
-                
-                $v['status'] = $status;
-                $mine[] = $v;
+                // Include approved and deletion_pending
+                if($status === 'approved' || $status === 'deletion_pending') {
+                    $mine[] = array_merge($v, ['status' => $status]);
+                }
             }
         }
 

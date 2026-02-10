@@ -147,13 +147,13 @@
         $form.find('[name="phone"]').val(staff.phone || '');
         $form.find('[name="sex"]').val(staff.sex || '');
         $form.find('[name="visiting_hours"]').val(staff.visiting_hours || '');
-        $form.find('[name="document_url"]').val(staff.document_url || '');
+        $form.find('[name="profile_photo"]').val(staff.profile_photo || '');
 
         const preview = document.getElementById('current-doc-preview');
         if (preview) {
-            if (staff.document_url) {
+            if (staff.profile_photo) {
                 preview.classList.remove('d-none');
-                preview.querySelector('a').href = staff.document_url;
+                preview.querySelector('a').href = staff.profile_photo;
             } else {
                 preview.classList.add('d-none');
             }
@@ -172,7 +172,7 @@
         const $form = $('#add-staff-form');
         $form[0].reset();
         $form.find('[name="action"]').val('sgvx51_add_staff');
-        $form.find('[name="document_url"]').val('');
+        $form.find('[name="profile_photo"]').val('');
         const preview = document.getElementById('current-doc-preview');
         if (preview) preview.classList.add('d-none');
         $('#staffModalTitle').text('Add New Staff');

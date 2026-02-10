@@ -114,6 +114,7 @@
         $form.find('[name="flat_number"]').val(flat.flat_number);
         $form.find('[name="type"]').val(flat.type);
         $form.find('[name="floor"]').val(flat.floor);
+        $form.find('[name="sq_foot"]').val(flat.sq_foot || '');
         $form.find('[name="parking_slot"]').val(flat.parking_slot || '');
         $form.find('[name="status"]').val(flat.status || 'vacant');
         $form.find('[name="parking_status"]').val(flat.parking_status || 'available');

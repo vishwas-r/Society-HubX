@@ -1,0 +1,108 @@
+<?php
+/**
+ * Component: Dashboard Expenses Tab
+ * @var array $data Dashboard data.
+ */
+?>
+<!-- 5. SOCIETY FINANCE (EXPENSES) TAB -->
+<div id="tab-expenses" class="tab-content d-none">
+      <!-- Financial Overview Row: Funds Card (5) + Chart (7) -->
+      <div class="row g-4 mb-4 align-items-stretch">
+          <!-- Society Funds Card -->
+          <div class="col-md-5">
+              <div class="card border-0 shadow-sm text-white rounded-3 h-100" style="background: #1e293b; min-height: 250px;">
+                  <div class="card-body p-4 d-flex flex-column justify-content-between">
+                       <div>
+                           <p class="text-secondary small fw-bold text-uppercase mb-1" style="color: #94a3b8 !important;">Total Society Funds</p>
+                           <h2 class="display-6 fw-bold mb-0">₹<?php echo sgvx_in_fmt($data['current_balance']['total'] ?? 0); ?></h2>
+                       </div>
+                       
+                       <div class="pt-3 border-top border-secondary">
+                            <div class="row">
+                                 <div class="col-6">
+                                     <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Bank</div>
+                                     <div class="fw-bold text-primary">₹<?php echo sgvx_in_fmt($data['current_balance']['bank'] ?? 0); ?></div>
+                                 </div>
+                                 <div class="col-6 border-start border-secondary">
+                                     <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Cash</div>
+                                     <div class="fw-bold text-warning">₹<?php echo sgvx_in_fmt($data['current_balance']['cash'] ?? 0); ?></div>
+                                 </div>
+                            </div>
+                       </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Society Expense Trend Visualization -->
+          <div class="col-md-7">
+              <div class="bg-white rounded-3 shadow-sm border border-light p-4 h-100" style="min-height: 250px;">
+                  <h6 class="fw-bold text-dark mb-3 small text-uppercase">Monthly Expense Trend</h6>
+                  <div id="expensesChart" style="height: 200px; width: 100%;"></div>
+              </div>
+          </div>
+      </div>
+
+      <!-- Tabs for Expenses Sub-views -->
+      <ul class="nav nav-tabs mb-3 border-light">
+          <li class="nav-item">
+              <button class="nav-link active fw-bold text-primary border-0 bg-transparent" data-subtab-target="fin-maintenance">Maintenance Status</button>
+          </li>
+          <li class="nav-item">
+              <button class="nav-link fw-bold text-secondary border-0 bg-transparent" data-subtab-target="fin-expenses">Expenses List</button>
+          </li>
+      </ul>
+      
+      <!-- Sub-tab 1: Maintenance Status -->
+      <div id="sub-tab-fin-maintenance" class="sub-tab-content d-block">
+          <div class="bg-white rounded-3 shadow-sm border border-light p-4">
+              <h5 class="fw-bold mb-3 small text-uppercase text-secondary">Flat Payment Status</h5>
+              <div class="row g-2">
+                   <?php foreach(($data['monthly_summary'] ?? []) as $s):  
+                       $bg = ($s['status'] ?? '') === 'paid' ? 'bg-success' : (($s['status'] ?? '') === 'partial' ? 'bg-warning' : 'bg-light');
+                       $txt = ($s['status'] ?? '') === 'unpaid' ? 'text-secondary' : 'text-white';
+                   ?>
+                    <div class="col-auto">
+                        <div class="<?php echo $bg . ' ' . $txt; ?> p-2 rounded text-center position-relative" style="min-width: 60px;">
+                            <div class="fw-bold small" style="font-size: 0.7rem;"><?php echo esc_html($s['flat_no'] ?? 'N/A'); ?></div>
+                        </div>
+                    </div>
+                   <?php endforeach; ?>
+              </div>
+          </div>
+      </div>
+
+      <!-- Sub-tab 2: Expenses List -->
+      <div id="sub-tab-fin-expenses" class="sub-tab-content d-none">
+          <div class="bg-white rounded-3 shadow-sm border border-light overflow-hidden">
+              <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 text-sm">
+                      <thead class="bg-light text-secondary text-uppercase small">
+                          <tr>
+                              <th class="ps-4 py-3">Date</th>
+                              <th class="py-3">Description</th>
+                              <th class="py-3">Category</th>
+                              <th class="text-end pe-4 py-3">Amount</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <?php if (empty($data['detailed_expenses'])): ?>
+                              <tr><td colspan="4" class="text-center py-5 text-muted italic">No expenses recorded for this period.</td></tr>
+                          <?php else: ?>
+                              <?php foreach ( ($data['detailed_expenses'] ?? []) as $ex ): ?>
+                                  <tr>
+                                      <td class="ps-4 text-secondary small"><?php echo date('d M, Y', strtotime($ex['date'] ?? 'now')); ?></td>
+                                      <td>
+                                          <div class="fw-bold text-dark"><?php echo esc_html($ex['description'] ?? 'N/A'); ?></div>
+                                          <div class="small text-muted" style="font-size: 10px;"><?php echo esc_html($ex['payee'] ?? 'General Vendor'); ?></div>
+                                      </td>
+                                      <td><span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1" style="font-size: 9px;"><?php echo esc_html($ex['category'] ?? 'General'); ?></span></td>
+                                      <td class="text-end pe-4 fw-bold">₹<?php echo sgvx_in_fmt($ex['amount'] ?? 0); ?></td>
+                                  </tr>
+                              <?php endforeach; ?>
+                          <?php endif; ?>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+</div>

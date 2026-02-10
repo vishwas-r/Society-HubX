@@ -17,6 +17,24 @@
         fuse: null
     };
 
+    // --- Photo Preview ---
+    window.previewImage = function (input) {
+        const preview = document.getElementById('preview-admin');
+        const icon = document.getElementById('icon-admin');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                }
+                if (icon) icon.classList.add('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
     // --- Filter Logic ---
     function toggleFilters() {
         const section = document.getElementById('filter-section');
@@ -132,8 +150,14 @@
         const title = document.getElementById('modal-title');
         if (title) title.textContent = 'Add New Resident';
 
-        // Reset Roles
-        form.querySelectorAll('input[name="roles[]"]').forEach(cb => cb.checked = false);
+        // Reset Photo Preview
+        const preview = document.getElementById('preview-admin');
+        const icon = document.getElementById('icon-admin');
+        if (preview) {
+            preview.src = '';
+            preview.classList.add('d-none');
+        }
+        if (icon) icon.classList.remove('d-none');
     }
 
     function editResident(btn) {
@@ -153,13 +177,32 @@
             setVal('type', r.type);
             setVal('phone', r.phone);
             setVal('email', r.email);
-            setVal('role', r.roles || '');
+            setVal('dob', r.dob);
+            setVal('blood_group', r.blood_group);
+            setVal('role', r.roles || r.role || '');
 
             setVal('action', 'sgvx51_edit_resident');
             setVal('resident_id', r.id);
 
             const title = document.getElementById('modal-title');
-            if (title) title.textContent = 'Edit Resident';
+            if (title) title.textContent = 'Edit Resident ' + r.name;
+
+            // Set Photo Preview
+            const preview = document.getElementById('preview-admin');
+            const icon = document.getElementById('icon-admin');
+            if (r.profile_photo) {
+                if (preview) {
+                    preview.src = r.profile_photo;
+                    preview.classList.remove('d-none');
+                }
+                if (icon) icon.classList.add('d-none');
+            } else {
+                if (preview) {
+                    preview.src = '';
+                    preview.classList.add('d-none');
+                }
+                if (icon) icon.classList.remove('d-none');
+            }
 
             openResidentModal();
 
@@ -317,14 +360,11 @@
 
                     try {
                         const formData = new FormData(form);
-                        const data = Object.fromEntries(formData.entries());
 
-                        // Fetch roles correctly
-                        const roles = [];
-                        form.querySelectorAll('input[name="roles[]"]:checked').forEach(cb => roles.push(cb.value));
-                        data['roles'] = roles;
+                        // roles are handled by the single select "role" in the form
+                        // specialized roles[] logic is not needed for the current form structure
 
-                        await sgvxApiRequest(data.action, data);
+                        await sgvxApiRequest(formData.get('action'), formData);
 
                         closeResidentModal();
                         // Reload without status params

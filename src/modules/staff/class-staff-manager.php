@@ -87,14 +87,14 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             'id'             => isset($data['id']) ? $data['id'] : uniqid('staff_'),
             'status'         => isset($data['status']) ? $data['status'] : 'approved',
             'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : '',
-            'document_url'   => isset($data['document_url']) ? esc_url_raw($data['document_url']) : ''
+            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ''
 		);
 
         // Handle File Upload
-        if ( ! empty( $_FILES['doc_file'] ) && ! empty( $_FILES['doc_file']['name'] ) ) {
-            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['doc_file'] );
+        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['profile_photo'] );
             if ( ! is_wp_error( $uploaded ) ) {
-                $db_data['document_url'] = $uploaded;
+                $db_data['profile_photo'] = $uploaded;
             }
         }
 
@@ -126,14 +126,14 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             'status'         => 'approved', // Reset to approved upon edit approval or admin edit
             'created_by'     => $existing['created_by'] ?? '',
             'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? ''),
-            'document_url'   => isset($data['document_url']) ? esc_url_raw($data['document_url']) : ($existing['document_url'] ?? '')
+            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ($existing['profile_photo'] ?? '')
         );
 
         // Handle File Upload
-        if ( ! empty( $_FILES['doc_file'] ) && ! empty( $_FILES['doc_file']['name'] ) ) {
-            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['doc_file'] );
+        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['profile_photo'] );
             if ( ! is_wp_error( $uploaded ) ) {
-                $update_data['document_url'] = $uploaded;
+                $update_data['profile_photo'] = $uploaded;
             }
         }
 

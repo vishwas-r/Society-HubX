@@ -13,9 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SGVX51_Resident_Manager implements SGVX51_Module {
 
 	private $db;
+	private $drive;
+	private $media;
 
 	public function __construct() {
 		$this->db = new SGVX51_DB_Router();
+		$this->drive = new SGVX51_Drive_Manager();
+		$this->media = new SGVX51_Media_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		// AJAX Actions
@@ -39,7 +43,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			$this->db->verify_column( 'residents', 'roles', 'TEXT NOT NULL' );
 			$this->db->verify_column( 'residents', 'wp_user_id', 'BIGINT(20) DEFAULT 0 NOT NULL' );
             $this->db->verify_column( 'residents', 'relation', 'VARCHAR(50) DEFAULT "" NOT NULL' );
-            $this->db->verify_column( 'residents', 'age', 'VARCHAR(10) DEFAULT "" NOT NULL' );
+            $this->db->verify_column( 'residents', 'dob', 'DATE DEFAULT NULL' );
+            $this->db->verify_column( 'residents', 'blood_group', 'VARCHAR(10) DEFAULT "" NOT NULL' );
 		}
         
         // Register Module
@@ -126,16 +131,27 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 }
 
 	public function handle_edit_resident() {
+        error_log("SGVX51 Debug: Entering handle_edit_resident (Manager). POST: " . print_r($_POST, true));
+
 		if ( wp_doing_ajax() ) {
             if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'sgvx51_resident_nonce') ) {
+                error_log("SGVX51 Error: Nonce verification failed for edit_resident");
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
-
+    
     $id = isset($_POST['resident_id']) ? sanitize_text_field($_POST['resident_id']) : '';
+    $flat_no = isset($_POST['flat_no']) ? sanitize_text_field($_POST['flat_no']) : '';
+    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+
+    // Handle Photo Upload (for both Admin and Resident requests)
+    $photo_url = $this->handle_photo_upload($flat_no, $name);
+    if ( $photo_url ) {
+        $_POST['profile_photo'] = $photo_url;
+    }
     
     // IF ADMIN: Immediate
     if ( current_user_can( 'manage_options' ) ) {
@@ -212,11 +228,23 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'type'          => isset($data['type']) ? sanitize_text_field( $data['type'] ) : ($existing_resident['type'] ?? 'owner'), // Preserve Type
 			'members_count' => isset($data['members_count']) ? intval( $data['members_count'] ) : ($existing_resident['members_count'] ?? 1),
 			'blood_group'   => isset($data['blood_group']) ? sanitize_text_field( $data['blood_group'] ) : ($existing_resident['blood_group'] ?? ''),
-            'relation'      => isset($data['relation']) ? sanitize_text_field( $data['relation'] ) : ($existing_resident['relation'] ?? ''),
-            'age'           => isset($data['age']) ? sanitize_text_field( $data['age'] ) : ($existing_resident['age'] ?? ''),
+			'relation'      => isset($data['relation']) ? sanitize_text_field( $data['relation'] ) : ($existing_resident['relation'] ?? ''),
+			'dob'           => isset($data['dob']) ? sanitize_text_field( $data['dob'] ) : ($existing_resident['dob'] ?? ''),
 			'roles'         => isset($data['role']) ? sanitize_text_field($data['role']) : ($existing_resident['roles'] ?? ''),
             'status'        => 'approved', // Reset to approved upon edit approval or admin edit
 		);
+
+        // Handle Photo Upload
+        // Priority 1: Already uploaded (e.g. from handle_edit_resident or approved request)
+        if ( ! empty( $data['profile_photo'] ) ) {
+            $update_data['profile_photo'] = sanitize_text_field( $data['profile_photo'] );
+        } else {
+            // Priority 2: Upload now (e.g. direct admin edit where handle_edit_resident didn't run or failed)
+            $photo_url = $this->handle_photo_upload($update_data['flat_no'], $update_data['name']);
+            if ( $photo_url ) {
+                $update_data['profile_photo'] = $photo_url;
+            }
+        }
 
 		// 1. Maintain 1 owner/tenant per flat rule during edits
 		if ( in_array( $update_data['type'], array( 'owner', 'tenant' ) ) ) {
@@ -448,6 +476,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'name'          => $post_data['name'],
 		);
 
+		// Handle Photo Upload
+		$photo_url = $this->handle_photo_upload($data['flat_no'], $data['name']);
+		if ( $photo_url ) {
+			$data['profile_photo'] = $photo_url;
+		}
+
 		// 0. Server-Side Validation: Flat Existence
 		$flats = $this->db->get( 'flats' );
 		$valid_flat = false;
@@ -468,8 +502,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'type'          => isset($post_data['type']) ? $post_data['type'] : 'owner',
 			'members_count' => isset($post_data['members_count']) ? intval( $post_data['members_count'] ) : 1,
 			'blood_group'   => isset($post_data['blood_group']) ? sanitize_text_field( $post_data['blood_group'] ) : '',
-            'relation'      => isset($post_data['relation']) ? sanitize_text_field( $post_data['relation'] ) : '',
-            'age'           => isset($post_data['age']) ? sanitize_text_field( $post_data['age'] ) : '',
+			'relation'      => isset($post_data['relation']) ? sanitize_text_field( $post_data['relation'] ) : '',
+			'dob'           => isset($post_data['dob']) ? sanitize_text_field( $post_data['dob'] ) : '',
 			'roles'         => isset($post_data['role']) ? sanitize_text_field($post_data['role']) : '',
 		'status'        => isset($post_data['status']) ? $post_data['status'] : 'approved',
 		'wp_user_id'    => '', 
@@ -529,6 +563,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	}
 
 	/**
-	 * Move resident to history log.
+	 * Helper to handle photo upload.
 	 */
+	private function handle_photo_upload( $flat_no = '', $name = '' ) {
+		if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+			return $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name );
+		}
+		return null;
+	}
 }

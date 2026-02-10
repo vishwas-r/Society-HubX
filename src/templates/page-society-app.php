@@ -26,37 +26,59 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body <?php body_class('bg-light text-dark shadow-none'); ?>>
 
     <!-- App Header -->
-    <header class="bg-white border-bottom border-light sticky-top shadow-sm" style="z-index: 1050;">
-        <div class="container-fluid" style="max-width: 1280px;">
-            <div class="d-flex justify-content-between align-items-center" style="height: 4rem;">
-                <!-- Logo / Title -->
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 2rem; height: 2rem;">
-                        S
-                    </div>
-                    <span class="fw-bold fs-5 text-dark" style="letter-spacing: -0.02em;">Society GoVernX</span>
-                </div>
-
-                <!-- User Profile / Nav -->
-                <div class="d-flex align-items-center gap-4">
-                    <?php if ( is_user_logged_in() ) : 
-                        $current_user = wp_get_current_user();
-                    ?>
-                        <div class="d-none d-md-flex flex-column align-items-end lh-1">
-                            <span class="small fw-semibold text-dark"><?php echo esc_html( $current_user->display_name ); ?></span>
-                            <span style="font-size: 0.75rem;" class="text-secondary">Resident</span>
-                        </div>
-                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold small" style="width: 2.5rem; height: 2.5rem;">
-                            <?php echo strtoupper( substr( $current_user->display_name, 0, 1 ) ); ?>
-                        </div>
-                        <a href="<?php echo wp_logout_url( home_url() ); ?>" class="text-secondary" title="Logout">
-                            <i class="bi bi-box-arrow-right fs-5"></i>
-                        </a>
-                    <?php else : ?>
-                        <a href="<?php echo wp_login_url(); ?>" class="small fw-bold text-primary text-decoration-none">Login</a>
-                    <?php endif; ?>
-                </div>
+    <header class="sgvx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom sticky-top shadow-sm" style="height: 72px; z-index: 1050;">
+        <div class="d-flex align-items-center gap-3">
+            <button id="sgvx-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 d-lg-none" style="width: 40px; height: 40px;">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <div class="d-flex align-items-center gap-2">
+                 <div class="rounded bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 2rem; height: 2rem;">S</div>
+                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">Society GoVernX</h1>
             </div>
+        </div>
+        <div class="d-flex align-items-center gap-4">
+            <div class="bg-light p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="No Pending Requests">
+                <i class="bi bi-bell text-secondary opacity-50"></i>
+            </div>
+            
+            <?php 
+            if ( is_user_logged_in() ) : 
+                $current_user = wp_get_current_user();
+                $user_avatar = get_avatar_url( $current_user->ID );
+                // Attempt to get resident photo if available via simple query or user meta? 
+                // For now, Gravatar is standard WP. 
+                // Ideally, we should fetch the custom resident photo if we can, but that requires DB access here.
+                // We'll stick to Gravatar/Default for now as per "Standard UI".
+            ?>
+            <div class="dropdown">
+                <button class="d-flex align-items-center gap-3 border-0 bg-transparent p-0 dropdown-toggle-no-caret shadow-none px-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="text-end d-none d-lg-block border-start ps-3">
+                        <div class="small fw-bold text-dark text-nowrap"><?php echo esc_html( $current_user->display_name ); ?></div>
+                        <div class="small text-secondary" style="font-size: 10px;">Resident</div>
+                    </div>
+                    <div class="sgvx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
+                        <img alt="" src="<?php echo esc_url( $user_avatar ); ?>" class="avatar avatar-36 photo w-100 h-100 object-fit-cover" height="36" width="36" loading="lazy">
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 py-2 px-2" style="min-width: 180px;">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2" href="#" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="bi bi-person-circle text-primary"></i>
+                            <span class="small fw-bold text-dark">Edit Profile</span>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider opacity-5 my-1"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2 text-danger" href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span class="small fw-bold">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <?php else : ?>
+                <a href="<?php echo wp_login_url(); ?>" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Login</a>
+            <?php endif; ?>
         </div>
     </header>
 

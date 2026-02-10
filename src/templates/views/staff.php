@@ -230,8 +230,8 @@ $all_flats = $flats;
                                         <div>
                                             <div class="fw-bold text-dark">
                                                 <?php echo esc_html( $s['name'] ); ?>
-                                                <?php if(!empty($s['document_url'])): ?>
-                                                    <a href="<?php echo esc_url($s['document_url']); ?>" target="_blank" class="text-primary ms-1" title="View Verification Document">
+                                                <?php if(!empty($s['profile_photo'])): ?>
+                                                    <a href="<?php echo esc_url($s['profile_photo']); ?>" target="_blank" class="text-primary ms-1" title="View Verification Document">
                                                         <i class="bi bi-file-earmark-check"></i>
                                                     </a>
                                                 <?php endif; ?>
@@ -321,7 +321,7 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
             <form id="add-staff-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="sgvx51_add_staff">
                 <input type="hidden" name="staff_id" value="">
-                <input type="hidden" name="document_url" value="">
+                <input type="hidden" name="profile_photo" value="">
                 <?php wp_nonce_field( 'sgvx51_staff_nonce' ); ?>
 
                 <div class="modal-body p-4">
@@ -389,7 +389,7 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
                     <div class="mb-0">
                         <label class="form-label small fw-bold text-secondary">ID Proof (Photo/Document)</label>
                         <div class="input-group">
-                            <input type="file" name="doc_file" id="staff-document" accept="image/*" capture="environment" class="form-control shadow-none rounded-3 border-light">
+                            <input type="file" name="profile_photo" id="staff-document" accept="image/*" capture="environment" class="form-control shadow-none rounded-3 border-light">
                         </div>
                         <div id="current-doc-preview" class="mt-2 d-none">
                             <a href="#" target="_blank" class="small text-primary fw-bold"><i class="bi bi-eye me-1"></i>View Current Document</a>

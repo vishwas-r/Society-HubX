@@ -188,7 +188,7 @@ if (!isset($flats)) $flats = array();
 
                     if ( empty( $all_rows ) ) : ?>
                         <tr>
-                            <td colspan="6" class="px-5 py-5 text-center text-slate-400">
+                            <td colspan="100%" class="px-5 py-5 text-center text-slate-400">
                                 <div class="py-5 text-center">
                                     <i class="bi bi-people fs-1 mb-3 d-block opacity-20"></i>
                                     <p class="m-0">No residents found in the records.</p>
@@ -219,9 +219,7 @@ if (!isset($flats)) $flats = array();
                             </td>
                             <td class="ps-0 ps-md-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="flex-shrink-0 <?php echo $is_archived ? 'bg-light text-muted' : ($status === 'rejected' ? 'bg-danger-subtle text-danger' : ($is_request ? 'bg-warning-subtle text-warning' : 'bg-primary-subtle text-primary')); ?> rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                                        <?php echo strtoupper(substr($row['name'] ?? 'U', 0, 1)); ?>
-                                    </div>
+                                    <?php echo SGVX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
                                     <div>
                                         <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>"><?php echo esc_html( $row['name'] ); ?></div>
                                         <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( $row['email'] ?? '-' ); ?></div>
@@ -301,7 +299,7 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
-            <form id="add-resident-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST">
+            <form id="add-resident-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="sgvx51_add_resident">
                 <input type="hidden" name="resident_id" value="">
                 <?php wp_nonce_field( 'sgvx51_resident_nonce' ); ?>
@@ -311,52 +309,14 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary text-uppercase">Full Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" required class="form-control shadow-none rounded-3">
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Unit No <span class="text-danger">*</span></label>
-                            <select name="flat_no" required class="form-select shadow-none rounded-3">
-                                <option value="">Select</option>
-                                <?php foreach($flats as $f): ?>
-                                    <option value="<?php echo esc_attr($f['id']); ?>"><?php echo esc_html($f['id']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
-                            <select name="type" required class="form-select shadow-none rounded-3">
-                                <option value="owner">Owner</option>
-                                <option value="tenant">Tenant</option>
-                                <option value="family">Family</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Phone <span class="text-danger">*</span></label>
-                            <input type="text" name="phone" required class="form-control shadow-none rounded-3">
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-secondary text-uppercase">Email</label>
-                            <input type="email" name="email" class="form-control shadow-none rounded-3">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold text-secondary text-uppercase">Society Role</label>
-                        <select name="role" class="form-select shadow-none rounded-3">
-                            <option value="">None / Resident</option>
-                            <option value="President">President</option>
-                            <option value="Vice-President">Vice-President</option>
-                            <option value="Secretary">Secretary</option>
-                            <option value="Treasurer">Treasurer</option>
-                            <option value="Committee Member">Committee Member</option>
-                            <option value="Management">Management</option>
-                            <option value="Others">Others</option>
-                        </select>
-                    </div>
+                    <?php 
+                    $args = [
+                        'context' => 'admin',
+                        'flats'   => $flats,
+                        'resident' => [] // Will be populated by JS for edits
+                    ];
+                    include SGVX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+                    ?>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">
                     <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
@@ -375,8 +335,8 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                 <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 64px; height: 64px;">
                     <i class="bi bi-trash3 fs-2"></i>
                 </div>
-                <h5 class="fw-bold text-dark mb-2 modal-title">Delete Resident?</h5>
-                <p class="text-secondary small mb-0 modal-text">This action cannot be undone. All associated data will be permanently removed.</p>
+                <h5 class="fw-bold text-dark mb-2 modal-title">Move to Archive?</h5>
+                <p class="text-secondary small mb-0 modal-text">The resident will be moved to the history log. You can restore them later.</p>
             </div>
             <div class="modal-footer border-0 p-4 pt-0 gap-2">
                 <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2.5 shadow-none" data-bs-dismiss="modal">No, Keep</button>
