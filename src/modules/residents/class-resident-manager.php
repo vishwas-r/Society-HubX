@@ -63,10 +63,18 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     public function execute_request( $action, $payload ) {
     $payload = (array) $payload;
     if ( $action === 'add' ) {
-        $id = $payload['id'] ?? '';
+        $id = $payload['resident_id'] ?? ($payload['id'] ?? '');
         $all = $this->db->get('residents');
         $exists = false;
-        foreach($all as $r) { if(($r['id']??'') === $id) { $exists = true; break; } }
+        
+        if ( ! empty( $id ) ) {
+            foreach($all as $r) { 
+                if( isset($r['id']) && $r['id'] == $id ) { 
+                    $exists = true; 
+                    break; 
+                } 
+            }
+        }
 
         if($exists) {
             return $this->db->update('residents', ['status' => 'approved'], ['id' => $id]);
@@ -147,6 +155,11 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     $flat_no = isset($_POST['flat_no']) ? sanitize_text_field($_POST['flat_no']) : '';
     $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
 
+    // Track the WP User ID for the profile being edited (usually the current user)
+    if ( ! isset( $_POST['wp_user_id'] ) ) {
+        $_POST['wp_user_id'] = get_current_user_id();
+    }
+
     // Handle Photo Upload (for both Admin and Resident requests)
     $photo_url = $this->handle_photo_upload($flat_no, $name);
     if ( $photo_url ) {
@@ -198,7 +211,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         // Strategy 1: Find by ID
         if ( ! empty( $resident_id ) ) {
             foreach ( $all_residents as $r ) {
-                if ( isset($r['id']) && $r['id'] === $resident_id ) {
+                if ( isset($r['id']) && $r['id'] == $resident_id ) {
                     $existing_resident = $r;
                     break;
                 }
@@ -211,6 +224,19 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
                 if ( $r['flat_no'] === $original_flat_no && $r['name'] === $original_name ) {
                     $existing_resident = $r;
                     $resident_id = $r['id']; // Ensure we have ID for update
+                    break;
+                }
+            }
+        }
+
+        // Strategy 3: Find by WP User ID (Fallback)
+        $look_up_user_id = ! empty( $data['wp_user_id'] ) ? intval( $data['wp_user_id'] ) : ( is_user_logged_in() && ! current_user_can('manage_options') ? get_current_user_id() : 0 );
+        
+        if ( empty( $existing_resident ) && $look_up_user_id > 0 ) {
+            foreach ( $all_residents as $r ) {
+                if ( isset($r['wp_user_id']) && (int)$r['wp_user_id'] === $look_up_user_id ) {
+                    $existing_resident = $r;
+                    $resident_id = $r['id'] ?? $resident_id;
                     break;
                 }
             }
@@ -283,6 +309,15 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
              if ( $user && ! is_wp_error( $user ) ) {
                  $update_data['wp_user_id'] = $user->ID;
                  update_user_meta( $user->ID, 'sgvx51_flat_no', $update_data['flat_no'] );
+
+                 // Sync Profile Changes to WP User
+                 $wp_user_data = [
+                     'ID'           => $user->ID,
+                     'display_name' => $update_data['name'],
+                     'user_email'   => $update_data['email'],
+                     'first_name'   => $update_data['name'], // Simplified, or split by space
+                 ];
+                 wp_update_user($wp_user_data);
              }
         }
 

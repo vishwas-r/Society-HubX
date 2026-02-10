@@ -3,7 +3,7 @@
  * Component: Dashboard Modals
  * @var array $data Dashboard data.
  */
-$r = $data['resident'] ?? [];
+$profile_resident = $data['resident'] ?? [];
 
 // Retrieve bank details from settings
 $bank_name = get_option('sgvx51_bank_name', 'Society Bank');
@@ -454,10 +454,10 @@ $qr_url    = get_option('sgvx51_bank_qr');
           <?php 
           $args = [
               'context'  => 'frontend_profile',
-              'resident' => $r // Pass the resident data explicitly
+              'resident' => $profile_resident // Pass the resident data explicitly
           ];
           // Pass variables to scope for included file (backup)
-          $resident = $r;
+          $resident = $profile_resident;
           include SGVX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
         </form>
@@ -471,7 +471,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
 
 <script>
     window.sgvxDashboardData = {
-        resident: <?php echo json_encode($r); ?>,
+        resident: <?php echo json_encode($profile_resident); ?>,
         expenseChartData: <?php echo json_encode($data['expenseChartData'] ?? []); ?>,
         paymentHistory: <?php echo json_encode($data['paymentHistory'] ?? []); ?>
     };
@@ -496,21 +496,34 @@ $qr_url    = get_option('sgvx51_bank_qr');
 
       const formData = new FormData();
       formData.append('action', 'sgvx51_edit_resident');
-      formData.append('resident_id', '<?php echo esc_js($r['id'] ?? ''); ?>');
+      formData.append('resident_id', '<?php echo esc_js($profile_resident['id'] ?? ''); ?>');
       formData.append('name', name);
       formData.append('email', email);
       formData.append('phone', phone);
       formData.append('blood_group', blood);
       formData.append('dob', dob);
-      formData.append('flat_no', '<?php echo esc_js($r['flat_no'] ?? ''); ?>');
+      formData.append('flat_no', '<?php echo esc_js($profile_resident['flat_no'] ?? ''); ?>');
+      formData.append('type', '<?php echo esc_js($profile_resident['type'] ?? 'owner'); ?>');
       formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('sgvx51_resident_nonce')); ?>');
       if (fileInput && fileInput.files[0]) formData.append('profile_photo', fileInput.files[0]);
 
       fetch(ajaxurl, { method: 'POST', body: formData })
       .then(r => r.json())
       .then(data => {
-        if (data.success) { alert('✅ Updated!'); location.reload(); }
-        else { alert('❌ ' + (data.data?.message || 'Error')); btn.disabled = false; btn.innerHTML = originalText; }
+        if (data.success) { 
+          alert('✅ Profile updated successfully!'); 
+          location.reload(); 
+        } else { 
+          alert('❌ ' + (data.data?.message || 'Error occurred while saving profile.')); 
+          btn.disabled = false; 
+          btn.innerHTML = originalText; 
+        }
+      })
+      .catch(err => {
+        console.error('Profile Save Error:', err);
+        alert('❌ Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
       });
     }
 

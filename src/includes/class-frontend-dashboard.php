@@ -71,7 +71,7 @@ class SGVX51_Frontend_Dashboard {
 	/**
 	 * Handle Profile Update (Frontend)
 	 */
-	public function handle_update_profile() {
+	public function handle_profile_update() {
 		if ( ! is_user_logged_in() || ! check_admin_referer( 'sgvx51_update_profile_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
@@ -309,7 +309,11 @@ class SGVX51_Frontend_Dashboard {
         }
         $payment_history = array_slice($payment_history, -12, null, true);
 
-		// 3. Render Template.
+		// 3. Prepare $data for template
+		$data['expenseChartData'] = $expense_chart_data;
+		$data['paymentHistory']   = $payment_history;
+
+		// 4. Render Template.
          
          wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-canvasjs', 'sgvx51-html2canvas'), current_time('U'), true );
          
