@@ -43,6 +43,7 @@ $nav_items = [
     'expenses'  => ['Expenses', admin_url('admin.php?page=sgvx51-expenses'), 'bi-cart-dash'],
     'assets'    => ['Assets', admin_url('admin.php?page=sgvx51-assets'), 'bi-box-seam'],
     'notices'   => ['Notices', admin_url('admin.php?page=sgvx51-notices'), 'bi-megaphone'],
+    'notifications' => ['Notifications', admin_url('admin.php?page=sgvx51-notifications'), 'bi-bell'],
     'polls'     => ['Democracy', admin_url('admin.php?page=sgvx51-polls'), 'bi-journal-check'],
     'requests'  => ['Pending Requests', admin_url('admin.php?page=sgvx51-requests'), 'bi-patch-exclamation'],
     'settings'  => ['Settings', admin_url('admin.php?page=sgvx51-global-settings'), 'bi-gear'],

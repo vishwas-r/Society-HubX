@@ -142,7 +142,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         error_log("SGVX51 Debug: Entering handle_edit_resident (Manager). POST: " . print_r($_POST, true));
 
 		if ( wp_doing_ajax() ) {
-            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'sgvx51_resident_nonce') ) {
+            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            if ( ! wp_verify_nonce($nonce, 'sgvx51_resident_nonce') && ! wp_verify_nonce($nonce, 'sgvx51_frontend_nonce') ) {
                 error_log("SGVX51 Error: Nonce verification failed for edit_resident");
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;

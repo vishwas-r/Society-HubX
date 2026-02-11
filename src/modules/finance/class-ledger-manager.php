@@ -137,7 +137,32 @@ class SGVX51_Ledger_Manager {
 			}
 		}
 
-		// 3. Sort Chronologically
+		// 3. Get Pending Payment Requests (Credit - Pending)
+		$all_requests = $this->db->get( 'requests' );
+		if ( ! empty( $all_requests ) ) {
+			foreach ( $all_requests as $req ) {
+				$module = $req['module'] ?? ($req['entity_type'] ?? '');
+				if ( ($module === 'accounts') && ($req['status'] === 'pending') && ($req['request_type'] === 'record_payment') ) {
+					$p_payload = json_decode( $req['payload'], true );
+					if ( ! empty( $p_payload ) && date( 'Y', strtotime( $p_payload['date'] ?? '' ) ) == $year ) {
+						$entries[] = array(
+							'date'        => $p_payload['date'] ?? date('Y-m-d'),
+							'type'        => 'Credit',
+							'description' => 'Payment for ' . ($p_payload['invoice_id'] ?? 'Maintenance') . ' (Awaiting Verification)',
+							'amount'      => floatval( $p_payload['amount'] ?? 0 ),
+							'bank_balance' => 0,
+							'cash_balance' => 0,
+							'ref_id'      => 'PENDING-' . substr($req['id'], -4),
+							'entity'      => 'Flat ' . ($p_payload['flat_no'] ?? 'Unknown'),
+							'account_type'=> $p_payload['account_type'] ?? ( (strtolower($p_payload['method'] ?? '') === 'cash') ? 'cash' : 'bank' ),
+							'is_pending'  => true
+						);
+					}
+				}
+			}
+		}
+
+		// 4. Sort Chronologically
 		usort( $entries, function( $a, $b ) {
 			return strtotime( $a['date'] ) - strtotime( $b['date'] );
 		});
@@ -164,6 +189,12 @@ class SGVX51_Ledger_Manager {
 			if($first) { $first = false; continue; }
 			
 			$acc = $entry['account_type'] ?? 'bank';
+			if ( ! empty( $entry['is_pending'] ) ) {
+				$entry['bank_balance'] = $bank_bal;
+				$entry['cash_balance'] = $cash_bal;
+				continue;
+			}
+
 			if ( $entry['type'] === 'Credit' ) {
 				if($acc === 'cash') $cash_bal += $entry['amount']; else $bank_bal += $entry['amount'];
 			} else {

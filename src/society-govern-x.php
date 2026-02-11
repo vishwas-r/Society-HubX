@@ -40,6 +40,13 @@ final class Society_Govern_X {
 	public $db = null;
 
 	/**
+	 * Notification Dispatcher Instance.
+	 *
+	 * @var SGVX51_Notification_Dispatcher
+	 */
+	public $notifications = null;
+
+	/**
 	 * Return an instance of this class.
 	 *
 	 * @return object A single instance of this class.
@@ -72,6 +79,11 @@ final class Society_Govern_X {
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-media-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-receipt-manager.php';
+		
+		// Notifications
+		require_once SGVX51_PLUGIN_DIR . 'includes/notifications/interface-notification-provider.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/notifications/class-notification-dispatcher.php';
+		
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-settings.php';
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-requests.php';
@@ -80,6 +92,7 @@ final class Society_Govern_X {
 		
 		// Initialize
 		$this->db = new SGVX51_DB_Router();
+		$this->notifications = new SGVX51_Notification_Dispatcher( $this->db );
 
 		// Initialize Admin Settings
 		if ( is_admin() ) {
@@ -313,6 +326,11 @@ final class Society_Govern_X {
 		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-accounts' ) {
 			wp_enqueue_script( 'sgvx51-accounts-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-accounts.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
+		}
+
+		// Notifications View Specific JS
+		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-notifications' ) {
+			wp_enqueue_script( 'sgvx51-notifications-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-notifications.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 		}
 	}
 

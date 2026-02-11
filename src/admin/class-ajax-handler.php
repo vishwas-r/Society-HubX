@@ -18,6 +18,12 @@ class SGVX51_AJAX_Handler {
 		add_action( 'wp_ajax_sgvx51_approve_request', array( $this, 'handle_approve_request' ) );
 		add_action( 'wp_ajax_sgvx51_reject_request', array( $this, 'handle_reject_request' ) );
 		add_action( 'wp_ajax_sgvx51_bulk_process_requests', array( $this, 'handle_bulk_process_requests' ) );
+		
+		// Notifications
+		add_action( 'wp_ajax_sgvx51_get_channel_config', array( $this, 'handle_get_channel_config' ) );
+		add_action( 'wp_ajax_sgvx51_save_channel_config', array( $this, 'handle_save_channel_config' ) );
+		add_action( 'wp_ajax_sgvx51_toggle_channel', array( $this, 'handle_toggle_channel' ) );
+		add_action( 'wp_ajax_sgvx51_update_event_mapping', array( $this, 'handle_update_event_mapping' ) );
 	}
 
 	/**
@@ -139,7 +145,7 @@ class SGVX51_AJAX_Handler {
 	 */
 	public function handle_get_receipt() {
 		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'sgvx51_nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'sgvx51_frontend_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 
@@ -252,5 +258,86 @@ class SGVX51_AJAX_Handler {
 		}
 
 		wp_send_json_success( ['message' => "$count items processed successfully"] );
+	}
+
+	/**
+	 * AJAX: Get Channel Config
+	 */
+	public function handle_get_channel_config() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
+		$db = Society_Govern_X::get_instance()->db;
+		$channels = $db->get('notification_channels');
+
+		foreach($channels as $c) {
+			if($c['channel_slug'] === $slug) {
+				wp_send_json_success(json_decode($c['config'], true));
+			}
+		}
+		wp_send_json_error(['message' => 'Channel not found']);
+	}
+
+	/**
+	 * AJAX: Save Channel Config
+	 */
+	public function handle_save_channel_config() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$slug = isset($_POST['channel_slug']) ? sanitize_key($_POST['channel_slug']) : '';
+		$config = isset($_POST['config']) ? $_POST['config'] : []; // Recursive sanitization would be better
+		
+		$db = Society_Govern_X::get_instance()->db;
+		$updated = $db->update('notification_channels', ['config' => json_encode($config)], ['channel_slug' => $slug]);
+
+		if(is_wp_error($updated)) wp_send_json_error(['message' => $updated->get_error_message()]);
+		wp_send_json_success(['message' => 'Settings saved']);
+	}
+
+	/**
+	 * AJAX: Toggle Channel
+	 */
+	public function handle_toggle_channel() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
+		$active = isset($_POST['active']) ? (int)$_POST['active'] : 0;
+
+		$db = Society_Govern_X::get_instance()->db;
+		$db->update('notification_channels', ['is_active' => $active], ['channel_slug' => $slug]);
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX: Update Event Mapping
+	 */
+	public function handle_update_event_mapping() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$slug = isset($_POST['event']) ? sanitize_key($_POST['event']) : '';
+		$channel = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
+		$enabled = isset($_POST['enabled']) ? (int)$_POST['enabled'] : 0;
+
+		$db = Society_Govern_X::get_instance()->db;
+		$events = $db->get('notification_events');
+		
+		foreach($events as $e) {
+			if($e['event_slug'] === $slug) {
+				$channels = array_filter(explode(',', $e['default_channels']));
+				if($enabled) {
+					if(!in_array($channel, $channels)) $channels[] = $channel;
+				} else {
+					$channels = array_diff($channels, [$channel]);
+				}
+				
+				$db->update('notification_events', ['default_channels' => implode(',', $channels)], ['event_slug' => $slug]);
+				wp_send_json_success();
+			}
+		}
+		wp_send_json_error(['message' => 'Event not found']);
 	}
 }

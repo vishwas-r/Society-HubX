@@ -76,7 +76,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var sgvx51_nonce = '<?php echo wp_create_nonce( 'sgvx51_nonce' ); ?>';
+    var sgvx51_nonce = '<?php echo wp_create_nonce( 'sgvx51_frontend_nonce' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
 </script>
 

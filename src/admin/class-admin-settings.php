@@ -66,12 +66,22 @@ class SGVX51_Admin_Settings {
 
 		// Democracy (Polls) Page
 		add_submenu_page(
-			'sgvx51_poll_manager', // Hidden parent to avoid top-level clutter if needed, or put under main
+			'sgvx51_poll_manager',
 			'Digital Democracy',
 			'Democracy',
 			'manage_options',
 			'sgvx51-polls',
 			array( $this, 'render_polls_page' )
+		);
+
+		// Notifications Page
+		add_submenu_page(
+			'sgvx51-settings',
+			'Notification Center',
+			'Notifications',
+			'manage_options',
+			'sgvx51-notifications',
+			array( $this, 'render_notifications_page' )
 		);
 	}
 
@@ -355,4 +365,9 @@ class SGVX51_Admin_Settings {
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
         SGVX51_Admin_App::render_view( 'polls' );
     }
+
+	public function render_notifications_page() {
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        SGVX51_Admin_App::render_view( 'notifications' );
+	}
 }

@@ -24,15 +24,17 @@ if ( ! empty( $data['invoices'] ) ) {
 }
 
 $has_pending_total_payment = false;
+$pending_payment_total = 0;
 if ( ! empty( $data['pending_payment_requests'] ) ) {
     foreach ( $data['pending_payment_requests'] as $pr ) {
         $p_payload = json_decode( $pr['payload'] ?? '{}', true );
+        $pending_payment_total += (float)($p_payload['amount'] ?? 0);
         if ( ( $p_payload['invoice_id'] ?? '' ) === 'Total Outstanding' ) {
             $has_pending_total_payment = true;
-            break;
         }
     }
 }
+$display_dues = max(0, $total_dues - $pending_payment_total);
 ?>
 <!-- 4. ACCOUNTS TAB -->
 <div id="tab-accounts" class="tab-content d-none">
@@ -44,14 +46,14 @@ if ( ! empty( $data['pending_payment_requests'] ) ) {
                       <div class="d-flex justify-content-between align-items-start">
                           <div>
                               <p class="opacity-75 small fw-bold text-uppercase mb-1">Your Pending Dues</p>
-                              <h2 class="display-6 fw-bold m-0">₹<?php echo sgvx_in_fmt($total_dues, 0); ?></h2>
+                              <h2 class="display-6 fw-bold m-0">₹<?php echo sgvx_in_fmt($display_dues, 0); ?></h2>
                           </div>
                           <div class="p-2 bg-white bg-opacity-25 rounded-3">
                            <i class="bi bi-exclamation-triangle-fill fs-3 text-white"></i>
                        </div>
                    </div>
-                   <?php if($has_pending_total_payment): ?>
-                      <div class="text-white-50 small text-center mt-3">Awaiting Admin Verification</div>
+                   <?php if($has_pending_total_payment || $pending_payment_total > 0): ?>
+                      <div class="text-white-50 small text-center mt-3">₹<?php echo sgvx_in_fmt($pending_payment_total, 0); ?> Awaiting Admin Verification</div>
                    <?php elseif($total_dues > 0): ?>
                        <button data-bs-toggle="modal" data-bs-target="#sgvx51PaymentModal" 
                                data-amount="<?php echo esc_attr($total_dues); ?>"
@@ -69,11 +71,19 @@ if ( ! empty( $data['pending_payment_requests'] ) ) {
                      <span class="rounded-circle bg-primary" style="width: 8px; height: 8px;"></span> Account Summary
                   </h4>
                   <ul class="list-unstyled m-0 d-flex flex-column gap-3">
-                      <li class="d-flex justify-content-between border-bottom border-light pb-2">
-                          <span class="text-secondary small">Unpaid Invoices</span>
-                          <span class="fw-bold text-dark small"><?php echo count(array_filter($data['invoices'] ?? [], function($i){return ($i['status'] ?? '')!=='paid';})); ?></span>
-                      </li>
-                  </ul>
+                       <li class="d-flex justify-content-between border-bottom border-light pb-2">
+                           <span class="text-secondary small">Total Unpaid Invoices</span>
+                           <span class="fw-bold text-dark small">₹<?php echo sgvx_in_fmt($total_dues, 0); ?></span>
+                       </li>
+                       <li class="d-flex justify-content-between border-bottom border-light pb-2">
+                           <span class="text-secondary small">Pending Verification</span>
+                           <span class="fw-bold text-info small">- ₹<?php echo sgvx_in_fmt($pending_payment_total, 0); ?></span>
+                       </li>
+                       <li class="d-flex justify-content-between">
+                           <span class="text-dark small fw-bold">Current Outstanding</span>
+                           <span class="fw-bold text-primary small">₹<?php echo sgvx_in_fmt($display_dues, 0); ?></span>
+                       </li>
+                   </ul>
               </div>
          </div>
     </div>
@@ -103,19 +113,33 @@ if ( ! empty( $data['pending_payment_requests'] ) ) {
                  <tbody>
                       <?php 
                         $all_payments = [];
-                        $all_payments = [];
                         if(!empty($data['invoices'])) {
                             foreach($data['invoices'] as $inv) {
-                                // Strictly use Flat Columns as requested
-                                if(strtolower(trim($inv['status'] ?? '')) === 'paid') {
+                                $desc = $inv['description'] ?? 'Maintenance';
+                                $month_label = !empty($inv['month']) ? date('M Y', strtotime($inv['month'])) : '';
+                                if($month_label && strpos($desc, $month_label) === false) $desc = "$month_label - $desc";
+
+                                // A. Check explicit payments JSON
+                                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : [];
+                                if ( is_array( $payments ) && !empty($payments) ) {
+                                    foreach($payments as $p) {
+                                        $all_payments[] = [
+                                            'date' => $p['date'] ?? date('Y-m-d'),
+                                            'amount' => $p['amount'],
+                                            'method' => $p['method'] ?? 'Recorded',
+                                            'ref' => $p['reference'] ?? $p['id'] ?? '-',
+                                            'desc' => $desc,
+                                            'inv_id' => $inv['id'],
+                                            'status' => 'paid'
+                                        ];
+                                    }
+                                } 
+                                // B. Fallback for legacy "Paid" status without explicit payment rows
+                                elseif (strtolower(trim($inv['status'] ?? '')) === 'paid') {
                                     $pay_date = !empty($inv['payment_date']) && $inv['payment_date'] !== '0000-00-00 00:00:00' 
                                                 ? date('Y-m-d', strtotime($inv['payment_date'])) 
                                                 : ($inv['created_at'] ? date('Y-m-d', strtotime($inv['created_at'])) : date('Y-m-d'));
                                     
-                                    $desc = $inv['description'] ?? 'Maintenance';
-                                    $month_label = date('M Y', strtotime($inv['month']));
-                                    if(strpos($desc, $month_label) === false) $desc = "$month_label - $desc";
-
                                     $all_payments[] = [
                                         'date' => $pay_date,
                                         'amount' => $inv['amount'],
@@ -123,15 +147,38 @@ if ( ! empty( $data['pending_payment_requests'] ) ) {
                                         'ref' => $inv['payment_ref'] ?? '-',
                                         'desc' => $desc,
                                         'inv_id' => $inv['id'],
-                                        'inv_obj' => $inv
+                                        'status' => 'paid'
                                     ];
                                 }
+                            }
+                        }
+
+                        // C. Include Pending Payment Requests from Requests Table
+                        if (!empty($data['pending_payment_requests'])) {
+                            foreach ($data['pending_payment_requests'] as $pr) {
+                                $p_payload = json_decode($pr['payload'] ?? '{}', true);
+                                $all_payments[] = [
+                                    'date'   => $p_payload['date'] ?? date('Y-m-d'),
+                                    'amount' => $p_payload['amount'] ?? 0,
+                                    'method' => $p_payload['method'] ?? 'UPI',
+                                    'ref'    => $p_payload['reference'] ?? '-',
+                                    'desc'   => 'Awaiting Verification: ' . ($p_payload['invoice_id'] ?? 'Dues'),
+                                    'inv_id' => '-',
+                                    'status' => 'pending'
+                                ];
                             }
                         }
                         
                         // Sort by Date DESC
                         usort($all_payments, function($a, $b) {
-                            return strtotime($b['date']) - strtotime($a['date']);
+                            $time_a = strtotime($a['date']);
+                            $time_b = strtotime($b['date']);
+                            if ($time_a == $time_b) {
+                                // If same date, pending on top
+                                if ($a['status'] === 'pending' && $b['status'] !== 'pending') return -1;
+                                if ($b['status'] === 'pending' && $a['status'] !== 'pending') return 1;
+                            }
+                            return $time_b - $time_a;
                         });
                       ?>
                       
@@ -142,18 +189,27 @@ if ( ! empty( $data['pending_payment_requests'] ) ) {
                             <tr>
                                 <td class="ps-4 fw-bold text-dark"><?php echo date('d M, Y', strtotime($pay['date'])); ?></td>
                                 <td>
-                                    <div class="fw-medium text-dark"><?php echo esc_html($pay['desc']); ?></div>
-                                    <div class="small text-muted font-monospace">INV: #<?php echo substr($pay['inv_id'], -6); ?></div>
+                                    <div class="fw-medium text-dark <?php echo ($pay['status'] === 'pending') ? 'fst-italic text-opacity-75' : ''; ?>">
+                                        <?php echo esc_html($pay['desc']); ?>
+                                        <?php if($pay['status'] === 'pending'): ?>
+                                            <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-10 ms-1" style="font-size: 8px;">PENDING</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="small text-muted font-monospace">Ref: #<?php echo ($pay['inv_id'] !== '-') ? substr($pay['inv_id'], -6) : 'VERIFY'; ?></div>
                                 </td>
-                                <td class="font-monospace text-success fw-bold">₹<?php echo sgvx_in_fmt($pay['amount'], 0); ?></td>
+                                <td class="font-monospace <?php echo ($pay['status'] === 'pending') ? 'text-secondary' : 'text-success'; ?> fw-bold">₹<?php echo sgvx_in_fmt($pay['amount'], 0); ?></td>
                                 <td>
                                     <div class="small text-dark"><?php echo esc_html($pay['method']); ?></div>
                                     <div class="text-muted font-monospace small" style="font-size: 10px;"><?php echo esc_html($pay['ref']); ?></div>
                                 </td>
                                 <td class="text-end pe-4">
-                                     <button onclick="viewInvoiceReceipt(this)" data-invoice-id="<?php echo esc_attr($pay['inv_id']); ?>" class="btn btn-sm btn-light border border-secondary border-opacity-25 text-secondary fw-bold p-1 px-3 shadow-sm" title="Download Receipt">
-                                        <i class="bi bi-download me-1"></i> Receipt
-                                     </button>
+                                     <?php if($pay['status'] !== 'pending' && $pay['inv_id'] !== '-'): ?>
+                                         <button onclick="viewInvoiceReceipt(this)" data-invoice-id="<?php echo esc_attr($pay['inv_id']); ?>" class="btn btn-sm btn-light border border-secondary border-opacity-25 text-secondary fw-bold p-1 px-3 shadow-sm" title="Download Receipt">
+                                            <i class="bi bi-download me-1"></i> Receipt
+                                         </button>
+                                     <?php else: ?>
+                                         <span class="text-muted small">N/A</span>
+                                     <?php endif; ?>
                                 </td>
                             </tr>
                           <?php endforeach; ?>

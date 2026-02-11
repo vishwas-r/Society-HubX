@@ -470,11 +470,8 @@ $qr_url    = get_option('sgvx51_bank_qr');
 </div>
 
 <script>
-    window.sgvxDashboardData = {
-        resident: <?php echo json_encode($profile_resident); ?>,
-        expenseChartData: <?php echo json_encode($data['expenseChartData'] ?? []); ?>,
-        paymentHistory: <?php echo json_encode($data['paymentHistory'] ?? []); ?>
-    };
+    // Data is localized via wp_localize_script in class-frontend-dashboard.php
+    // Redundant window.sgvxDashboardData assignment removed to avoid overwriting localized nonce.
 
     function saveProfileChanges() {
       const btn = event.target;
@@ -504,7 +501,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
       formData.append('dob', dob);
       formData.append('flat_no', '<?php echo esc_js($profile_resident['flat_no'] ?? ''); ?>');
       formData.append('type', '<?php echo esc_js($profile_resident['type'] ?? 'owner'); ?>');
-      formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('sgvx51_resident_nonce')); ?>');
+      formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('sgvx51_frontend_nonce')); ?>');
       if (fileInput && fileInput.files[0]) formData.append('profile_photo', fileInput.files[0]);
 
       fetch(ajaxurl, { method: 'POST', body: formData })

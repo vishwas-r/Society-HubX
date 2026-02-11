@@ -161,9 +161,14 @@
         if (paymentContainer && window.sgvxDashboardData.paymentHistory) {
             const paymentData = window.sgvxDashboardData.paymentHistory;
             const dps = [];
-
-            for (const [label, y] of Object.entries(paymentData)) {
-                dps.push({ label: label, y: y });
+            if (Array.isArray(paymentData)) {
+                paymentData.forEach(p => {
+                    dps.push({ x: new Date(p.x), y: p.y });
+                });
+            } else {
+                for (const [label, y] of Object.entries(paymentData)) {
+                    dps.push({ label: label, y: y });
+                }
             }
 
             if (dps.length > 0) {
@@ -175,6 +180,9 @@
                         fontSize: 16,
                         fontFamily: "Inter, sans-serif"
                     },
+                    axisX: {
+                        valueFormatString: "MMM YYYY",
+                    },
                     axisY: {
                         title: "Amount (₹)",
                         includeZero: true,
@@ -182,7 +190,7 @@
                         valueFormatString: "#,##,##0"
                     },
                     data: [{
-                        type: "area",
+                        type: "spline",
                         color: "#10b981",
                         markerSize: 8,
                         yValueFormatString: "₹#,##,##0",
@@ -190,7 +198,6 @@
                     }]
                 });
 
-                // Render immediately (usually home tab is visible)
                 paymentChart.render();
             }
         }
@@ -221,6 +228,12 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Init Charts
         initCharts();
+
+        // Initialize Bootstrap Tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
 
         // Hook into Tab Switching for Chart Re-render
         const btnExpenses = document.getElementById('btn-tab-expenses');

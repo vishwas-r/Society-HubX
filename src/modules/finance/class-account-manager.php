@@ -172,92 +172,120 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Can be called by admin_post or by execute_request (approval).
 	 */
 	private function perform_record_payment( $data ) {
-		$invoice_id = sanitize_text_field( $data['invoice_id'] );
-		$amount = floatval( $data['amount'] );
-		$method = sanitize_text_field( $data['method'] ); // Cash, UPI, Cheque
-		$ref = sanitize_text_field( $data['reference'] );
-		$date = sanitize_text_field( $data['date'] );
+		$invoice_id = sanitize_text_field( $data['invoice_id'] ?? '' );
+		$amount_remaining = floatval( $data['amount'] ?? 0 );
+		$method = sanitize_text_field( $data['method'] ?? 'UPI' );
+		$ref = sanitize_text_field( $data['reference'] ?? '-' );
+		$date = sanitize_text_field( $data['date'] ?? date('Y-m-d') );
+        $flat_no = sanitize_text_field( $data['flat_no'] ?? '' );
 
 		$invoices = $this->db->get( 'invoices' );
-		$found = false;
-		$invoice_flat_no = null;
+		$affected_invoices = [];
 
-		foreach ( $invoices as $i => $inv ) {
-			if ( $inv['id'] === $invoice_id ) {
-				// Store flat number for resident update
-				$invoice_flat_no = $inv['flat_no'];
+        // CASE 1: Specific Invoice Payment
+		if ( $invoice_id && $invoice_id !== 'Total Outstanding' ) {
+            foreach ( $invoices as $i => $inv ) {
+                if ( $inv['id'] === $invoice_id ) {
+                    $flat_no = $inv['flat_no'];
+                    $this->apply_payment_to_invoice_record( $invoices[$i], $amount_remaining, $date, $method, $ref );
+                    $affected_invoices[] = $invoices[$i];
+                    break;
+                }
+            }
+        } 
+        // CASE 2: General Payment (Total Outstanding) - FIFO Logic
+        elseif ( $flat_no ) {
+            $my_invoices = [];
+            foreach ( $invoices as $i => $inv ) {
+                if ( (string)$inv['flat_no'] === (string)$flat_no && $inv['status'] !== 'paid' ) {
+                    $my_invoices[] = &$invoices[$i]; // Reference to the original array
+                }
+            }
 
-				// Add Transaction
-				$transaction = array(
-					'id' => uniqid('txn_'),
-					'amount' => $amount,
-					'date' => $date,
-					'method' => $method,
-					'reference' => $ref,
-					'recorded_by' => get_current_user_id(),
-                    'account_type' => (strtolower($method) === 'cash') ? 'cash' : 'bank'
-				);
-				
-				// Ensure payments is an array (it might be stored as JSON string in database)
-				if ( ! isset( $invoices[$i]['payments'] ) ) {
-					$invoices[$i]['payments'] = [];
-				} elseif ( is_string( $invoices[$i]['payments'] ) ) {
-					// Parse JSON string to array
-					$parsed = json_decode( $invoices[$i]['payments'], true );
-					$invoices[$i]['payments'] = is_array( $parsed ) ? $parsed : [];
-				}
-				
-				// Add new transaction
-				$invoices[$i]['payments'][] = $transaction;
+            // Sort by month ASC (Oldest First)
+            usort($my_invoices, function($a, $b) {
+                return strtotime($a['month'] . '-01') - strtotime($b['month'] . '-01');
+            });
 
-				// Recalculate Status
-				$paid = 0;
-				foreach( $invoices[$i]['payments'] as $p ) {
-					$paid += floatval( $p['amount'] ?? 0 );
-				}
-				
-				if ( $paid >= floatval( $invoices[$i]['amount'] ) ) {
-					$invoices[$i]['status'] = 'paid';
-				} elseif ( $paid > 0 ) {
-					$invoices[$i]['status'] = 'partial';
-				}
+            foreach ( $my_invoices as &$inv ) {
+                if ( $amount_remaining <= 0 ) break;
 
-				$found = true;
-				break;
-			}
-		}
+                // Calculate remaining balance for this invoice
+                $already_paid = 0;
+                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : [];
+                if ( is_array($payments) ) {
+                    foreach ( $payments as $p ) $already_paid += (float)($p['amount'] ?? 0);
+                }
+                $inv_balance = (float)$inv['amount'] - $already_paid;
 
-		if ( $found ) {
-			// Update the specific invoice
-			$update_data = $invoices[$i];
-			$update_data['payments'] = json_encode( $update_data['payments'] ); // Ensure nested array is stringified for DB
-			
-			$result = $this->db->update( 'invoices', $update_data, ['id' => $invoice_id] );
-		} else {
-			// Not a specific invoice, or invoice not found (e.g., "Total Outstanding")
-			// We still proceed to update the resident's balance if flat_no is provided
-			$invoice_flat_no = $data['flat_no'] ?? null;
-			$result = true; 
-		}
+                if ( $inv_balance <= 0 ) continue;
+
+                $payment_towards_this_inv = min( $amount_remaining, $inv_balance );
+                $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref );
+                
+                $affected_invoices[] = $inv;
+                $amount_remaining -= $payment_towards_this_inv;
+            }
+        }
+
+        // Save all affected invoices
+        foreach ( $affected_invoices as $inv ) {
+            $save_data = $inv;
+            if ( is_array( $save_data['payments'] ) ) {
+                $save_data['payments'] = json_encode( $save_data['payments'] );
+            }
+            $this->db->update( 'invoices', $save_data, ['id' => $inv['id']] );
+        }
 
 		// 2. Update Resident's Maintenance Balance
-		if ( $invoice_flat_no ) {
-				$residents = $this->db->get( 'residents' );
-				foreach ( $residents as $j => $res ) {
-					if ( ( $res['flat_no'] ?? $res['id'] ?? null ) === $invoice_flat_no ) {
-						// Reduce maintenance balance by payment amount
-						$current_balance = floatval( $res['maintenance_balance'] ?? 0 );
-						$residents[$j]['maintenance_balance'] = max( 0, $current_balance - $amount );
-						
-						// Update resident record
-						$this->db->update( 'residents', $residents[$j], ['id' => $res['id']] );
-						break;
-					}
-				}
-			}
+		if ( $flat_no ) {
+            $amount_total = floatval( $data['amount'] ?? 0 );
+            $residents = $this->db->get( 'residents' );
+            foreach ( $residents as $j => $res ) {
+                if ( (string)($res['flat_no'] ?? $res['id']) === (string)$flat_no ) {
+                    $current_balance = floatval( $res['maintenance_balance'] ?? 0 );
+                    $new_balance = max( 0, $current_balance - $amount_total );
+                    $this->db->update( 'residents', ['maintenance_balance' => $new_balance], ['id' => $res['id']] );
+                    break;
+                }
+            }
+        }
 			
-			return $result;
+        return true;
 	}
+
+    /**
+     * Helper to append a payment record to an invoice array.
+     */
+    private function apply_payment_to_invoice_record( &$invoice, $amount, $date, $method, $ref ) {
+        if ( ! isset( $invoice['payments'] ) ) {
+            $invoice['payments'] = [];
+        } elseif ( is_string( $invoice['payments'] ) ) {
+            $invoice['payments'] = json_decode( $invoice['payments'], true ) ?: [];
+        }
+
+        $invoice['payments'][] = [
+            'id' => uniqid('txn_'),
+            'amount' => $amount,
+            'date' => $date,
+            'method' => $method,
+            'reference' => $ref,
+            'recorded_by' => get_current_user_id(),
+            'account_type' => (strtolower($method) === 'cash') ? 'cash' : 'bank'
+        ];
+
+        // Recalculate Status
+        $paid = 0;
+        foreach( $invoice['payments'] as $p ) {
+            $paid += floatval( $p['amount'] ?? 0 );
+        }
+        
+        if ( $paid >= floatval( $invoice['amount'] ) ) {
+            $invoice['status'] = 'paid';
+        } elseif ( $paid > 0 ) {
+            $invoice['status'] = 'partial';
+        }
+    }
 
 	/**
 	 * Handle Payment Request from Resident (Frontend)

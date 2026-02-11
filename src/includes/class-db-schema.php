@@ -54,6 +54,7 @@ class SGVX51_DB_Schema {
 			blood_group varchar(5) DEFAULT '' NOT NULL,
 			roles text NOT NULL, 
 			status varchar(20) DEFAULT 'pending' NOT NULL,
+			maintenance_balance decimal(15,2) DEFAULT 0.00 NOT NULL,
 			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no)
@@ -293,8 +294,153 @@ class SGVX51_DB_Schema {
 			KEY meta_key (meta_key)
 		) $charset_collate;";
 
+		// 18. Notification Channels
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notification_channels (
+			channel_slug varchar(20) NOT NULL,
+			is_active tinyint(1) DEFAULT 1 NOT NULL,
+			config longtext NOT NULL,
+			PRIMARY KEY  (channel_slug)
+		) $charset_collate;";
+
+		// 19. Notification Events
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notification_events (
+			event_slug varchar(50) NOT NULL,
+			module varchar(20) NOT NULL,
+			default_channels varchar(255) NOT NULL,
+			PRIMARY KEY  (event_slug)
+		) $charset_collate;";
+
+		// 20. Notification Templates
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notification_templates (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			event_slug varchar(50) NOT NULL,
+			channel varchar(20) NOT NULL,
+			subject varchar(255) DEFAULT '',
+			content longtext NOT NULL,
+			version int(11) DEFAULT 1 NOT NULL,
+			is_active tinyint(1) DEFAULT 1 NOT NULL,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY event_slug (event_slug),
+			KEY channel (channel)
+		) $charset_collate;";
+
+		// 21. Notification Preferences
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notification_preferences (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			event_slug varchar(50) NOT NULL,
+			channel varchar(20) NOT NULL,
+			is_enabled tinyint(1) DEFAULT 1 NOT NULL,
+			PRIMARY KEY  (id),
+			KEY user_id (user_id),
+			KEY event_channel (event_slug, channel)
+		) $charset_collate;";
+
+		// 22. Notification Logs
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notification_logs (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			event_slug varchar(50) NOT NULL,
+			channel varchar(20) NOT NULL,
+			status varchar(20) NOT NULL,
+			cost decimal(10,4) DEFAULT 0.0000 NOT NULL,
+			response text,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY user_id (user_id),
+			KEY event_slug (event_slug)
+		) $charset_collate;";
+
+		// 23. In-App Notifications
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_inapp_notifications (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) NOT NULL,
+			event_slug varchar(50) NOT NULL,
+			title varchar(255) NOT NULL,
+			content text NOT NULL,
+			is_read tinyint(1) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY user_id (user_id),
+			KEY is_read (is_read)
+		) $charset_collate;";
+
 		foreach ( $tables as $sql ) {
 			dbDelta( $sql );
+		}
+
+		self::seed_defaults();
+	}
+
+	/**
+	 * Seed Default Notification Configurations.
+	 */
+	public static function seed_defaults() {
+		global $wpdb;
+
+		// 1. Channels
+		$channels_table = "{$wpdb->prefix}society_governx_notification_channels";
+		$existing_channels = $wpdb->get_var("SELECT COUNT(*) FROM $channels_table");
+		
+		if ($existing_channels == 0) {
+			$wpdb->insert($channels_table, ['channel_slug' => 'email', 'is_active' => 1, 'config' => json_encode(['method' => 'wp_mail'])]);
+			$wpdb->insert($channels_table, ['channel_slug' => 'whatsapp', 'is_active' => 0, 'config' => json_encode(['sid' => '', 'token' => '', 'monthly_budget' => 50, 'current_usage' => 0])]);
+			$wpdb->insert($channels_table, ['channel_slug' => 'inapp', 'is_active' => 1, 'config' => json_encode([])]);
+		}
+
+		// 2. Events
+		$events_table = "{$wpdb->prefix}society_governx_notification_events";
+		$default_events = [
+			['event_slug' => 'visitor_checkin', 'module' => 'visitors', 'default_channels' => 'inapp,whatsapp,email'],
+			['event_slug' => 'invoice_generated', 'module' => 'accounts', 'default_channels' => 'email,inapp'],
+			['event_slug' => 'payment_due', 'module' => 'accounts', 'default_channels' => 'email,inapp,whatsapp'],
+			['event_slug' => 'sos_alert', 'module' => 'security', 'default_channels' => 'inapp,whatsapp,email'],
+			['event_slug' => 'notice_published', 'module' => 'notices', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'request_approved', 'module' => 'residents', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'request_rejected', 'module' => 'residents', 'default_channels' => 'inapp,email']
+		];
+
+		foreach ($default_events as $event) {
+			$exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $events_table WHERE event_slug = %s", $event['event_slug']));
+			if (!$exists) {
+				$wpdb->insert($events_table, $event);
+			}
+		}
+
+		// 3. Templates (Default V1)
+		$templates_table = "{$wpdb->prefix}society_governx_notification_templates";
+		$default_templates = [
+			// Visitor Templates
+			['event_slug' => 'visitor_checkin', 'channel' => 'inapp', 'subject' => 'Visitor Arrived', 'content' => 'Visitor {visitor_name} has arrived at the gate.'],
+			['event_slug' => 'visitor_checkin', 'channel' => 'email', 'subject' => 'Visitor Arrived at Gate {flat_no}', 'content' => 'Hello {resident_name},<br><br>Visitor <b>{visitor_name}</b> is waiting at the gate for Flat {flat_no}.'],
+			['event_slug' => 'visitor_checkin', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SGVX Alert: Visitor {visitor_name} is waiting for you at the gate.'],
+			
+			// Invoice Generated Templates
+			['event_slug' => 'invoice_generated', 'channel' => 'inapp', 'subject' => 'New Invoice Generated', 'content' => 'A new invoice of {amount} has been generated for {month}.'],
+			['event_slug' => 'invoice_generated', 'channel' => 'email', 'subject' => 'Maintenance Invoice - {month}', 'content' => 'Hello {resident_name},<br><br>A new invoice for <b>{month}</b> has been generated for amount <b>{amount}</b>. Please pay by {due_date}.'],
+			
+			// Payment Due Templates
+			['event_slug' => 'payment_due', 'channel' => 'inapp', 'subject' => 'Payment Reminder', 'content' => 'Your payment of {amount} is due on {due_date}.'],
+			['event_slug' => 'payment_due', 'channel' => 'email', 'subject' => 'Payment Reminder - {month}', 'content' => 'Hello {resident_name},<br><br>This is a reminder that your payment of <b>{amount}</b> for <b>{month}</b> is due tomorrow ({due_date}).'],
+			['event_slug' => 'payment_due', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SGVX Reminder: Your payment of {amount} for {month} is due on {due_date}. Please pay to avoid penalties.'],
+			
+			// Request Approval Templates
+			['event_slug' => 'request_approved', 'channel' => 'inapp', 'subject' => 'Request Approved', 'content' => 'Your request for {request_type} has been approved by the admin.'],
+			['event_slug' => 'request_approved', 'channel' => 'email', 'subject' => 'Request Approved: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> has been approved.<br><br>Details: {details}'],
+			
+			// Request Rejection Templates
+			['event_slug' => 'request_rejected', 'channel' => 'inapp', 'subject' => 'Request Rejected', 'content' => 'Your request for {request_type} was not approved.'],
+			['event_slug' => 'request_rejected', 'channel' => 'email', 'subject' => 'Request Rejected: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was not approved.<br><br>Admin Note: {admin_note}']
+		];
+
+		foreach ($default_templates as $tpl) {
+			$exists = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $templates_table WHERE event_slug = %s AND channel = %s", $tpl['event_slug'], $tpl['channel']));
+			if (!$exists) {
+				$tpl['is_active'] = 1;
+				$tpl['created_at'] = current_time('mysql');
+				$wpdb->insert($templates_table, $tpl);
+			}
 		}
 	}
     
@@ -321,7 +467,13 @@ class SGVX51_DB_Schema {
             'society_governx_facilities',
             'society_governx_bookings',
             'society_governx_daily_help',
-            'society_governx_documents'
+            'society_governx_documents',
+            'society_governx_notification_channels',
+            'society_governx_notification_events',
+            'society_governx_notification_templates',
+            'society_governx_notification_preferences',
+            'society_governx_notification_logs',
+            'society_governx_inapp_notifications'
         );
         
         foreach($tables as $t) {

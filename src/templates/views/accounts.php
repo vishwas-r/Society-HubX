@@ -282,10 +282,10 @@ if ( isset( $_GET['success'] ) ) {
             <div class="card border-0 shadow-sm rounded-3 bg-white p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-dark m-0">Monthly Cash Flow</h5>
-                    <div class="btn-group" role="group">
+                    <!-- <div class="btn-group" role="group">
                         <button type="button" class="btn btn-sm btn-outline-primary active" id="btn-chart-view-monthly" onclick="switchChartView('monthly')">Monthly</button>
                         <button type="button" class="btn btn-sm btn-outline-primary" id="btn-chart-view-yearly" onclick="switchChartView('yearly')">Yearly</button>
-                    </div>
+                    </div> -->
                 </div>
                 <div id="cashFlowChart" style="height: 350px; width: 100%;"></div>
             </div>
@@ -417,8 +417,11 @@ if ( isset( $_GET['success'] ) ) {
                                         <td class="px-4 py-4 text-center">
                                             <?php if ( ($inv['status'] ?? '') === 'paid' ) : ?>
                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">FULL PAID</span>
-                                            <?php elseif ( $pending_request ) : ?>
-                                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">VERIFICATION PENDING</span>
+                                            <?php elseif ( $pending_request ) : 
+                                                $p_payload = json_decode($pending_request['payload'], true);
+                                            ?>
+                                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold mb-1" style="font-size: 9px;">VERIFICATION PENDING</span>
+                                                <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo sgvx_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
                                             <?php elseif ( ($inv['status'] ?? '') === 'partial' ) : ?>
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">PARTIAL</span>
                                             <?php else : ?>
@@ -446,11 +449,11 @@ if ( isset( $_GET['success'] ) ) {
                                                              <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                                          </button>
                                                      <?php endif; ?>
-                                                     <?php if( $paid > 0 ): ?>
-                                                         <button type="button" class="btn btn-sm btn-light border border-light p-2 js-open-receipt rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="View Receipt">
-                                                             <i class="bi bi-file-earmark-medical fs-6 text-muted"></i>
-                                                         </button>
-                                                     <?php endif; ?>
+                                                      <?php if( $paid > 0 && !$pending_request ): ?>
+                                                          <button type="button" class="btn btn-sm btn-light border border-light p-2 js-open-receipt rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="View Receipt">
+                                                              <i class="bi bi-file-earmark-medical fs-6 text-muted"></i>
+                                                          </button>
+                                                      <?php endif; ?>
                                                      <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger js-delete-invoice rounded-3 shadow-none" data-id="<?php echo esc_attr($inv['id']); ?>" title="Delete">
                                                          <i class="bi bi-trash fs-6"></i>
                                                      </button>
@@ -518,8 +521,11 @@ if ( isset( $_GET['success'] ) ) {
                                             <div class="text-dark fw-bold small"><?php echo esc_html(date('d M, Y', strtotime($ln['date']))); ?></div>
                                             <div class="text-muted font-monospace" style="font-size: 8px;"><?php echo esc_html($ln['ref_id']); ?></div>
                                         </td>
-                                        <td class="px-4 py-4">
-                                            <div class="fw-bold text-dark small"><?php echo esc_html($ln['description']); ?></div>
+                                         <td class="px-4 py-4">
+                                            <div class="fw-bold text-dark small <?php echo !empty($ln['is_pending']) ? 'text-opacity-50 fst-italic' : ''; ?>">
+                                                <?php echo esc_html($ln['description']); ?>
+                                                <?php if(!empty($ln['is_pending'])): ?> <span class="badge bg-info bg-opacity-10 text-info ms-1" style="font-size: 8px;">PENDING</span> <?php endif; ?>
+                                            </div>
                                             <div class="small font-monospace text-secondary fw-bold text-uppercase" style="font-size: 9px; letter-spacing: 0.02em;"><?php echo esc_html($ln['entity']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
@@ -1205,8 +1211,8 @@ function renderCashFlowChart() {
         },
         axisX: {
             //labelAngle: -45,
-            labelFontSize: 10,
-            interval: 1
+            //labelFontSize: 10,
+            //interval: 1
         },
         toolTip: {
             shared: false,
@@ -1214,9 +1220,9 @@ function renderCashFlowChart() {
         },
         data: [{
             type: "waterfall",
-            indexLabel: "₹{y}",
-            indexLabelFontSize: 11,
-            indexLabelFontColor: "#333",
+            // indexLabel: "₹{y}",
+            // indexLabelFontSize: 11,
+            // indexLabelFontColor: "#333",
             dataPoints: dataPoints
         }]
     });

@@ -293,32 +293,45 @@ class SGVX51_Frontend_Dashboard {
         // Limit to last 12 months
         $expense_chart_data = array_slice($expense_chart_data, -12, null, true);
 
-        // Resident Payment History
+        // Resident Payment History - Detailed by Date
        $payment_history = [];
        if ( ! empty( $data['invoices'] ) ) {
            foreach ( $data['invoices'] as $inv ) {
-               $month_key = date('M Y', strtotime($inv['month']));
-               if (!isset($payment_history[$month_key])) $payment_history[$month_key] = 0;
-               
-               $paid_amount = 0;
+               $has_explicit_payments = false;
                if ( ! empty( $inv['payments'] ) ) {
                    $payments = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-                   if ( is_array( $payments ) ) {
+                   if ( is_array( $payments ) && ! empty( $payments ) ) {
+                       $has_explicit_payments = true;
                        foreach ( $payments as $p ) {
-                           $paid_amount += (float) $p['amount'];
+                           $p_date = ! empty( $p['date'] ) ? $p['date'] : substr( $inv['created_at'], 0, 10 );
+                           if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
+                           $payment_history[ $p_date ] += (float) $p['amount'];
                        }
                    }
                }
                
-               // Fallback for imported data
-               if ( $paid_amount == 0 && (strtolower($inv['status'] ?? '') === 'paid') ) {
-                   $paid_amount = (float) $inv['amount'];
+               // Fallback for imported data (legacy paid status without transactions)
+               if ( ! $has_explicit_payments && ( strtolower( $inv['status'] ?? '' ) === 'paid' ) ) {
+                   // Use 1st of invoice month as fallback date
+                   $p_date = date( 'Y-m-d', strtotime( $inv['month'] . '-01' ) );
+                   if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
+                   $payment_history[ $p_date ] += (float) $inv['amount'];
                }
-               
-               $payment_history[$month_key] += $paid_amount;
            }
        }
-        $payment_history = array_slice($payment_history, -12, null, true);
+       
+       ksort( $payment_history ); // Sort by date ASC
+       
+       // Format for CanvasJS (x: numeric timestamp, y: amount)
+       $chart_payments = [];
+       foreach ( $payment_history as $date_str => $amount ) {
+           $chart_payments[] = array(
+               'x'     => strtotime( $date_str ) * 1000, // Milliseconds for JS
+               'y'     => $amount,
+               'label' => date( 'd M Y', strtotime( $date_str ) ) // For tooltips
+           );
+       }
+       $payment_history = array_slice( $chart_payments, -20 ); // Last 20 payments for clarity
 
 		// 3. Prepare $data for template
 		$data['expenseChartData'] = $expense_chart_data;
@@ -333,7 +346,7 @@ class SGVX51_Frontend_Dashboard {
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
-            'nonce'            => wp_create_nonce('sgvx51_nonce')
+            'nonce'            => wp_create_nonce('sgvx51_frontend_nonce')
          ));
         
 		ob_start();
@@ -347,11 +360,13 @@ class SGVX51_Frontend_Dashboard {
 		
 		foreach ( $all as $n ) {
 			// Filter by Audience
-			if ( $n['audience'] === 'All' ) {
+			$audience = $n['audience'] ?? 'All';
+
+			if ( $audience === 'All' ) {
 				$my_notices[] = $n;
-			} elseif ( $n['audience'] === 'Owners' && strtolower( $type ) === 'owner' ) {
+			} elseif ( $audience === 'Owners' && strtolower( $type ) === 'owner' ) {
 				$my_notices[] = $n;
-			} elseif ( $n['audience'] === 'Tenants' && strtolower( $type ) === 'tenant' ) {
+			} elseif ( $audience === 'Tenants' && strtolower( $type ) === 'tenant' ) {
 				$my_notices[] = $n;
 			}
 		}

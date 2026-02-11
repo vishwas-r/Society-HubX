@@ -231,6 +231,28 @@ class SGVX51_Request_Manager {
             }
 
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
+
+            // Trigger Resident Notification
+            if ( class_exists('Society_Govern_X') && !empty($target_request['created_by']) ) {
+                $sgvx = Society_Govern_X::get_instance();
+                if ( isset($sgvx->notifications) ) {
+                    $resident_name = 'Resident';
+                    $residents = $this->db->get('residents');
+                    foreach($residents as $res_obj) {
+                        if(isset($res_obj['wp_user_id']) && (int)$res_obj['wp_user_id'] === (int)$target_request['created_by']) {
+                            $resident_name = $res_obj['name'];
+                            break;
+                        }
+                    }
+
+                    $sgvx->notifications->trigger('request_approved', $target_request['created_by'], [
+                        'resident_name' => $resident_name,
+                        'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'details'       => "Your request for " . $module_slug . " was approved."
+                    ]);
+                }
+            }
+
 			return true;
 		}
 
@@ -301,6 +323,27 @@ class SGVX51_Request_Manager {
 
 		if($res && !is_wp_error($res)) {
 			$this->log_audit('request_rejected', $module_slug, $actual_request_id, "Action: $action, Target: $entity_id, Note: $note, Rejected by: " . $update_data['processed_by']);
+
+            // Trigger Resident Notification
+            if ( class_exists('Society_Govern_X') && !empty($target_request['created_by']) ) {
+                $sgvx = Society_Govern_X::get_instance();
+                if ( isset($sgvx->notifications) ) {
+                    $resident_name = 'Resident';
+                    $residents = $this->db->get('residents');
+                    foreach($residents as $res_obj) {
+                        if(isset($res_obj['wp_user_id']) && (int)$res_obj['wp_user_id'] === (int)$target_request['created_by']) {
+                            $resident_name = $res_obj['name'];
+                            break;
+                        }
+                    }
+
+                    $sgvx->notifications->trigger('request_rejected', $target_request['created_by'], [
+                        'resident_name' => $resident_name,
+                        'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'admin_note'    => $note ?: 'No specific reason provided.'
+                    ]);
+                }
+            }
 		}
 
 		return $res;
