@@ -144,8 +144,17 @@ class SGVX51_AJAX_Handler {
 	 * This endpoint is available to logged-in users (residents can only view their own receipts)
 	 */
 	public function handle_get_receipt() {
-		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'sgvx51_frontend_nonce' ) ) {
+		// Verify nonce (Check both Frontend and Admin nonces)
+		$verified = false;
+		if ( isset( $_POST['nonce'] ) ) {
+			if ( wp_verify_nonce( $_POST['nonce'], 'sgvx51_frontend_nonce' ) ) {
+				$verified = true;
+			} elseif ( wp_verify_nonce( $_POST['nonce'], 'sgvx51_nonce' ) ) { // Admin Context
+				$verified = true;
+			}
+		}
+
+		if ( ! $verified ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 

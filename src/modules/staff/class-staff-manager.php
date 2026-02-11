@@ -86,7 +86,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 			'created_at'     => current_time( 'mysql' ),
             'id'             => isset($data['id']) ? $data['id'] : uniqid('staff_'),
             'status'         => isset($data['status']) ? $data['status'] : 'approved',
-            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : '',
+            'flat_no'        => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ''),
             'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ''
 		);
 
@@ -125,7 +125,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             'flats_served'   => isset($data['flats_served']) ? $data['flats_served'] : ($existing['flats_served'] ?? '[]'),
             'status'         => 'approved', // Reset to approved upon edit approval or admin edit
             'created_by'     => $existing['created_by'] ?? '',
-            'flat_no'        => isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? ''),
+            'flat_no'        => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? '')),
             'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ($existing['profile_photo'] ?? '')
         );
 

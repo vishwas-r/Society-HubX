@@ -159,7 +159,9 @@
             }
         }
 
-        $form.find('[name="flat_no"]').val(staff.flat_no || '');
+        const served_flats = staff.flats_served ? (Array.isArray(staff.flats_served) ? staff.flats_served : JSON.parse(staff.flats_served)) : [];
+        $form.find('[name="flats_served[]"]').val(served_flats);
+
         $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
         $form.find('[name="action"]').val('sgvx51_edit_staff');
@@ -172,6 +174,7 @@
         const $form = $('#add-staff-form');
         $form[0].reset();
         $form.find('[name="action"]').val('sgvx51_add_staff');
+        $form.find('[name="flats_served[]"]').val([]); // Clear multi-select
         $form.find('[name="profile_photo"]').val('');
         const preview = document.getElementById('current-doc-preview');
         if (preview) preview.classList.add('d-none');

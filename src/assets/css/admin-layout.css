@@ -15,7 +15,7 @@
     --slate-800: #1e293b;
     --slate-900: #0f172a;
 
-    --indigo-50:  #eef2ff;
+    --indigo-50: #eef2ff;
     --indigo-300: #a5b4fc;
     --indigo-600: #4f46e5;
     --indigo-700: #4338ca;
@@ -69,7 +69,7 @@
 
 .sgvx-sidebar .nav-link.active {
     background-color: var(--slate-100) !important;
-    color: var(--indigo-700) !important;
+    color: var(--bs-primary) !important;
 }
 
 .sgvx-sidebar .nav-link:not(.active):hover {
@@ -78,7 +78,7 @@
 }
 
 .sgvx-sidebar .hover-indigo:hover {
-    color: var(--indigo-600) !important;
+    color: var(--bs-primary) !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -344,11 +344,11 @@
 }
 
 .text-indigo-600 {
-    color: var(--indigo-600) !important;
+    color: var(--bs-primary) !important;
 }
 
 .text-indigo-700 {
-    color: var(--indigo-700) !important;
+    color: var(--bs-primary) !important;
 }
 
 .text-emerald-500 {
@@ -381,7 +381,7 @@
 }
 
 .bg-indigo-600 {
-    background-color: var(--indigo-600) !important;
+    background-color: var(--bs-primary) !important;
 }
 
 .bg-indigo-100 {
@@ -503,7 +503,7 @@
 
 .badge-indigo-subtle {
     background-color: #e0e7ff !important;
-    color: #4338ca !important;
+    color: var(--bs-primary) !important;
     border: 1px solid #c7d2fe !important;
 }
 
@@ -563,14 +563,14 @@
 }
 
 .nav-tabs .nav-link.active {
-    border-bottom-color: var(--indigo-600) !important;
-    color: var(--indigo-700) !important;
+    border-bottom-color: var(--bs-primary) !important;
+    color: var(--bs-primary) !important;
     font-weight: 700 !important;
 }
 
 .nav-tabs .nav-link:hover {
-    color: var(--indigo-600) !important;
-    border-bottom-color: var(--indigo-200) !important;
+    color: var(--bs-primary) !important;
+    border-bottom-color: var(--bs-primary-bg-subtle) !important;
 }
 
 /* Modal & Form Fixes */
@@ -694,7 +694,7 @@
 
 .resident-item.active {
     background-color: #eef2ff !important;
-    border-left: 4px solid var(--indigo-600) !important;
+    border-left: 4px solid var(--bs-primary) !important;
 }
 
 /* Modal Background & Layering Fixes */

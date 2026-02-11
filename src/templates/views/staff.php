@@ -362,15 +362,19 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
                             <input type="text" name="phone" id="staff-phone" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold text-secondary">Assigned Flat (Optional)</label>
-                            <select name="flat_no" id="staff-flat" class="form-select shadow-none rounded-3 border-light">
-                                <option value="">Not Assigned (Society Dedicated)</option>
+                            <label class="form-label small fw-bold text-secondary">Assigned Flats (Multiple)</label>
+                            <select name="flats_served[]" id="staff-flat" class="form-select shadow-none rounded-3 border-light" multiple style="height: 100px;">
                                 <?php if(!empty($all_flats)): ?>
-                                    <?php foreach($all_flats as $f): ?>
-                                        <option value="<?php echo esc_attr($f['id']); ?>"><?php echo esc_html($f['id']); ?></option>
+                                    <?php foreach($all_flats as $f): 
+                                        $val = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                                        $label = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                                        if(!empty($f['block'])) $label = $f['block'] . ' - ' . $label;
+                                    ?>
+                                        <option value="<?php echo esc_attr($val); ?>"><?php echo esc_html($label); ?></option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
+                            <div class="form-text small">Hold Ctrl/Cmd to select multiple flats.</div>
                         </div>
                     </div>
 

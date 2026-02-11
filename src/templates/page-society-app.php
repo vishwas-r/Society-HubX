@@ -37,9 +37,9 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
         </div>
         <div class="d-flex align-items-center gap-4">
-            <div class="bg-light p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="No Pending Requests">
+            <!-- <div class="bg-light p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="No Pending Requests">
                 <i class="bi bi-bell text-secondary opacity-50"></i>
-            </div>
+            </div> -->
             
             <?php 
             if ( is_user_logged_in() ) : 
