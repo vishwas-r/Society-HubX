@@ -54,6 +54,16 @@ class SGVX51_Admin_Settings {
 			array( $this, 'render_settings_page' )
 		);
 
+		// Notifications Page (Moved above Settings as per request)
+		add_submenu_page(
+			'sgvx51-settings',
+			'Notification Center',
+			'Notifications',
+			'manage_options',
+			'sgvx51-notifications',
+			array( $this, 'render_notifications_page' )
+		);
+
 		// Global Settings Page
 		add_submenu_page(
 			'sgvx51-settings',
@@ -72,16 +82,6 @@ class SGVX51_Admin_Settings {
 			'manage_options',
 			'sgvx51-polls',
 			array( $this, 'render_polls_page' )
-		);
-
-		// Notifications Page
-		add_submenu_page(
-			'sgvx51-settings',
-			'Notification Center',
-			'Notifications',
-			'manage_options',
-			'sgvx51-notifications',
-			array( $this, 'render_notifications_page' )
 		);
 	}
 
