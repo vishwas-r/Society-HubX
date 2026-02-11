@@ -64,10 +64,10 @@ usort($logs, function($a, $b) { return strtotime($b['created_at']) - strtotime($
                             </div>
                             
                             <!-- Custom Toggle -->
-                            <div class="toggle" style="transform: scale(0.65); transform-origin: right center;">
+                            <label class="sgvx-toggle" style="transform-origin: right center;">
                                 <input type="checkbox" class="sgvx-channel-toggle" data-channel="<?php echo $slug; ?>" <?php checked($channel['is_active'], 1); ?>/>
-                                <label></label>
-                            </div>
+                                <span class="sgvx-toggle-slider"></span>
+                            </label>
 
                         </div>
                         <h5 class="fw-bold text-slate-900 mb-1"><?php echo ucfirst($slug); ?></h5>
@@ -131,26 +131,26 @@ usort($logs, function($a, $b) { return strtotime($b['created_at']) - strtotime($
                             <td><span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-3"><?php echo ucfirst($event['module']); ?></span></td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center">
-                                    <div class="toggle" style="transform: scale(0.65);">
+                                    <label class="sgvx-toggle sgvx-toggle-sm">
                                         <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
-                                        <label></label>
-                                    </div>
+                                        <span class="sgvx-toggle-slider"></span>
+                                    </label>
                                 </div>
                             </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center">
-                                    <div class="toggle" style="transform: scale(0.65);">
+                                    <label class="sgvx-toggle sgvx-toggle-sm">
                                         <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
-                                        <label></label>
-                                    </div>
+                                        <span class="sgvx-toggle-slider"></span>
+                                    </label>
                                 </div>
                             </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center">
-                                    <div class="toggle" style="transform: scale(0.65);">
+                                    <label class="sgvx-toggle sgvx-toggle-sm">
                                         <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
-                                        <label></label>
-                                    </div>
+                                        <span class="sgvx-toggle-slider"></span>
+                                    </label>
                                 </div>
                             </td>
                         </tr>

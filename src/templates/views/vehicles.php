@@ -84,7 +84,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                 <thead>
                     <tr class="bg-light">
                         <th class="ps-5 py-4 border-0" style="width: 40px;">
-                            <input type="checkbox" id="bulk-select-all" class="form-check-input shadow-none">
+                            <input type="checkbox" id="bulk-select-all" class="form-check-input bg-light border-slate-200 shadow-none">
                         </th>
                         <th class="ps-2 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Vehicle Details</th>
                         <th class="px-4 py-4 text-uppercase small text-muted fw-bold border-0 tracking-wider">Status</th>
@@ -171,7 +171,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??''))); ?>">
                             <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input sgvx-bulk-checkbox bg-light border-slate-200 shadow-none">
                             </td>
                             <td class="ps-2 py-4">
                                 <div class="d-flex align-items-center gap-3">

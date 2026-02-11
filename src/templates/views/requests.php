@@ -94,7 +94,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
             <thead>
                 <tr class="bg-light">
                     <th class="ps-5 py-4 border-0" style="width: 50px;">
-                        <input type="checkbox" id="bulk-select-all" class="form-check-input shadow-none">
+                        <input type="checkbox" id="bulk-select-all" class="form-check-input bg-light border-slate-200 shadow-none">
                     </th>
                     <th class="ps-2 py-4 text-uppercase small text-muted fw-bold border-0" style="font-size: 10px;">Module</th>
                     <th class="px-4 py-4 text-uppercase small text-muted fw-bold border-0" style="font-size: 10px;">Request Type</th>
@@ -121,7 +121,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     ?>
                         <tr class="request-row border-bottom border-light" data-module="<?php echo esc_attr($module); ?>">
                             <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($req['id']); ?>" class="form-check-input sgvx-bulk-checkbox shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr($req['id']); ?>" class="form-check-input sgvx-bulk-checkbox bg-light border-slate-200 shadow-none">
                             </td>
                             <td class="ps-2 py-4">
                                 <span class="badge bg-light text-dark text-capitalize px-3 py-1.5 rounded-pill border" style="font-size: 10px;">

@@ -753,62 +753,76 @@
     border-color: var(--custom-primary-subtle) !important;
 }
 
-/* --- Custom Toggle Switch (Simplified) --- */
-.toggle {
-    position: relative;
-    box-sizing: border-box;
-}
-
-.toggle input[type="checkbox"] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 10;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    opacity: 0;
-}
-
-.toggle label {
-    position: relative;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    margin: 0;
-    /* Align fix */
-}
-
-.toggle label:before {
-    content: '';
-    width: 75px;
-    height: 42px;
-    background: #ccc;
+/* --- SGVX Premium Toggle Switch --- */
+.sgvx-toggle {
     position: relative;
     display: inline-block;
-    border-radius: 46px;
-    box-sizing: border-box;
-    transition: 0.2s ease-in;
+    width: 60px;
+    height: 32px;
 }
 
-.toggle label:after {
-    content: '';
+.sgvx-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sgvx-toggle-slider {
     position: absolute;
-    width: 38px;
-    height: 38px;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.sgvx-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
     border-radius: 50%;
-    left: 2px;
-    top: 2px;
-    z-index: 2;
-    background: #fff;
-    box-sizing: border-box;
-    transition: 0.2s ease-in;
 }
 
-.toggle input[type="checkbox"]:checked+label:before {
-    background: #4BD865;
+input:checked+.sgvx-toggle-slider {
+    background-color: #4BD865;
 }
 
-.toggle input[type="checkbox"]:checked+label:after {
-    left: 35px;
+input:focus+.sgvx-toggle-slider {
+    box-shadow: 0 0 1px #4BD865;
 }
+
+input:checked+.sgvx-toggle-slider:before {
+    transform: translateX(28px);
+}
+
+/* Small Variant */
+.sgvx-toggle-sm {
+    width: 45px;
+    height: 24px;
+}
+
+.sgvx-toggle-sm .sgvx-toggle-slider:before {
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+}
+
+input:checked+.sgvx-toggle-sm .sgvx-toggle-slider:before {
+    transform: translateX(21px);
+}
+
+/* Backward compatibility for previous .toggle usage if any remains */
+.toggle {
+    @extend .sgvx-toggle;
+}
+
+/* Note: CSS doesn't support @extend, but keeping for reference if I need to find/replace */

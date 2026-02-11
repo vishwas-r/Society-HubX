@@ -1,7 +1,7 @@
 <?php
 /**
  * Module: Notice Board
- * Handles Public/Private Notices.
+ * Handles Public/Private Notices with modern AJAX Support.
  *
  * @package Society_Govern_X
  */
@@ -20,7 +20,13 @@ class SGVX51_Notice_Board {
 		$this->drive = new SGVX51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_sgvx51_add_notice', array( $this, 'handle_add_notice' ) );
+
+        // AJAX Handlers
+        add_action( 'wp_ajax_sgvx51_add_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_sgvx51_update_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_sgvx51_delete_notice', array( $this, 'ajax_delete_notice' ) );
+        add_action( 'wp_ajax_sgvx51_toggle_pin', array( $this, 'ajax_toggle_pin' ) );
+        add_action( 'wp_ajax_sgvx51_get_notice', array( $this, 'ajax_get_notice' ) );
 	}
 
 	public function register_menu() {
@@ -34,19 +40,52 @@ class SGVX51_Notice_Board {
 		);
 	}
 
-	public function handle_add_notice() {
-		if ( ! check_admin_referer( 'sgvx51_add_notice_nonce' ) ) {
-			wp_die( 'Security check failed' );
-		}
+	public function render_page() {
+		SGVX51_Admin_App::render_view('notices');
+	}
 
-		$data = array(
+    /**
+     * AJAX: Get Single Notice.
+     */
+    public function ajax_get_notice() {
+        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+        
+        $id = sanitize_text_field($_POST['id']);
+        $notices = $this->db->get('notices');
+        
+        foreach($notices as $n) {
+            if($n['id'] === $id) {
+                wp_send_json_success($n);
+            }
+        }
+        
+        wp_send_json_error(['message' => 'Notice not found']);
+    }
+
+    /**
+     * AJAX: Save/Update Notice.
+     */
+    public function ajax_save_notice() {
+        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+
+        $id = !empty($_POST['id']) ? sanitize_text_field($_POST['id']) : uniqid('ntc_');
+        $is_update = !empty($_POST['id']);
+        $new_status = sanitize_text_field($_POST['status'] ?? 'published');
+
+        $data = array(
 			'title'          => sanitize_text_field( $_POST['title'] ),
-			'content'        => sanitize_textarea_field( $_POST['content'] ),
-			'audience'       => sanitize_text_field( $_POST['audience'] ),
-			'expiry_date'    => sanitize_text_field( $_POST['expiry_date'] ),
-			'attachment_url' => '',
-			'created_at'     => current_time( 'mysql' ),
+			'content'        => wp_kses_post( $_POST['content'] ), 
+			'audience'       => sanitize_text_field( $_POST['audience'] ?? 'All' ),
+			'urgency'        => sanitize_text_field( $_POST['urgency'] ?? 'info' ),
+            'status'         => $new_status,
+            'is_pinned'      => !empty($_POST['is_pinned']) ? 1 : 0,
+			'expiry_date'    => !empty($_POST['expiry_date']) ? sanitize_text_field( $_POST['expiry_date'] ) : null,
 		);
+
+        if (!$is_update) {
+            $data['id'] = $id;
+            $data['created_at'] = current_time( 'mysql' );
+        }
 
 		// Handle Attachment
 		if ( ! empty( $_FILES['attachment'] ) && $_FILES['attachment']['size'] > 0 ) {
@@ -59,12 +98,72 @@ class SGVX51_Notice_Board {
 			}
 		}
 
-		$this->db->insert( 'notices', $data );
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-notices&success=1' ) );
-		exit;
-	}
+        if ($is_update) {
+            $this->db->update('notices', $data, ['id' => $id]);
+            $msg = 'Notice updated successfully.';
+        } else {
+            $this->db->insert( 'notices', $data );
+            $msg = 'Notice published successfully.';
+        }
 
-	public function render_page() {
-		SGVX51_Admin_App::render_view('notices');
-	}
+        // Trigger Notifications if status changed to 'published' (or if new and published)
+        if ($new_status === 'published') {
+            $this->broadcast_notice(array_merge($data, ['id' => $id]));
+        }
+
+        wp_send_json_success(['message' => $msg, 'id' => $id]);
+    }
+
+    /**
+     * AJAX: Delete Notice.
+     */
+    public function ajax_delete_notice() {
+        check_ajax_referer('sgvx51_delete_notice_nonce', '_wpnonce');
+        
+        $id = sanitize_text_field($_POST['id']);
+        $this->db->delete('notices', ['id' => $id]);
+        
+        wp_send_json_success(['message' => 'Notice deleted permanently.']);
+    }
+
+    /**
+     * AJAX: Toggle Pin Status.
+     */
+    public function ajax_toggle_pin() {
+        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+        
+        $id = sanitize_text_field($_POST['id']);
+        $pinned = !empty($_POST['pinned']) ? 1 : 0;
+
+        $this->db->update('notices', ['is_pinned' => $pinned], ['id' => $id]);
+        
+        wp_send_json_success(['message' => $pinned ? 'Notice pinned.' : 'Notice unpinned.']);
+    }
+
+    /**
+     * Broadcast Notice to Audience.
+     */
+    private function broadcast_notice($notice) {
+        $residents = $this->db->get('residents');
+        $audience = $notice['audience'];
+        $dispatcher = Society_Govern_X::get_instance()->notifications;
+
+        if (!$dispatcher) return;
+
+        foreach ($residents as $r) {
+            // More robust match for audience
+            $resident_type = strtolower($r['type'] ?? 'owner');
+            if ($audience === 'Owners' && $resident_type !== 'owner') continue;
+            if ($audience === 'Tenants' && $resident_type !== 'tenant') continue;
+
+            if (empty($r['wp_user_id'])) continue;
+
+            $dispatcher->trigger('notice_published', $r['wp_user_id'], [
+                'title'   => $notice['title'],
+                'content' => wp_trim_words(strip_tags($notice['content']), 20),
+                'urgency' => ucfirst($notice['urgency']),
+                'time'    => current_time('mysql')
+            ]);
+        }
+    }
 }

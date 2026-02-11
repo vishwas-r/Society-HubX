@@ -117,10 +117,17 @@ class SGVX51_DB_Schema {
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_notices (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
-			content text NOT NULL,
-			priority varchar(20) DEFAULT 'normal' NOT NULL,
+			content longtext NOT NULL,
+			urgency varchar(20) DEFAULT 'info' NOT NULL,
+			audience varchar(50) DEFAULT 'All' NOT NULL,
+			status varchar(20) DEFAULT 'published' NOT NULL,
+			is_pinned tinyint(1) DEFAULT 0 NOT NULL,
+			expiry_date date DEFAULT NULL,
+			attachment_url text DEFAULT '' NOT NULL,
 			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-			PRIMARY KEY  (id)
+			PRIMARY KEY  (id),
+			KEY status (status),
+			KEY urgency (urgency)
 		) $charset_collate;";
 
 		// 7. Invoices Table
