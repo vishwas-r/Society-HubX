@@ -61,7 +61,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
 <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
     
     <!-- Toolbar -->
-    <div class="p-4 px-md-5 border-bottom border-light">
+    <div class="p-4 px-md-5">
         <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
                 <h5 class="m-0 fw-bold">Active Requests</h5>
@@ -82,7 +82,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     <option value="residents">Residents</option>
                     <option value="vehicles">Vehicles</option>
                     <option value="daily_help">Staff</option>
-                    <option value="finance">Finance / Payments</option>
+                    <option value="accounts">Finance / Payments</option>
                 </select>
             </div>
         </div>
@@ -138,7 +138,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                 <div class="text-secondary small text-truncate" style="max-width: 300px;">
                                     <?php 
                                         // Dynamic detail extraction
-                                        if($module === 'finance') {
+                                        if($module === 'finance' || $module === 'accounts') {
                                             echo "<strong>₹" . number_format($payload['amount'] ?? 0) . "</strong> | " . esc_html($payload['method'] ?? '') . " | <span class='text-primary'>" . esc_html($payload['reference'] ?? '') . "</span>";
                                         } else {
                                             if(isset($payload['name'])) echo "Name: " . esc_html($payload['name']);
@@ -169,21 +169,40 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
     </div>
 
     <!-- History Header -->
-    <div class="p-4 px-md-5 bg-light border-top border-light">
-        <h6 class="m-0 fw-bold text-secondary text-uppercase" style="font-size: 11px; letter-spacing: 0.05em;">Recently Processed</h6>
+    <div class="p-4 px-md-5 bg-light border-top border-light mt-5 rounded-top-4">
+        <h6 class="m-0 fw-bold text-primary text-uppercase" style="font-size: 11px; letter-spacing: 0.05em;">Recently Processed</h6>
     </div>
 
     <!-- History Table -->
-    <div class="table-responsive opacity-75">
+    <div class="table-responsive opacity-75 rounded-0">
         <table class="table table-sm align-middle mb-0">
             <tbody class="border-top-0">
                 <?php foreach ( array_slice($history, 0, 10) as $req ) : 
                     $status = $req['status'];
                     $user = get_userdata($req['processed_by']);
+                    $module = $req['module'] ?: ($req['entity_type'] ?? 'unknown');
+                    $payload = json_decode($req['payload'], true);
                 ?>
                     <tr class="bg-white border-bottom border-light">
                         <td class="ps-5 py-3">
-                            <span class="text-secondary small"><?php echo esc_html($req['module']); ?></span>
+                            <span class="text-secondary small fw-bold text-uppercase" style="font-size: 10px;"><?php echo esc_html(str_replace('_', ' ', $module)); ?></span>
+                        </td>
+                        <td class="px-2 py-3">
+                            <div class="text-dark small text-truncate" style="max-width: 250px;">
+                                <?php 
+                                    // Dynamic detail extraction
+                                    if($module === 'finance' || $module === 'accounts') {
+                                        echo "<strong>₹" . number_format($payload['amount'] ?? 0) . "</strong>";
+                                        echo " <span class='text-muted mx-1'>•</span> " . esc_html($payload['method'] ?? '');
+                                    } else {
+                                        if(isset($payload['name'])) echo esc_html($payload['name']);
+                                        elseif(isset($payload['number'])) echo esc_html($payload['number']);
+                                        else echo ucfirst($req['request_type']);
+                                    }
+                                    
+                                    if(isset($payload['flat_no'])) echo " <span class='text-muted mx-1'>•</span> " . esc_html($payload['flat_no']);
+                                ?>
+                            </div>
                         </td>
                         <td class="px-2 py-3">
                             <span class="badge <?php echo $status==='approved'?'bg-success':'bg-danger'; ?> bg-opacity-10 <?php echo $status==='approved'?'text-success':'text-danger'; ?> rounded-pill px-2 py-1" style="font-size: 9px;">
@@ -192,7 +211,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                         </td>
                         <td class="px-2 py-3">
                             <div class="text-muted small" style="font-size: 10px;">
-                                Processed by <?php echo $user ? $user->display_name : 'System'; ?>
+                                <?php echo $user ? $user->display_name : 'System'; ?>
                                 <span class="mx-1">•</span>
                                 <?php echo date('d M', strtotime($req['processed_at'])); ?>
                             </div>

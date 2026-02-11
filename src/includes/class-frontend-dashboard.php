@@ -278,6 +278,7 @@ class SGVX51_Frontend_Dashboard {
             'summary_month'     => $summary_month,
 			'directory'         => $this->get_directory_data(),
 			'pending_payment_requests' => $pending_payment_requests,
+            'notifications'     => $this->get_my_notifications( $user_id ),
 		);
 
 
@@ -1604,6 +1605,21 @@ class SGVX51_Frontend_Dashboard {
         }
         return $mine;
     }
+
+	private function get_my_notifications( $user_id ) {
+		$all_notifs = $this->db->get( 'inapp_notifications' );
+		$my_notifs = [];
+		foreach ( $all_notifs as $n ) {
+			if ( (int)$n['user_id'] === (int)$user_id ) {
+				$my_notifs[] = $n;
+			}
+		}
+		// Sort by Date DESC
+		usort($my_notifs, function($a, $b) {
+			return strtotime($b['created_at']) - strtotime($a['created_at']);
+		});
+		return $my_notifs;
+	}
 
     /**
      * Get Directory Data

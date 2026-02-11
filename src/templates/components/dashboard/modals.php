@@ -417,8 +417,8 @@ $qr_url    = get_option('sgvx51_bank_qr');
                  <label class="small text-muted text-uppercase fw-bold" style="font-size: 10px;">Family Size</label>
                  <div class="fw-bold d-flex align-items-center gap-2"><i class="bi bi-people text-primary"></i> <span id="cdm-members"></span> Members</div>
              </div>
-             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Vehicles</label><div id="cdm-vehicles" class="d-flex flex-column gap-2"></div></div>
-             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Daily Help</label><div id="cdm-help" class="d-flex flex-column gap-2"></div></div>
+             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Vehicles</label><div id="cdm-vehicles" class="d-flex flex-column align-items-start gap-2"></div></div>
+             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Daily Help</label><div id="cdm-help" class="d-flex flex-column align-items-start gap-2"></div></div>
          </div>
       </div>
     </div>

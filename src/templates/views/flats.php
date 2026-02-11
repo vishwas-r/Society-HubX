@@ -5,10 +5,23 @@
 
 $db = new SGVX51_DB_Router();
 $flats = $db->get( 'flats' );
+$residents = $db->get( 'residents' );
+
+// Map Residents to Flats (Flat No -> Name)
+$flat_owners = [];
+if ( ! empty( $residents ) && is_array( $residents ) ) {
+    foreach ( $residents as $r ) {
+        // We assume 'flat_no' in residents matches 'flat_number' in flats
+        // Use the first found resident as the "Owner/Primary" for listing
+        if ( ! empty( $r['flat_no'] ) && ! isset( $flat_owners[ $r['flat_no'] ] ) ) {
+            $flat_owners[ $r['flat_no'] ] = $r['name'];
+        }
+    }
+}
 
 // Sort: Block then Number
 usort($flats, function($a, $b) {
-    if ($a['block'] === $b['block']) {
+    if (($a['block'] ?? '') === ($b['block'] ?? '')) {
         return strnatcmp($a['flat_number'] ?? '', $b['flat_number'] ?? '');
     }
     return strcmp($a['block'] ?? '', $b['block'] ?? '');
@@ -87,8 +100,9 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
                     <tr>
-                        						<th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Unit No</th>
+                        <th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Flat No</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Block</th>
+                        <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Owner Name</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Area (SqFt)</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Occupancy</th>
                         <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-center">Parking</th>
@@ -100,10 +114,21 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         $status = strtolower($f['status'] ?? 'vacant');
                         $p_status = strtolower($f['parking_status'] ?? 'vacant');
 						$sq_foot = isset($f['sq_foot']) ? $f['sq_foot'] : 0;
+                        $flat_no = $f['flat_number'] ?? '-';
+                        $owner_name = $flat_owners[$flat_no] ?? null;
                     ?>
-                    <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($f['owner_name']??''))); ?>">
-                        <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $f['id'] ); ?></td>
-                        <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ); ?></td>
+                    <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
+                        <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $flat_no ); ?></td>
+                        <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ?? '-' ); ?></td>
+                        <td class="px-4 py-4 text-dark font-monospace small">
+                            <?php 
+                                if ( $owner_name ) {
+                                    echo '<span class="fw-semibold">' . esc_html( $owner_name ) . '</span>';
+                                } else {
+                                    echo '<span class="text-muted opacity-50">-</span>'; 
+                                }
+                            ?>
+                        </td>
                         <td class="px-4 py-4 text-center text-secondary"><?php echo esc_html( $sq_foot ); ?></td>
                         <td class="px-4 py-4 text-center">
                             <?php if($status === 'occupied'): ?>

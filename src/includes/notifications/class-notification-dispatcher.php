@@ -88,7 +88,7 @@ class SGVX51_Notification_Dispatcher {
             }
 
             // 6. Send via Provider
-            $response = $this->providers[$channel_slug]->send($user_id, $content);
+            $response = $this->providers[$channel_slug]->send($user_id, $content, ['event_slug' => $event_slug]);
 
             // 7. Log result
             $this->log_notification($user_id, $event_slug, $channel_slug, $response);

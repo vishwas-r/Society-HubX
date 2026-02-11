@@ -51,7 +51,7 @@ $directory = $data['directory'] ?? [];
                          data-has-help="<?php echo !empty($d['help']) ? '1' : '0'; ?>"
                          style="cursor: pointer;">
                            
-                          <div class="bg-white rounded-3 shadow-sm border border-light overflow-hidden h-100 cursor-pointer transition-all card-hover">
+                          <div class="bg-white rounded-3 shadow-sm border border-secondary border-opacity-25 overflow-hidden h-100 cursor-pointer transition-all card-hover">
                              <div class="px-4 py-3 border-bottom border-light bg-light d-flex justify-content-between align-items-center">
                                  <div class="d-flex align-items-center gap-3">
                                      <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">

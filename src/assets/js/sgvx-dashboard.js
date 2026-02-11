@@ -16,7 +16,7 @@
         }
 
         // --- 0. Tab Switching Logic (Migrated from frontend.js) ---
-        const tabs = ['home', 'notices', 'facilities', 'accounts', 'expenses', 'polls', 'community', 'directory']; // Added directory
+        const tabs = ['home', 'notices', 'facilities', 'accounts', 'expenses', 'polls', 'community', 'directory', 'notifications']; // Added directory, notifications
 
         function activateTab(tabName) {
             const btnId = 'btn-tab-' + tabName;
@@ -322,7 +322,9 @@
 
         const dirSearch = document.getElementById('dir-search');
         if (dirSearch) {
-            dirSearch.addEventListener('input', window.filterDirectory);
+            dirSearch.addEventListener('input', function () {
+                if (window.filterDirectory) window.filterDirectory();
+            });
             dirSearch.addEventListener('focus', function () {
                 if (window.sgvxCreateFuse) dirFuse = window.sgvxCreateFuse('.dir-card');
             });
@@ -999,12 +1001,18 @@
             const dirCards = document.querySelectorAll('.dir-card');
 
             if (!dirFuse && window.sgvxCreateFuse) {
-                dirFuse = window.sgvxCreateFuse('.dir-card');
+                if (typeof Fuse === 'undefined') {
+                    console.error('Fuse.js is not loaded! Search will fail.');
+                    return;
+                }
+                // Use stricter threshold (0.2) and only search metadata to avoid noise from labels
+                dirFuse = window.sgvxCreateFuse('.dir-card', {
+                    threshold: 0.3,
+                    searchOnlyMeta: true
+                });
             }
 
             const fuzzyMatches = searchTerm && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(dirFuse, searchTerm) : null;
-
-            const query = searchTerm.toLowerCase();
 
             dirCards.forEach(function (card) {
                 // 1. Check Search Match
@@ -1026,12 +1034,7 @@
                 } else {
                     card.classList.add('d-none');
                 }
-
             });
-
-            if (searchTerm && fuzzyMatches) {
-                console.log(`applyCommunityFilters: Found ${fuzzyMatches.size} matches for "${searchTerm}"`);
-            }
         };
 
         window.filterDirFilter = function (filter) {

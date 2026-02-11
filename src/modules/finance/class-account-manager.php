@@ -178,6 +178,9 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 		$ref = sanitize_text_field( $data['reference'] ?? '-' );
 		$date = sanitize_text_field( $data['date'] ?? date('Y-m-d') );
         $flat_no = sanitize_text_field( $data['flat_no'] ?? '' );
+        
+        // Debug Log
+        error_log("SGVX51 Payment: Processing Payment for Flat: $flat_no, Amount: $amount_remaining, Inv: $invoice_id");
 
 		$invoices = $this->db->get( 'invoices' );
 		$affected_invoices = [];
@@ -197,14 +200,21 @@ class SGVX51_Account_Manager implements SGVX51_Module {
         elseif ( $flat_no ) {
             $my_invoices = [];
             foreach ( $invoices as $i => $inv ) {
-                if ( (string)$inv['flat_no'] === (string)$flat_no && $inv['status'] !== 'paid' ) {
+                // Robust comparison: trim and lower case for status
+                $inv_flat = trim((string)($inv['flat_no'] ?? ''));
+                $target_flat = trim((string)$flat_no);
+                $status = strtolower(trim($inv['status'] ?? 'unpaid'));
+                
+                if ( $inv_flat === $target_flat && $status !== 'paid' ) {
                     $my_invoices[] = &$invoices[$i]; // Reference to the original array
                 }
             }
+            
+            error_log("SGVX51 Payment: Found " . count($my_invoices) . " unpaid invoices for FIFO.");
 
             // Sort by month ASC (Oldest First)
             usort($my_invoices, function($a, $b) {
-                return strtotime($a['month'] . '-01') - strtotime($b['month'] . '-01');
+                return strtotime(($a['month'] ?? date('Y-m')) . '-01') - strtotime(($b['month'] ?? date('Y-m')) . '-01');
             });
 
             foreach ( $my_invoices as &$inv ) {
@@ -216,19 +226,32 @@ class SGVX51_Account_Manager implements SGVX51_Module {
                 if ( is_array($payments) ) {
                     foreach ( $payments as $p ) $already_paid += (float)($p['amount'] ?? 0);
                 }
-                $inv_balance = (float)$inv['amount'] - $already_paid;
+                $inv_balance = (float)($inv['amount'] ?? 0) - $already_paid;
 
-                if ( $inv_balance <= 0 ) continue;
+                if ( $inv_balance <= 0.01 ) { // Tolerance for float precision
+                    // Ensure it is marked paid if balance is basically 0
+                    if(strtolower($inv['status'] ?? '') !== 'paid') {
+                        $inv['status'] = 'paid';
+                        $affected_invoices[] = $inv;
+                    }
+                    continue; 
+                }
 
                 $payment_towards_this_inv = min( $amount_remaining, $inv_balance );
-                $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref );
                 
-                $affected_invoices[] = $inv;
-                $amount_remaining -= $payment_towards_this_inv;
+                // Only apply if > 0
+                if($payment_towards_this_inv > 0) {
+                     $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref );
+                     $affected_invoices[] = $inv;
+                     $amount_remaining -= $payment_towards_this_inv;
+                     
+                     error_log("SGVX51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']);
+                }
             }
         }
 
         // Save all affected invoices
+        error_log("SGVX51 Payment: Saving " . count($affected_invoices) . " affected invoices.");
         foreach ( $affected_invoices as $inv ) {
             $save_data = $inv;
             if ( is_array( $save_data['payments'] ) ) {

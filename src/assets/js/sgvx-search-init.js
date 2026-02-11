@@ -6,30 +6,50 @@
 /**
  * Window-level helper to create a Fuse instance for a set of items
  */
-window.sgvxCreateFuse = function (itemSelector, keys = ['text']) {
+window.sgvxCreateFuse = function (itemSelector, optionsOrKeys = ['text']) {
     const itemElements = document.querySelectorAll(itemSelector);
     if (!itemElements.length) {
-        console.warn('sgvxCreateFuse: No elements found for selector:', itemSelector);
-        return null;
+        // console.warn('sgvxCreateFuse: No elements found for selector:', itemSelector);
+        return null; // Silent fail in production often preferred, logging only if debug
+    }
+
+    // Determine config
+    let keys = ['text'];
+    let threshold = 0.4;
+    let searchOnlyMeta = false;
+
+    if (Array.isArray(optionsOrKeys)) {
+        keys = optionsOrKeys;
+    } else if (typeof optionsOrKeys === 'object') {
+        if (optionsOrKeys.keys) keys = optionsOrKeys.keys;
+        if (typeof optionsOrKeys.threshold !== 'undefined') threshold = optionsOrKeys.threshold;
+        if (optionsOrKeys.searchOnlyMeta) searchOnlyMeta = true;
     }
 
     const items = Array.from(itemElements).map(el => {
-        // Search BOTH the specific metadata AND all visible text in the row
+        // Search BOTH the specific metadata AND all visible text in the row by default
         const metaText = el.dataset.search || '';
-        const visibleText = el.innerText || el.textContent || '';
-        const searchText = (metaText + ' ' + visibleText).toLowerCase().replace(/\s+/g, ' ').trim();
+        let searchText = metaText;
+
+        if (!searchOnlyMeta) {
+            const visibleText = el.innerText || el.textContent || '';
+            searchText = (metaText + ' ' + visibleText);
+        }
+
+        searchText = searchText.toLowerCase().replace(/\s+/g, ' ').trim();
 
         return { el: el, text: searchText };
     });
 
-    console.log(`sgvxCreateFuse: Indexed ${items.length} items for ${itemSelector}`);
+    // console.log(`sgvxCreateFuse: Indexed ${items.length} items for ${itemSelector}`);
 
     return new Fuse(items, {
         keys: keys,
-        threshold: 0.5,
+        threshold: threshold,
         ignoreLocation: true,
         distance: 1000,
-        minMatchCharLength: 1
+        minMatchCharLength: 2,
+        useExtendedSearch: true
     });
 };
 

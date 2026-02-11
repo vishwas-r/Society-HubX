@@ -245,9 +245,15 @@ class SGVX51_Request_Manager {
                         }
                     }
 
+                    $admin_user = get_userdata( $update_data['processed_by'] );
+                    $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
+                    $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
+
                     $sgvx->notifications->trigger('request_approved', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'admin_name'    => $admin_name,
+                        'time'          => $time_formatted,
                         'details'       => "Your request for " . $module_slug . " was approved."
                     ]);
                 }
@@ -337,9 +343,15 @@ class SGVX51_Request_Manager {
                         }
                     }
 
+                    $admin_user = get_userdata( $update_data['processed_by'] );
+                    $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
+                    $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
+
                     $sgvx->notifications->trigger('request_rejected', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'admin_name'    => $admin_name,
+                        'time'          => $time_formatted,
                         'admin_note'    => $note ?: 'No specific reason provided.'
                     ]);
                 }

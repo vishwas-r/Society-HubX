@@ -88,6 +88,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
     <!-- Tab Contents -->
     <?php include 'components/dashboard/tab-home.php'; ?>
     <?php include 'components/dashboard/tab-notices.php'; ?>
+    <?php include 'components/dashboard/tab-notifications.php'; ?>
     <?php include 'components/dashboard/tab-community.php'; ?>
     <?php include 'components/dashboard/tab-accounts.php'; ?>
     <?php include 'components/dashboard/tab-expenses.php'; ?>

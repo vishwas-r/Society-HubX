@@ -426,12 +426,12 @@ class SGVX51_DB_Schema {
 			['event_slug' => 'payment_due', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SGVX Reminder: Your payment of {amount} for {month} is due on {due_date}. Please pay to avoid penalties.'],
 			
 			// Request Approval Templates
-			['event_slug' => 'request_approved', 'channel' => 'inapp', 'subject' => 'Request Approved', 'content' => 'Your request for {request_type} has been approved by the admin.'],
-			['event_slug' => 'request_approved', 'channel' => 'email', 'subject' => 'Request Approved: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> has been approved.<br><br>Details: {details}'],
+			['event_slug' => 'request_approved', 'channel' => 'inapp', 'subject' => 'Request Approved', 'content' => 'Your request for {request_type} was approved by {admin_name} on {time}.'],
+			['event_slug' => 'request_approved', 'channel' => 'email', 'subject' => 'Request Approved: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was approved by {admin_name} on {time}.<br><br>Details: {details}'],
 			
 			// Request Rejection Templates
-			['event_slug' => 'request_rejected', 'channel' => 'inapp', 'subject' => 'Request Rejected', 'content' => 'Your request for {request_type} was not approved.'],
-			['event_slug' => 'request_rejected', 'channel' => 'email', 'subject' => 'Request Rejected: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was not approved.<br><br>Admin Note: {admin_note}']
+			['event_slug' => 'request_rejected', 'channel' => 'inapp', 'subject' => 'Request Rejected', 'content' => 'Your request for {request_type} was rejected by {admin_name} on {time}.'],
+			['event_slug' => 'request_rejected', 'channel' => 'email', 'subject' => 'Request Rejected: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was rejected by {admin_name} on {time}.<br><br>Admin Note: {admin_note}']
 		];
 
 		foreach ($default_templates as $tpl) {
