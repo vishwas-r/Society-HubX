@@ -39,6 +39,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 			$this->db->verify_column( 'daily_help', 'created_by', 'bigint(20) DEFAULT 0 NOT NULL' );
             $this->db->verify_column( 'daily_help', 'flat_no', 'varchar(50) DEFAULT "" NOT NULL' ); // Legacy flat link
             $this->db->verify_column( 'daily_help', 'category', 'varchar(50) DEFAULT "" NOT NULL' );
+            $this->db->verify_column( 'daily_help', 'id_proof', 'text DEFAULT NULL' ); // Separate ID Proof
 		}
 
         // Register Module
@@ -87,14 +88,24 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             'id'             => isset($data['id']) ? $data['id'] : uniqid('staff_'),
             'status'         => isset($data['status']) ? $data['status'] : 'approved',
             'flat_no'        => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ''),
-            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ''
+            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : '',
+            'id_proof'        => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ''
 		);
 
-        // Handle File Upload
-        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
-            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['profile_photo'] );
+        // Handle ID Proof Upload (Document)
+        if ( ! empty( $_FILES['id_proof'] ) && ! empty( $_FILES['id_proof']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['id_proof'] );
             if ( ! is_wp_error( $uploaded ) ) {
-                $db_data['profile_photo'] = $uploaded;
+                $db_data['id_proof'] = $uploaded;
+            }
+        }
+
+        // Handle Profile Photo Upload (Avatar)
+        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
+            $media = new SGVX51_Media_Manager();
+            $photo_url = $media->upload_profile_photo( $_FILES['profile_photo'], 'staff', $db_data['name'], 'staffs' );
+            if ( ! is_wp_error( $photo_url ) ) {
+                $db_data['profile_photo'] = $photo_url;
             }
         }
 
@@ -114,6 +125,16 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             return new WP_Error( 'not_found', 'Staff member not found for update.' );
         }
 
+        // LEGACY MIGRATION: If id_proof is empty but profile_photo exists (and we are about to potentially overwrite it),
+        // assume the existing profile_photo is the ID Doc (as per previous system).
+        // CRITICAL FIX: Only migrate if it looks like a legacy doc (stored in /docs/) and NOT a new avatar (/profile-pics/).
+        if ( empty($existing['id_proof']) && !empty($existing['profile_photo']) ) {
+            if ( strpos($existing['profile_photo'], '/profile-pics/') === false ) {
+                $existing['id_proof'] = $existing['profile_photo'];
+                $existing['profile_photo'] = ''; // Clear normalized slot only if we moved it
+            }
+        }
+
         $update_data = array(
             'name'           => isset($data['name']) ? sanitize_text_field( $data['name'] ) : ($existing['name'] ?? ''),
             'role'           => isset($data['role']) ? sanitize_text_field( $data['role'] ) : ($existing['role'] ?? ''),
@@ -126,14 +147,24 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             'status'         => 'approved', // Reset to approved upon edit approval or admin edit
             'created_by'     => $existing['created_by'] ?? '',
             'flat_no'        => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? '')),
-            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ($existing['profile_photo'] ?? '')
+            'profile_photo'   => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ($existing['profile_photo'] ?? ''),
+            'id_proof'        => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ($existing['id_proof'] ?? '')
         );
 
-        // Handle File Upload
-        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
-            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['profile_photo'] );
+        // Handle ID Proof Upload (Document)
+        if ( ! empty( $_FILES['id_proof'] ) && ! empty( $_FILES['id_proof']['name'] ) ) {
+            $uploaded = $this->drive->upload_file( 'staff_docs', $_FILES['id_proof'] );
             if ( ! is_wp_error( $uploaded ) ) {
-                $update_data['profile_photo'] = $uploaded;
+                $update_data['id_proof'] = $uploaded;
+            }
+        }
+
+        // Handle Profile Photo Upload (Avatar)
+        if ( ! empty( $_FILES['profile_photo'] ) && ! empty( $_FILES['profile_photo']['name'] ) ) {
+            $media = new SGVX51_Media_Manager();
+            $photo_url = $media->upload_profile_photo( $_FILES['profile_photo'], 'staff', $update_data['name'], 'staffs' );
+            if ( ! is_wp_error( $photo_url ) ) {
+                $update_data['profile_photo'] = $photo_url;
             }
         }
 

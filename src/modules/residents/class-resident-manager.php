@@ -603,7 +603,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 */
 	private function handle_photo_upload( $flat_no = '', $name = '' ) {
 		if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
-			return $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name );
+			return $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name, 'residents' );
 		}
 		return null;
 	}

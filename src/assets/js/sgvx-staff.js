@@ -138,6 +138,17 @@
         applyFilters();
     };
 
+    window.previewStaffImage = function (input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#staff-preview').attr('src', e.target.result).removeClass('d-none');
+                $('#staff-icon').addClass('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
     window.editStaff = function (staff) {
         if (!staffModal) staffModal = new bootstrap.Modal(document.getElementById('staffModal'));
         const $form = $('#add-staff-form');
@@ -147,15 +158,26 @@
         $form.find('[name="phone"]').val(staff.phone || '');
         $form.find('[name="sex"]').val(staff.sex || '');
         $form.find('[name="visiting_hours"]').val(staff.visiting_hours || '');
-        $form.find('[name="profile_photo"]').val(staff.profile_photo || '');
+        $form.find('[name="profile_photo"]').val(''); // Clear file input
+        // Handle Profile Photo Preview
+        if (staff.profile_photo) {
+            $('#staff-preview').attr('src', staff.profile_photo).removeClass('d-none');
+            $('#staff-icon').addClass('d-none');
+        } else {
+            $('#staff-preview').addClass('d-none');
+            $('#staff-icon').removeClass('d-none');
+        }
 
-        const preview = document.getElementById('current-doc-preview');
-        if (preview) {
-            if (staff.profile_photo) {
-                preview.classList.remove('d-none');
-                preview.querySelector('a').href = staff.profile_photo;
+        // Handle ID Proof Preview (Strict: only id_proof)
+        const idProofUrl = staff.id_proof;
+
+        const docPreview = document.getElementById('current-doc-preview');
+        if (docPreview) {
+            if (idProofUrl) {
+                docPreview.classList.remove('d-none');
+                docPreview.querySelector('a').href = idProofUrl;
             } else {
-                preview.classList.add('d-none');
+                docPreview.classList.add('d-none');
             }
         }
 
@@ -175,9 +197,14 @@
         $form[0].reset();
         $form.find('[name="action"]').val('sgvx51_add_staff');
         $form.find('[name="flats_served[]"]').val([]); // Clear multi-select
-        $form.find('[name="profile_photo"]').val('');
-        const preview = document.getElementById('current-doc-preview');
-        if (preview) preview.classList.add('d-none');
+        $form.find('[name="staff_id"]').val('');
+
+        // Reset Photo Preview
+        $('#staff-preview').attr('src', '').addClass('d-none');
+        $('#staff-icon').removeClass('d-none');
+
+        const docPreview = document.getElementById('current-doc-preview');
+        if (docPreview) docPreview.classList.add('d-none');
         $('#staffModalTitle').text('Add New Staff');
     }
 

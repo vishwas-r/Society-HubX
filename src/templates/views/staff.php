@@ -222,14 +222,21 @@ $all_flats = $flats;
                                 </td>
                                 <td class="ps-3 ps-md-5 py-4">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="flex-shrink-0 <?php echo $status === 'pending' ? 'bg-warning' : ($status === 'rejected' ? 'bg-danger' : ($status === 'archived' ? 'bg-secondary' : 'bg-primary')); ?> bg-opacity-10 <?php echo $status === 'pending' ? 'text-warning' : ($status === 'rejected' ? 'text-danger' : ($status === 'archived' ? 'text-secondary' : 'text-primary')); ?> rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                                            <?php echo substr($s['name'] ?? 'U', 0, 1); ?>
-                                        </div>
+                                        <?php if(!empty($s['profile_photo'])): ?>
+                                            <div class="flex-shrink-0 rounded-3 overflow-hidden shadow-sm" style="width: 44px; height: 44px;">
+                                                <img src="<?php echo esc_url($s['profile_photo']); ?>" class="w-100 h-100 object-fit-cover" alt="<?php echo esc_attr($s['name']); ?>">
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="flex-shrink-0 <?php echo $status === 'pending' ? 'bg-warning' : ($status === 'rejected' ? 'bg-danger' : ($status === 'archived' ? 'bg-secondary' : 'bg-primary')); ?> bg-opacity-10 <?php echo $status === 'pending' ? 'text-warning' : ($status === 'rejected' ? 'text-danger' : ($status === 'archived' ? 'text-secondary' : 'text-primary')); ?> rounded-3 d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                                                <?php echo substr($s['name'] ?? 'U', 0, 1); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        
                                         <div>
                                             <div class="fw-bold text-dark">
                                                 <?php echo esc_html( $s['name'] ); ?>
-                                                <?php if(!empty($s['profile_photo'])): ?>
-                                                    <a href="<?php echo esc_url($s['profile_photo']); ?>" target="_blank" class="text-primary ms-1" title="View Verification Document">
+                                                <?php if(!empty($s['id_proof'])): ?>
+                                                    <a href="<?php echo esc_url($s['id_proof']); ?>" target="_blank" class="text-primary ms-1" title="View Verification Document">
                                                         <i class="bi bi-file-earmark-check"></i>
                                                     </a>
                                                 <?php endif; ?>
@@ -329,6 +336,22 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
                 <?php wp_nonce_field( 'sgvx51_staff_nonce' ); ?>
 
                 <div class="modal-body p-4">
+                    <!-- Profile Photo Selection -->
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <div class="rounded-circle bg-light border border-2 border-white shadow-sm overflow-hidden d-flex align-items-center justify-content-center" 
+                                 style="width: 100px; height: 100px;">
+                                <i class="bi bi-person-fill text-secondary fs-1" id="staff-icon"></i>
+                                <img src="" id="staff-preview" class="w-100 h-100 object-fit-cover d-none" alt="Preview">
+                            </div>
+                            <label for="staff-photo-input" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm cursor-pointer hover-scale" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-camera-fill small"></i>
+                            </label>
+                            <input type="file" name="profile_photo" id="staff-photo-input" class="d-none" accept="image/*" onchange="previewStaffImage(this)">
+                        </div>
+                        <div class="text-muted small mt-2">Upload Profile Photo</div>
+                    </div>
+
                     <div class="row g-3 mb-3">
                         <div class="col-md-7">
                             <label class="form-label small fw-bold text-secondary">FullName <span class="text-danger">*</span></label>
@@ -397,12 +420,12 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
                     <div class="mb-0">
                         <label class="form-label small fw-bold text-secondary">ID Proof (Photo/Document)</label>
                         <div class="input-group">
-                            <input type="file" name="profile_photo" id="staff-document" accept="image/*" capture="environment" class="form-control shadow-none rounded-3 border-light">
+                            <input type="file" name="id_proof" id="staff-document" accept="image/*,application/pdf" class="form-control shadow-none rounded-3 border-light">
                         </div>
                         <div id="current-doc-preview" class="mt-2 d-none">
                             <a href="#" target="_blank" class="small text-primary fw-bold"><i class="bi bi-eye me-1"></i>View Current Document</a>
                         </div>
-                        <div class="form-text small">Take a photo or upload Aadhar, Voter ID, etc. (Optional)</div>
+                        <div class="form-text small">Take a photo or upload Aadhar, Voter ID, etc.</div>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">
