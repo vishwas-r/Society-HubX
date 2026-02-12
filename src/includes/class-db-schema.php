@@ -213,6 +213,7 @@ class SGVX51_DB_Schema {
 			rate decimal(10,2) DEFAULT 0 NOT NULL,
 			rate_unit varchar(20) DEFAULT 'Hour' NOT NULL,
 			max_hours int(5) DEFAULT 0 NOT NULL,
+            booking_required tinyint(1) DEFAULT 1 NOT NULL,
 			rules text NOT NULL,
 			status varchar(20) DEFAULT 'active' NOT NULL,
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,

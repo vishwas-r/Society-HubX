@@ -202,7 +202,10 @@ class SGVX51_Frontend_Dashboard {
 			'daily_help' => $this->get_my_daily_help( $resident['flat_no'] ),
 			'notices'    => $this->get_my_notices( $resident['type'] ),
 			'my_docs'    => $this->get_my_documents( $resident['flat_no'] ),
+			'notices'    => $this->get_my_notices( $resident['type'] ),
+			'my_docs'    => $this->get_my_documents( $resident['flat_no'] ),
 			'facilities' => $this->db->get( 'facilities' ),
+            'assets'     => $this->db->get( 'assets' ),
 			'my_bookings'=> $this->get_my_bookings( $resident['flat_no'] ), // Using Flat No as ID for now
 			'expenses'   => $this->db->get( 'expenses' ), // Summary only
 			'invoices'   => $this->get_my_invoices( isset($my_flat['flat_number']) ? $my_flat['flat_number'] : $resident['flat_no'] ),

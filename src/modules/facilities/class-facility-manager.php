@@ -16,6 +16,12 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 
 	public function __construct() {
 		$this->db = new SGVX51_DB_Router();
+        
+        // Ensure Schema Update (Run Once)
+        if ( class_exists( 'SGVX51_DB_Schema' ) && ! get_option( 'sgvx51_schema_access_facility_v1' ) ) {
+            SGVX51_DB_Schema::create_tables();
+            update_option( 'sgvx51_schema_access_facility_v1', true );
+        }
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_post_sgvx51_add_facility', array( $this, 'handle_add_facility' ) );
@@ -81,6 +87,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			'rate'          => floatval( $_POST['rate'] ), // Renamed for consistency with view input
 			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ), // New Field
 			'max_hours'     => intval( $_POST['max_hours'] ),
+            'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
 			'rules'         => sanitize_textarea_field( $_POST['rules'] ),
 			'status'        => 'active',
 			'id'            => uniqid('fac_'), // Unique ID for referencing
@@ -89,6 +96,9 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		$result = $this->db->insert( 'facilities', $data );
         
         if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
             if ( is_wp_error( $result ) ) {
                 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
             } else {
@@ -122,6 +132,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			'rate'          => floatval( $_POST['rate'] ),
 			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ),
 			'max_hours'     => intval( $_POST['max_hours'] ),
+            'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
 			'rules'         => sanitize_textarea_field( $_POST['rules'] ),
 		);
 
@@ -139,12 +150,16 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		if ($target_id) {
 			$this->db->update( 'facilities', $data, array( 'id' => $target_id ) );
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success( array( 'message' => 'Facility updated successfully' ) );
                 exit;
             }
 			wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=Updated' ) );
 		} else {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error( array( 'message' => 'Facility not found' ) );
                 exit;
             }
@@ -168,6 +183,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		$this->db->delete( 'facilities', array( 'id' => $id ) );
 
         if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
             wp_send_json_success( array( 'message' => 'Facility deleted successfully' ) );
             exit;
         }
@@ -195,6 +212,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		// 1. Validation: Overlap Check
 		if ( $this->check_overlap( $facility_id, $start_time, $end_time ) ) {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error( array( 'message' => 'Slot already booked!' ) );
                 exit;
             }
@@ -230,6 +249,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 
         if ( is_wp_error( $result ) ) {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
                 exit;
             }
@@ -249,11 +270,15 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         if ( $approval_mode === 'auto' || $is_admin_booking ) {
             $rm->approve_request( $request_id );
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success( array( 'message' => 'Facility booked successfully' ) );
                 exit;
             }
         } else {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success( array( 'message' => 'Booking request submitted for approval' ) );
                 exit;
             }
@@ -290,6 +315,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         
         if ( ! is_wp_error( $sync_res ) ) {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking updated and request synchronized']);
             } else {
                 wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
@@ -306,6 +333,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		// Overlap Check (Exclude self)
 		if ( $this->check_overlap( $facility_id, $start_time, $end_time, $id ) ) {
 			if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
 				wp_send_json_error( array( 'message' => 'Slot already booked!' ) );
 				exit;
 			}
@@ -338,6 +367,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		$this->db->update( 'bookings', $data, array( 'id' => $id ) );
 
 		if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
 			wp_send_json_success( array( 'message' => 'Booking updated successfully' ) );
 			exit;
 		}
@@ -366,6 +397,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         
         if ( ! is_wp_error( $sync_res ) ) {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking deleted and request synchronized']);
             } else {
                 wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
@@ -376,6 +409,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		$this->db->delete( 'bookings', array( 'id' => $id ) );
 
 		if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
 			wp_send_json_success( array( 'message' => 'Booking deleted successfully' ) );
 			exit;
 		}

@@ -179,17 +179,28 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 
 	public function handle_add_vehicle() {
 		if ( wp_doing_ajax() ) {
+            // Start buffering to catch any PHP warnings/notices
+            ob_start();
             check_ajax_referer( 'sgvx51_add_vehicle_nonce' );
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $payload = array_merge($_POST, ['id' => uniqid('veh_')]);
+        $payload = $_POST;
+        if ( !isset($payload['id']) || empty($payload['id']) ) {
+            $payload['id'] = uniqid('veh_');
+        }
         
-        // IF ADMIN: Immediate
+        // IF ADMIN: Immediate Add
         if ( current_user_can( 'manage_options' ) ) {
             $res = $this->perform_save_vehicle( $payload, false );
             if ( wp_doing_ajax() ) {
+                $debug_output = ob_get_clean(); // Capture any premature output
+                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Output: ' . $debug_output );
+                
+                // Aggressive Clean: Wipe all buffers
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                 if ( is_wp_error( $res ) ) {
                     wp_send_json_error(['message' => $res->get_error_message()]);
                 }
@@ -200,10 +211,15 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
            $payload['status'] = 'pending';
            $this->perform_save_vehicle( $payload, false );
 
-           require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-           $rm = new SGVX51_Request_Manager();
+            $rm = new SGVX51_Request_Manager();
            $res = $rm->create_request( 'vehicles', 'add', $payload, $payload['id'] );
            if ( wp_doing_ajax() ) {
+               $debug_output = ob_get_clean();
+               if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Request Output: ' . $debug_output );
+
+               // Aggressive Clean
+               while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                if ( is_wp_error( $res ) ) {
                    wp_send_json_error(['message' => $res->get_error_message()]);
                }
@@ -218,6 +234,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 
 	public function handle_edit_vehicle() {
 		if ( wp_doing_ajax() ) {
+            ob_start(); // Start buffering
             check_ajax_referer( 'sgvx51_add_vehicle_nonce' );
         } else {
             // Accept either the admin/add nonce or the frontend edit token
@@ -244,6 +261,9 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             
             if ( ! is_wp_error( $sync_res ) ) {
                 if ( wp_doing_ajax() ) {
+                    ob_get_clean(); // Discard normal buffer
+                    // Aggressive Clean
+                    while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Vehicle updated and request synchronized']);
                 } else {
                     wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
@@ -252,11 +272,27 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             }
 
             $res = $this->perform_save_vehicle( $_POST, true );
+
+            if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
+                if ( is_wp_error( $res ) ) {
+                    wp_send_json_error(['message' => $res->get_error_message()]);
+                }
+                wp_send_json_success(['message' => 'Vehicle updated successfully']);
+                exit;
+            }
         } else {
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
             $res = $rm->create_request( 'vehicles', 'edit', $_POST, $id );
             if ( wp_doing_ajax() ) {
+                $debug_output = ob_get_clean();
+                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Edit Request Output: ' . $debug_output );
+
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                 if ( is_wp_error( $res ) ) {
                     wp_send_json_error(['message' => $res->get_error_message()]);
                 }

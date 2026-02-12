@@ -91,6 +91,14 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                              <input type="number" name="max_hours" class="form-control bg-light border-0 shadow-none rounded-3" style="height: 44px;" value="4">
                         </div>
 
+                        <div class="mb-4 form-check bg-light p-3 rounded-3">
+                            <input class="form-check-input shadow-none" type="checkbox" name="booking_required" value="1" id="bookingRequired" checked>
+                            <label class="form-check-label fw-bold text-dark small" for="bookingRequired">
+                                Requires Booking Approved?
+                            </label>
+                            <div class="form-text small mt-1">Uncheck for open amenities like Swimming Pool or Park.</div>
+                        </div>
+
                         <div class="mb-5">
                             <label class="form-label small fw-bold text-secondary">Booking Rules & Guidelines</label>
                             <textarea name="rules" class="form-control bg-light border-0 shadow-none rounded-3" rows="3" placeholder="Policies regarding cancellations or usage..."></textarea>
@@ -136,6 +144,9 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                     <div class="mt-1 d-flex gap-3">
                                         <div class="text-primary fw-bold small">₹<?php echo esc_html($rate); ?>/<?php echo esc_html($rate_unit); ?></div>
                                         <div class="text-muted small"><i class="bi bi-clock"></i> Max <?php echo esc_html($f['max_hours'] ?? 0); ?>h</div>
+                                        <?php if(empty($f['booking_required'])): ?>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill" style="font-size: 10px;">Open for All</span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                  <div class="d-flex gap-2">
@@ -384,6 +395,7 @@ function resetFacilityForm() {
     form.reset();
     form.querySelector('[name="action"]').value = 'sgvx51_add_facility';
     form.querySelector('[name="facility_id"]').value = '';
+    form.querySelector('[name="booking_required"]').checked = true;
     document.getElementById('form-title').textContent = 'Define New Amenity';
     document.getElementById('submit-btn').textContent = 'Save Configuration';
     document.getElementById('cancel-edit-btn').classList.add('d-none');
@@ -403,7 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
             form.querySelector('[name="name"]').value = data.name;
             form.querySelector('[name="rate"]').value = data.rate;
             form.querySelector('[name="rate_unit"]').value = data.rate_unit || 'Hour';
+            form.querySelector('[name="rate_unit"]').value = data.rate_unit || 'Hour';
             form.querySelector('[name="max_hours"]').value = data.max_hours;
+            form.querySelector('[name="booking_required"]').checked = (data.booking_required != 0); // Handle string '0' or int 0
             form.querySelector('[name="rules"]').value = data.rules || '';
             
             document.getElementById('form-title').textContent = 'Modify Amenity Settings';

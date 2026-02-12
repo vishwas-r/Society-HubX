@@ -194,6 +194,8 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
              $rm->log_audit('staff_restored', 'daily_help', $id, "Staff ID: $id");
 
              if ( wp_doing_ajax() ) {
+                 // Clean all buffers
+                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                  wp_send_json_success(['message' => 'Staff member restored successfully']);
                  exit;
              }
@@ -229,6 +231,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 
 	public function handle_add_staff() {
 		if ( wp_doing_ajax() ) {
+            ob_start();
             check_ajax_referer( 'sgvx51_staff_nonce' );
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_staff_nonce' ) ) wp_die( 'Security check failed' );
@@ -240,6 +243,9 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
         if ( current_user_can( 'manage_options' ) ) {
             $res = $this->perform_add_staff( $_POST );
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                 if ( is_wp_error( $res ) ) {
                     wp_send_json_error(['message' => $res->get_error_message()]);
                 }
@@ -254,6 +260,12 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
            $rm = new SGVX51_Request_Manager();
            $res = $rm->create_request( 'daily_help', 'add', $_POST, $_POST['id'], 'daily_help', $_POST['flat_no'] ?? '' );
            if ( wp_doing_ajax() ) {
+               $debug = ob_get_clean();
+               if(!empty($debug)) error_log('SGVX Staff Add Request Debug: ' . $debug);
+
+               // Aggressive Clean
+               while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                if ( is_wp_error( $res ) ) {
                    wp_send_json_error(['message' => $res->get_error_message()]);
                }
@@ -268,6 +280,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 
 	public function handle_edit_staff() {
 		if ( wp_doing_ajax() ) {
+            ob_start();
             check_ajax_referer( 'sgvx51_staff_nonce' );
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_staff_nonce' ) ) wp_die( 'Security check failed' );
@@ -284,6 +297,9 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             
             if ( ! is_wp_error( $sync_res ) ) {
                 if ( wp_doing_ajax() ) {
+                    ob_get_clean();
+                    // Aggressive Clean
+                    while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Staff updated and request synchronized']);
                 } else {
                     wp_redirect( admin_url( 'admin.php?page=sgvx51-staff&status=updated' ) );
@@ -292,11 +308,27 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             }
 
             $res = $this->perform_edit_staff( $_POST );
+            
+            if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
+                if ( is_wp_error( $res ) ) {
+                    wp_send_json_error(['message' => $res->get_error_message()]);
+                }
+                wp_send_json_success(['message' => 'Staff member updated successfully']);
+                exit;
+            }
         } else {
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
             $res = $rm->create_request( 'daily_help', 'edit', $_POST, $id, 'daily_help', $_POST['flat_no'] ?? '' );
             if ( wp_doing_ajax() ) {
+                $debug = ob_get_clean();
+                if(!empty($debug)) error_log('SGVX Staff Edit Debug: ' . $debug);
+
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
                 if ( is_wp_error( $res ) ) {
                     wp_send_json_error(['message' => $res->get_error_message()]);
                 }
@@ -327,6 +359,8 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             
             if ( ! is_wp_error( $sync_res ) ) {
                 if ( wp_doing_ajax() ) {
+                    // Aggressive Clean
+                    while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Staff record archived and request synchronized']);
                 } else {
                     wp_redirect( admin_url( 'admin.php?page=sgvx51-staff&status=deleted' ) );
@@ -340,6 +374,8 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
             $rm = new SGVX51_Request_Manager();
             $res = $rm->create_request( 'daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $_POST['flat_no'] ?? '' );
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
                 wp_send_json_success(['message' => 'Deletion request submitted for approval']);
             }

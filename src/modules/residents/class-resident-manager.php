@@ -105,6 +105,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 */
 	public function handle_add_resident() {
 		if ( wp_doing_ajax() ) {
+            ob_start();
             check_ajax_referer( 'sgvx51_resident_nonce' );
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_resident_nonce' ) ) wp_die( 'Security check failed' );
@@ -116,8 +117,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
        $res = $this->process_add_resident( $_POST );
        
        if ( wp_doing_ajax() ) {
+           // Aggressive Clean
+           while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
            if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
            wp_send_json_success(['message' => 'Resident added successfully']);
+           exit;
        }
    } else {
        $_POST['status'] = 'pending';
@@ -128,7 +133,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
        $rm = new SGVX51_Request_Manager();
        $res = $rm->create_request( 'residents', 'add', $_POST, $_POST['id'], 'residents', $_POST['flat_no'] ?? '' );
        
-       if ( wp_doing_ajax() ) {
+        if ( wp_doing_ajax() ) {
+           $debug = ob_get_clean();
+           if(!empty($debug)) error_log('SGVX Resident Add Debug: ' . $debug);
+           
+           // Aggressive Clean
+           while ( ob_get_level() > 0 ) { ob_end_clean(); }
+           
            if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
            wp_send_json_success(['message' => 'Resident added and submitted for approval']);
        }
@@ -139,11 +150,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 }
 
 	public function handle_edit_resident() {
-        error_log("SGVX51 Debug: Entering handle_edit_resident (Manager). POST: " . print_r($_POST, true));
-
 		if ( wp_doing_ajax() ) {
+            ob_start();
             $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
             if ( ! wp_verify_nonce($nonce, 'sgvx51_resident_nonce') && ! wp_verify_nonce($nonce, 'sgvx51_frontend_nonce') ) {
+                ob_get_clean(); // Clean before error
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 error_log("SGVX51 Error: Nonce verification failed for edit_resident");
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
@@ -177,6 +190,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         if ( ! is_wp_error( $sync_res ) ) {
             // Request Manager handled the update via perform_edit_resident (in execute_request)
             if ( wp_doing_ajax() ) {
+                ob_get_clean();
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Resident updated and request synchronized']);
             } else {
                 wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
@@ -185,12 +201,29 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         }
 
         $res = $this->perform_edit_resident( $_POST );
+
+        if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
+            if ( is_wp_error( $res ) ) {
+                wp_send_json_error(['message' => $res->get_error_message()]);
+            }
+            wp_send_json_success(['message' => 'Resident updated successfully']);
+            exit;
+        }
     } else {
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
         $res = $rm->create_request( 'residents', 'edit', $_POST, $id, 'residents', $_POST['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
+            $debug = ob_get_clean();
+            if(!empty($debug)) error_log('SGVX Resident Edit Debug: ' . $debug);
+
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
+
             if ( is_wp_error( $res ) ) {
                 wp_send_json_error(['message' => $res->get_error_message()]);
             } else {
@@ -353,6 +386,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             
             if ( ! is_wp_error( $sync_res ) ) {
                 if ( wp_doing_ajax() ) {
+                    // Aggressive Clean
+                    while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Resident archived and request synchronized']);
                 } else {
                     wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=deleted' ) );
@@ -368,6 +403,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
 
         if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
             wp_send_json_success(['message' => 'Request archived successfully']);
         }
 
@@ -406,10 +443,14 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         $rm->log_audit('resident_restored', 'residents', $resident_id, "Resident: " . ($to_restore['name'] ?? 'Unknown'));
 
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Resident restored successfully']);
             }
 		} else {
             if ( wp_doing_ajax() ) {
+                // Aggressive Clean
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error(['message' => 'History record not found']);
             }
         }
@@ -466,6 +507,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		$res = $this->db->delete('resident_history', ['id' => $history_id]);
 
         if ( wp_doing_ajax() ) {
+            // Aggressive Clean
+            while ( ob_get_level() > 0 ) { ob_end_clean(); }
             if ($res) wp_send_json_success(['message' => 'Resident permanently deleted']);
             wp_send_json_error(['message' => 'Delete failed']);
         }

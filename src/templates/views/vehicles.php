@@ -262,7 +262,7 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
                             <select name="flat_no" id="v-flat" class="form-select shadow-none rounded-3 border-light" required>
                                 <option value="">Select Unit...</option>
                                 <?php foreach($flats as $f): ?>
-                                    <option value="<?php echo esc_attr($f['id']); ?>"><?php echo esc_html($f['id']); ?></option>
+                                    <option value="<?php echo esc_attr($f['flat_number']); ?>"><?php echo esc_html($f['flat_number']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

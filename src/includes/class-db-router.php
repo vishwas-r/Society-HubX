@@ -321,8 +321,11 @@ class SGVX51_DB_Router {
 			$data = array_intersect_key( $data, array_flip( $valid_columns ) );
 		}
 
-		if ( isset( $data['options'] ) && is_array( $data['options'] ) ) {
-			$data['options'] = json_encode( $data['options'] );
+		// 2. Handle special types (JSON Encode arrays)
+		foreach ( $data as $key => $val ) {
+			if ( is_array( $val ) ) {
+				$data[ $key ] = json_encode( $val );
+			}
 		}
 
 		// Log the update operation

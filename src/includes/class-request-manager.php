@@ -141,7 +141,7 @@ class SGVX51_Request_Manager {
 	 * Process a request by its ID.
 	 */
 	public function approve_request( $request_id ) {
-        error_log("SGVX51 Debug: approve_request called for ID: $request_id");
+		// error_log("SGVX51 Debug: approve_request called for ID: $request_id");
 		$requests = $this->db->get( 'requests' );
 		$target_request = null;
 
