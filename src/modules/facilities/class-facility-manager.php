@@ -38,6 +38,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         add_action( 'wp_ajax_sgvx51_book_facility', array( $this, 'handle_book_facility' ) );
         add_action( 'wp_ajax_sgvx51_edit_booking', array( $this, 'handle_edit_booking' ) );
         add_action( 'wp_ajax_sgvx51_delete_booking', array( $this, 'handle_delete_booking' ) );
+        add_action( 'wp_ajax_sgvx51_get_facility_bookings', array( $this, 'handle_get_facility_bookings' ) ); // New Endpoint
 
         // Module Registration
         add_filter( 'sgvx51_get_module_facilities', array( $this, 'get_instance' ) );
@@ -84,8 +85,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 
 		$data = array(
 			'name'          => sanitize_text_field( $_POST['name'] ),
-			'rate'          => floatval( $_POST['rate'] ), // Renamed for consistency with view input
-			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ), // New Field
+			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : floatval( $_POST['rate'] ),
+			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ),
 			'max_hours'     => intval( $_POST['max_hours'] ),
             'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
 			'rules'         => sanitize_textarea_field( $_POST['rules'] ),
@@ -129,7 +130,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		$id = sanitize_text_field( $_POST['facility_id'] );
 		$data = array(
 			'name'          => sanitize_text_field( $_POST['name'] ),
-			'rate'          => floatval( $_POST['rate'] ),
+			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : floatval( $_POST['rate'] ),
 			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ),
 			'max_hours'     => intval( $_POST['max_hours'] ),
             'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
@@ -436,6 +437,52 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			}
 		}
 		return false;
+	}
+
+	public function handle_get_facility_bookings() {
+		// Publicly accessible to logged-in users (residents)
+		if ( ! is_user_logged_in() ) wp_send_json_error( ['message' => 'Unauthorized'] );
+        
+        // No nonce needed for read-only calendar data? 
+        // Better to have one, but resident dashboard might be generic.
+        // Let's rely on is_user_logged_in() for read-only schedule.
+
+		$facility_id = sanitize_text_field( $_GET['facility_id'] );
+        if(empty($facility_id)) wp_send_json_error(['message' => 'Missing ID']);
+
+		$all_bookings = $this->db->get( 'bookings' );
+        $residents = $this->db->get( 'residents' );
+        
+        // Map resident names
+        $res_map = [];
+        foreach($residents as $r) {
+            $res_map[$r['flat_no']] = $r['name']; // Fallback
+            if(isset($r['id'])) $res_map[$r['id']] = $r['name'];
+        }
+
+        $events = [];
+        foreach($all_bookings as $b) {
+            if ( $b['facility_id'] === $facility_id && !in_array($b['status'], ['cancelled', 'rejected']) ) {
+                // Determine resident name
+                $res_name = $res_map[$b['resident_id']] ?? $b['resident_id'];
+                
+                // Privacy: Maybe show only Flat No? Or Name? 
+                // User asked: "who has booked that". So Name is fine.
+                
+                $events[] = [
+                    'title' => $res_name, // FullCalendar expects 'title'
+                    'start' => str_replace(' ', 'T', $b['start_time']),
+                    'end'   => str_replace(' ', 'T', $b['end_time']),
+                    'status' => $b['status']
+                    // 'color' => ... can be added
+                ];
+            }
+        }
+
+        // Aggressive Clean
+        while ( ob_get_level() > 0 ) { ob_end_clean(); }
+        
+        wp_send_json_success($events);
 	}
 
 	public function render_page() {

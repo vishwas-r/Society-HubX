@@ -34,9 +34,14 @@
             btn.classList.add('active', 'text-primary', 'border-primary');
 
             // Update content visibility
-            document.querySelectorAll('.tab-content').forEach(c => {
-                c.classList.add('d-none');
-                c.classList.remove('d-block');
+            // FIX: Don't use generic .tab-content selector as it hides nested Bootstrap tabs (like in Facilities)
+            // Instead, loop through known main tabs and hide them by ID.
+            tabs.forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if (el) {
+                    el.classList.add('d-none');
+                    el.classList.remove('d-block');
+                }
             });
 
             const targetEl = document.querySelector(targetId);

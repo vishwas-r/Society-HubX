@@ -68,7 +68,26 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                             <input type="text" name="name" class="form-control bg-light border-0 shadow-none rounded-3" style="height: 44px;" placeholder="e.g. Community Clubhouse" required>
                         </div>
 
-                        <div class="row g-3 mb-4">
+                        <!-- Pricing Model Toggle -->
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Pricing Model</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-none" type="radio" name="is_free" id="pricePaid" value="0" checked onchange="togglePricing(this.value)">
+                                    <label class="form-check-label small fw-medium text-dark" for="pricePaid">
+                                        Paid Facility (Rentable)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-none" type="radio" name="is_free" id="priceFree" value="1" onchange="togglePricing(this.value)">
+                                    <label class="form-check-label small fw-medium text-dark" for="priceFree">
+                                        Free (Complimentary)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4" id="pricing-fields">
                             <div class="col-7">
                                 <label class="form-label small fw-bold text-secondary text-nowrap">Usage Rate (₹)</label>
                                 <div class="input-group flex-nowrap shadow-none border-light rounded-3 overflow-hidden">
@@ -399,6 +418,19 @@ function resetFacilityForm() {
     document.getElementById('form-title').textContent = 'Define New Amenity';
     document.getElementById('submit-btn').textContent = 'Save Configuration';
     document.getElementById('cancel-edit-btn').classList.add('d-none');
+    
+    // Reset Pricing
+    document.getElementById('pricePaid').checked = true;
+    togglePricing('0');
+}
+
+function togglePricing(isFree) {
+    const fields = document.getElementById('pricing-fields');
+    if (isFree == '1') {
+        fields.classList.add('d-none');
+    } else {
+        fields.classList.remove('d-none');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -413,8 +445,20 @@ document.addEventListener('DOMContentLoaded', function() {
             form.querySelector('[name="action"]').value = 'sgvx51_edit_facility';
             form.querySelector('[name="facility_id"]').value = data.id;
             form.querySelector('[name="name"]').value = data.name;
-            form.querySelector('[name="rate"]').value = data.rate;
-            form.querySelector('[name="rate_unit"]').value = data.rate_unit || 'Hour';
+            form.querySelector('[name="name"]').value = data.name;
+            
+            // Pricing Logic
+            let rate = parseFloat(data.rate || 0);
+            if (rate === 0) {
+                document.getElementById('priceFree').checked = true;
+                togglePricing('1');
+                form.querySelector('[name="rate"]').value = 0;
+            } else {
+                document.getElementById('pricePaid').checked = true;
+                togglePricing('0');
+                form.querySelector('[name="rate"]').value = rate;
+            }
+
             form.querySelector('[name="rate_unit"]').value = data.rate_unit || 'Hour';
             form.querySelector('[name="max_hours"]').value = data.max_hours;
             form.querySelector('[name="booking_required"]').checked = (data.booking_required != 0); // Handle string '0' or int 0

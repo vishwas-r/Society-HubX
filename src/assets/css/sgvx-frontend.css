@@ -44,21 +44,16 @@ body {
     border-color: #0d6efd !important;
 }
 
-/* Tab Content Logic */
-.tab-content,
-.sub-tab-content {
-    display: none;
-}
+/* Tab Content Logic - Top Level Only (Direct Children of Dashboard Container) */
+/* Note: We use specific IDs in JS to toggle main tabs. 
+   We remove the generic .tab-content display:none to prevent hiding nested tabs. 
+   Instead, we rely on the helper classes or JS to manage initial state. 
+*/
 
 .tab-content.d-block,
 .sub-tab-content.d-block {
-    display: block;
+    display: block !important;
     animation: fadeIn 0.3s ease-in-out;
-}
-
-.tab-content.d-none,
-.sub-tab-content.d-none {
-    display: none;
 }
 
 @keyframes fadeIn {
