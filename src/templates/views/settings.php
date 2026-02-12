@@ -6,7 +6,111 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Assets for Settings (if any specific ones needed, usually handled by main helper)
+// Data for Communication Tab
+$db = Society_Govern_X::get_instance()->db;
+$channels  = $db->get('notification_channels');
+$events    = $db->get('notification_events');
+$templates = $db->get('notification_templates');
+
 ?>
+
+<style>
+    /* Premium Toggle Switch */
+    .sgvx-premium-toggle {
+        width: 44px;
+        height: 22px;
+        position: relative;
+        display: inline-block;
+    }
+    .sgvx-premium-toggle input { opacity: 0; width: 0; height: 0; }
+    .sgvx-premium-toggle .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #e2e8f0;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .sgvx-premium-toggle .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px; width: 18px;
+        left: 2px; bottom: 2px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .sgvx-premium-toggle input:checked + .slider { background-color: var(--bs-primary); }
+    .sgvx-premium-toggle input:checked + .slider:before { transform: translateX(22px); }
+
+    /* Accordion Tweaks */
+    .accordion-button:not(.collapsed) {
+        background-color: white !important;
+        color: var(--bs-primary) !important;
+    }
+    .accordion-button::after {
+        background-size: 1rem;
+        transition: transform .3s ease;
+    }
+    .accordion-item {
+        border: 1px solid #f1f5f9 !important;
+    }
+    .bg-slate-50 { background-color: #f8fafc; }
+</style>
+
+<style>
+    /* Premium Toggle Switch */
+    .sgvx-premium-toggle {
+        width: 44px;
+        height: 22px;
+        position: relative;
+        display: inline-block;
+    }
+    .sgvx-premium-toggle input { opacity: 0; width: 0; height: 0; }
+    .sgvx-premium-toggle .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #e2e8f0;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .sgvx-premium-toggle .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px; width: 18px;
+        left: 2px; bottom: 2px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .sgvx-premium-toggle input:checked + .slider { background-color: var(--bs-primary); }
+    .sgvx-premium-toggle input:checked + .slider:before { transform: translateX(22px); }
+
+    /* Accordion Tweaks */
+    .accordion-button:not(.collapsed) {
+        background-color: white !important;
+        color: var(--bs-primary) !important;
+    }
+    .accordion-button::after {
+        background-size: 1rem;
+        transition: transform .3s ease;
+    }
+    .accordion-item {
+        border: 1px solid #f1f5f9 !important;
+    }
+    .bg-slate-50 { background-color: #f8fafc; }
+
+    /* Line Clamp */
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+</style>
 
 <div class="sgvx-settings-v2">
     <!-- Page Header (Outside Card) -->
@@ -66,8 +170,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="card border-0 shadow-sm rounded-3 overflow-hidden bg-white">
         
         <!-- Navigation Tabs (Integrated) -->
-        <div class="px-4 px-md-5 bg-white border-bottom border-light">
-            <ul class="nav nav-tabs border-0 gap-5" id="settingsTabs" role="tablist">
+        <div class="px-2 bg-white border-bottom border-light overflow-x-auto no-scrollbar">
+            <ul class="nav nav-tabs border-0 gap-5 text-nowrap flex-nowrap" id="settingsTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button" role="tab" style="background:none;">
                         <i class="bi bi-building me-2"></i>Society Profile
@@ -84,13 +188,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-database" type="button" role="tab" style="background:none;">
-                        <i class="bi bi-database-fill me-2"></i>Sync & Database
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-communication" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-chat-left-dots me-2"></i>Communication
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-portability" type="button" role="tab" style="background:none;">
-                        <i class="bi bi-arrow-left-right me-2"></i>Data Portability
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-tools me-2"></i>Data & Maintenance
                     </button>
                 </li>
             </ul>
@@ -101,7 +205,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                 
                 <!-- Tab: Profile -->
                 <div class="tab-pane fade show active" id="tab-profile">
-                    <form method="post" action="options.php" class="sgvx-form-max">
+                    <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Bank Details -->
                         <input type="hidden" name="sgvx51_bank_name" value="<?php echo esc_attr( get_option('sgvx51_bank_name') ); ?>">
@@ -169,7 +273,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
                 <!-- Tab: Bank -->
                 <div class="tab-pane fade" id="tab-bank">
-                    <form method="post" action="options.php" class="sgvx-form-max">
+                    <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
                         <input type="hidden" name="sgvx51_society_name" value="<?php echo esc_attr( get_option('sgvx51_society_name', 'Society Name') ); ?>">
@@ -231,9 +335,206 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </form>
                 </div>
 
+                <!-- Tab: Communication (Migrated from Notifications) -->
+                <div class="tab-pane fade" id="tab-communication">
+                    <div class="accordion accordion-flush" id="communicationAccordion">
+                        
+                        <!-- 1. Delivery Channels -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold py-4 px-4 bg-white text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChannels">
+                                    <i class="bi bi-broadcast-pin text-primary me-3 fs-5"></i> Delivery Channels
+                                </button>
+                            </h2>
+                            <div id="collapseChannels" class="accordion-collapse collapse show" data-bs-parent="#communicationAccordion">
+                                <div class="accordion-body p-4 bg-slate-50">
+                                    <div class="row g-4">
+                                        <?php foreach($channels as $channel): 
+                                            $config = json_decode($channel['config'], true) ?: [];
+                                            $slug = $channel['channel_slug'];
+                                            $icon = 'bi-envelope';
+                                            $color = 'primary';
+                                            if($slug === 'whatsapp') { $icon = 'bi-whatsapp'; $color = 'success'; }
+                                            if($slug === 'inapp') { $icon = 'bi-app-indicator'; $color = 'info'; }
+                                        ?>
+                                        <div class="col-md-4">
+                                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                                <div class="card-body p-4 d-flex flex-column">
+                                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <div class="p-3 bg-<?php echo $color; ?> bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                            <i class="bi <?php echo $icon; ?> text-<?php echo $color; ?> fs-4"></i>
+                                                        </div>
+                                                        <label class="sgvx-premium-toggle">
+                                                            <input type="checkbox" class="sgvx-channel-toggle" data-channel="<?php echo $slug; ?>" <?php checked($channel['is_active'], 1); ?>/>
+                                                            <span class="slider"></span>
+                                                        </label>
+                                                    </div>
+                                                    <h6 class="fw-bold text-slate-900 mb-1"><?php echo ucfirst($slug); ?></h6>
+                                                    <p class="text-slate-500 x-small mb-4 flex-grow-1">
+                                                        <?php if($slug === 'email') echo 'Send alerts via WP Mail or Gmail API.'; ?>
+                                                        <?php if($slug === 'whatsapp') echo 'Real-time alerts via Twilio WhatsApp API.'; ?>
+                                                        <?php if($slug === 'inapp') echo 'Display alerts directly on resident dashboards.'; ?>
+                                                    </p>
+                                                    <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 sgvx-configure-channel" data-channel="<?php echo $slug; ?>">
+                                                        <i class="bi bi-gear me-2"></i>Configure
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Event Mapping -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold py-4 px-4 bg-white text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMapping">
+                                    <i class="bi bi-signpost-split text-primary me-3 fs-5"></i> Automated Trigger Mapping
+                                </button>
+                            </h2>
+                            <div id="collapseMapping" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
+                                <div class="accordion-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0 small">
+                                            <thead class="bg-light bg-opacity-50 border-bottom">
+                                                <tr>
+                                                    <th class="ps-4 py-3 fw-bold text-slate-500 text-uppercase">Event</th>
+                                                    <th class="py-3 fw-bold text-slate-500 text-uppercase">Module</th>
+                                                    <th class="py-3 fw-bold text-slate-500 text-center text-uppercase">In-App</th>
+                                                    <th class="py-3 fw-bold text-slate-500 text-center text-uppercase">Email</th>
+                                                    <th class="py-3 fw-bold text-slate-500 text-center text-uppercase">WhatsApp</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach($events as $event): 
+                                                    $enabled_channels = explode(',', $event['default_channels']);
+                                                ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <div class="fw-bold text-slate-900"><?php echo str_replace('_', ' ', ucfirst($event['event_slug'])); ?></div>
+                                                        <div class="text-slate-400 x-small font-monospace"><?php echo $event['event_slug']; ?></div>
+                                                    </td>
+                                                    <td><span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-2"><?php echo ucfirst($event['module']); ?></span></td>
+                                                    <td class="text-center">
+                                                        <div class="d-flex justify-content-center">
+                                                            <label class="sgvx-premium-toggle">
+                                                                <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
+                                                                <span class="slider"></span>
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="d-flex justify-content-center">
+                                                            <label class="sgvx-premium-toggle">
+                                                                <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
+                                                                <span class="slider"></span>
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <div class="d-flex justify-content-center">
+                                                            <label class="sgvx-premium-toggle">
+                                                                <input type="checkbox" class="sgvx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
+                                                                <span class="slider"></span>
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Message Templates -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold py-4 px-4 bg-white text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTemplates">
+                                    <i class="bi bi-file-earmark-diff text-primary me-3 fs-5"></i> Content Templates
+                                </button>
+                            </h2>
+                            <div id="collapseTemplates" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
+                                <div class="accordion-body p-4 bg-slate-50">
+                                    <div class="row g-3">
+                                        <?php foreach($templates as $template): ?>
+                                        <div class="col-md-6">
+                                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                                <div class="card-header bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between">
+                                                    <h6 class="fw-bold text-slate-900 m-0 small text-truncate"><?php echo str_replace('_', ' ', ucfirst($template['event_slug'])); ?></h6>
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 x-small fw-bold border border-primary-subtle">
+                                                        <?php echo strtoupper($template['channel']); ?>
+                                                    </span>
+                                                </div>
+                                                <div class="card-body p-4">
+                                                    <div class="bg-light rounded-4 p-3 border mb-3">
+                                                        <p class="text-slate-600 x-small m-0 line-clamp-3 font-monospace"><?php echo esc_html($template['content']); ?></p>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <span class="text-slate-400 x-small fw-medium">Version <?php echo $template['version']; ?></span>
+                                                        <button class="btn btn-sm btn-link text-primary fw-bold p-0 x-small text-decoration-none sgvx-edit-template" data-id="<?php echo $template['id']; ?>">
+                                                            <i class="bi bi-pencil-square me-1"></i> Edit Content
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Log Governance -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold py-4 px-4 bg-white text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGovernance">
+                                    <i class="bi bi-shield-lock text-primary me-3 fs-5"></i> Data Governance
+                                </button>
+                            </h2>
+                            <div id="collapseGovernance" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
+                                <div class="accordion-body p-4">
+                                    <form method="post" action="options.php">
+                                        <?php settings_fields( 'sgvx51_options_group' ); ?>
+                                        <div class="row g-4">
+                                            <div class="col-md-6">
+                                                <div class="p-3 bg-light rounded-4 border border-light d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <label class="fw-bold text-dark small mb-0">System Activity Audit</label>
+                                                        <p class="x-small text-muted m-0">Record admin/resident actions.</p>
+                                                    </div>
+                                                    <label class="sgvx-premium-toggle">
+                                                        <input type="checkbox" name="sgvx51_enable_audit" value="1" <?php checked(get_option('sgvx51_enable_audit', 1), 1); ?>/>
+                                                        <span class="slider"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 text-end d-flex align-items-center gap-3">
+                                                <div class="flex-grow-1 text-start">
+                                                    <label class="form-label small fw-bold text-dark mb-1">Retention Period</label>
+                                                    <select name="sgvx51_log_retention" class="form-select shadow-none rounded-3 border-light fw-bold">
+                                                        <option value="30" <?php selected(get_option('sgvx51_log_retention', 30), 30); ?>>30 Days</option>
+                                                        <option value="60" <?php selected(get_option('sgvx51_log_retention'), 60); ?>>60 Days</option>
+                                                        <option value="90" <?php selected(get_option('sgvx51_log_retention'), 90); ?>>90 Days</option>
+                                                        <option value="0" <?php selected(get_option('sgvx51_log_retention'), 0); ?>>Unlimited</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary fw-bold rounded-3 px-4 shadow-sm" style="height: 48px; margin-top: 24px;">Save Policy</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tab: Approval Workflow -->
                 <div class="tab-pane fade" id="tab-approval">
-                    <form method="post" action="options.php" class="sgvx-form-max">
+                    <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
                         <input type="hidden" name="sgvx51_society_name" value="<?php echo esc_attr( get_option('sgvx51_society_name', 'Society Name') ); ?>">
@@ -282,187 +583,147 @@ if ( ! defined( 'ABSPATH' ) ) exit;
                     </form>
                 </div>
 
-                <!-- Tab: Database -->
-                <div class="tab-pane fade" id="tab-database">
-                    <div class="sgvx-form-max">
-                        <!-- Mode Switch -->
-                        <!-- <div class="card border border-primary border-opacity-10 bg-primary bg-opacity-10 rounded-3 mb-4 overflow-hidden">
-                            <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-                                <div>
-                                    <h5 class="fw-bold text-primary m-0">Primary Storage Mode</h5>
-                                    <p class="small text-primary opacity-75 m-0 mt-1">MySQL is recommended for high performance societies.</p>
-                                </div>
-                                <form method="post" action="options.php" class="d-flex gap-2">
-                                    <?php settings_fields( 'sgvx51_options_group' ); ?>
-                                    <select name="sgvx51_storage_mode" class="form-select form-select-sm shadow-none w-auto rounded-3 fw-bold border-0 px-3">
-                                        <option value="mysql" <?php selected(get_option('sgvx51_storage_mode', 'mysql'), 'mysql'); ?>>MySQL (Engine)</option>
-                                        <option value="json" <?php selected(get_option('sgvx51_storage_mode'), 'json'); ?>>JSON (Legacy)</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-primary fw-bold px-3 rounded-3">Apply Mode</button>
-                                </form>
+                <!-- Tab: Data & Maintenance (Combined) -->
+                <div class="tab-pane fade" id="tab-maintenance">
+                    <div>
+                        
+                        <!-- 1. Data Portability -->
+                        <div class="mb-5">
+                            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-light pb-2">
+                                <h5 class="fw-bold text-primary m-0">Data Portability</h5>
+                                <span class="badge bg-light text-secondary border rounded-pill px-3 py-1 small fw-medium">CSV & JSON Tools</span>
                             </div>
-                        </div> -->
 
-                        <!-- <div class="row g-4 mb-5">
-                            <div class="col-md-6">
-                                <div class="card h-100 text-white border border-success bg-success rounded-3 border-opacity-25">
-                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <!-- Import/Export Messages -->
+                            <?php if ( isset($_GET['imported']) ) : ?>
+                                <div class="alert bg-success bg-opacity-10 text-success border-success border-opacity-10 alert-dismissible shadow-sm border-0 rounded-4 mb-4">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
                                         <div>
-                                            <h6 class="fw-bold text-uppercase opacity-75 small mb-3">Legacy Import</h6>
-                                            <h3 class="fw-bold mb-2">JSON ➔ MySQL</h3>
-                                            <p class="small opacity-75">Transfer all flat-file records into the structural relational database. Skip exists.</p>
+                                            <div class="fw-bold">Import Successful</div>
+                                            <div class="small opacity-75">Processed <?php echo intval($_GET['imported']); ?> records.</div>
                                         </div>
-                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                            <input type="hidden" name="action" value="sgvx51_migrate_json">
-                                            <?php wp_nonce_field( 'sgvx51_migrate_nonce' ); ?>
-                                            <button type="submit" class="btn btn-white w-100 fw-bold border-0 py-2 rounded-3 text-success">Start Migration</button>
-                                        </form>
+                                    </div>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
+                                </div>
+                            <?php endif; ?>
+
+                            <div class="row g-4">
+                                <!-- Export Card -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm bg-light rounded-4 overflow-hidden border border-light">
+                                        <div class="card-body p-4 d-flex flex-column">
+                                            <div class="mb-auto">
+                                                <div class="d-flex align-items-center gap-3 mb-3">
+                                                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary" style="width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="bi bi-cloud-download-fill fs-4"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark m-0">Export Archive</h5>
+                                                </div>
+                                                <p class="text-secondary small mb-4">
+                                                    Download a complete backup of your society records (CSV + JSON) in a single ZIP file.
+                                                </p>
+                                            </div>
+                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" class="mt-4">
+                                                <input type="hidden" name="action" value="sgvx51_export_data">
+                                                <?php wp_nonce_field( 'sgvx51_export_nonce' ); ?>
+                                                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-none">
+                                                    <i class="bi bi-file-earmark-zip me-2"></i>Download .zip
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100 text-white border border-warning bg-warning rounded-3 border-opacity-25">
-                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                                        <div>
-                                            <h6 class="fw-bold text-uppercase opacity-75 small mb-3">Backup Export</h6>
-                                            <h3 class="fw-bold mb-2">MySQL ➔ JSON</h3>
-                                            <p class="small opacity-75">Dump entire structural database back into portable JSON files. Overwrites files.</p>
-                                        </div>
-                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                            <input type="hidden" name="action" value="sgvx51_export_json">
-                                            <?php wp_nonce_field( 'sgvx51_export_nonce' ); ?>
-                                            <button type="submit" class="btn btn-white w-100 fw-bold border-0 py-2 rounded-3 text-warning">Start Export</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
+                                
+                                <!-- Import Card -->
+                                <div class="col-md-6">
+                                    <div class="card h-100 border-0 shadow-sm bg-white rounded-4 overflow-hidden border border-light">
+                                        <div class="card-body p-4 d-flex flex-column">
+                                            <div class="mb-auto">
+                                                <div class="d-flex align-items-center gap-3 mb-3">
+                                                    <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success" style="width: 54px; height: 54px; display: flex; align-items: center; justify-content: center;">
+                                                        <i class="bi bi-cloud-upload-fill fs-4"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold text-dark m-0">Bulk Import</h5>
+                                                </div>
+                                                <p class="text-secondary small mb-4">
+                                                    Upload CSV records for a specific module. Headers must match your database columns.
+                                                </p>
+                                            </div>
+                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data" class="mt-4">
+                                                <input type="hidden" name="action" value="sgvx51_import_data">
+                                                <?php wp_nonce_field( 'sgvx51_import_nonce' ); ?>
+                                                
+                                                <div class="mb-3">
+                                                    <select name="target_table" class="form-select shadow-none border-light bg-light small fw-bold rounded-3">
+                                                        <?php 
+                                                        $tables = SGVX51_DB_Router::TABLES;
+                                                        foreach($tables as $t) {
+                                                            echo "<option value='{$t}'>Module: ".ucwords(str_replace('_', ' ', $t))."</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
 
-                        <div class="card border-0 shadow-sm bg-danger bg-opacity-10 rounded-3 overflow-hidden">
-                            <div class="card-body p-4 border-start border-4 border-danger">
-                                <h5 class="fw-bold text-danger mb-1">Maintenance Area (Caution)</h5>
-                                <p class="small text-danger opacity-75 mb-4">These actions permanently remove all societal data from selected storage.</p>
-                                <div class="d-flex flex-wrap gap-2">
-                                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                        <input type="hidden" name="action" value="sgvx51_reset_db">
-                                        <input type="hidden" name="reset_type" value="mysql">
-                                        <?php wp_nonce_field( 'sgvx51_reset_nonce' ); ?>
-                                        <button type="submit" onclick="return confirm('Wipe entire MySQL schema content? (Non-reversible)')" class="btn btn-sm btn-danger fw-bold px-3 rounded-3 shadow-none">Purge MySQL Tables</button>
-                                    </form>
-                                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                        <input type="hidden" name="action" value="sgvx51_reset_db">
-                                        <input type="hidden" name="reset_type" value="json">
-                                        <?php wp_nonce_field( 'sgvx51_reset_nonce' ); ?>
-                                        <button type="submit" onclick="return confirm('Delete all JSON data files? (Non-reversible)')" class="btn btn-sm btn-outline-danger fw-bold px-3 rounded-3 shadow-none">Delete Storage Files</button>
-                                    </form>
+                                                <div class="mb-3">
+                                                    <input type="file" name="import_file" accept=".csv" class="form-control shadow-none border-light small rounded-3" required>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-outline-success w-100 fw-bold py-2 rounded-3">
+                                                    <i class="bi bi-upload me-2"></i>Import Records
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                <!-- Tab: Data Portability -->
-                <div class="tab-pane fade" id="tab-portability">
-                    <div class="sgvx-form-max">
-                        
-                        <!-- Import/Export Messages -->
-                        <?php if ( isset($_GET['imported']) ) : ?>
-                            <div class="alert bg-success bg-opacity-10 text-success border-success border-opacity-10 alert-dismissible shadow-sm border-0 rounded-3 mb-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                    <div>
-                                        <div class="fw-bold">Import Successful</div>
-                                        <div class="small opacity-75">Processed <?php echo intval($_GET['imported']); ?> records. (Errors: <?php echo intval($_GET['errors'] ?? 0); ?>)</div>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ( isset($_GET['error']) && $_GET['error'] === 'no_file' ) : ?>
-                            <div class="alert bg-danger bg-opacity-10 text-danger border-danger border-opacity-10 alert-dismissible shadow-sm border-0 rounded-3 mb-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
-                                    <span class="fw-bold">Error: No file selected for import.</span>
-                                </div>
-                                <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="row g-4 mb-5">
-                            <!-- Export Card -->
-                            <div class="col-md-6">
-                                <div class="card h-100 border-0 shadow-sm bg-light rounded-3 overflow-hidden">
-                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-3 mb-3">
-                                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
-                                                    <i class="bi bi-cloud-download-fill fs-4"></i>
-                                                </div>
-                                                <h5 class="fw-bold text-dark m-0">Export Data</h5>
-                                            </div>
-                                            <p class="text-secondary small mb-4">
-                                                Download a complete archive of your society's data. 
-                                                The ZIP file contains individual CSV files for each table (Residents, Vehicles, Expenses, etc.) and a full JSON dump for backup.
-                                            </p>
-                                        </div>
-                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                            <input type="hidden" name="action" value="sgvx51_export_data">
-                                            <?php wp_nonce_field( 'sgvx51_export_nonce' ); ?>
-                                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm">
-                                                <i class="bi bi-file-earmark-zip me-2"></i>Download Data Archive (.zip)
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+                        <!-- 2. System Maintenance -->
+                        <div class="mt-5">
+                            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-light pb-2">
+                                <h5 class="fw-bold text-danger m-0">System Maintenance</h5>
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill px-3 py-1 small fw-bold">Critical Actions</span>
                             </div>
                             
-                            <!-- Import Card -->
-                            <div class="col-md-6">
-                                <div class="card h-100 border-0 shadow-sm bg-white rounded-3 overflow-hidden border">
-                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-3 mb-3">
-                                                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success">
-                                                    <i class="bi bi-cloud-upload-fill fs-4"></i>
-                                                </div>
-                                                <h5 class="fw-bold text-dark m-0">Import CSV</h5>
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden border border-danger border-opacity-10" style="background-color: #fff9f9;">
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="bi bi-exclamation-octagon-fill text-danger fs-5"></i>
+                                                <h6 class="fw-bold text-danger m-0">Purge Societal Data</h6>
                                             </div>
-                                            <p class="text-secondary small mb-4">
-                                                Bulk import records into a specific module. The CSV must have headers matching the database columns.
+                                            <p class="small text-danger opacity-75 mb-0" style="max-width: 500px;">
+                                                Permanently remove all records from the selected storage. 
+                                                This action is <strong>completely non-reversible</strong>. Please backup your data first.
                                             </p>
                                         </div>
-                                        <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data">
-                                            <input type="hidden" name="action" value="sgvx51_import_data">
-                                            <?php wp_nonce_field( 'sgvx51_import_nonce' ); ?>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-secondary">Target Module</label>
-                                                <select name="target_table" class="form-select shadow-none rounded-3 border-light bg-light">
-                                                    <?php 
-                                                    $tables = SGVX51_DB_Router::TABLES;
-                                                    foreach($tables as $t) {
-                                                        // Pretty name
-                                                        $name = ucwords(str_replace('_', ' ', $t));
-                                                        echo "<option value='{$t}'>{$name}</option>";
-                                                    }
-                                                    ?>
-                                                </select>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-secondary">Select CSV File</label>
-                                                <input type="file" name="import_file" accept=".csv" class="form-control shadow-none rounded-3 border-light" required>
-                                            </div>
-
-                                            <button type="submit" class="btn btn-outline-success w-100 fw-bold py-2 rounded-3">
-                                                <i class="bi bi-upload me-2"></i>Import Records
-                                            </button>
-                                        </form>
+                                        <div class="d-flex flex-column flex-sm-row gap-2">
+                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                                <input type="hidden" name="action" value="sgvx51_reset_db">
+                                                <input type="hidden" name="reset_type" value="mysql">
+                                                <?php wp_nonce_field( 'sgvx51_reset_nonce' ); ?>
+                                                <button type="submit" onclick="return confirm('Wipe entire MySQL schema content? (Non-reversible)')" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
+                                                    Purge MySQL DB
+                                                </button>
+                                            </form>
+                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                                <input type="hidden" name="action" value="sgvx51_reset_db">
+                                                <input type="hidden" name="reset_type" value="json">
+                                                <?php wp_nonce_field( 'sgvx51_reset_nonce' ); ?>
+                                                <button type="submit" onclick="return confirm('Delete all JSON data files? (Non-reversible)')" class="btn btn-outline-danger fw-bold px-4 py-2 rounded-3 shadow-none w-100">
+                                                    Purge JSON Files
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                    </div>
+                </div>
 
                 </div>
 

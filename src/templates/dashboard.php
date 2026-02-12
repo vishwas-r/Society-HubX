@@ -102,4 +102,17 @@ function sgvx_in_fmt($num, $decimals = 2) {
 <!-- Modals & Scripts -->
 <?php include SGVX51_PLUGIN_DIR . 'templates/components/dashboard/modals.php'; ?>
 
+<!-- Global Toasts Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 100070;">
+    <div id="sgvx-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-3 py-3 px-4">
+                <i id="sgvx-toast-icon" class="bi fs-4"></i>
+                <div id="sgvx-toast-message" class="fw-bold"></div>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-3 m-auto opacity-50" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <?php // End of Resident Dashboard ?>

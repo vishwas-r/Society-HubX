@@ -237,14 +237,21 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
         
         // IF ADMIN: Immediate
         if ( current_user_can( 'manage_options' ) ) {
-            $res = $this->perform_save_vehicle( $_POST, true );
-            if ( wp_doing_ajax() ) {
-                if ( is_wp_error( $res ) ) {
-                    wp_send_json_error(['message' => $res->get_error_message()]);
+            // 1. Synchronize with Request Manager if a pending request exists
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $id );
+            
+            if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    wp_send_json_success(['message' => 'Vehicle updated and request synchronized']);
+                } else {
+                    wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
                 }
-                wp_send_json_success(['message' => 'Vehicle updated successfully']);
                 exit;
             }
+
+            $res = $this->perform_save_vehicle( $_POST, true );
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
@@ -275,14 +282,21 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
         
         // IF ADMIN: Immediate
         if ( current_user_can( 'manage_options' ) ) {
+            // 1. Synchronize with Request Manager if a pending request exists
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $id );
+            
+            if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    wp_send_json_success(['message' => 'Vehicle archived and request synchronized']);
+                } else {
+                    wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&deleted=1' ) );
+                }
+                exit;
+            }
+
              $res = $this->perform_delete_vehicle( ['id' => $id] );
-             if ( wp_doing_ajax() ) {
-                 if ( is_wp_error( $res ) ) {
-                     wp_send_json_error(['message' => $res->get_error_message()]);
-                 }
-                 wp_send_json_success(['message' => 'Vehicle archived successfully']);
-                 exit;
-             }
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();

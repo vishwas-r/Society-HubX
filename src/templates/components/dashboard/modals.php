@@ -276,13 +276,13 @@ $qr_url    = get_option('sgvx51_bank_qr');
 <!-- 6. Upload Doc Modal -->
 <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
+    <form id="upload-form" class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold text-dark">Upload Document</h5>
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-         <input type="hidden" name="action" value="sgvx51_frontend_upload_doc">
+         <input type="hidden" name="action" value="sgvx51_upload_doc">
          <?php wp_nonce_field('sgvx51_upload_doc_nonce'); ?>
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Document Name <span class="text-danger">*</span></label>

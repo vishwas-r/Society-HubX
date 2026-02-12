@@ -169,16 +169,22 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     
     // IF ADMIN: Immediate
     if ( current_user_can( 'manage_options' ) ) {
-        $res = $this->perform_edit_resident( $_POST );
+        // 1. Synchronize with Request Manager if a pending request exists
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        $sync_res = $rm->approve_request( $id );
         
-        if ( wp_doing_ajax() ) {
-            if ( is_wp_error( $res ) ) {
-                wp_send_json_error(['message' => $res->get_error_message()]);
+        if ( ! is_wp_error( $sync_res ) ) {
+            // Request Manager handled the update via perform_edit_resident (in execute_request)
+            if ( wp_doing_ajax() ) {
+                wp_send_json_success(['message' => 'Resident updated and request synchronized']);
             } else {
-                wp_send_json_success(['message' => 'Resident updated successfully']);
+                wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
             }
             exit;
         }
+
+        $res = $this->perform_edit_resident( $_POST );
     } else {
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
@@ -340,17 +346,21 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         
         // IF ADMIN: Action is immediate.
         if ( current_user_can( 'manage_options' ) ) {
-            $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
+            // 1. Synchronize with Request Manager if a pending request exists
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $resident_id );
             
-            if ( wp_doing_ajax() ) {
-                if ( is_wp_error($res) ) wp_send_json_error(['message' => $res->get_error_message()]);
-                if ( $res === false ) wp_send_json_error(['message' => 'Resident not found']);
-                wp_send_json_success(['message' => 'Resident archived successfully']);
+            if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    wp_send_json_success(['message' => 'Resident archived and request synchronized']);
+                } else {
+                    wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=deleted' ) );
+                }
+                exit;
             }
 
-            $status = !is_wp_error($res) && $res ? 'deleted' : 'error';
-            wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=' . $status ) );
-            exit;
+            $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
         }
 
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';

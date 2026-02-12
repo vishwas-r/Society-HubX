@@ -45,7 +45,7 @@ $nav_items = [
     'notices'   => ['Notices', admin_url('admin.php?page=sgvx51-notices'), 'bi-megaphone'],
     'polls'     => ['Democracy', admin_url('admin.php?page=sgvx51-polls'), 'bi-journal-check'],
     'requests'  => ['Pending Requests', admin_url('admin.php?page=sgvx51-requests'), 'bi-patch-exclamation'],
-    'notifications' => ['Notifications', admin_url('admin.php?page=sgvx51-notifications'), 'bi-bell'],
+    'activity-hub' => ['Activity Hub', admin_url('admin.php?page=sgvx51-activity-hub'), 'bi-clock-history'],
     'settings'  => ['Settings', admin_url('admin.php?page=sgvx51-global-settings'), 'bi-gear'],
 ];
 

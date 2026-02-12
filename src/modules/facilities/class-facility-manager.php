@@ -282,6 +282,21 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		}
 
 		$id          = sanitize_text_field( $_POST['booking_id'] );
+
+        // 1. Synchronize with Request Manager if a pending request exists
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        $sync_res = $rm->approve_request( $id );
+        
+        if ( ! is_wp_error( $sync_res ) ) {
+            if ( wp_doing_ajax() ) {
+                wp_send_json_success(['message' => 'Booking updated and request synchronized']);
+            } else {
+                wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
+            }
+            exit;
+        }
+
 		$facility_id = sanitize_text_field( $_POST['facility_id'] );
 		$start_time  = sanitize_text_field( $_POST['start_time'] );
 		$end_time    = sanitize_text_field( $_POST['end_time'] );
@@ -343,6 +358,21 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		}
 
 		$id = sanitize_text_field( $_POST['id'] );
+
+        // 1. Synchronize with Request Manager if a pending request exists
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        $sync_res = $rm->approve_request( $id );
+        
+        if ( ! is_wp_error( $sync_res ) ) {
+            if ( wp_doing_ajax() ) {
+                wp_send_json_success(['message' => 'Booking deleted and request synchronized']);
+            } else {
+                wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
+            }
+            exit;
+        }
+
 		$this->db->delete( 'bookings', array( 'id' => $id ) );
 
 		if ( wp_doing_ajax() ) {

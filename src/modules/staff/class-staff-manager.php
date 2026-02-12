@@ -277,14 +277,21 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 
         // IF ADMIN: Immediate
         if ( current_user_can( 'manage_options' ) ) {
-            $res = $this->perform_edit_staff( $_POST );
-            if ( wp_doing_ajax() ) {
-                if ( is_wp_error( $res ) ) {
-                    wp_send_json_error(['message' => $res->get_error_message()]);
+            // 1. Synchronize with Request Manager if a pending request exists
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $id );
+            
+            if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    wp_send_json_success(['message' => 'Staff updated and request synchronized']);
+                } else {
+                    wp_redirect( admin_url( 'admin.php?page=sgvx51-staff&status=updated' ) );
                 }
-                wp_send_json_success(['message' => 'Staff updated successfully']);
                 exit;
             }
+
+            $res = $this->perform_edit_staff( $_POST );
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
@@ -313,14 +320,21 @@ class SGVX51_Staff_Manager implements SGVX51_Module {
 
         // IF ADMIN: Immediate
         if ( current_user_can( 'manage_options' ) ) {
-            $res = $this->perform_delete_staff( ['id' => $id] );
-            if ( wp_doing_ajax() ) {
-                if ( is_wp_error( $res ) ) {
-                    wp_send_json_error(['message' => $res->get_error_message()]);
+            // 1. Synchronize with Request Manager if a pending request exists
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $id );
+            
+            if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    wp_send_json_success(['message' => 'Staff record archived and request synchronized']);
+                } else {
+                    wp_redirect( admin_url( 'admin.php?page=sgvx51-staff&status=deleted' ) );
                 }
-                wp_send_json_success(['message' => 'Staff record deleted']);
                 exit;
             }
+
+            $res = $this->perform_delete_staff( ['id' => $id] );
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();

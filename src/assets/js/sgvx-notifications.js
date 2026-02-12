@@ -1,9 +1,16 @@
 jQuery(document).ready(function ($) {
-    const notificationModal = new bootstrap.Modal(document.getElementById('sgvx-channel-modal'));
-    const $form = $('#sgvx-channel-form');
+    // 1. Initialize Modals
+    const channelModalNode = document.getElementById('sgvx-channel-modal');
+    const templateModalNode = document.getElementById('sgvx-template-modal');
+
+    const channelModal = channelModalNode ? new bootstrap.Modal(channelModalNode) : null;
+    const templateModal = templateModalNode ? new bootstrap.Modal(templateModalNode) : null;
+
+    const $channelForm = $('#sgvx-channel-form');
+    const $templateForm = $('#sgvx-template-form');
     const $fieldsContainer = $('#sgvx-channel-settings-fields');
 
-    // 1. Channel Configuration
+    // 2. Channel Configuration
     $('.sgvx-configure-channel').on('click', function () {
         const channel = $(this).data('channel');
         $('#sgvx-modal-channel-name').text(channel.charAt(0).toUpperCase() + channel.slice(1));
@@ -19,9 +26,9 @@ jQuery(document).ready(function ($) {
                 _ajax_nonce: sgvx51RequestNonce
             },
             success: function (response) {
-                if (response.success) {
+                if (response.success && channelModal) {
                     renderSettingsFields(channel, response.data);
-                    notificationModal.show();
+                    channelModal.show();
                 }
             }
         });
@@ -74,7 +81,7 @@ jQuery(document).ready(function ($) {
         $fieldsContainer.html(html);
     }
 
-    $form.on('submit', function (e) {
+    $channelForm.on('submit', function (e) {
         e.preventDefault();
         const formData = $(this).serializeArray();
         formData.push({ name: 'action', value: 'sgvx51_save_channel_config' });
@@ -86,14 +93,14 @@ jQuery(document).ready(function ($) {
             data: $.param(formData),
             success: function (response) {
                 if (response.success) {
-                    notificationModal.hide();
-                    location.reload(); // Quick refresh to update UI
+                    if (channelModal) channelModal.hide();
+                    location.reload();
                 }
             }
         });
     });
 
-    // 2. Channel Toggles
+    // 3. Channel Toggles
     $('.sgvx-channel-toggle').on('change', function () {
         const channel = $(this).data('channel');
         const active = $(this).is(':checked') ? 1 : 0;
@@ -110,12 +117,11 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    // 3. Event Mapping
+    // 4. Event Mapping
     $('.sgvx-mapping-toggle').on('change', function () {
         const event = $(this).data('event');
         const channel = $(this).data('channel');
 
-        // Logic to update default_channels string
         $.ajax({
             url: ajaxurl,
             type: 'POST',
@@ -125,6 +131,58 @@ jQuery(document).ready(function ($) {
                 channel: channel,
                 enabled: $(this).is(':checked') ? 1 : 0,
                 _ajax_nonce: sgvx51RequestNonce
+            }
+        });
+    });
+
+    // 5. Template Editing
+    $('.sgvx-edit-template').on('click', function () {
+        const id = $(this).data('id');
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'sgvx51_get_template',
+                id: id,
+                _ajax_nonce: sgvx51RequestNonce
+            },
+            success: function (response) {
+                if (response.success && templateModal) {
+                    const tpl = response.data;
+                    $('#sgvx-template-id').val(tpl.id);
+                    $('#sgvx-template-event-name').text(tpl.event_slug.replace(/_/g, ' '));
+                    $('#sgvx-template-subject').val(tpl.subject);
+                    $('#sgvx-template-content').val(tpl.content);
+
+                    // Show/Hide subject based on channel
+                    if (tpl.channel === 'whatsapp' || tpl.channel === 'inapp') {
+                        $('.subject-field').hide();
+                    } else {
+                        $('.subject-field').show();
+                    }
+
+                    templateModal.show();
+                }
+            }
+        });
+    });
+
+    $templateForm.on('submit', function (e) {
+        e.preventDefault();
+        const formData = $(this).serializeArray();
+        formData.push({ name: 'action', value: 'sgvx51_save_template' });
+        formData.push({ name: '_ajax_nonce', value: sgvx51RequestNonce });
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: $.param(formData),
+            success: function (response) {
+                if (response.success) {
+                    if (templateModal) templateModal.hide();
+                    location.reload();
+                }
             }
         });
     });

@@ -72,24 +72,72 @@ class SGVX51_DB_Router {
 
 	/**
 	 * GET Data (Read)
+	 * 
+	 * @param string $table Table name/slug.
+	 * @param array  $args  Optional arguments: 'where' (assoc array), 'limit', 'offset', 'orderby', 'order'.
 	 */
-	public function get( $table ) {
+	public function get( $table, $args = array() ) {
 		if ( $this->get_mode() === 'mysql' ) {
-			return $this->get_mysql( $table );
+			return $this->get_mysql( $table, $args );
 		}
-		return $this->get_json( $table );
+		return $this->get_json( $table, $args );
 	}
 
 	/**
-	 * GET All Rows from MySQL specifically (bypass mode check)
+	 * GET Rows from MySQL
 	 */
-	public function get_mysql( $table ) {
+	public function get_mysql( $table, $args = array() ) {
 		$sql_table = $this->get_table_name( $table );
 		$query = "SELECT * FROM " . $sql_table;
 		
+		$where_clauses = array();
+		$values = array();
+
+		// 1. WHERE Clause
+		if ( ! empty( $args['where'] ) && is_array( $args['where'] ) ) {
+			foreach ( $args['where'] as $col => $val ) {
+				// Simple equality check: col = val
+				$where_clauses[] = "`$col` = %s";
+				$values[] = $val;
+			}
+		}
+
+		if ( ! empty( $where_clauses ) ) {
+			$query .= " WHERE " . implode( ' AND ', $where_clauses );
+		}
+
+		// 2. ORDER BY
+		if ( ! empty( $args['orderby'] ) ) {
+			// Whitelist check or simple sanitization needed? 
+			// For now, strict escaping.
+			$col = preg_replace( '/[^a-zA-Z0-9_]/', '', $args['orderby'] );
+			$order = ( ! empty( $args['order'] ) && strtoupper( $args['order'] ) === 'DESC' ) ? 'DESC' : 'ASC';
+			if ( $col ) {
+				$query .= " ORDER BY `$col` $order";
+			}
+		}
+
+		// 3. LIMIT & OFFSET
+		if ( isset( $args['limit'] ) ) {
+			$query .= " LIMIT %d";
+			$values[] = intval( $args['limit'] );
+		}
+
+		if ( isset( $args['offset'] ) ) {
+			$query .= " OFFSET %d";
+			$values[] = intval( $args['offset'] );
+		}
+
+		// Prepare Query
+		if ( ! empty( $values ) ) {
+			$query = $this->wpdb->prepare( $query, $values );
+		} else {
+            // Keep query as string if no placeholders
+        }
+		
 		// Log the query being executed
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( 'SGVX51 Executing Query: ' . $query );
+			// error_log( 'SGVX51 Executing Query: ' . $query );
 		}
 		
 		$results = $this->wpdb->get_results( $query, ARRAY_A );
@@ -101,9 +149,6 @@ class SGVX51_DB_Router {
 		}
 		
 		if ( ! $results ) {
-			if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-				error_log( 'SGVX51 No results for ' . $table . ' (empty or table missing)' );
-			}
 			return array();
 		}
 
@@ -120,7 +165,7 @@ class SGVX51_DB_Router {
 		return $results;
 	}
 
-	private function get_json( $table ) {
+	private function get_json( $table, $args = array() ) {
 		$file = $this->data_dir . $table . '.json';
 		if ( file_exists( $file ) ) {
 			$content = file_get_contents( $file );
@@ -135,6 +180,39 @@ class SGVX51_DB_Router {
 					$data[ $k ]['payments'] = json_decode( $row['payments'], true ) ?: array();
 				}
 			}
+
+            // 1. Filter (Where)
+            if ( ! empty( $args['where'] ) && is_array( $args['where'] ) ) {
+                $data = array_filter( $data, function( $row ) use ( $args ) {
+                    foreach ( $args['where'] as $col => $val ) {
+                        if ( ! isset( $row[ $col ] ) || $row[ $col ] != $val ) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                $data = array_values( $data ); // Reindex
+            }
+
+            // 2. Sort
+            if ( ! empty( $args['orderby'] ) ) {
+                $col = $args['orderby'];
+                $order = ( ! empty( $args['order'] ) && strtoupper( $args['order'] ) === 'DESC' ) ? SORT_DESC : SORT_ASC;
+                
+                usort( $data, function( $a, $b ) use ( $col, $order ) {
+                    $valA = $a[ $col ] ?? '';
+                    $valB = $b[ $col ] ?? '';
+                    if ( $valA == $valB ) return 0;
+                    return ( $valA < $valB ) ? ( $order === SORT_ASC ? -1 : 1 ) : ( $order === SORT_ASC ? 1 : -1 );
+                });
+            }
+
+            // 3. Limit/Offset
+            if ( isset( $args['limit'] ) || isset( $args['offset'] ) ) {
+                $offset = isset( $args['offset'] ) ? intval( $args['offset'] ) : 0;
+                $limit  = isset( $args['limit'] ) ? intval( $args['limit'] ) : null;
+                $data = array_slice( $data, $offset, $limit );
+            }
 
 			return $data;
 		}

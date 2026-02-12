@@ -155,119 +155,24 @@
     // --- Receipt Logic (Removed to avoid conflict with standardized accounts receipt) ---
 
     /**
-     * Global AJAX API Wrapper
-     * @param {string} action WordPress AJAX action
-     * @param {object} data   Payload data
-     * @returns {Promise}
+     * Global AJAX API Wrapper - MOVED TO core.js
      */
-    window.sgvxApiRequest = async function (action, data = {}) {
-        let formData;
+    /*
+    window.sgvxApiRequest = async function (action, data = {}) { ... };
+    */
 
-        if (data instanceof FormData) {
-            formData = data;
-        } else {
-            formData = new FormData();
-            for (const [key, val] of Object.entries(data)) {
-                if (Array.isArray(val)) {
-                    val.forEach(item => formData.append(key + '[]', item));
-                } else if (val !== null && val !== undefined) {
-                    formData.append(key, val);
-                }
-            }
-        }
 
-        if (!formData.has('action')) formData.append('action', action);
-
-        // 1. Determine the Nonce
-        let finalNonce = formData.get('_wpnonce') || '';
-
-        // 2. Auto-inject fallbacks if payload nonce is missing
-        if (!finalNonce) {
-            if (window.sgvxResidentsData) finalNonce = window.sgvxResidentsData.nonce;
-            else if (window.sgvxFacilitiesData) finalNonce = window.sgvxFacilitiesData.nonce;
-            else if (window.sgvxNoticesData) finalNonce = window.sgvxNoticesData.nonce;
-            else if (window.sgvxDocumentsData) finalNonce = window.sgvxDocumentsData.nonce;
-            else if (window.sgvxExpensesData) finalNonce = window.sgvxExpensesData.nonce;
-            else if (window.sgvxAccountsData) finalNonce = window.sgvxAccountsData.nonce;
-            else if (window.sgvxVehiclesData) finalNonce = window.sgvxVehiclesData.nonce;
-            else if (window.sgvxFlatsData) finalNonce = window.sgvxFlatsData.nonce;
-            else if (window.sgvxStaffData) finalNonce = window.sgvxStaffData.nonce;
-        }
-
-        if (finalNonce && !formData.has('_wpnonce')) {
-            formData.append('_wpnonce', finalNonce);
-        } else if (finalNonce && formData.has('_wpnonce') && !formData.get('_wpnonce')) {
-            // If it's empty string, update it
-            formData.set('_wpnonce', finalNonce);
-        }
-
-        try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text || 'Network response was not ok');
-            }
-
-            let result;
-            const responseText = await response.text();
-            try {
-                result = JSON.parse(responseText);
-            } catch (e) {
-                console.error('SGVX JSON Parse Error. Raw Response:', responseText);
-                throw new Error('Invalid JSON response from server. Check console for details.');
-            }
-
-            if (result.success) {
-                if (result.data && result.data.message) {
-                    window.sgvxShowToast(result.data.message, 'success');
-                }
-                return result.data || true;
-            } else {
-                const errorMsg = result.data && result.data.message ? result.data.message : 'Operation failed';
-                window.sgvxShowToast(errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-        } catch (error) {
-            console.error('SGVX API Error:', error);
-            window.sgvxShowToast(error.message, 'error');
-            throw error;
-        }
-    };
 
     // --- Download Admin Receipt Logic (Removed) ---
 
     /**
-     * Show Global Toast
-     * @param {string} msg 
-     * @param {string} type 'success' | 'error'
+     * Show Global Toast - MOVED TO core.js
      */
+    /*
     window.sgvxShowToast = function (msg, type = 'success') {
-        const toastEl = document.getElementById('sgvx-global-toast');
-        const iconEl = document.getElementById('sgvx-toast-icon');
-        const msgEl = document.getElementById('sgvx-toast-message');
-        if (!toastEl || !msgEl || !iconEl) return;
-
-        // Reset classes
-        toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
-        iconEl.classList.remove('bi-check-circle-fill', 'bi-exclamation-triangle-fill');
-
-        if (type === 'success') {
-            toastEl.classList.add('bg-success', 'text-white');
-            iconEl.classList.add('bi-check-circle-fill');
-        } else {
-            toastEl.classList.add('bg-danger', 'text-white');
-            iconEl.classList.add('bi-exclamation-triangle-fill');
-        }
-
-        msgEl.textContent = msg;
-
-        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-        toast.show();
+        ...
     };
+    */
 
     /**
      * Automatic URL Notification Detector

@@ -24,6 +24,8 @@ class SGVX51_AJAX_Handler {
 		add_action( 'wp_ajax_sgvx51_save_channel_config', array( $this, 'handle_save_channel_config' ) );
 		add_action( 'wp_ajax_sgvx51_toggle_channel', array( $this, 'handle_toggle_channel' ) );
 		add_action( 'wp_ajax_sgvx51_update_event_mapping', array( $this, 'handle_update_event_mapping' ) );
+		add_action( 'wp_ajax_sgvx51_get_template', array( $this, 'handle_get_template' ) );
+		add_action( 'wp_ajax_sgvx51_save_template', array( $this, 'handle_save_template' ) );
 	}
 
 	/**
@@ -36,8 +38,9 @@ class SGVX51_AJAX_Handler {
 			wp_send_json_error( array( 'message' => 'Not authenticated' ), 401 );
 		}
 
-		// Verify user has permission to access admin pages
-		if ( ! current_user_can( 'manage_options' ) ) {
+		// Verify user has permission
+		// Admins can access everything, others might be limited by the module check in get_module_config
+		if ( ! current_user_can( 'manage_options' ) && ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Insufficient permissions' ), 403 );
 		}
 
@@ -92,7 +95,7 @@ class SGVX51_AJAX_Handler {
 			case 'documents':
 				$config = array(
 					'nonce'       => wp_create_nonce( 'sgvx51_document_nonce' ),
-					'deleteNonce' => wp_create_nonce( 'sgvx51_delete_document_nonce' ),
+					'deleteNonce' => wp_create_nonce( 'sgvx51_document_nonce' ),
 				);
 				break;
 
@@ -348,5 +351,54 @@ class SGVX51_AJAX_Handler {
 			}
 		}
 		wp_send_json_error(['message' => 'Event not found']);
+	}
+
+	/**
+	 * AJAX: Get Notification Template
+	 */
+	public function handle_get_template() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+		$db = Society_Govern_X::get_instance()->db;
+		$templates = $db->get('notification_templates');
+
+		foreach($templates as $t) {
+			if($t['id'] == $id) {
+				wp_send_json_success($t);
+			}
+		}
+		wp_send_json_error(['message' => 'Template not found']);
+	}
+
+	/**
+	 * AJAX: Save Notification Template
+	 */
+	public function handle_save_template() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		check_ajax_referer( 'sgvx51_request_action' );
+
+		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+		$subject = isset($_POST['subject']) ? sanitize_text_field($_POST['subject']) : '';
+		$content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';
+		
+		$db = Society_Govern_X::get_instance()->db;
+		
+		// Get current version to increment
+		$current = null;
+		$templates = $db->get('notification_templates');
+		foreach($templates as $t) if($t['id'] == $id) $current = $t;
+
+		if(!$current) wp_send_json_error(['message' => 'Template not found']);
+
+		$updated = $db->update('notification_templates', [
+			'subject' => $subject,
+			'content' => $content,
+			'version' => (int)$current['version'] + 1
+		], ['id' => $id]);
+
+		if(is_wp_error($updated)) wp_send_json_error(['message' => $updated->get_error_message()]);
+		wp_send_json_success(['message' => 'Template updated']);
 	}
 }

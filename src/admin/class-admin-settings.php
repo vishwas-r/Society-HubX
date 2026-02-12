@@ -54,14 +54,14 @@ class SGVX51_Admin_Settings {
 			array( $this, 'render_settings_page' )
 		);
 
-		// Notifications Page (Moved above Settings as per request)
+		// Activity Hub (Repurposed from Notifications)
 		add_submenu_page(
 			'sgvx51-settings',
-			'Notification Center',
-			'Notifications',
+			'Activity Hub',
+			'Activity Hub',
 			'manage_options',
-			'sgvx51-notifications',
-			array( $this, 'render_notifications_page' )
+			'sgvx51-activity-hub',
+			array( $this, 'render_activity_hub_page' )
 		);
 
 		// Global Settings Page
@@ -129,6 +129,10 @@ class SGVX51_Admin_Settings {
 		register_setting( 'sgvx51_options_group', 'sgvx51_approval_help' );
 		register_setting( 'sgvx51_options_group', 'sgvx51_approval_vehicle' );
 		register_setting( 'sgvx51_options_group', 'sgvx51_approval_facility' );
+
+		// Log Governance
+		register_setting( 'sgvx51_options_group', 'sgvx51_enable_audit' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_log_retention' );
 	}
 
 	public function handle_setup_actions() {
@@ -366,8 +370,8 @@ class SGVX51_Admin_Settings {
         SGVX51_Admin_App::render_view( 'polls' );
     }
 
-	public function render_notifications_page() {
+	public function render_activity_hub_page() {
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SGVX51_Admin_App::render_view( 'notifications' );
+        SGVX51_Admin_App::render_view( 'activity-hub' );
 	}
 }

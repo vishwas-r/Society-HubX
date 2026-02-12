@@ -20,11 +20,12 @@ $files = array();
 
 if ( $selected_flat ) {
     foreach($all_docs as $d) {
-        if(isset($d['flat_no']) && $d['flat_no'] === $selected_flat && ($d['status']??'') !== 'deleted') {
+        $d_flat = $d['flat_no'] ?? '';
+        if($d_flat === $selected_flat && ($d['status']??'') !== 'deleted') {
             $files[] = array(
                 'id' => $d['id'],
-                'name' => $d['name'], 
-                'url' => $d['url'],
+                'name' => $d['title'] ?? ($d['name'] ?? 'Unnamed'), 
+                'url' => $d['file_path'] ?? ($d['url'] ?? '#'),
                 'status' => $d['status'] ?? 'approved',
                 'created_at' => $d['created_at'] ?? '',
                 'type' => 'db'
@@ -204,7 +205,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                                                 
                                                 <div class="d-flex gap-2">
                                                     <?php if($is_pending && isset($file['id'])): ?>
-                                                        <button type="button" class="btn btn-success bg-opacity-10 text-success border-0 flex-grow-1 py-1.5 fw-bold js-approve-doc rounded-3 px-2 shadow-none" data-id="<?php echo esc_attr($file['id']); ?>" style="font-size: 10px;">APPROVE</button>
+                                                        <button type="button" class="btn bg-success bg-opacity-10 text-success border-0 flex-grow-1 py-1.5 fw-bold js-approve-doc rounded-3 px-2 shadow-none" data-id="<?php echo esc_attr($file['id']); ?>" style="font-size: 10px;">APPROVE</button>
                                                     <?php endif; ?>
                                                     <button type="button" class="btn bg-danger bg-opacity-10 text-danger border-0 <?php echo $is_pending ? '' : 'w-100'; ?> flex-grow-1 py-1.5 fw-bold js-delete-doc rounded-3 px-2 shadow-none" data-id="<?php echo esc_attr($file['id'] ?? ''); ?>" data-flat="<?php echo esc_attr($selected_flat); ?>" data-name="<?php echo esc_attr($file['name']); ?>" data-type="<?php echo esc_attr($file['type']); ?>" style="font-size: 10px;">DELETE</button>
                                                 </div>

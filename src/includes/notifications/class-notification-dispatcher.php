@@ -24,7 +24,13 @@ class SGVX51_Notification_Dispatcher {
         $this->load_providers();
         
         // Hook into Action Scheduler for background processing
-        add_action('sgvx51_async_notification', [$this, 'dispatch_now'], 10, 2);
+        add_action('sgvx51_async_notification', [$this, 'dispatch_now'], 10, 4);
+
+        // Self-Heal Schema
+        if ( is_admin() ) {
+            $this->db->verify_column( 'notification_logs', 'payload', 'longtext' );
+            $this->db->verify_column( 'notification_logs', 'actor_id', 'bigint(20) DEFAULT 0 NOT NULL' );
+        }
     }
 
     /**
@@ -47,20 +53,25 @@ class SGVX51_Notification_Dispatcher {
      * @param int $user_id Recipient WP User ID
      * @param array $data Dynamic data for templates
      * @param bool $async Whether to send immediately or via queue
+     * @param int $actor_id The user ID of the admin who triggered this (optional)
      */
-    public function trigger($event_slug, $user_id, $data = [], $async = true) {
+    public function trigger($event_slug, $user_id, $data = [], $async = true, $actor_id = 0) {
+        if ($actor_id === 0 && is_user_logged_in()) {
+            $actor_id = get_current_user_id();
+        }
+
         if ($async && function_exists('as_enqueue_async_action')) {
-            as_enqueue_async_action('sgvx51_async_notification', [$event_slug, $user_id, $data]);
+            as_enqueue_async_action('sgvx51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
             return true;
         }
 
-        return $this->dispatch_now($event_slug, $user_id, $data);
+        return $this->dispatch_now($event_slug, $user_id, $data, $actor_id);
     }
 
     /**
      * Process the notification delivery.
      */
-    public function dispatch_now($event_slug, $user_id, $data) {
+    public function dispatch_now($event_slug, $user_id, $data, $actor_id = 0) {
         // 1. Get Channels enabled for this event (Admin Default)
         $event = $this->get_event_config($event_slug);
         if (!$event) return false;
@@ -91,7 +102,7 @@ class SGVX51_Notification_Dispatcher {
             $response = $this->providers[$channel_slug]->send($user_id, $content, ['event_slug' => $event_slug]);
 
             // 7. Log result
-            $this->log_notification($user_id, $event_slug, $channel_slug, $response);
+            $this->log_notification($user_id, $event_slug, $channel_slug, $response, $content, $actor_id);
         }
 
         return true;
@@ -144,15 +155,17 @@ class SGVX51_Notification_Dispatcher {
         ];
     }
 
-    private function log_notification($user_id, $event_slug, $channel_slug, $response) {
+    private function log_notification($user_id, $event_slug, $channel_slug, $response, $content = [], $actor_id = 0) {
         $is_error = is_wp_error($response);
         $cost = (!$is_error && isset($response['cost'])) ? $response['cost'] : 0;
 
         $this->db->insert('notification_logs', [
             'user_id'    => $user_id,
+            'actor_id'   => $actor_id,
             'event_slug' => $event_slug,
             'channel'    => $channel_slug,
             'status'     => $is_error ? 'failed' : 'sent',
+            'payload'    => json_encode($content),
             'response'   => $is_error ? $response->get_error_message() : json_encode($response),
             'cost'       => $cost,
             'created_at' => current_time('mysql')

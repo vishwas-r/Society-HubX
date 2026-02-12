@@ -157,6 +157,20 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	public function handle_record_payment() {
 		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
 		
+        $invoice_id = sanitize_text_field( $_POST['invoice_id'] ?? '' );
+        
+        // 1. Synchronize with Request Manager if a pending request exists
+        if ( ! empty( $invoice_id ) && $invoice_id !== 'Total Outstanding' ) {
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $sync_res = $rm->approve_request( $invoice_id );
+            
+            if ( ! is_wp_error( $sync_res ) ) {
+                wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=payment_recorded' ) );
+                exit;
+            }
+        }
+
 		$res = $this->perform_record_payment( $_POST );
 		
 		if ( is_wp_error( $res ) ) {
@@ -182,64 +196,51 @@ class SGVX51_Account_Manager implements SGVX51_Module {
         // Debug Log
         error_log("SGVX51 Payment: Processing Payment for Flat: $flat_no, Amount: $amount_remaining, Inv: $invoice_id");
 
-		$invoices = $this->db->get( 'invoices' );
 		$affected_invoices = [];
 
         // CASE 1: Specific Invoice Payment
 		if ( $invoice_id && $invoice_id !== 'Total Outstanding' ) {
-            foreach ( $invoices as $i => $inv ) {
-                if ( $inv['id'] === $invoice_id ) {
-                    $flat_no = $inv['flat_no'];
-                    $this->apply_payment_to_invoice_record( $invoices[$i], $amount_remaining, $date, $method, $ref );
-                    $affected_invoices[] = $invoices[$i];
-                    break;
-                }
+            $invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $invoice_id ) ) );
+            if ( ! empty( $invoices ) ) {
+                $inv = $invoices[0];
+                $flat_no = $inv['flat_no'];
+                $this->apply_payment_to_invoice_record( $inv, $amount_remaining, $date, $method, $ref );
+                $affected_invoices[] = $inv;
             }
         } 
         // CASE 2: General Payment (Total Outstanding) - FIFO Logic
         elseif ( $flat_no ) {
-            $my_invoices = [];
-            foreach ( $invoices as $i => $inv ) {
-                // Robust comparison: trim and lower case for status
-                $inv_flat = trim((string)($inv['flat_no'] ?? ''));
-                $target_flat = trim((string)$flat_no);
-                $status = strtolower(trim($inv['status'] ?? 'unpaid'));
-                
-                if ( $inv_flat === $target_flat && $status !== 'paid' ) {
-                    $my_invoices[] = &$invoices[$i]; // Reference to the original array
-                }
-            }
+            // New Scalable Fetch: Only unpaid invoices for THIS flat
+            $my_invoices = $this->db->get( 'invoices', array( 
+                'where'   => array( 'flat_no' => $flat_no ),
+                'orderby' => 'month',
+                'order'   => 'ASC'
+            ));
             
-            error_log("SGVX51 Payment: Found " . count($my_invoices) . " unpaid invoices for FIFO.");
-
-            // Sort by month ASC (Oldest First)
-            usort($my_invoices, function($a, $b) {
-                return strtotime(($a['month'] ?? date('Y-m')) . '-01') - strtotime(($b['month'] ?? date('Y-m')) . '-01');
+            // Filter out already PAID invoices in PHP (since DB Router currently only does equality)
+            $unpaid_invoices = array_filter( $my_invoices, function($inv) {
+                return strtolower(trim($inv['status'] ?? '')) !== 'paid';
             });
 
-            foreach ( $my_invoices as &$inv ) {
+            error_log("SGVX51 Payment: Found " . count($unpaid_invoices) . " unpaid invoices for FIFO.");
+
+            foreach ( $unpaid_invoices as $inv ) {
                 if ( $amount_remaining <= 0 ) break;
 
                 // Calculate remaining balance for this invoice
                 $already_paid = 0;
-                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : [];
+                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : array();
                 if ( is_array($payments) ) {
                     foreach ( $payments as $p ) $already_paid += (float)($p['amount'] ?? 0);
                 }
                 $inv_balance = (float)($inv['amount'] ?? 0) - $already_paid;
 
-                if ( $inv_balance <= 0.01 ) { // Tolerance for float precision
-                    // Ensure it is marked paid if balance is basically 0
-                    if(strtolower($inv['status'] ?? '') !== 'paid') {
-                        $inv['status'] = 'paid';
-                        $affected_invoices[] = $inv;
-                    }
+                if ( $inv_balance <= 0.01 ) { 
                     continue; 
                 }
 
                 $payment_towards_this_inv = min( $amount_remaining, $inv_balance );
                 
-                // Only apply if > 0
                 if($payment_towards_this_inv > 0) {
                      $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref );
                      $affected_invoices[] = $inv;

@@ -34,7 +34,7 @@ class SGVX51_DB_Schema {
 			parking_slot varchar(50) DEFAULT '' NOT NULL,
 			parking_status varchar(20) DEFAULT '' NOT NULL,
 			type varchar(20) DEFAULT '' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
@@ -55,9 +55,11 @@ class SGVX51_DB_Schema {
 			roles text NOT NULL, 
 			status varchar(20) DEFAULT 'pending' NOT NULL,
 			maintenance_balance decimal(15,2) DEFAULT 0.00 NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
-			KEY flat_no (flat_no)
+			KEY flat_no (flat_no),
+			KEY wp_user_id (wp_user_id),
+			KEY status (status)
 		) $charset_collate;";
 
 		// 3. Resident History Table
@@ -74,7 +76,7 @@ class SGVX51_DB_Schema {
 			members_count int(5) DEFAULT 1 NOT NULL,
 			blood_group varchar(5) DEFAULT '' NOT NULL,
 			roles text NOT NULL, 
-			vacated_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			vacated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no)
 		) $charset_collate;";
@@ -93,7 +95,7 @@ class SGVX51_DB_Schema {
 			description text NOT NULL,
 			date date NOT NULL,
 			receipt_url text NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
@@ -109,7 +111,7 @@ class SGVX51_DB_Schema {
 			amc_provider varchar(255) DEFAULT '' NOT NULL,
 			amc_phone varchar(20) DEFAULT '' NOT NULL,
 			status varchar(50) DEFAULT 'Active' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
@@ -124,7 +126,7 @@ class SGVX51_DB_Schema {
 			is_pinned tinyint(1) DEFAULT 0 NOT NULL,
 			expiry_date date DEFAULT NULL,
 			attachment_url text DEFAULT '' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY status (status),
 			KEY urgency (urgency)
@@ -140,13 +142,15 @@ class SGVX51_DB_Schema {
 			type varchar(50) DEFAULT 'maintenance' NOT NULL,
 			status varchar(20) DEFAULT 'unpaid' NOT NULL,
 			due_date date DEFAULT '0000-00-00' NOT NULL,
-			payment_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			payment_date datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			payment_ref varchar(100) DEFAULT '' NOT NULL,
 			payments longtext NOT NULL, 
 			description text NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
-			KEY flat_no (flat_no)
+			KEY flat_no (flat_no),
+			KEY status (status),
+			KEY month (month)
 		) $charset_collate;";
 
 		// 8. Receipts Table (for tracking receipt numbers)
@@ -154,7 +158,7 @@ class SGVX51_DB_Schema {
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			receipt_number varchar(50) NOT NULL,
-			generated_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			generated_date datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY invoice_id (invoice_id),
 			UNIQUE KEY receipt_number (receipt_number)
@@ -167,8 +171,8 @@ class SGVX51_DB_Schema {
 			description text NOT NULL,
 			options text NOT NULL,
 			status varchar(20) DEFAULT 'open' NOT NULL,
-			expiry datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			expiry datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
@@ -179,7 +183,7 @@ class SGVX51_DB_Schema {
 			flat_no varchar(50) NOT NULL,
 			user_id bigint(20) NOT NULL,
 			`option` varchar(255) NOT NULL,
-			voted_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			voted_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY poll_id (poll_id),
 			KEY flat_no (flat_no)
@@ -197,7 +201,7 @@ class SGVX51_DB_Schema {
 			model varchar(50) DEFAULT '' NOT NULL,
 			sticker varchar(20) DEFAULT '' NOT NULL,
 			status varchar(20) DEFAULT 'pending' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no)
 		) $charset_collate;";
@@ -211,7 +215,7 @@ class SGVX51_DB_Schema {
 			max_hours int(5) DEFAULT 0 NOT NULL,
 			rules text NOT NULL,
 			status varchar(20) DEFAULT 'active' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
@@ -224,7 +228,7 @@ class SGVX51_DB_Schema {
 			end_time datetime NOT NULL,
 			status varchar(20) DEFAULT 'confirmed' NOT NULL,
 			amount decimal(10,2) DEFAULT 0 NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY facility_id (facility_id),
 			KEY resident_id (resident_id)
@@ -240,22 +244,25 @@ class SGVX51_DB_Schema {
 			flats_served text NOT NULL,
 			profile_photo text NOT NULL,
 			status varchar(20) DEFAULT 'pending' NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
 		// 14. Documents Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_documents (
 			id varchar(50) NOT NULL,
+			flat_no varchar(50) DEFAULT '' NOT NULL,
 			title varchar(255) NOT NULL,
 			category varchar(50) DEFAULT 'other' NOT NULL,
 			file_path text NOT NULL,
-			profile_photo text DEFAULT '' NOT NULL,
 			drive_id varchar(100) DEFAULT '' NOT NULL,
 			access_level varchar(20) DEFAULT 'admin' NOT NULL,
 			uploaded_by bigint(20) NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-			PRIMARY KEY  (id)
+			status varchar(20) DEFAULT 'approved' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY flat_no (flat_no),
+			KEY status (status)
 		) $charset_collate;";
 
 		// 15. Requests Table (Audit Trail)
@@ -269,9 +276,9 @@ class SGVX51_DB_Schema {
 			payload longtext NOT NULL,
 			status varchar(20) DEFAULT 'pending' NOT NULL,
 			admin_note text NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			created_by bigint(20) DEFAULT 0 NOT NULL,
-			processed_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			processed_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			processed_by bigint(20) DEFAULT 0 NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no),
@@ -288,7 +295,9 @@ class SGVX51_DB_Schema {
 			entity_id varchar(50) NOT NULL,
 			details text NOT NULL,
 			created_at datetime NOT NULL,
-			PRIMARY KEY  (id)
+			PRIMARY KEY  (id),
+			KEY user_id (user_id),
+			KEY created_at (created_at)
 		) $charset_collate;";
 
 		// 17. Meta Table (Key-Value Store)
@@ -296,7 +305,7 @@ class SGVX51_DB_Schema {
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			meta_key varchar(255) NOT NULL,
 			meta_value longtext NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY meta_key (meta_key)
 		) $charset_collate;";
@@ -326,7 +335,7 @@ class SGVX51_DB_Schema {
 			content longtext NOT NULL,
 			version int(11) DEFAULT 1 NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY event_slug (event_slug),
 			KEY channel (channel)
@@ -352,10 +361,13 @@ class SGVX51_DB_Schema {
 			channel varchar(20) NOT NULL,
 			status varchar(20) NOT NULL,
 			cost decimal(10,4) DEFAULT 0.0000 NOT NULL,
+			actor_id bigint(20) DEFAULT 0 NOT NULL,
+			payload longtext,
 			response text,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY user_id (user_id),
+			KEY actor_id (actor_id),
 			KEY event_slug (event_slug)
 		) $charset_collate;";
 
@@ -367,7 +379,7 @@ class SGVX51_DB_Schema {
 			title varchar(255) NOT NULL,
 			content text NOT NULL,
 			is_read tinyint(1) DEFAULT 0 NOT NULL,
-			created_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY user_id (user_id),
 			KEY is_read (is_read)

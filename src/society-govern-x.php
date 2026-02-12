@@ -3,7 +3,7 @@
  * Plugin Name: Society GoVernX
  * Plugin URI:  https://www.vishwas.me
  * Description: A Society Management System. Features Facilities, Assets, Expenses, and Document Vault.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Vishwas R
  * Author URI:  https://www.vishwas.me
  * Text Domain: society-govern-x
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SGVX51_VERSION', '1.0.0' );
+define( 'SGVX51_VERSION', '1.0.2' );
 define( 'SGVX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SGVX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SGVX51_PREFIX', 'sgvx51' );
@@ -62,6 +62,7 @@ final class Society_Govern_X {
 	 * Constructor.
 	 */
 	private function __construct() {
+		self::$instance = $this;
 		$this->includes();
 		$this->init_hooks();
 	}
@@ -79,6 +80,7 @@ final class Society_Govern_X {
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-media-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-receipt-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-log-manager.php';
 		
 		// Notifications
 		require_once SGVX51_PLUGIN_DIR . 'includes/notifications/interface-notification-provider.php';
@@ -93,6 +95,7 @@ final class Society_Govern_X {
 		// Initialize
 		$this->db = new SGVX51_DB_Router();
 		$this->notifications = new SGVX51_Notification_Dispatcher( $this->db );
+		new SGVX51_Log_Manager( $this->db );
 
 		// Initialize Admin Settings
 		if ( is_admin() ) {
@@ -166,6 +169,24 @@ final class Society_Govern_X {
 
 		// 4. Access Control
 		add_action( 'admin_init', array( $this, 'redirect_residents_from_admin' ) );
+
+		// 5. Version Check / Migration
+		add_action( 'admin_init', array( $this, 'maybe_update_db' ) );
+
+		// 6. Maintenance Tasks
+		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('sgvx51_daily_log_purge') ) {
+			as_schedule_recurring_action( strtotime('midnight'), DAY_IN_SECONDS, 'sgvx51_daily_log_purge' );
+		}
+	}
+
+	/**
+	 * Run DB Update if version changes.
+	 */
+	public function maybe_update_db() {
+		if ( get_option( 'sgvx51_version' ) !== SGVX51_VERSION ) {
+			SGVX51_DB_Schema::create_tables();
+			update_option( 'sgvx51_version', SGVX51_VERSION );
+		}
 	}
 
 	/**
@@ -223,6 +244,9 @@ final class Society_Govern_X {
 	 * Enqueue Admin Assets.
 	 */
 	public function enqueue_admin_assets() {
+        // 0. Core Utilities (Shared)
+        wp_enqueue_script( 'sgvx51-core', SGVX51_PLUGIN_URL . 'assets/js/sgvx-core.js', array('jquery'), SGVX51_VERSION, true );
+
         // Only load on our plugin pages to avoid breaking global WP Admin
         if ( ! isset($_GET['page']) || strpos($_GET['page'], 'sgvx51') === false ) {
             return;
@@ -242,18 +266,18 @@ final class Society_Govern_X {
         wp_enqueue_style( 'sgvx51_bootstrap_icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', array('sgvx51_bootstrap_css'), '1.11.1' );
 
         // 4. Custom Admin Styles (Final Overrides)
-		wp_enqueue_style( 'sgvx51_admin_layout', SGVX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('sgvx51_bootstrap_css', 'sgvx51_bootstrap_icons'), time() );
-		wp_enqueue_style( 'sgvx51_admin_premium', SGVX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('sgvx51_bootstrap_css', 'sgvx51_admin_layout'), time() );
+		wp_enqueue_style( 'sgvx51_admin_layout', SGVX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('sgvx51_bootstrap_css', 'sgvx51_bootstrap_icons'), SGVX51_VERSION );
+		wp_enqueue_style( 'sgvx51_admin_premium', SGVX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('sgvx51_bootstrap_css', 'sgvx51_admin_layout'), SGVX51_VERSION );
 
 		// 5. Receipt Styling
-		wp_enqueue_style( 'sgvx51_receipt_css', SGVX51_PLUGIN_URL . 'assets/css/receipt.css', array(), time() );
+		wp_enqueue_style( 'sgvx51_receipt_css', SGVX51_PLUGIN_URL . 'assets/css/receipt.css', array(), SGVX51_VERSION );
 
         // 5. External Libs & App JS
         wp_enqueue_script( 'sgvx51-html2canvas', SGVX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
         wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
 		wp_enqueue_script( 'sgvx51-canvasjs', SGVX51_PLUGIN_URL . 'assets/js/lib/canvasjs.min.js', array(), '2.0.8', true );
-        wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
-        wp_enqueue_script( 'sgvx51-admin-app', SGVX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'sgvx51-html2canvas', 'sgvx51-search-init'), time(), true );
+        wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), SGVX51_VERSION, true );
+        wp_enqueue_script( 'sgvx51-admin-app', SGVX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'sgvx51-core', 'sgvx51-html2canvas', 'sgvx51-search-init'), SGVX51_VERSION, true );
 
         // Standard Nonces for global actions
         wp_localize_script( 'sgvx51-admin-app', 'sgvx51_vars', array(
@@ -328,8 +352,8 @@ final class Society_Govern_X {
 			// Config fetched dynamically via AJAX
 		}
 
-		// Notifications View Specific JS
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-notifications' ) {
+		// Notifications View Specific JS (Now also on Settings for Communication tab)
+		if ( isset($_GET['page']) && in_array($_GET['page'], ['sgvx51-activity-hub', 'sgvx51-global-settings']) ) {
 			wp_enqueue_script( 'sgvx51-notifications-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-notifications.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 		}
 	}
@@ -364,8 +388,12 @@ final class Society_Govern_X {
         wp_enqueue_script( 'sgvx51-fuse', SGVX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
         wp_enqueue_script( 'sgvx51-search-init', SGVX51_PLUGIN_URL . 'assets/js/sgvx-search-init.js', array('sgvx51-fuse'), time(), true );
 
+        // 0. Core Utilities
+        wp_enqueue_script( 'sgvx51-core', SGVX51_PLUGIN_URL . 'assets/js/sgvx-core.js', array('jquery'), SGVX51_VERSION, true );
+
         // 4. Dashboard Logic
-        wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-bootstrap', 'sgvx51-canvasjs', 'sgvx51-search-init'), time(), true );
+        wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-core', 'sgvx51-bootstrap', 'sgvx51-canvasjs', 'sgvx51-search-init'), SGVX51_VERSION, true );
+        wp_enqueue_script( 'sgvx51-documents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-documents.js', array('jquery', 'sgvx51-core', 'sgvx51-bootstrap'), SGVX51_VERSION, true );
 
 		// Localize AJAX URL for frontend (needed for resident login)
 		wp_localize_script( 'sgvx51-bootstrap', 'sgvx51_frontend', array(

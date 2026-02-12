@@ -106,12 +106,12 @@
                     try {
                         // We will send form via fetch because files need to be passed
                         const formData = new FormData(uploadForm);
-                        // Ensure action is present
-                        if (!formData.get('action')) formData.append('action', 'sgvx51_upload_doc');
+                        // Ensure action is correct
+                        formData.set('action', 'sgvx51_upload_doc');
 
-                        // Determine nonce
+                        // Determine nonce (prioritize Config.nonce if available)
                         const nonce = Config.nonce;
-                        if (nonce) formData.append('_wpnonce', nonce);
+                        if (nonce) formData.set('_wpnonce', nonce);
 
                         const response = await fetch(ajaxurl, { method: 'POST', body: formData });
                         const text = await response.text();

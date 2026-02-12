@@ -83,6 +83,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     <option value="vehicles">Vehicles</option>
                     <option value="daily_help">Staff</option>
                     <option value="accounts">Finance / Payments</option>
+                    <option value="documents">Documents</option>
                 </select>
             </div>
         </div>

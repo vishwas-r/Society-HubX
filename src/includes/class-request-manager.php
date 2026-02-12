@@ -204,6 +204,7 @@ class SGVX51_Request_Manager {
                     'staff'      => 'daily_help',
                     'staffs'     => 'daily_help',
                     'daily_help' => 'daily_help',
+                    'documents'  => 'documents',
                 );
                 $target_table = $table_map[$module_slug] ?? '';
                 if ( $target_table ) {
@@ -255,7 +256,7 @@ class SGVX51_Request_Manager {
                         'admin_name'    => $admin_name,
                         'time'          => $time_formatted,
                         'details'       => "Your request for " . $module_slug . " was approved."
-                    ]);
+                    ], true, $update_data['processed_by']);
                 }
             }
 
@@ -296,9 +297,9 @@ class SGVX51_Request_Manager {
 		$action = $target_request['request_type'];
 		$entity_id = $target_request['entity_id'] ?? '';
 
-		// Status Update Logic: If it was an 'add' request, update the record status to 'rejected' in the module table 
+		// Status Update Logic: If it was an 'add' or 'upload' request, update the record status to 'rejected' in the module table 
 		// so it remains visible to the resident as rejected, rather than disappearing.
-		if ( $action === 'add' && ! empty( $entity_id ) ) {
+		if ( in_array( $action, array( 'add', 'upload' ) ) && ! empty( $entity_id ) ) {
 			$table_map = array(
 				'vehicles'   => 'vehicles',
 				'vehicle'    => 'vehicles',
@@ -307,11 +308,14 @@ class SGVX51_Request_Manager {
 				'staff'      => 'daily_help',
 				'staffs'     => 'daily_help',
 				'daily_help' => 'daily_help',
-				'facilities' => 'bookings'
+				'facilities' => 'bookings',
+				'documents'  => 'documents'
 			);
 
 			$table_name = $table_map[$module_slug] ?? '';
 			if ( $table_name ) {
+				$new_status = ($module_slug === 'documents' || $action === 'reject_delete') ? 'rejected' : 'rejected'; 
+                // Mostly status 'rejected' is fine for all
 				$this->db->update( $table_name, array( 'status' => 'rejected' ), array( 'id' => $entity_id ) );
 			}
 		} elseif ( $action === 'book' && $module_slug === 'facilities' && ! empty( $entity_id ) ) {
@@ -353,7 +357,7 @@ class SGVX51_Request_Manager {
                         'admin_name'    => $admin_name,
                         'time'          => $time_formatted,
                         'admin_note'    => $note ?: 'No specific reason provided.'
-                    ]);
+                    ], true, $update_data['processed_by']);
                 }
             }
 		}

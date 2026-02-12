@@ -125,74 +125,8 @@ class SGVX51_Frontend_Dashboard {
 	 * Handle Document Upload (Frontend)
 	 */
 	public function handle_doc_upload() {
-		if ( ! is_user_logged_in() || ! check_admin_referer( 'sgvx51_upload_doc_nonce' ) ) {
-			wp_die( 'Security check failed' );
-		}
-
-		$user_id = get_current_user_id();
-		
-		// 1. Find Resident & Flat No
-		$residents = $this->db->get( 'residents' );
-		$flat_no = '';
-		
-		foreach ( $residents as $r ) {
-			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
-				$flat_no = $r['flat_no'];
-				break;
-			}
-		}
-
-		if ( empty( $flat_no ) ) {
-			wp_die( 'Error: No Flat associated with your account.' );
-		}
-
-		// 2. Handle Upload
-		$doc_name = sanitize_text_field( $_POST['doc_name'] );
-		$file = $_FILES['doc_file'];
-
-		if ( $file['error'] !== 0 ) {
-			wp_die( 'File upload error.' );
-		}
-		
-		// Upload to Drive/Local
-		$folder_id = $this->drive->ensure_flat_folder( $flat_no );
-		if ( is_wp_error( $folder_id ) ) {
-			wp_die( 'Could not create/find folder: ' . $folder_id->get_error_message() );
-		}
-
-		// Fix: Use upload_to_folder which accepts ($folder_id, $file_array)
-		// Returns URL on success or WP_Error
-		$upload_result = $this->drive->upload_to_folder( $folder_id, $file );
-		
-		if ( is_wp_error( $upload_result ) ) {
-			wp_die( 'Upload Failed: ' . $upload_result->get_error_message() );
-		}
-
-		// Update Metadata
-		$all_docs = $this->db->get( 'documents' );
-		
-		// upload_to_folder returns the Web Link (URL) directly
-		$file_url = $upload_result;
-		
-		// For ID, we can generate a unique one or use what Drive might return if we refactor. 
-		// Local/Drive Manager currently doesn't return ID easily in unified way, so let's use uniqid for our Metadata DB.
-		$doc_id = uniqid('doc_');
-
-		$new_doc = array(
-			'id'         => $doc_id,
-			'name'       => $doc_name,
-			'flat_no'    => $flat_no,
-			'file_id'    => $doc_id, // Virtual ID
-			'url'        => $file_url,
-			'status'     => 'pending',
-			'created_by' => $user_id,
-			'created_at' => current_time( 'mysql' ),
-		);
-
-		$this->db->insert( 'documents', $new_doc );
-
-		wp_redirect( wp_get_referer() . '?doc_uploaded=1&pending=1' );
-		exit;
+		// Handled by Document_Manager::handle_upload now. 
+		// We keep this method if needed for other logic, but removed action hooks to avoid conflict.
 	}
 
 	/**
@@ -381,48 +315,50 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	private function get_my_documents( $flat_no ) {
-		// 1. Fetch Managed Docs (from DB Metadata)
-		$all_meta_docs = $this->db->get( 'documents' );
+		// 1. Fetch Managed Docs (from DB Metadata) - OPTIMIZED
+		$args = array(
+			'where' => array( 'flat_no' => $flat_no )
+		);
+		$all_meta_docs = $this->db->get( 'documents', $args );
+		
 		$my_docs = array();
-		$known_urls = array(); // Track ALL DB entries for this flat, even if filtered out
+		$known_paths = array(); // Track ALL DB entries for this flat
 
 		foreach ( $all_meta_docs as $doc ) {
-			if ( isset($doc['flat_no']) && $doc['flat_no'] === $flat_no ) {
-				$known_urls[] = $doc['url']; // Mark as known
-				
-				// User Rule: "pending one should not be listed for resident" (Unless rejected)
-				if ( isset($doc['status']) && $doc['status'] === 'pending' ) {
-					continue;
-				}
-				if ( ($doc['status']??'') !== 'deleted' ) {
-					$my_docs[] = $doc;
-				}
+			$path = $doc['file_path'] ?? ($doc['url'] ?? '');
+			$known_paths[] = $path; // Mark as known
+			
+			// User Rule: "pending one should not be listed for resident" (Unless rejected)
+			// REVISED: Show pending but with restricted view in template.
+			if ( ($doc['status']??'') !== 'deleted' ) {
+				// Normalize for template
+				$doc['name'] = $doc['title'] ?? ($doc['name'] ?? 'Unnamed');
+				$doc['url']  = $doc['file_path'] ?? ($doc['url'] ?? '#');
+				$my_docs[] = $doc;
 			}
 		}
 
 		// 2. Fetch Physical Files (Admin Uploads / Legacy)
-		// These are files directly in the folder but not in our metadata DB.
 		$folder_id = $this->drive->ensure_flat_folder( $flat_no );
 		if ( ! is_wp_error( $folder_id ) ) {
 			$raw_files = $this->drive->list_files( $folder_id );
 			
 			if ( ! empty( $raw_files ) ) {
 				foreach ( $raw_files as $f ) {
-					// Check if this URL is already in our metadata list (using robust decoding)
+					$f_url = $f['url'] ?? '';
 					$is_known = false;
-					foreach($known_urls as $kurl) {
-						if(urldecode($kurl) === urldecode($f['url'])) {
+					foreach($known_paths as $kpath) {
+						if(urldecode($kpath) === urldecode($f_url)) {
 							$is_known = true; break;
 						}
 					}
 
 					if ( ! $is_known ) {
-						// It's a legacy/admin file (truly unknown to DB). Add it.
 						$my_docs[] = array(
 							'id'      => $f['id'],
 							'name'    => $f['name'],
 							'url'     => $f['url'],
-							'status'  => 'approved', // Implicitly approved
+							'status'  => 'approved',
 							'flat_no' => $flat_no
 						);
 					}
@@ -430,7 +366,6 @@ class SGVX51_Frontend_Dashboard {
 			}
 		}
 
-		// Sort: By Name
 		usort( $my_docs, function($a, $b) {
 			return strnatcmp( $a['name'], $b['name'] );
 		});
@@ -439,13 +374,11 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	private function get_my_bookings( $flat_no ) {
-		$all = $this->db->get( 'bookings' );
-		$mine = array();
-		foreach ( $all as $b ) {
-			if ( $b['resident_id'] === $flat_no ) {
-				$mine[] = $b;
-			}
-		}
+		$args = array(
+			'where' => array( 'resident_id' => $flat_no ) // Assuming resident_id stores flat_no based on original code
+		);
+		$mine = $this->db->get( 'bookings', $args );
+		
 		// Sort Newest First
 		return array_reverse( $mine );
 	}
@@ -1215,18 +1148,20 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	private function get_my_invoices( $flat_no ) {
-		$all = $this->db->get( 'invoices' );
-		$mine = array();
-		foreach ( $all as $inv ) {
-			if ( (string)$inv['flat_no'] === (string)$flat_no ) {
-				$mine[] = $inv;
-			}
-		}
-		// Sort Newest First
-		usort($mine, function($a, $b) {
+		// Optimized Query
+		$args = array(
+			'where' => array( 'flat_no' => $flat_no ),
+			'orderby' => 'month',
+			'order' => 'DESC'
+		);
+		$invoices = $this->db->get( 'invoices', $args );
+		
+		// Sort manually just in case JSON mode or other sort requirements matches exact logic
+		usort( $invoices, function($a, $b) {
 			return strtotime($b['created_at']) - strtotime($a['created_at']);
 		});
-		return $mine;
+		
+		return $invoices;
 	}
 
 	private function get_expenses_filtered() {

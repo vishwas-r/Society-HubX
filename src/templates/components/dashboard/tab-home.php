@@ -282,16 +282,21 @@
                                 <p class="text-muted mb-3" style="font-size: 0.7rem;">Cloud Storage</p>
 
                                 <div class="d-flex justify-content-between align-items-center border-top border-light pt-2">
-                                    <a href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" class="small text-primary fw-semibold text-decoration-none">View</a>
+                                    <?php if ( ! isset( $d['status'] ) || $d['status'] === 'approved' ) : ?>
+                                        <a href="<?php echo esc_url( $d['url'] ); ?>" target="_blank" class="small text-primary fw-semibold text-decoration-none">View</a>
+                                    <?php else: ?>
+                                        <span class="small text-muted cursor-not-allowed" title="Visibility restricted until approval">View</span>
+                                    <?php endif; ?>
+
                                     <?php if ( isset( $d['status'] ) && $d['status'] === 'pending' ) : ?>
-                                         <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=sgvx51_frontend_delete_doc&doc_id='.$d['id']), 'sgvx51_delete_doc_nonce' ); ?>" 
+                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=sgvx51_delete_doc&doc_id='.$d['id']), 'sgvx51_document_nonce' ); ?>" 
                                            class="small text-danger fw-medium text-decoration-none"
                                            onclick="return confirm('Delete this pending document?')">Delete</a>
                                     <?php elseif(isset($d['status']) && $d['status'] === 'deletion_pending'): ?>
                                         <span class="small text-warning fw-medium">Deleting...</span>
                                     <?php else: ?>
-                                         <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=sgvx51_request_delete_doc&doc_id='.$d['id']), 'sgvx51_delete_doc_nonce' ); ?>" 
-                                           class="small text-secondary hover-text-danger fw-medium text-decoration-none"
+                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=sgvx51_delete_doc&doc_id='.$d['id']), 'sgvx51_document_nonce' ); ?>" 
+                                           class="small text-danger fw-medium text-decoration-none"
                                            onclick="return confirm('Request Admin to delete this document?')">Delete</a>
                                     <?php endif; ?>
                                 </div>
