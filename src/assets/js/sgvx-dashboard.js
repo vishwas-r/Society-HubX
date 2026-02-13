@@ -550,6 +550,81 @@
             });
         }
 
+        // 4. Poll Vote Form Submit & Refined Toggles
+        const dashboard = document.getElementById('tab-polls');
+        if (dashboard) {
+            dashboard.addEventListener('click', function (e) {
+                // Change Vote Click
+                if (e.target.classList.contains('js-change-vote')) {
+                    const container = e.target.closest('[id^="poll-container-"]');
+                    if (container) {
+                        container.querySelector('.js-poll-results').classList.add('d-none');
+                        container.querySelector('.js-poll-form').classList.remove('d-none');
+                    }
+                }
+
+                // Cancel Change Click
+                if (e.target.classList.contains('js-cancel-change')) {
+                    const container = e.target.closest('[id^="poll-container-"]');
+                    if (container) {
+                        container.querySelector('.js-poll-form').classList.add('d-none');
+                        container.querySelector('.js-poll-results').classList.remove('d-none');
+                    }
+                }
+            });
+
+            dashboard.addEventListener('submit', function (e) {
+                if (e.target.classList.contains('js-poll-vote-form')) {
+                    e.preventDefault();
+                    const form = e.target;
+                    const btn = form.querySelector('button[type="submit"]');
+                    const originalText = btn.innerText;
+                    btn.disabled = true;
+                    btn.innerText = 'Casting...';
+
+                    const formData = new FormData(form);
+
+                    fetch(ajaxurl, {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                if (window.sgvxShowToast) {
+                                    window.sgvxShowToast(data.data.message || 'Vote cast successfully');
+                                }
+
+                                // Refresh only the polls tab content
+                                fetch(window.location.href)
+                                    .then(res => res.text())
+                                    .then(html => {
+                                        const parser = new DOMParser();
+                                        const doc = parser.parseFromString(html, 'text/html');
+                                        const newContent = doc.querySelector('#tab-polls').innerHTML;
+                                        document.querySelector('#tab-polls').innerHTML = newContent;
+                                    })
+                                    .catch(() => window.location.reload());
+                            } else {
+                                const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
+                                if (window.sgvxShowToast) {
+                                    window.sgvxShowToast(msg, 'error');
+                                } else {
+                                    alert('Error: ' + msg);
+                                }
+                                btn.disabled = false;
+                                btn.innerText = originalText;
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Fetch Error:', err);
+                            btn.disabled = false;
+                            btn.innerText = originalText;
+                        });
+                }
+            });
+        }
+
         // --- Helper to open Modal (Tailwind/Custom) ---
         function openModal(modalId) {
             const m = document.getElementById(modalId);

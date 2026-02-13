@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Poll_Manager {
+class SGVX51_Poll_Manager implements SGVX51_Module {
 
 	private $db;
 
@@ -24,7 +24,40 @@ class SGVX51_Poll_Manager {
 
         // Frontend Actions
         add_action( 'admin_post_sgvx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'wp_ajax_sgvx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+
+        // Register Module
+        add_filter( 'sgvx51_get_module_polls', array( $this, 'get_instance' ) );
 	}
+
+    public function get_instance() {
+        return $this;
+    }
+
+    public function get_module_slug() {
+        return 'polls';
+    }
+
+    /**
+     * Handle incoming requests from Request Manager
+     */
+    public function execute_request( $action, $payload ) {
+        $payload = (array) $payload;
+        if ( $action === 'cast_vote' ) {
+            $vote_data = array(
+                'poll_id'    => $payload['poll_id'],
+                'flat_no'    => $payload['flat_no'],
+                'user_id'    => $payload['user_id'],
+                'option'     => $payload['vote_option'],
+                'voted_at'   => $payload['voted_at'] ?? current_time( 'mysql' )
+            );
+
+            // Primary Key 'id' is AUTO_INCREMENT in MySQL schema, 
+            // DB_Router handles it or we can let it be.
+            return $this->db->insert('votes', $vote_data);
+        }
+        return new WP_Error( 'invalid_action', 'Unknown action' );
+    }
 
 	/**
 	 * Create a new Poll.
@@ -114,41 +147,40 @@ class SGVX51_Poll_Manager {
 	 * Cast a Vote (Frontend).
 	 */
 	public function handle_cast_vote() {
-		if ( ! is_user_logged_in() || ! check_admin_referer( 'sgvx51_vote_nonce' ) ) {
-			wp_die( 'Unauthorized' );
-		}
+		if ( wp_doing_ajax() ) {
+            check_ajax_referer( 'sgvx51_vote_nonce' );
+        } else {
+            if ( ! is_user_logged_in() || ! check_admin_referer( 'sgvx51_vote_nonce' ) ) {
+                wp_die( 'Unauthorized' );
+            }
+        }
 
 		$poll_id = sanitize_text_field( $_POST['poll_id'] );
 		$option  = sanitize_text_field( $_POST['vote_option'] );
         $user_id = get_current_user_id();
 
-        // 1. Get Resident/Flat ID (Security focus)
+        // 1. Get Resident/Flat ID
         $flat_no = $this->get_user_flat_no( $user_id );
         if ( ! $flat_no ) {
+            if ( wp_doing_ajax() ) wp_send_json_error(['message' => 'Your account is not linked to a Flat.']);
             wp_die( 'Error: Your account is not linked to a Flat.' );
         }
 
-        // 2. Already Voted? (Handle as Update)
-        $votes = $this->db->get( 'votes' );
-        $existing_vote_index = -1;
-        foreach ( $votes as $idx => $v ) {
-            if ( $v['poll_id'] === $poll_id && $v['flat_no'] === $flat_no ) {
-                $existing_vote_index = $idx;
-                break;
-            }
-        }
+        // 2. Already Voted? (Handle as Direct Update/Insert)
+        $existing_vote = $this->get_user_vote( $poll_id, $flat_no );
 
         // 3. Security Check: Is Poll Open/Expired?
         $poll = $this->get_poll( $poll_id );
         if ( ! $poll || $poll['status'] !== 'open' ) {
+            if ( wp_doing_ajax() ) wp_send_json_error(['message' => 'This poll is closed or invalid.']);
             wp_die( 'Error: This poll is closed or invalid.' );
         }
-        if ( ! empty($poll['expiry']) && strtotime($poll['expiry']) < time() ) {
+        if ( ! empty($poll['expiry']) && $poll['expiry'] !== '1970-01-01 00:00:01' && strtotime($poll['expiry']) < time() ) {
+            if ( wp_doing_ajax() ) wp_send_json_error(['message' => 'This poll has expired.']);
             wp_die( 'Error: This poll has expired.' );
         }
 
-        // 4. Save/Update Vote
-        // 4. Save/Update Vote
+        // 4. Save/Update Vote Directly
         $vote_data = array(
             'poll_id'    => $poll_id,
             'flat_no'    => $flat_no,
@@ -157,19 +189,21 @@ class SGVX51_Poll_Manager {
             'voted_at'   => current_time( 'mysql' )
         );
 
-        if ( $existing_vote_index !== -1 ) {
-            // Update
-             $v = $votes[$existing_vote_index];
-             if(isset($v['id'])) {
-                 $this->db->update('votes', $vote_data, ['id' => $v['id']]);
-             }
+        if ( $existing_vote ) {
+            $res = $this->db->update('votes', $vote_data, ['id' => $existing_vote['id']]);
+            $msg = 'Vote updated successfully.';
         } else {
-            // Insert
-            $vote_data['id'] = uniqid('vote_'); // Ensure ID for future
-            $this->db->insert('votes', $vote_data);
+            $res = $this->db->insert('votes', $vote_data);
+            $msg = 'Vote cast successfully.';
         }
 
-        wp_redirect( wp_get_referer() . '#tab-polls' ); // Return to polls tab
+        if ( wp_doing_ajax() ) {
+            if ( is_wp_error( $res ) ) wp_send_json_error(['message' => $res->get_error_message()]);
+            wp_send_json_success(['message' => $msg]);
+            exit;
+        }
+
+        wp_redirect( wp_get_referer() . '#tab-polls' ); 
         exit;
 	}
 
@@ -183,7 +217,8 @@ class SGVX51_Poll_Manager {
         if ( ! $poll ) return array();
 
         $results = array();
-        foreach ( $poll['options'] as $opt ) {
+        $options = is_string($poll['options']) ? json_decode($poll['options'], true) : $poll['options'];
+        foreach ( ($options ?? []) as $opt ) {
             $results[$opt] = 0;
         }
 
