@@ -99,7 +99,10 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     <?php elseif($is_profile): ?>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
-            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($flat_no); ?>" disabled>
+            <?php 
+            $display_flat = Society_Govern_X::get_instance()->db->get_flat_display_name( $flat_no );
+            ?>
+            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($display_flat); ?>" disabled>
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
         </div>
         <div class="col-md-6">

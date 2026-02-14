@@ -421,4 +421,29 @@ class SGVX51_DB_Router {
 
 		return false;
 	}
+
+	/**
+	 * Get a formatted flat name (e.g. A-101) by Flat ID.
+	 *
+	 * @param string $flat_id The Internal Flat ID.
+	 * @return string Formatted flat name or the ID if not found.
+	 */
+	public function get_flat_display_name( $flat_id ) {
+		if ( empty( $flat_id ) ) return 'N/A';
+		
+		$flats = $this->get( 'flats' );
+		foreach ( $flats as $f ) {
+			if ( $f['id'] === $flat_id ) {
+				$block = ! empty( $f['block'] ) ? $f['block'] : '';
+				$num = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
+				
+				if ( ! empty( $block ) ) {
+					return $block . '-' . $num;
+				}
+				return $num;
+			}
+		}
+		
+		return $flat_id;
+	}
 }

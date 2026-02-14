@@ -12,7 +12,7 @@ $r = $data['resident'] ?? [];
         <div>
             <h1 class="h4 fw-bold text-dark mb-1">Hello, <?php echo esc_html( $r['name'] ?? 'Resident' ); ?> 👋</h1>
             <p class="text-secondary d-flex align-items-center gap-2 small">
-                <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( $r['flat_no'] ?? 'N/A' ); ?></span>
+                <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( Society_Govern_X::get_instance()->db->get_flat_display_name( $r['flat_no'] ?? '' ) ); ?></span>
                 <span class="text-muted">•</span>
                 <span><?php echo esc_html( ucfirst( $r['type'] ?? 'Resident' ) ); ?></span>
                 <?php if(!empty($r['email'])): ?>
