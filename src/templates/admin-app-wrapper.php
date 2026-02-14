@@ -35,6 +35,7 @@ $nav_items = [
     'dashboard' => ['Dashboard', admin_url('admin.php?page=sgvx51-settings'), 'bi-speedometer2'],
     'flats'     => ['Flats & Units', admin_url('admin.php?page=sgvx51-flats'), 'bi-building'],
     'residents' => ['Residents', admin_url('admin.php?page=sgvx51-residents'), 'bi-people'],
+    'rules'     => ['Rules & Regulations', admin_url('admin.php?page=sgvx51-rules'), 'bi-book'],
     'vehicles'  => ['Vehicles', admin_url('admin.php?page=sgvx51-vehicles'), 'bi-car-front'],
     'staff'     => ['Staff & Help', admin_url('admin.php?page=sgvx51-staff'), 'bi-shield-shaded'],
     'documents' => ['Documents', admin_url('admin.php?page=sgvx51-documents'), 'bi-file-earmark-text'],

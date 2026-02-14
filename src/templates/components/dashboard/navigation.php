@@ -12,6 +12,7 @@
         <button id="btn-tab-expenses" data-tab-target="#tab-expenses" class="tab-btn">Society Finance</button>
         <button id="btn-tab-facilities" data-tab-target="#tab-facilities" class="tab-btn">Facilities</button>
         <button id="btn-tab-polls" data-tab-target="#tab-polls" class="tab-btn">Polls</button>
+        <button id="btn-tab-rules" data-tab-target="#tab-rules" class="tab-btn">Rules</button>
         <button id="btn-tab-notices" data-tab-target="#tab-notices" class="tab-btn">Notices</button>
         <button id="btn-tab-notifications" data-tab-target="#tab-notifications" class="tab-btn d-flex align-items-center gap-1">
             Notifications

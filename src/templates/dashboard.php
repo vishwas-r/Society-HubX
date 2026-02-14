@@ -94,6 +94,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
     <?php include 'components/dashboard/tab-expenses.php'; ?>
     <?php include 'components/dashboard/tab-facilities.php'; ?>
     <?php include 'components/dashboard/tab-polls.php'; ?>
+    <?php include 'components/dashboard/tab-rules.php'; ?>
 
 
 <!-- Modals are moved to footer or separate files usually, but kept inline for now with Bootstrap Modal structure -->

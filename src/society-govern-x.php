@@ -146,6 +146,9 @@ final class Society_Govern_X {
         require_once SGVX51_PLUGIN_DIR . 'modules/staff/class-staff-manager.php';
 		new SGVX51_Staff_Manager();
 
+		require_once SGVX51_PLUGIN_DIR . 'modules/rules/class-rule-manager.php';
+		new SGVX51_Rule_Manager();
+
 		// Frontend
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-frontend-dashboard.php';
 		new SGVX51_Frontend_Dashboard();

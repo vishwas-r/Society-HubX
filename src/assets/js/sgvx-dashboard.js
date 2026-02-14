@@ -16,7 +16,7 @@
         }
 
         // --- 0. Tab Switching Logic (Migrated from frontend.js) ---
-        const tabs = ['home', 'notices', 'facilities', 'accounts', 'expenses', 'polls', 'community', 'directory', 'notifications']; // Added directory, notifications
+        const tabs = ['home', 'notices', 'facilities', 'accounts', 'expenses', 'polls', 'rules', 'community', 'directory', 'notifications']; // Added directory, notifications, rules
 
         function activateTab(tabName) {
             const btnId = 'btn-tab-' + tabName;

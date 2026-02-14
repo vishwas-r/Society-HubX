@@ -249,7 +249,112 @@ class SGVX51_DB_Schema {
 			PRIMARY KEY  (id)
 		) $charset_collate;";
 
-		// 14. Documents Table
+		// 14. Rules Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rules (
+			id varchar(50) NOT NULL,
+			title varchar(255) NOT NULL,
+			slug varchar(255) NOT NULL,
+			content longtext NOT NULL,
+			category varchar(50) DEFAULT 'general' NOT NULL,
+			priority varchar(20) DEFAULT 'medium' NOT NULL,
+			tags text NOT NULL,
+			status varchar(20) DEFAULT 'draft' NOT NULL,
+			effective_date date DEFAULT NULL,
+			expiry_date date DEFAULT NULL,
+			requires_acknowledgment tinyint(1) DEFAULT 1 NOT NULL,
+			acknowledgment_deadline date DEFAULT NULL,
+			fine_amount decimal(10,2) DEFAULT 0.00 NOT NULL,
+			parent_id varchar(50) DEFAULT '' NOT NULL,
+			version int(11) DEFAULT 1 NOT NULL,
+			created_by bigint(20) NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_by bigint(20) DEFAULT 0 NOT NULL,
+			published_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY status (status),
+			KEY category (category),
+			KEY effective_date (effective_date),
+			UNIQUE KEY slug (slug)
+		) $charset_collate;";
+
+		// 15. Rule Versions Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_versions (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			rule_id varchar(50) NOT NULL,
+			version int(11) NOT NULL,
+			title varchar(255) NOT NULL,
+			content longtext NOT NULL,
+			change_summary text NOT NULL,
+			changed_by bigint(20) NOT NULL,
+			changed_at datetime NOT NULL,
+			PRIMARY KEY  (id),
+			KEY rule_id (rule_id),
+			KEY version (version)
+		) $charset_collate;";
+
+		// 16. Rule Acknowledgments Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_acknowledgments (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			rule_id varchar(50) NOT NULL,
+			rule_version int(11) NOT NULL,
+			resident_id varchar(50) NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			acknowledged_at datetime NOT NULL,
+			ip_address varchar(45) DEFAULT '' NOT NULL,
+			user_agent text NOT NULL,
+			signature_data text NOT NULL,
+			PRIMARY KEY  (id),
+			KEY rule_id (rule_id),
+			KEY resident_id (resident_id),
+			KEY flat_no (flat_no),
+			UNIQUE KEY unique_acknowledgment (rule_id, rule_version, resident_id)
+		) $charset_collate;";
+
+		// 17. Rule Violations Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_violations (
+			id varchar(50) NOT NULL,
+			rule_id varchar(50) NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			resident_id varchar(50) DEFAULT '' NOT NULL,
+			violation_date datetime NOT NULL,
+			description text NOT NULL,
+			evidence_urls text NOT NULL,
+			fine_amount decimal(10,2) DEFAULT 0.00 NOT NULL,
+			status varchar(20) DEFAULT 'pending' NOT NULL,
+			appeal_reason text NOT NULL,
+			appeal_status varchar(20) DEFAULT '' NOT NULL,
+			payment_status varchar(20) DEFAULT 'unpaid' NOT NULL,
+			payment_date datetime DEFAULT NULL,
+			payment_ref varchar(100) DEFAULT '' NOT NULL,
+			reported_by bigint(20) NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			resolved_at datetime DEFAULT NULL,
+			resolved_by bigint(20) DEFAULT 0 NOT NULL,
+			admin_notes text NOT NULL,
+			PRIMARY KEY  (id),
+			KEY rule_id (rule_id),
+			KEY flat_no (flat_no),
+			KEY status (status),
+			KEY payment_status (payment_status)
+		) $charset_collate;";
+
+		// 18. Rule Categories Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_categories (
+			id varchar(50) NOT NULL,
+			name varchar(100) NOT NULL,
+			slug varchar(100) NOT NULL,
+			description text NOT NULL,
+			icon varchar(50) DEFAULT 'bi-file-text' NOT NULL,
+			color varchar(20) DEFAULT '#6c757d' NOT NULL,
+			display_order int(11) DEFAULT 0 NOT NULL,
+			is_active tinyint(1) DEFAULT 1 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY slug (slug)
+		) $charset_collate;";
+
+		// 19. Documents Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_documents (
 			id varchar(50) NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
@@ -418,7 +523,15 @@ class SGVX51_DB_Schema {
 			['event_slug' => 'sos_alert', 'module' => 'security', 'default_channels' => 'inapp,whatsapp,email'],
 			['event_slug' => 'notice_published', 'module' => 'notices', 'default_channels' => 'inapp,email'],
 			['event_slug' => 'request_approved', 'module' => 'residents', 'default_channels' => 'inapp,email'],
-			['event_slug' => 'request_rejected', 'module' => 'residents', 'default_channels' => 'inapp,email']
+			['event_slug' => 'request_rejected', 'module' => 'residents', 'default_channels' => 'inapp,email'],
+			// Rules & Regulations Events
+			['event_slug' => 'rule_published', 'module' => 'rules', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'rule_updated', 'module' => 'rules', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'acknowledgment_reminder', 'module' => 'rules', 'default_channels' => 'email,whatsapp'],
+			['event_slug' => 'violation_reported', 'module' => 'rules', 'default_channels' => 'inapp,email,whatsapp'],
+			['event_slug' => 'violation_resolved', 'module' => 'rules', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'appeal_approved', 'module' => 'rules', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'appeal_rejected', 'module' => 'rules', 'default_channels' => 'inapp,email']
 		];
 
 		foreach ($default_events as $event) {
@@ -449,9 +562,32 @@ class SGVX51_DB_Schema {
 			['event_slug' => 'request_approved', 'channel' => 'inapp', 'subject' => 'Request Approved', 'content' => 'Your request for {request_type} was approved by {admin_name} on {time}.'],
 			['event_slug' => 'request_approved', 'channel' => 'email', 'subject' => 'Request Approved: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was approved by {admin_name} on {time}.<br><br>Details: {details}'],
 			
-			// Request Rejection Templates
+			//Request Rejection Templates
 			['event_slug' => 'request_rejected', 'channel' => 'inapp', 'subject' => 'Request Rejected', 'content' => 'Your request for {request_type} was rejected by {admin_name} on {time}.'],
-			['event_slug' => 'request_rejected', 'channel' => 'email', 'subject' => 'Request Rejected: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was rejected by {admin_name} on {time}.<br><br>Admin Note: {admin_note}']
+			['event_slug' => 'request_rejected', 'channel' => 'email', 'subject' => 'Request Rejected: {request_type}', 'content' => 'Hello {resident_name},<br><br>Your request for <b>{request_type}</b> was rejected by {admin_name} on {time}.<br><br>Admin Note: {admin_note}'],
+			
+			// Rules & Regulations Templates
+			['event_slug' => 'rule_published', 'channel' => 'inapp', 'subject' => 'New Rule Published', 'content' => 'A new rule "{title}" has been published. Please review and acknowledge.'],
+			['event_slug' => 'rule_published', 'channel' => 'email', 'subject' => 'New Society Rule: {title}', 'content' => 'Hello {resident_name},<br><br>A new rule titled <b>{title}</b> has been published.<br><br>Please login to review and acknowledge this rule by {deadline}.'],
+			
+			['event_slug' => 'rule_updated', 'channel' => 'inapp', 'subject' => 'Rule Updated', 'content' => 'Rule "{title}" has been updated to version {version}. Please review.'],
+			['event_slug' => 'rule_updated', 'channel' => 'email', 'subject' => 'Updated Rule: {title}', 'content' => 'Hello {resident_name},<br><br>The rule <b>{title}</b> has been updated to version {version}.<br><br>Please review the changes at your earliest convenience.'],
+			
+			['event_slug' => 'acknowledgment_reminder', 'channel' => 'email', 'subject' => 'Pending Rule Acknowledgments - Action Required', 'content' => 'Hello {resident_name},<br><br>You have {count} pending rule acknowledgments.<br>Deadline: {deadline}<br><br>Please login to acknowledge these rules.'],
+			['event_slug' => 'acknowledgment_reminder', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SGVX Reminder: You have {count} pending rule acknowledgments. Deadline: {deadline}. Please login to acknowledge.'],
+			
+			['event_slug' => 'violation_reported', 'channel' => 'inapp', 'subject' => 'Violation Reported', 'content' => 'A violation of "{rule_title}" has been reported against your flat. Fine: ₹{amount}'],
+			['event_slug' => 'violation_reported', 'channel' => 'email', 'subject' => 'Rule Violation Reported - Flat {flat_no}', 'content' => 'Hello {resident_name},<br><br>A violation of the rule <b>{rule_title}</b> has been reported against Flat {flat_no}.<br><br>Violation Date: {date}<br>Fine Amount: ₹{amount}<br><br>You may appeal this violation within 7 days.'],
+			['event_slug' => 'violation_reported', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SGVX Alert: A rule violation has been reported against Flat {flat_no}. Fine: ₹{amount}. Login to view details.'],
+			
+			['event_slug' => 'violation_resolved', 'channel' => 'inapp', 'subject' => 'Violation {status}', 'content' => 'The violation reported on {date} has been {status}.'],
+			['event_slug' => 'violation_resolved', 'channel' => 'email', 'subject' => 'Violation {status}', 'content' => 'Hello {resident_name},<br><br>The violation reported on {date} has been <b>{status}</b>.<br><br>Admin Notes: {notes}'],
+			
+			['event_slug' => 'appeal_approved', 'channel' => 'inapp', 'subject' => 'Appeal Approved', 'content' => 'Your appeal for violation #{id} has been approved.'],
+			['event_slug' => 'appeal_approved', 'channel' => 'email', 'subject' => 'Appeal Approved - Violation #{id}', 'content' => 'Hello {resident_name},<br><br>Your appeal for violation #{id} has been approved. The fine has been waived.'],
+			
+			['event_slug' => 'appeal_rejected', 'channel' => 'inapp', 'subject' => 'Appeal Rejected', 'content' => 'Your appeal for violation #{id} has been rejected.'],
+			['event_slug' => 'appeal_rejected', 'channel' => 'email', 'subject' => 'Appeal Rejected - Violation #{id}', 'content' => 'Hello {resident_name},<br><br>Your appeal for violation #{id} has been rejected.<br><br>Reason: {reason}<br><br>The fine remains payable.']
 		];
 
 		foreach ($default_templates as $tpl) {
@@ -460,6 +596,28 @@ class SGVX51_DB_Schema {
 				$tpl['is_active'] = 1;
 				$tpl['created_at'] = current_time('mysql');
 				$wpdb->insert($templates_table, $tpl);
+			}
+		}
+		
+		// 4. Seed Default Rule Categories
+		$categories_table = "{$wpdb->prefix}society_governx_rule_categories";
+		$existing_categories = $wpdb->get_var("SELECT COUNT(*) FROM $categories_table");
+		
+		if ($existing_categories == 0) {
+			$default_categories = [
+				['id' => 'cat_general', 'name' => 'General Rules', 'slug' => 'general', 'description' => 'General society guidelines and conduct rules', 'icon' => 'bi-file-text', 'color' => '#6c757d', 'display_order' => 1],
+				['id' => 'cat_parking', 'name' => 'Parking & Vehicles', 'slug' => 'parking', 'description' => 'Parking allocation and vehicle usage rules', 'icon' => 'bi-car-front', 'color' => '#0d6efd', 'display_order' => 2],
+				['id' => 'cat_noise', 'name' => 'Noise & Disturbance', 'slug' => 'noise', 'description' => 'Noise control and peaceful living guidelines', 'icon' => 'bi-volume-up', 'color' => '#dc3545', 'display_order' => 3],
+				['id' => 'cat_pets', 'name' => 'Pet Policy', 'slug' => 'pets', 'description' => 'Pet ownership and management rules', 'icon' => 'bi-heart', 'color' => '#198754', 'display_order' => 4],
+				['id' => 'cat_facilities', 'name' => 'Facility Usage', 'slug' => 'facilities', 'description' => 'Common facility booking and usage rules', 'icon' => 'bi-building', 'color' => '#fd7e14', 'display_order' => 5],
+				['id' => 'cat_payment', 'name' => 'Payment & Fees', 'slug' => 'payment', 'description' => 'Maintenance payment and fee structure', 'icon' => 'bi-cash-coin', 'color' => '#20c997', 'display_order' => 6],
+				['id' => 'cat_safety', 'name' => 'Safety & Security', 'slug' => 'safety', 'description' => 'Safety protocols and security measures', 'icon' => 'bi-shield-check', 'color' => '#ffc107', 'display_order' => 7],
+				['id' => 'cat_maintenance', 'name' => 'Property Maintenance', 'slug' => 'maintenance', 'description' => 'Property upkeep and maintenance responsibilities', 'icon' => 'bi-tools', 'color' => '#6610f2', 'display_order' => 8]
+			];
+			
+			foreach ($default_categories as $cat) {
+				$cat['created_at'] = current_time('mysql');
+				$wpdb->insert($categories_table, $cat);
 			}
 		}
 	}
@@ -488,6 +646,11 @@ class SGVX51_DB_Schema {
             'society_governx_bookings',
             'society_governx_daily_help',
             'society_governx_documents',
+            'society_governx_rules',
+            'society_governx_rule_versions',
+            'society_governx_rule_acknowledgments',
+            'society_governx_rule_violations',
+            'society_governx_rule_categories',
             'society_governx_notification_channels',
             'society_governx_notification_events',
             'society_governx_notification_templates',
