@@ -429,6 +429,9 @@ class SGVX51_Frontend_Dashboard {
                     $found = false;
                     foreach($mine as $k => $existing) {
                         if(isset($existing['id']) && $existing['id'] == $payload_id) {
+                             $item['original_data'] = $existing; // Keep original for comparison
+                             $item['request_type'] = $req['request_type'];
+                             $item['is_pending'] = true;
                              $mine[$k] = $item; 
                              $found = true;
                              break;
@@ -523,6 +526,9 @@ class SGVX51_Frontend_Dashboard {
                         $found = false;
                         foreach($mine as $k => $existing) {
                             if(isset($existing['id']) && $existing['id'] == $req['entity_id']) {
+                                $item['original_data'] = $existing;
+                                $item['request_type'] = $req['request_type'];
+                                $item['is_pending'] = true;
                                 $mine[$k] = $item;
                                 $found = true;
                                 break;
@@ -815,10 +821,8 @@ class SGVX51_Frontend_Dashboard {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
             
-            // Double-Write: Update DB with pending status
-            $db_payload = $update_payload;
-            $db_payload['status'] = 'pending';
-            $this->db->update('residents', $db_payload, ['id' => $id]);
+            // Only update status to pending in main table, don't overwrite data yet!
+            $this->db->update('residents', ['status' => 'pending'], ['id' => $id]);
 
             $request_id = $rm->create_request( 'residents', 'edit', $update_payload, $id, 'family', $flat_no );
 
@@ -893,10 +897,8 @@ class SGVX51_Frontend_Dashboard {
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
         
-        // Double-Write: Update DB with pending status
-        $db_payload = $update_payload;
-        $db_payload['status'] = 'pending';
-        $this->db->update('daily_help', $db_payload, ['id' => $id]);
+        // Only update status to pending in main table
+        $this->db->update('daily_help', ['status' => 'pending'], ['id' => $id]);
 
         $request_id = $rm->create_request( 'daily_help', 'edit', $update_payload, $id, 'daily_help', $flat_no );
 
@@ -959,10 +961,8 @@ class SGVX51_Frontend_Dashboard {
 
         $rm = new SGVX51_Request_Manager();
         
-        // Double-Write: Update DB with pending status
-        $db_payload = $update_payload;
-        $db_payload['status'] = 'pending';
-        $this->db->update('vehicles', $db_payload, ['id' => $id]);
+        // Only update status to pending in main table
+        $this->db->update('vehicles', ['status' => 'pending'], ['id' => $id]);
 
         $request_id = $rm->create_request( 'vehicles', 'edit', $update_payload, $id, 'vehicle', $flat_no );
 
@@ -1530,6 +1530,9 @@ class SGVX51_Frontend_Dashboard {
                         $found = false;
                         foreach($mine as $k => $existing) {
                             if(isset($existing['id']) && $existing['id'] == $req['entity_id']) {
+                                $item['original_data'] = $existing;
+                                $item['request_type'] = $req['request_type'];
+                                $item['is_pending'] = true;
                                 $mine[$k] = $item;
                                 $found = true;
                                 break;

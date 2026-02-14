@@ -37,6 +37,9 @@
                                             data-phone="<?php echo esc_attr($fam['phone'] ?? ''); ?>"
                                             data-email="<?php echo esc_attr($fam['email'] ?? ''); ?>"
                                             data-photo="<?php echo esc_attr($fam['profile_photo'] ?? ''); ?>"
+                                            data-is-pending="<?php echo !empty($fam['is_pending']) ? '1' : '0'; ?>"
+                                            data-request-type="<?php echo esc_attr($fam['request_type'] ?? ''); ?>"
+                                            data-original="<?php echo !empty($fam['original_data']) ? esc_attr(json_encode($fam['original_data'])) : ''; ?>"
                                             class="cursor-pointer">
                                             <div class="fw-bold text-dark small lh-sm"><?php echo esc_html($fam['name']); ?></div>
                                             <div class="small text-secondary d-flex align-items-center gap-1 mt-1" style="font-size: 0.75rem;">
@@ -72,6 +75,9 @@
                                                    data-phone="<?php echo esc_attr($fam['phone'] ?? ''); ?>"
                                                    data-email="<?php echo esc_attr($fam['email'] ?? ''); ?>" 
                                                    data-photo="<?php echo esc_attr($fam['profile_photo'] ?? ''); ?>"
+                                                   data-is-pending="<?php echo !empty($fam['is_pending']) ? '1' : '0'; ?>"
+                                                   data-request-type="<?php echo esc_attr($fam['request_type'] ?? ''); ?>"
+                                                   data-original="<?php echo !empty($fam['original_data']) ? esc_attr(json_encode($fam['original_data'])) : ''; ?>"
                                                 >
                                                     <i class="bi bi-eye text-info"></i> View
                                                 </a>
@@ -128,7 +134,19 @@
                         <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
                             <?php foreach($data['daily_help'] as $help): ?>
                                 <li class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-3 cursor-pointer" 
+                                         data-bs-toggle="modal" data-bs-target="#viewHelpModal"
+                                         data-name="<?php echo esc_attr($help['name']); ?>"
+                                         data-role="<?php echo esc_attr($help['role']); ?>"
+                                         data-category="<?php echo esc_attr($help['category']); ?>"
+                                         data-phone="<?php echo esc_attr($help['phone']); ?>"
+                                         data-sex="<?php echo esc_attr($help['sex']); ?>"
+                                         data-hours="<?php echo esc_attr($help['visiting_hours']); ?>"
+                                         data-photo="<?php echo esc_attr($help['profile_photo'] ?? ''); ?>"
+                                         data-is-pending="<?php echo !empty($help['is_pending']) ? '1' : '0'; ?>"
+                                         data-request-type="<?php echo esc_attr($help['request_type'] ?? ''); ?>"
+                                         data-original="<?php echo !empty($help['original_data']) ? esc_attr(json_encode($help['original_data'])) : ''; ?>"
+                                    >
                                          <?php echo SGVX51_Admin_UI::render_avatar($help['name'], '', $help['profile_photo'] ?? '', 40); ?>
                                          <div>
                                              <div class="fw-bold text-dark small"><?php echo esc_html($help['name']); ?></div>
@@ -153,7 +171,11 @@
                                         <div class="dropdown">
                                             <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light rounded-3">
-                                                <li><button class="dropdown-item js-edit-help small" data-payload="<?php echo esc_attr(json_encode($help)); ?>"><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
+                                                <li><button class="dropdown-item js-edit-help small" 
+                                                    data-payload="<?php echo esc_attr(json_encode($help)); ?>"
+                                                    data-original="<?php echo !empty($help['original_data']) ? esc_attr(json_encode($help['original_data'])) : ''; ?>"
+                                                    data-request-type="<?php echo esc_attr($help['request_type'] ?? ''); ?>"
+                                                ><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
                                                 <li><hr class="dropdown-divider my-1"></li>
                                                 <li>
                                                      <button class="dropdown-item text-danger small js-delete-help-frontend" 
@@ -196,7 +218,16 @@
                                             <i class="bi bi-car-front-fill"></i>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="flex-grow-1">
+                                    <div class="flex-grow-1 cursor-pointer"
+                                         data-bs-toggle="modal" data-bs-target="#viewVehicleModal"
+                                         data-number="<?php echo esc_attr($v['number']); ?>"
+                                         data-type="<?php echo esc_attr($v['type']); ?>"
+                                         data-brand="<?php echo esc_attr($v['brand']); ?>"
+                                         data-model="<?php echo esc_attr($v['model']); ?>"
+                                         data-is-pending="<?php echo !empty($v['is_pending']) ? '1' : '0'; ?>"
+                                         data-request-type="<?php echo esc_attr($v['request_type'] ?? ''); ?>"
+                                         data-original="<?php echo !empty($v['original_data']) ? esc_attr(json_encode($v['original_data'])) : ''; ?>"
+                                    >
                                         <div class="fw-bold text-dark font-monospace tracking-wide small" style="letter-spacing: 0.05em;"><?php echo esc_html($v['number']); ?></div>
                                         <div class="small text-secondary d-flex align-items-center gap-2" style="font-size: 0.75rem;">
                                             <?php 
@@ -218,7 +249,11 @@
                                             <div class="dropdown">
                                                 <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
-                                                    <li><button class="dropdown-item js-edit-vehicle small" data-payload="<?php echo esc_attr(json_encode($v)); ?>"><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
+                                                    <li><button class="dropdown-item js-edit-vehicle small" 
+                                                        data-payload="<?php echo esc_attr(json_encode($v)); ?>"
+                                                        data-original="<?php echo !empty($v['original_data']) ? esc_attr(json_encode($v['original_data'])) : ''; ?>"
+                                                        data-request-type="<?php echo esc_attr($v['request_type'] ?? ''); ?>"
+                                                    ><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
                                                     <li><hr class="dropdown-divider my-1"></li>
                                                     <li>
                                                         <button class="dropdown-item text-danger small js-delete-vehicle-frontend" 

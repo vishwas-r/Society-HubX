@@ -381,6 +381,42 @@ class SGVX51_Request_Manager {
     }
 
     /**
+     * Get original data for an entity associated with a request.
+     */
+    public function get_original_data( $request ) {
+        $module = !empty($request['module']) ? $request['module'] : ($request['entity_type'] ?? '');
+        $entity_id = $request['entity_id'] ?? '';
+
+        if ( empty( $entity_id ) ) {
+            return null;
+        }
+
+        $table_map = array(
+            'vehicles'   => 'vehicles',
+            'vehicle'    => 'vehicles',
+            'residents'  => 'residents',
+            'family'     => 'residents',
+            'staff'      => 'daily_help',
+            'staffs'     => 'daily_help',
+            'daily_help' => 'daily_help',
+        );
+
+        $target_table = $table_map[$module] ?? '';
+        if ( ! $target_table ) {
+            return null;
+        }
+
+        $all = $this->db->get( $target_table );
+        foreach ( $all as $row ) {
+            if ( isset( $row['id'] ) && $row['id'] === $entity_id ) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Unified method to get data for a module (Active + Pending + Archived)
      */
     public function get_unified_data( $module_slug, $main_table, $history_table = '' ) {
@@ -388,7 +424,15 @@ class SGVX51_Request_Manager {
         $pending = array_filter( $this->db->get( 'requests' ), function($r) use ($module_slug) {
             return ($r['module'] === $module_slug || $r['entity_type'] === $module_slug) && $r['status'] === 'pending';
         });
-        
+
+        // Attach original data for pending edits
+        $pending = array_map( function( $r ) {
+            if ( $r['request_type'] === 'edit' ) {
+                $r['original_data'] = $this->get_original_data( $r );
+            }
+            return $r;
+        }, $pending );
+
         $archived = $history_table ? $this->db->get( $history_table ) : array();
 
         return array(

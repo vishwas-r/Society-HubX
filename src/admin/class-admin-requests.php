@@ -89,6 +89,18 @@ class SGVX51_Admin_Requests {
 
 	public function render_page() {
         $requests = $this->db->get( 'requests' );
-		SGVX51_Admin_App::render_view( 'requests', array( 'requests' => $requests ) );
+        
+        // Decorate requests with original data for comparison view
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        
+        $decorated_requests = array_map( function( $req ) use ( $rm ) {
+            if ( isset($req['status']) && $req['status'] === 'pending' && isset($req['request_type']) && $req['request_type'] === 'edit' ) {
+                $req['original_data'] = $rm->get_original_data( $req );
+            }
+            return $req;
+        }, $requests );
+
+		SGVX51_Admin_App::render_view( 'requests', array( 'requests' => $decorated_requests ) );
 	}
 }

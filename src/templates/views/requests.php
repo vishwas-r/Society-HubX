@@ -160,7 +160,20 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                 <div class="text-muted small" style="font-size: 10px;"><?php echo date('d M, h:i A', strtotime($req['created_at'])); ?></div>
                             </td>
                             <td class="pe-5 py-4 text-end">
-                                <?php echo SGVX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
+                                <div class="d-flex justify-content-end gap-2 align-items-center">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-light border shadow-sm rounded-pill px-3 js-view-request-detail" 
+                                            data-id="<?php echo esc_attr($req['id']); ?>"
+                                            data-module="<?php echo esc_attr($module); ?>"
+                                            data-request-type="<?php echo esc_attr($action); ?>"
+                                            data-payload='<?php echo esc_attr($req['payload']); ?>'
+                                            data-original='<?php echo esc_attr(isset($req['original_data']) ? json_encode($req['original_data']) : "{}"); ?>'
+                                            data-requester="<?php echo esc_attr($name); ?>"
+                                            data-date="<?php echo esc_attr(date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
+                                        <i class="bi bi-eye me-1"></i> VIEW
+                                    </button>
+                                    <?php echo SGVX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -251,3 +264,45 @@ document.addEventListener('DOMContentLoaded', function() {
     moduleFilter.addEventListener('change', filter);
 });
 </script>
+
+<!-- Centralized Request Detail Modal -->
+<div class="modal fade" id="requestDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div id="rd-icon-wrapper" class="rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                        <i id="rd-icon" class="bi fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold m-0" id="rd-title">Request Details</h5>
+                        <p class="text-secondary small m-0" id="rd-subtitle"></p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-4 pt-4">
+                <!-- Request Summary Section (Integrated Comparison) -->
+                <div id="rd-summary-section" class="mb-4">
+                    <h6 class="text-uppercase small fw-bold text-muted mb-3" style="letter-spacing: 0.05em;">Information Summary</h6>
+                    <div id="rd-summary-grid" class="row g-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top-0 bg-light px-4 py-3 gap-2">
+                <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0" data-bs-dismiss="modal">Close</button>
+                <div class="ms-auto d-flex gap-2">
+                    <button type="button" class="btn btn-outline-danger fw-bold px-4 rounded-pill js-reject-inline" id="rd-reject-btn">REJECT</button>
+                    <button type="button" class="btn btn-success fw-bold px-4 rounded-pill js-approve-inline" id="rd-approve-btn">APPROVE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php
+// Ensure this nonce is available for SGVX.ajax
+echo '<script>var sgvx51RequestNonce = "' . wp_create_nonce('sgvx51_request_action') . '";</script>';
+?>

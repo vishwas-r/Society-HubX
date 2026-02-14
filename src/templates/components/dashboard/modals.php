@@ -85,6 +85,151 @@ $qr_url    = get_option('sgvx51_bank_qr');
                         </div>
                     </div>
                 </div>
+
+                <!-- Proposed Changes Section (Hidden by Default) -->
+                <div id="view-family-changes-section" class="mt-4 d-none">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-info-circle-fill text-warning"></i>
+                        <label class="small text-secondary fw-bold text-uppercase m-0">Proposed Changes</label>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 p-3">
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <thead>
+                                <tr class="text-muted" style="font-size: 10px;">
+                                    <th>FIELD</th>
+                                    <th>CURRENT</th>
+                                    <th>PROPOSED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="view-family-changes-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 bg-light px-4 py-3">
+                <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0 w-100" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2.1 View Daily Help Modal -->
+<div class="modal fade" id="viewHelpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0">Daily Help Details</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center overflow-hidden border shadow-sm" style="width: 100px; height: 100px;">
+                        <img id="view-help-photo" src="" class="w-100 h-100 object-fit-cover d-none">
+                        <i id="view-help-placeholder" class="bi bi-person-badge-fill text-secondary fs-1"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mt-3 mb-1" id="view-help-name"></h5>
+                    <div class="badge bg-info-subtle text-info rounded-pill px-3 py-1 fw-normal" id="view-help-role"></div>
+                </div>
+                
+                <div class="bg-light rounded-3 p-3">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Category</label>
+                            <span class="fw-medium text-dark" id="view-help-category">-</span>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Phone</label>
+                            <span class="fw-medium text-dark" id="view-help-phone">-</span>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Gender</label>
+                            <span class="fw-medium text-dark" id="view-help-sex">-</span>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Hours</label>
+                            <span class="fw-medium text-dark" id="view-help-hours">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proposed Changes Section -->
+                <div id="view-help-changes-section" class="mt-4 d-none">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-info-circle-fill text-warning"></i>
+                        <label class="small text-secondary fw-bold text-uppercase m-0">Proposed Changes</label>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 p-3">
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <thead>
+                                <tr class="text-muted" style="font-size: 10px;">
+                                    <th>FIELD</th>
+                                    <th>CURRENT</th>
+                                    <th>PROPOSED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="view-help-changes-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 bg-light px-4 py-3">
+                <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0 w-100" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2.2 View Vehicle Modal -->
+<div class="modal fade" id="viewVehicleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0">Vehicle Details</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center overflow-hidden border shadow-sm" style="width: 100px; height: 100px;">
+                        <i id="view-vehicle-icon" class="bi bi-car-front-fill text-primary fs-1"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mt-3 mb-1 font-monospace" id="view-vehicle-number"></h5>
+                    <div class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-normal" id="view-vehicle-type"></div>
+                </div>
+                
+                <div class="bg-light rounded-3 p-3">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Brand</label>
+                            <span class="fw-medium text-dark" id="view-vehicle-brand">-</span>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Model</label>
+                            <span class="fw-medium text-dark" id="view-vehicle-model">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proposed Changes Section -->
+                <div id="view-vehicle-changes-section" class="mt-4 d-none">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-info-circle-fill text-warning"></i>
+                        <label class="small text-secondary fw-bold text-uppercase m-0">Proposed Changes</label>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 p-3">
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <thead>
+                                <tr class="text-muted" style="font-size: 10px;">
+                                    <th>FIELD</th>
+                                    <th>CURRENT</th>
+                                    <th>PROPOSED</th>
+                                </tr>
+                            </thead>
+                            <tbody id="view-vehicle-changes-body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer border-top-0 bg-light px-4 py-3">
                 <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0 w-100" data-bs-dismiss="modal">Close</button>

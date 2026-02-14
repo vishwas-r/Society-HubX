@@ -580,6 +580,11 @@
 
             const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.innerText = 'Save Family Member';
+
+            // Reset Nonce (Swap back to Add)
+            const addNonce = form.querySelector('[name="_wpnonce_add_family"]');
+            const mainNonce = form.querySelector('[name="_wpnonce"]');
+            if (addNonce && mainNonce) mainNonce.value = addNonce.value;
         };
 
         // --- Edit Handlers ---
@@ -622,6 +627,11 @@
 
             const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.innerText = 'Update Family Member';
+
+            // Swap Nonce for Edit
+            const editNonce = form.querySelector('[name="_wpnonce_edit_family"]');
+            const mainNonce = form.querySelector('[name="_wpnonce"]');
+            if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
             // Open modal
             const modalEl = document.getElementById('familyModal');
@@ -1322,6 +1332,136 @@
             });
             */
         }
+
+
+        // --- Unified View Modal Population & Comparison ---
+        function handleViewModalShow(event, type) {
+            const btn = event.relatedTarget;
+            if (!btn) return;
+            const d = btn.dataset;
+            const modal = event.target;
+
+            // 1. Basic Population
+            if (type === 'family') {
+                const nameEl = document.getElementById('view-family-name');
+                if (nameEl) nameEl.innerText = d.name || 'N/A';
+                const relEl = document.getElementById('view-family-relation');
+                if (relEl) relEl.innerText = d.relation || 'N/A';
+                const dobEl = document.getElementById('view-family-dob');
+                if (dobEl) dobEl.innerText = d.dob || '-';
+                const bloodEl = document.getElementById('view-family-blood');
+                if (bloodEl) bloodEl.innerText = d.blood || '-';
+                const phoneEl = document.getElementById('view-family-phone');
+                if (phoneEl) phoneEl.innerText = d.phone || '-';
+                const emailEl = document.getElementById('view-family-email');
+                if (emailEl) emailEl.innerText = d.email || '-';
+
+                const photoImg = document.getElementById('view-family-photo');
+                const photoPlaceholder = document.getElementById('view-family-placeholder');
+                if (d.photo && d.photo !== '') {
+                    if (photoImg) { photoImg.src = d.photo; photoImg.classList.remove('d-none'); }
+                    if (photoPlaceholder) photoPlaceholder.classList.add('d-none');
+                } else {
+                    if (photoImg) photoImg.classList.add('d-none');
+                    if (photoPlaceholder) photoPlaceholder.classList.remove('d-none');
+                }
+            } else if (type === 'help') {
+                const nameEl = document.getElementById('view-help-name');
+                if (nameEl) nameEl.innerText = d.name || 'N/A';
+                const roleEl = document.getElementById('view-help-role');
+                if (roleEl) roleEl.innerText = d.role || 'N/A';
+                const catEl = document.getElementById('view-help-category');
+                if (catEl) catEl.innerText = d.category || '-';
+                const phoneEl = document.getElementById('view-help-phone');
+                if (phoneEl) phoneEl.innerText = d.phone || '-';
+                const sexEl = document.getElementById('view-help-sex');
+                if (sexEl) sexEl.innerText = d.sex || '-';
+                const hoursEl = document.getElementById('view-help-hours');
+                if (hoursEl) hoursEl.innerText = d.hours || '-';
+
+                const photoImg = document.getElementById('view-help-photo');
+                const photoPlaceholder = document.getElementById('view-help-placeholder');
+                if (d.photo && d.photo !== '') {
+                    if (photoImg) { photoImg.src = d.photo; photoImg.classList.remove('d-none'); }
+                    if (photoPlaceholder) photoPlaceholder.classList.add('d-none');
+                } else {
+                    if (photoImg) photoImg.classList.add('d-none');
+                    if (photoPlaceholder) photoPlaceholder.classList.remove('d-none');
+                }
+            } else if (type === 'vehicle') {
+                const numEl = document.getElementById('view-vehicle-number');
+                if (numEl) numEl.innerText = d.number || 'N/A';
+                const typeEl = document.getElementById('view-vehicle-type');
+                if (typeEl) typeEl.innerText = d.type || 'N/A';
+                const brandEl = document.getElementById('view-vehicle-brand');
+                if (brandEl) brandEl.innerText = d.brand || '-';
+                const modelEl = document.getElementById('view-vehicle-model');
+                if (modelEl) modelEl.innerText = d.model || '-';
+            }
+
+            // 2. Comparison Logic for Pending Edits
+            const changesSection = document.getElementById(`view-${type}-changes-section`);
+            const changesBody = document.getElementById(`view-${type}-changes-body`);
+
+            if (changesSection) changesSection.classList.add('d-none'); // Reset
+            if (changesBody) changesBody.innerHTML = '';
+
+            if (d.isPending === '1' && d.requestType === 'edit' && d.original) {
+                try {
+                    const original = JSON.parse(d.original);
+                    const proposed = {}; // Current dataset represents proposed
+
+                    // Map dataset keys to readable field names
+                    let fieldMap = {};
+                    if (type === 'family') {
+                        fieldMap = { name: 'Name', relation: 'Relation', dob: 'DOB', blood_group: 'Blood Group', phone: 'Phone', email: 'Email' };
+                        proposed.name = d.name; proposed.relation = d.relation; proposed.dob = d.dob; proposed.blood_group = d.blood; proposed.phone = d.phone; proposed.email = d.email;
+                    } else if (type === 'help') {
+                        fieldMap = { name: 'Name', role: 'Role', category: 'Category', phone: 'Phone', sex: 'Sex', visiting_hours: 'Hours' };
+                        proposed.name = d.name; proposed.role = d.role; proposed.category = d.category; proposed.phone = d.phone; proposed.sex = d.sex; proposed.visiting_hours = d.hours;
+                    } else if (type === 'vehicle') {
+                        fieldMap = { number: 'Number', type: 'Type', brand: 'Brand', model: 'Model' };
+                        proposed.number = d.number; proposed.type = d.type; proposed.brand = d.brand; proposed.model = d.model;
+                    }
+
+                    let hasDifferences = false;
+                    let rows = '';
+
+                    for (const [key, label] of Object.entries(fieldMap)) {
+                        const oldVal = (original[key] || '').toString();
+                        const newVal = (proposed[key] || '').toString();
+
+                        if (oldVal !== newVal) {
+                            hasDifferences = true;
+                            rows += `
+                                <tr>
+                                    <td class="fw-bold text-secondary" style="font-size: 10px;">${label}</td>
+                                    <td class="text-decoration-line-through text-danger">${oldVal || '(Empty)'}</td>
+                                    <td class="text-success fw-bold">${newVal || '(Empty)'}</td>
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    if (hasDifferences) {
+                        changesBody.innerHTML = rows;
+                        changesSection.classList.remove('d-none');
+                    }
+                } catch (e) {
+                    console.error("Comparison Error:", e);
+                }
+            }
+        }
+
+        // Bind Listeners
+        const vFamilyModal = document.getElementById('viewFamilyModal');
+        if (vFamilyModal) vFamilyModal.addEventListener('show.bs.modal', e => handleViewModalShow(e, 'family'));
+
+        const vHelpModal = document.getElementById('viewHelpModal');
+        if (vHelpModal) vHelpModal.addEventListener('show.bs.modal', e => handleViewModalShow(e, 'help'));
+
+        const vVehicleModal = document.getElementById('viewVehicleModal');
+        if (vVehicleModal) vVehicleModal.addEventListener('show.bs.modal', e => handleViewModalShow(e, 'vehicle'));
 
     });
 })(jQuery);

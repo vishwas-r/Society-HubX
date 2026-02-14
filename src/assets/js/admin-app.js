@@ -215,6 +215,109 @@
         }
     }
 
+    // --- Centralized Request Detail Logic ---
+    document.addEventListener('click', function (e) {
+        const viewBtn = e.target.closest('.js-view-request-detail');
+        if (!viewBtn) return;
+
+        e.preventDefault();
+        const data = viewBtn.dataset;
+        const payload = JSON.parse(data.payload || '{}');
+        const original = JSON.parse(data.original || '{}');
+        const module = data.module;
+        const type = data.requestType;
+
+        const modalEl = document.getElementById('requestDetailModal');
+        if (!modalEl) return;
+
+        // Relocate to body if not already there to fix z-index/stacking context issues in WP Admin
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        // 1. Setup Header & Icon
+        const iconWrapper = document.getElementById('rd-icon-wrapper');
+        const icon = document.getElementById('rd-icon');
+        const title = document.getElementById('rd-title');
+        const subtitle = document.getElementById('rd-subtitle');
+
+        iconWrapper.className = 'rounded-3 d-flex align-items-center justify-content-center ';
+        icon.className = 'bi fs-4 ';
+
+        if (type === 'add' || type === 'upload') {
+            iconWrapper.classList.add('bg-success', 'bg-opacity-10', 'text-success');
+            icon.classList.add('bi-plus-circle');
+        } else if (type === 'delete') {
+            iconWrapper.classList.add('bg-danger', 'bg-opacity-10', 'text-danger');
+            icon.classList.add('bi-trash');
+        } else {
+            iconWrapper.classList.add('bg-info', 'bg-opacity-10', 'text-info');
+            icon.classList.add('bi-pencil-square');
+        }
+
+        title.textContent = (type.charAt(0).toUpperCase() + type.slice(1)) + ' ' + (module.replace('_', ' ').charAt(0).toUpperCase() + module.replace('_', ' ').slice(1));
+        subtitle.textContent = `Requested by ${data.requester} on ${data.date}`;
+
+        // 2. Populate Summary Grid with Integrated Comparison
+        const grid = document.getElementById('rd-summary-grid');
+        grid.innerHTML = '';
+
+        const summaryFields = {
+            'name': 'Name',
+            'flat_no': 'Flat / Unit',
+            'phone': 'Phone',
+            'email': 'Email',
+            'number': 'Vehicle #',
+            'brand': 'Brand',
+            'model': 'Model',
+            'role': 'Role / Job',
+            'category': 'Category',
+            'amount': 'Amount',
+            'method': 'Method'
+        };
+
+        Object.keys(summaryFields).forEach(key => {
+            const newVal = payload[key];
+            const oldVal = original[key];
+
+            if (newVal) {
+                const col = document.createElement('div');
+                col.className = 'col-md-6';
+
+                let valueHtml = `<div class="fw-bold text-dark">${newVal}</div>`;
+
+                // If it's an edit and the value has changed, show comparison
+                if (type === 'edit' && oldVal !== undefined && String(oldVal) !== String(newVal)) {
+                    valueHtml = `
+                        <div class="d-flex flex-column">
+                            <span class="text-decoration-line-through text-danger small opacity-75">${oldVal || '(Empty)'}</span>
+                            <span class="fw-bold text-success">${newVal}</span>
+                        </div>
+                    `;
+                }
+
+                col.innerHTML = `
+                    <div class="bg-light p-3 rounded-3 border-0 h-100">
+                        <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 10px;">${summaryFields[key]}</div>
+                        ${valueHtml}
+                    </div>
+                `;
+                grid.appendChild(col);
+            }
+        });
+
+        // 3. Setup Actions
+        const approveBtn = document.getElementById('rd-approve-btn');
+        const rejectBtn = document.getElementById('rd-reject-btn');
+
+        approveBtn.dataset.id = data.id;
+        rejectBtn.dataset.id = data.id;
+
+        modal.show();
+    });
+
     // --- Global Approval Handlers ---
     document.addEventListener('click', async function (e) {
         const approveBtn = e.target.closest('.js-approve-inline');
