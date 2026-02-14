@@ -9,10 +9,10 @@
  * - $resident: Array of existing data (for edit mode)
  */
 
-
 $context = $args['context'] ?? ($context ?? 'admin');
 $is_admin = $context === 'admin';
 $is_profile = $context === 'frontend_profile';
+$is_family = $context === 'frontend_family';
 
 // Robust Data Extraction
 $r = [];
@@ -30,7 +30,7 @@ $phone         = $r['phone'] ?? '';
 $email         = $r['email'] ?? '';
 $profile_photo = $r['profile_photo'] ?? '';
 $flat_no       = $r['flat_no'] ?? '';
-$type          = $r['type'] ?? 'owner';
+$type          = $r['type'] ?? ($is_family ? 'family' : 'owner');
 $relation      = $r['relation'] ?? '';
 $dob           = $r['dob'] ?? '';
 $blood_group   = $r['blood_group'] ?? '';
@@ -60,7 +60,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     </div>
 
     <!-- Full Name -->
-    <div class="col-md-<?php echo $is_admin ? '6' : '12'; ?>">
+    <div class="col-md-<?php echo ($is_admin || $is_profile) ? '6' : '12'; ?>">
         <label class="form-label small fw-bold text-secondary text-uppercase">Full Name <span class="text-danger">*</span></label>
         <input type="text" name="name" value="<?php echo esc_attr($name); ?>" class="form-control rounded-3 border-light shadow-none" required placeholder="Enter full name">
     </div>
@@ -73,7 +73,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
                 <option value="">Select Flat</option>
                 <?php if(!empty($args['flats'])): ?>
                     <?php foreach($args['flats'] as $f): 
-                        $val = $f['id']; // Use the ID (e.g. A-101) for value
+                        $val = $f['id']; 
                         $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
                         $label = $f_num;
                         $is_sel = ($flat_no == $val || $flat_no == $f_num);
@@ -90,7 +90,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         </div>
         <div class="col-md-6 text-start">
              <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
-             <select name="type" id="resident-type-select" class="form-select rounded-3 border-light shadow-none" required>
+             <select name="type" id="resident-type-select-<?php echo $context; ?>" class="form-select rounded-3 border-light shadow-none js-resident-type-toggle" data-context="<?php echo $context; ?>" required>
                  <option value="owner" <?php selected($type, 'owner'); ?>>Owner</option>
                  <option value="tenant" <?php selected($type, 'tenant'); ?>>Tenant</option>
                  <option value="family" <?php selected($type, 'family'); ?>>Family Member</option>
@@ -99,29 +99,32 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     <?php elseif($is_profile): ?>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
-            <input type="text" name="flat_no" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($flat_no); ?>" disabled>
+            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($flat_no); ?>" disabled>
+            <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
         </div>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>
             <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr(ucfirst($type)); ?>" disabled>
+            <input type="hidden" name="type" value="<?php echo esc_attr($type); ?>">
         </div>
+    <?php else: ?>
+        <!-- Hidden Type for Frontend Family -->
+        <input type="hidden" name="type" value="family">
     <?php endif; ?>
 
     <!-- Relation (Frontend Family OR Admin) -->
-    <?php if($context === 'frontend_family' || $is_admin): ?>
-        <div class="col-md-6" id="relation-wrapper" style="<?php echo ($is_admin && $type !== 'family') ? 'display:none;' : ''; ?>">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
-             <select name="relation" class="form-select rounded-3 border-light shadow-none" <?php echo ($context === 'frontend_family' || $type === 'family') ? 'required' : ''; ?>>
-                 <option value="">Select Relation</option>
-                 <option value="Spouse" <?php selected($relation, 'Spouse'); ?>>Spouse</option>
-                 <option value="Child" <?php selected($relation, 'Child'); ?>>Child</option>
-                 <option value="Parent" <?php selected($relation, 'Parent'); ?>>Parent</option>
-                 <option value="Sibling" <?php selected($relation, 'Sibling'); ?>>Sibling</option>
-                 <option value="Relative" <?php selected($relation, 'Relative'); ?>>Other Relative</option>
-                 <option value="Other" <?php selected($relation, 'Other'); ?>>Other</option>
-             </select>
-        </div>
-    <?php endif; ?>
+    <div class="col-md-6" id="relation-wrapper-<?php echo $context; ?>" style="<?php echo ($type !== 'family') ? 'display:none;' : ''; ?>">
+         <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
+         <select name="relation" class="form-select rounded-3 border-light shadow-none" <?php echo ($type === 'family') ? 'required' : ''; ?>>
+             <option value="">Select Relation</option>
+             <option value="Spouse" <?php selected($relation, 'Spouse'); ?>>Spouse</option>
+             <option value="Child" <?php selected($relation, 'Child'); ?>>Child</option>
+             <option value="Parent" <?php selected($relation, 'Parent'); ?>>Parent</option>
+             <option value="Sibling" <?php selected($relation, 'Sibling'); ?>>Sibling</option>
+             <option value="Relative" <?php selected($relation, 'Relative'); ?>>Other Relative</option>
+             <option value="Other" <?php selected($relation, 'Other'); ?>>Other</option>
+         </select>
+    </div>
 
     <!-- Personal Details (DOB, Blood Group) -->
     <div class="col-md-6">
@@ -135,13 +138,11 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <input type="tel" name="phone" value="<?php echo esc_attr($phone); ?>" class="form-control rounded-3 border-light shadow-none" placeholder="10-digit mobile">
     </div>
 
-    <!-- Email (Admin & Profile) -->
-    <?php if($is_admin || $is_profile): ?>
-        <div class="col-md-6">
-            <label class="form-label small fw-bold text-secondary text-uppercase">Email Address <span class="text-danger">*</span></label>
-            <input type="email" name="email" value="<?php echo esc_attr($email); ?>" class="form-control rounded-3 border-light shadow-none" <?php echo ($is_admin || $is_profile) ? 'required' : ''; ?> placeholder="official@email.com">
-        </div>
-    <?php endif; ?>
+    <!-- Email (Optional for all) -->
+    <div class="col-md-6">
+        <label class="form-label small fw-bold text-secondary text-uppercase">Email Address</label>
+        <input type="email" name="email" value="<?php echo esc_attr($email); ?>" class="form-control rounded-3 border-light shadow-none" placeholder="official@email.com">
+    </div>
 
     <div class="col-md-6 text-start">
          <label class="form-label small fw-bold text-secondary text-uppercase">Blood Group</label>
@@ -158,7 +159,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
 
      <!-- Society Role (Admin Only) -->
      <?php if($is_admin): ?>
-        <div class="col-12 text-start">
+        <div class="col-12 text-start" id="society-role-wrapper-<?php echo $context; ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
             <label class="form-label small fw-bold text-secondary text-uppercase">Society Role</label>
             <select name="role" class="form-select rounded-3 border-light shadow-none">
                 <option value="">None / Resident</option>
@@ -174,11 +175,10 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
 </div>
 
 <script>
-// Simple Image Preview for Unified Form
 (function() {
+    // 1. Image Preview Logic
     const fileInputs = document.querySelectorAll('.js-profile-upload');
     fileInputs.forEach(input => {
-        // Prevent duplicate attaching if script runs multiple times
         if (input.dataset.handled) return;
         input.dataset.handled = "true";
 
@@ -201,5 +201,31 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
             }
         });
     });
+
+    // 2. Relationship/Role Toggle Logic
+    const typeToggles = document.querySelectorAll('.js-resident-type-toggle');
+    typeToggles.forEach(toggle => {
+        if (toggle.dataset.toggleHandled) return;
+        toggle.dataset.toggleHandled = "true";
+
+        toggle.addEventListener('change', function() {
+            const context = this.dataset.context;
+            const container = this.closest('.row'); // Form row scope
+            const relWrapper = container.querySelector(`#relation-wrapper-${context}`);
+            const roleWrapper = container.querySelector(`#society-role-wrapper-${context}`);
+            const relSelect = relWrapper ? relWrapper.querySelector('select') : null;
+
+            if (this.value === 'family') {
+                if (relWrapper) relWrapper.style.display = 'block';
+                if (roleWrapper) roleWrapper.style.display = 'none';
+                if (relSelect) relSelect.setAttribute('required', 'required');
+            } else {
+                if (relWrapper) relWrapper.style.display = 'none';
+                if (roleWrapper) roleWrapper.style.display = 'block';
+                if (relSelect) relSelect.removeAttribute('required');
+            }
+        });
+    });
 })();
 </script>
+

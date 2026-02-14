@@ -16,18 +16,16 @@ jQuery(document).ready(function ($) {
         $('#sgvx-modal-channel-name').text(channel.charAt(0).toUpperCase() + channel.slice(1));
         $('#sgvx-modal-channel-slug').val(channel);
 
-        // Fetch current config via AJAX
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
+        // Fetch current config via SGVX.ajax
+        SGVX.ajax({
+            action: 'sgvx51_get_channel_config',
             data: {
-                action: 'sgvx51_get_channel_config',
                 channel: channel,
                 _ajax_nonce: sgvx51RequestNonce
             },
-            success: function (response) {
-                if (response.success && channelModal) {
-                    renderSettingsFields(channel, response.data);
+            onSuccess: function (data) {
+                if (channelModal) {
+                    renderSettingsFields(channel, data);
                     channelModal.show();
                 }
             }
@@ -84,18 +82,14 @@ jQuery(document).ready(function ($) {
     $channelForm.on('submit', function (e) {
         e.preventDefault();
         const formData = $(this).serializeArray();
-        formData.push({ name: 'action', value: 'sgvx51_save_channel_config' });
-        formData.push({ name: '_ajax_nonce', value: sgvx51RequestNonce });
 
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: $.param(formData),
-            success: function (response) {
-                if (response.success) {
-                    if (channelModal) channelModal.hide();
-                    location.reload();
-                }
+        SGVX.ajax({
+            action: 'sgvx51_save_channel_config',
+            data: formData,
+            successMessage: 'Channel configuration saved!',
+            reload: true,
+            onSuccess: function () {
+                if (channelModal) channelModal.hide();
             }
         });
     });
@@ -105,11 +99,9 @@ jQuery(document).ready(function ($) {
         const channel = $(this).data('channel');
         const active = $(this).is(':checked') ? 1 : 0;
 
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
+        SGVX.ajax({
+            action: 'sgvx51_toggle_channel',
             data: {
-                action: 'sgvx51_toggle_channel',
                 channel: channel,
                 active: active,
                 _ajax_nonce: sgvx51RequestNonce
@@ -122,11 +114,9 @@ jQuery(document).ready(function ($) {
         const event = $(this).data('event');
         const channel = $(this).data('channel');
 
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
+        SGVX.ajax({
+            action: 'sgvx51_update_event_mapping',
             data: {
-                action: 'sgvx51_update_event_mapping',
                 event: event,
                 channel: channel,
                 enabled: $(this).is(':checked') ? 1 : 0,
@@ -139,17 +129,14 @@ jQuery(document).ready(function ($) {
     $('.sgvx-edit-template').on('click', function () {
         const id = $(this).data('id');
 
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
+        SGVX.ajax({
+            action: 'sgvx51_get_template',
             data: {
-                action: 'sgvx51_get_template',
                 id: id,
                 _ajax_nonce: sgvx51RequestNonce
             },
-            success: function (response) {
-                if (response.success && templateModal) {
-                    const tpl = response.data;
+            onSuccess: function (tpl) {
+                if (templateModal) {
                     $('#sgvx-template-id').val(tpl.id);
                     $('#sgvx-template-event-name').text(tpl.event_slug.replace(/_/g, ' '));
                     $('#sgvx-template-subject').val(tpl.subject);
@@ -171,18 +158,14 @@ jQuery(document).ready(function ($) {
     $templateForm.on('submit', function (e) {
         e.preventDefault();
         const formData = $(this).serializeArray();
-        formData.push({ name: 'action', value: 'sgvx51_save_template' });
-        formData.push({ name: '_ajax_nonce', value: sgvx51RequestNonce });
 
-        $.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: $.param(formData),
-            success: function (response) {
-                if (response.success) {
-                    if (templateModal) templateModal.hide();
-                    location.reload();
-                }
+        SGVX.ajax({
+            action: 'sgvx51_save_template',
+            data: formData,
+            successMessage: 'Notification template saved!',
+            reload: true,
+            onSuccess: function () {
+                if (templateModal) templateModal.hide();
             }
         });
     });

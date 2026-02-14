@@ -12,25 +12,16 @@
         if (Config.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'accounts'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'accounts' },
+                showOverlay: false,
+                suppressErrorToast: true
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
                 Config.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
@@ -38,11 +29,6 @@
     }
 
     async function init() {
-        if (!window.sgvxApiRequest) {
-            console.warn('sgvxApiRequest missing');
-            return;
-        }
-
         // Initialize config first
         await fetchModuleConfig();
 
@@ -61,42 +47,22 @@
             if (btn.classList.contains('js-reject-payment')) return handlePaymentApproval(btn, false);
         });
 
-        async function handlePaymentApproval(btn, isApprove) {
+        function handlePaymentApproval(btn, isApprove) {
             const requestId = btn.getAttribute('data-id');
             const actionLabel = isApprove ? 'approve' : 'reject';
 
             if (!confirm(`Are you sure you want to ${actionLabel} this payment notification?`)) return;
 
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-            const formData = new FormData();
-            formData.append('action', isApprove ? 'sgvx51_approve_request' : 'sgvx51_reject_request');
-            formData.append('id', requestId);
-            formData.append('_ajax_nonce', window.sgvx51RequestNonce);
-
-            try {
-                const response = await fetch(ajaxurl, {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    SGVX.toast.success('Success: ' + result.data.message);
-                    window.location.reload();
-                } else {
-                    SGVX.toast.error('Error: ' + result.data.message);
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                }
-            } catch (err) {
-                console.error(err);
-                SGVX.toast.error('An error occurred while processing the request.');
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
+            SGVX.ajax({
+                action: isApprove ? 'sgvx51_approve_request' : 'sgvx51_reject_request',
+                data: {
+                    id: requestId,
+                    _ajax_nonce: window.sgvx51RequestNonce
+                },
+                loadingButton: btn,
+                successMessage: 'Payment ' + actionLabel + 'd successfully',
+                reload: true
+            });
         }
 
         // Form submissions (AJAX)
@@ -120,41 +86,7 @@
         return window._sgvx_modals[id];
     }
 
-    // Admin-post helper for account actions (these handlers use admin-post.php)
-    async function adminPostRequest(action, data = {}) {
-        const formData = new FormData();
-        formData.append('action', action);
-        // Inject nonce if available
-        if (data._wpnonce) formData.append('_wpnonce', data._wpnonce);
-        else if (Config.nonce) formData.append('_wpnonce', Config.nonce);
 
-        for (const [k, v] of Object.entries(data)) {
-            if (k === 'action' || k === '_wpnonce') continue;
-            formData.append(k, v);
-        }
-
-        // admin-post.php url derived from ajaxurl
-        const adminPost = (typeof ajaxurl === 'string') ? ajaxurl.replace('admin-ajax.php', 'admin-post.php') : 'admin-post.php';
-
-        const resp = await fetch(adminPost, { method: 'POST', body: formData });
-        // Many admin_post handlers redirect — treat non-JSON as success and reload
-        const text = await resp.text();
-        try {
-            const json = JSON.parse(text);
-            if (json.success) {
-                if (json.data && json.data.message) window.sgvxShowToast(json.data.message, 'success');
-                return json.data || true;
-            } else {
-                const err = json.data && json.data.message ? json.data.message : 'Operation failed';
-                window.sgvxShowToast(err, 'error');
-                throw new Error(err);
-            }
-        } catch (e) {
-            // Not JSON — assume redirect happened and server returned HTML. Treat as success and reload.
-            window.location.reload();
-            return true;
-        }
-    }
 
     function openEditInvoice(btn) {
         try {
@@ -287,153 +219,75 @@
         } catch (e) { console.error(e); }
     }
 
-    async function deleteInvoice(btn) {
+    function deleteInvoice(btn) {
         if (!confirm('Permanently delete this invoice?')) return;
         const id = btn.getAttribute('data-id');
-        try {
-            await adminPostRequest('sgvx51_delete_invoice', { id: id, _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.deleteInvoiceNonce) ? window.sgvxAccountsData.deleteInvoiceNonce : undefined });
-            // Remove row
-            const row = btn.closest('tr'); if (row) row.remove();
-        } catch (e) { /* adminPostRequest shows toast or reloads */ }
+
+        SGVX.ajax({
+            action: 'sgvx51_delete_invoice',
+            data: {
+                id: id,
+                _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.deleteInvoiceNonce) ? window.sgvxAccountsData.deleteInvoiceNonce : undefined
+            },
+            successMessage: 'Invoice deleted',
+            onSuccess: function () {
+                const row = btn.closest('tr');
+                if (row) row.remove();
+            }
+        });
     }
 
-    async function deletePayment(btn) {
+    function deletePayment(btn) {
         if (!confirm('Delete this payment?')) return;
         const invoiceId = btn.getAttribute('data-invoice-id');
         const txnId = btn.getAttribute('data-txn-id');
-        try {
-            await adminPostRequest('sgvx51_delete_payment', { invoice_id: invoiceId, txn_id: txnId, _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.nonce) ? window.sgvxAccountsData.nonce : undefined });
-            // Remove payment row
-            const row = btn.closest('tr'); if (row) row.remove();
-        } catch (e) { }
+
+        SGVX.ajax({
+            action: 'sgvx51_delete_payment',
+            data: {
+                invoice_id: invoiceId,
+                txn_id: txnId,
+                _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.nonce) ? window.sgvxAccountsData.nonce : undefined
+            },
+            successMessage: 'Payment deleted',
+            onSuccess: function () {
+                const row = btn.closest('tr');
+                if (row) row.remove();
+            }
+        });
     }
 
-    async function handleEditSubmit(e) {
+    function handleEditSubmit(e) {
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
-        // Ensure action is set
-        formData.set('action', 'sgvx51_edit_invoice');
-        // Provide nonce if available
-        if (window.sgvxAccountsData && window.sgvxAccountsData.nonce) formData.set('_wpnonce', window.sgvxAccountsData.nonce);
 
-        try {
-            await adminPostRequest('sgvx51_edit_invoice', Object.fromEntries(formData.entries()));
-            // successful - reload to reflect changes
-            window.location.reload();
-        } catch (err) { }
+        SGVX.ajax({
+            action: 'sgvx51_edit_invoice',
+            data: formData,
+            loadingButton: $(form).find('button[type="submit"]'),
+            successMessage: 'Invoice updated successfully',
+            reload: true
+        });
     }
 
-    async function handlePaymentSubmit(e) {
+    function handlePaymentSubmit(e) {
         e.preventDefault();
         const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-
-        // Collect all form data
         const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
 
-        // Ensure all required fields are present
-        if (!data.invoice_id || !data.amount || !data.method) {
+        if (!formData.get('amount') || !formData.get('method')) {
             SGVX.toast.warning('Please fill in all required fields');
             return;
         }
 
-        // Show loading state
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
-        }
-
-        console.log('Payment submission data:', data);
-
-        try {
-            // Create proper form data for submission
-            const params = new URLSearchParams();
-            params.append('action', 'sgvx51_record_payment');
-            params.append('invoice_id', data.invoice_id);
-            params.append('amount', data.amount);
-            params.append('date', data.date || new Date().toISOString().split('T')[0]);
-            params.append('method', data.method);
-            params.append('reference', data.reference || '');
-
-            // Add nonce - check multiple sources
-            let nonce = data._wpnonce;
-            if (!nonce && window.sgvxAccountsData && window.sgvxAccountsData.nonce) {
-                nonce = window.sgvxAccountsData.nonce;
-            }
-            if (!nonce && Config.nonce) {
-                nonce = Config.nonce;
-            }
-
-            if (!nonce) {
-                console.error('No nonce found for payment submission');
-                SGVX.toast.error('Security error: nonce not found');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Record Payment';
-                }
-                return;
-            }
-
-            params.append('_wpnonce', nonce);
-
-            console.log('Submitting payment to admin-post.php');
-
-            // Send to admin-post.php handler
-            const postUrl = ajaxurl.replace('admin-ajax.php', 'admin-post.php');
-            const response = await fetch(postUrl, {
-                method: 'POST',
-                body: params.toString(),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                redirect: 'manual'
-            });
-
-            console.log('Payment submission response status:', response.status);
-
-            if (response.status === 302 || response.status === 301) {
-                // Redirect response - payment was recorded
-                console.log('✓ Payment recorded successfully');
-                SGVX.toast.success('✅ Payment recorded successfully!');
-                setTimeout(() => { window.location.reload(); }, 1000);
-            } else if (response.ok) {
-                // HTML or JSON response
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const json = await response.json();
-                    if (json.success) {
-                        SGVX.toast.success('✅ Payment recorded successfully!');
-                        setTimeout(() => { window.location.reload(); }, 1000);
-                    } else {
-                        SGVX.toast.error('❌ Error: ' + (json.data?.message || 'Failed to record payment'));
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = 'Record Payment';
-                        }
-                    }
-                } else {
-                    // HTML response - assume success and reload
-                    console.log('Payment submitted, reloading...');
-                    SGVX.toast.success('✅ Payment recorded successfully!');
-                    setTimeout(() => { window.location.reload(); }, 1000);
-                }
-            } else {
-                SGVX.toast.error('❌ Error: HTTP ' + response.status);
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Record Payment';
-                }
-            }
-        } catch (err) {
-            console.error('Payment submission error:', err);
-            SGVX.toast.error('Error recording payment: ' + err.message);
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Record Payment';
-            }
-        }
+        SGVX.ajax({
+            action: 'sgvx51_record_payment',
+            data: formData,
+            loadingButton: $(form).find('button[type="submit"]'),
+            successMessage: 'Payment recorded successfully!',
+            reload: true
+        });
     }
 
     // Global modal functions

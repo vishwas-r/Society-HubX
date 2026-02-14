@@ -368,32 +368,20 @@
         if (State.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'residents'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'residents' },
+                showOverlay: false,
+                suppressErrorToast: true
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
-                Config.deleteNonce = result.data.deleteNonce || null;
-                Config.restoreNonce = result.data.restoreNonce || null;
-                Config.moveToHistoryNonce = result.data.moveToHistoryNonce || null;
-                Config.deleteHistoryNonce = result.data.deleteHistoryNonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
+                Config.deleteNonce = result.deleteNonce || null;
+                Config.restoreNonce = result.restoreNonce || null;
+                Config.moveToHistoryNonce = result.moveToHistoryNonce || null;
+                Config.deleteHistoryNonce = result.deleteHistoryNonce || null;
                 State.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
@@ -407,34 +395,20 @@
             // Form Submission (AJAX)
             const form = document.getElementById('add-resident-form');
             if (form) {
-                form.addEventListener('submit', async function (e) {
+                form.addEventListener('submit', function (e) {
                     e.preventDefault();
+                    const formData = new FormData(form);
 
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    const originalBtnText = submitBtn.innerHTML;
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
-
-                    try {
-                        const formData = new FormData(form);
-
-                        // roles are handled by the single select "role" in the form
-                        // specialized roles[] logic is not needed for the current form structure
-
-                        await SGVX.ajax(formData.get('action'), formData, {
-                            success: (formData.get('action') === 'sgvx51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
-                            button: submitBtn
-                        });
-
-                        closeResidentModal();
-                        // Reload without status params
-                        window.location.href = window.location.origin + window.location.pathname + '?page=sgvx51-residents';
-                    } catch (err) {
-                        console.error('Submit Error:', err);
-                    } finally {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalBtnText;
-                    }
+                    SGVX.ajax({
+                        action: formData.get('action'),
+                        data: formData,
+                        loadingButton: $(form).find('button[type="submit"]'),
+                        successMessage: (formData.get('action') === 'sgvx51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
+                        onSuccess: function () {
+                            closeResidentModal();
+                            window.location.href = window.location.origin + window.location.pathname + '?page=sgvx51-residents';
+                        }
+                    });
                 });
             }
 

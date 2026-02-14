@@ -439,38 +439,16 @@
         if (familyForm) {
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const btn = familyForm.querySelector('button[type="submit"]');
-                const originalText = btn.innerText;
-                btn.disabled = true;
-                btn.innerText = 'Saving...';
-
                 const formData = new FormData(familyForm);
-                // Ensure action is set (if not already in form)
                 if (!formData.get('action')) formData.append('action', 'sgvx51_add_family');
 
-                // Use global ajaxurl (defined in society-govern-x.php)
-                fetch(ajaxurl, {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            SGVX.toast.success(data.data.message || 'Saved successfully');
-                            location.reload();
-                        } else {
-                            const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            SGVX.toast.error('Error: ' + msg);
-                            btn.disabled = false;
-                            btn.innerText = originalText;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Fetch Error:', err);
-                        SGVX.toast.error('Network error occurred.');
-                        btn.disabled = false;
-                        btn.innerText = originalText;
-                    });
+                SGVX.ajax({
+                    action: formData.get('action'),
+                    data: formData,
+                    loadingButton: $(familyForm).find('button[type="submit"]'),
+                    successMessage: 'Family member saved!',
+                    reload: true
+                });
             });
         }
 
@@ -479,36 +457,15 @@
         if (helpForm) {
             helpForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const btn = helpForm.querySelector('button[type="submit"]');
-                if (!btn) return;
-                const originalText = btn.innerText;
-                btn.disabled = true;
-                btn.innerText = 'Saving...';
-
                 const formData = new FormData(helpForm);
 
-                fetch(ajaxurl, {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            SGVX.toast.success(data.data.message || 'Saved successfully');
-                            location.reload();
-                        } else {
-                            const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            SGVX.toast.error('Error: ' + msg);
-                            btn.disabled = false;
-                            btn.innerText = originalText;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Fetch Error:', err);
-                        SGVX.toast.error('Network error occurred.');
-                        btn.disabled = false;
-                        btn.innerText = originalText;
-                    });
+                SGVX.ajax({
+                    action: formData.get('action'),
+                    data: formData,
+                    loadingButton: $(helpForm).find('button[type="submit"]'),
+                    successMessage: 'Help details saved!',
+                    reload: true
+                });
             });
         }
 
@@ -517,36 +474,15 @@
         if (vehicleForm) {
             vehicleForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const btn = vehicleForm.querySelector('button[type="submit"]');
-                if (!btn) return;
-                const originalText = btn.innerText;
-                btn.disabled = true;
-                btn.innerText = 'Requesting...';
-
                 const formData = new FormData(vehicleForm);
 
-                fetch(ajaxurl, {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            SGVX.toast.success(data.data.message || 'Request submitted successfully');
-                            location.reload();
-                        } else {
-                            const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            SGVX.toast.error('Error: ' + msg);
-                            btn.disabled = false;
-                            btn.innerText = originalText;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Fetch Error:', err);
-                        SGVX.toast.error('Network error occurred.');
-                        btn.disabled = false;
-                        btn.innerText = originalText;
-                    });
+                SGVX.ajax({
+                    action: formData.get('action'),
+                    data: formData,
+                    loadingButton: $(vehicleForm).find('button[type="submit"]'),
+                    successMessage: 'Vehicle request submitted!',
+                    reload: true
+                });
             });
         }
 
@@ -577,50 +513,26 @@
                 if (e.target.classList.contains('js-poll-vote-form')) {
                     e.preventDefault();
                     const form = e.target;
-                    const btn = form.querySelector('button[type="submit"]');
-                    const originalText = btn.innerText;
-                    btn.disabled = true;
-                    btn.innerText = 'Casting...';
-
                     const formData = new FormData(form);
 
-                    fetch(ajaxurl, {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                if (window.sgvxShowToast) {
-                                    window.sgvxShowToast(data.data.message || 'Vote cast successfully');
-                                }
-
-                                // Refresh only the polls tab content
-                                fetch(window.location.href)
-                                    .then(res => res.text())
-                                    .then(html => {
-                                        const parser = new DOMParser();
-                                        const doc = parser.parseFromString(html, 'text/html');
-                                        const newContent = doc.querySelector('#tab-polls').innerHTML;
-                                        document.querySelector('#tab-polls').innerHTML = newContent;
-                                    })
-                                    .catch(() => window.location.reload());
-                            } else {
-                                const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                                if (window.sgvxShowToast) {
-                                    window.sgvxShowToast(msg, 'error');
-                                } else {
-                                    SGVX.toast.error('Error: ' + msg);
-                                }
-                                btn.disabled = false;
-                                btn.innerText = originalText;
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Fetch Error:', err);
-                            btn.disabled = false;
-                            btn.innerText = originalText;
-                        });
+                    SGVX.ajax({
+                        action: 'sgvx51_cast_vote',
+                        data: formData,
+                        loadingButton: $(form).find('button[type="submit"]'),
+                        successMessage: 'Vote cast successfully!',
+                        onSuccess: function (data) {
+                            // Refresh only the polls tab content
+                            fetch(window.location.href)
+                                .then(res => res.text())
+                                .then(html => {
+                                    const parser = new DOMParser();
+                                    const doc = parser.parseFromString(html, 'text/html');
+                                    const newContent = doc.querySelector('#tab-polls').innerHTML;
+                                    document.querySelector('#tab-polls').innerHTML = newContent;
+                                })
+                                .catch(() => window.location.reload());
+                        }
+                    });
                 }
             });
         }
@@ -636,7 +548,6 @@
             const form = document.querySelector('#familyModal form');
             if (!form) return;
 
-            // Reset form fields
             form.reset();
 
             // Reset Photo
@@ -645,46 +556,37 @@
             if (preview) { preview.src = ''; preview.classList.add('d-none'); }
             if (placeholder) placeholder.classList.remove('d-none');
 
-            // Remove hidden ID and type fields (Edit Mode artifacts)
+            // Reset IDs
             const idInput = form.querySelector('input[name="member_id"]');
-            if (idInput) idInput.remove();
-
-            // Reset Type to Default (Family) or Remove if hidden
-            // authentic "add" form relies on resident-form.php which might have a hidden type or select
-            // For frontend family, type is usually 'family' 
-            const typeInput = form.querySelector('input[name="type"]');
-            if (typeInput && typeInput.type === 'hidden') typeInput.remove();
+            if (idInput) idInput.value = '';
+            const resIdInput = form.querySelector('input[name="resident_id"]');
+            if (resIdInput) resIdInput.value = '';
 
             // Reset action to add
             const actionInput = form.querySelector('input[name="action"]');
             if (actionInput) actionInput.value = 'sgvx51_add_family';
 
-            // RESTORE Nonce for Add Action
-            // The form by default has _wpnonce_add_family. We need to make sure the main _wpnonce matches it.
-            const addNonceInput = form.querySelector('input[name="_wpnonce_add_family"]');
-            const mainNonce = form.querySelector('input[name="_wpnonce"]');
-
-            if (addNonceInput && mainNonce) {
-                mainNonce.value = addNonceInput.value;
+            // Reset Relation Wrapper
+            const relWrapper = document.getElementById('relation-wrapper-frontend_family');
+            if (relWrapper) {
+                relWrapper.style.display = 'block'; // Always show for family context
+                const relSelect = relWrapper.querySelector('select');
+                if (relSelect) relSelect.setAttribute('required', 'required');
             }
 
             // Reset title and button
-            const modalTitle = form.querySelector('.modal-title');
+            const modalTitle = document.getElementById('familyModalLabel');
             if (modalTitle) modalTitle.innerText = 'Add Family Member';
 
             const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.innerText = 'Add Member';
-                submitBtn.disabled = false;
-            }
+            if (submitBtn) submitBtn.innerText = 'Save Family Member';
         };
 
         // --- Edit Handlers ---
         function handleEditFamily(btn) {
-            console.log("SGVX: handleEditFamily triggered", btn.dataset);
             const d = btn.dataset;
             const form = document.querySelector('#familyModal form');
-            if (!form) { console.error("Family form not found!"); return; }
+            if (!form) return;
 
             // Populate inputs
             if (form.querySelector('[name="name"]')) form.querySelector('[name="name"]').value = d.name || '';
@@ -705,51 +607,23 @@
                 if (placeholder) placeholder.classList.remove('d-none');
             }
 
-            // Set action for edit
-            const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'sgvx51_edit_family';
-            else console.error("Action input missing in Family Form!");
+            // Set action and IDs for edit
+            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'sgvx51_edit_family';
+            if (form.querySelector('[name="member_id"]')) form.querySelector('[name="member_id"]').value = d.id || d.memberId || '';
+            if (form.querySelector('[name="resident_id"]')) form.querySelector('[name="resident_id"]').value = d.id || '';
 
-            // Set Member ID
-            const idInput = form.querySelector('input[name="member_id"]');
-            if (idInput) idInput.value = d.id;
-            else {
-                // Fallback: Create if missing (should not happen with recent PHP update)
-                const newId = document.createElement('input');
-                newId.type = 'hidden';
-                newId.name = 'member_id';
-                newId.value = d.id;
-                form.appendChild(newId);
-            }
-
-            // Swap Nonce: Use Edit Nonce
-            const editNonceInput = form.querySelector('input[name="_wpnonce_edit_family"]');
-            const mainNonce = form.querySelector('input[name="_wpnonce"]');
-
-            if (editNonceInput && mainNonce) {
-                mainNonce.value = editNonceInput.value;
-            } else {
-                console.warn("Nonce inputs missing for edit family swap.");
-            }
-
-            // Ensure Type input exists
-            let typeInput = form.querySelector('input[name="type"]');
-            if (!typeInput) {
-                typeInput = document.createElement('input');
-                typeInput.type = 'hidden';
-                typeInput.name = 'type';
-                form.appendChild(typeInput);
-            }
-            typeInput.value = 'family'; // Force type family
+            // Relation Wrapper Visibility
+            const relWrapper = document.getElementById('relation-wrapper-frontend_family');
+            if (relWrapper) relWrapper.style.display = 'block';
 
             // Change Title
-            const modalTitle = form.querySelector('.modal-title');
-            if (modalTitle) modalTitle.innerText = 'Edit Family Member';
+            const modalTitle = document.getElementById('familyModalLabel');
+            if (modalTitle) modalTitle.innerText = 'Edit Family Member: ' + d.name;
 
             const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn) submitBtn.innerText = 'Update';
+            if (submitBtn) submitBtn.innerText = 'Update Family Member';
 
-            // Open modal using Bootstrap API
+            // Open modal
             const modalEl = document.getElementById('familyModal');
             if (modalEl) {
                 const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -971,22 +845,13 @@
 
             const id = btn.dataset.id;
             const nonce = btn.dataset.nonce;
-            const originalText = btn.innerText;
-            btn.innerText = 'Deleting...';
-            btn.disabled = true;
 
-            $.post(ajaxurl, {
+            SGVX.ajax({
                 action: action,
-                id: id,
-                _wpnonce: nonce
-            }, function (res) {
-                if (res.success) {
-                    window.location.reload();
-                } else {
-                    SGVX.toast.error(res.data || 'Deletion failed');
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }
+                data: { id: id, _wpnonce: nonce },
+                loadingButton: btn,
+                successMessage: 'Deleted successfully',
+                reload: true
             });
         }
 
@@ -1030,9 +895,15 @@
                 if (!modal) return;
 
                 // Populate modal with data
-                document.getElementById('cdm-flat').textContent = data.flat_no || '';
-                document.getElementById('cdm-owner').textContent = data.owner || '';
-                document.getElementById('cdm-members').textContent = data.members || '0';
+                const flatEl = document.getElementById('cdm-flat');
+                const ownerEl = document.getElementById('cdm-owner');
+                const membersEl = document.getElementById('cdm-members');
+                const emailEl = document.getElementById('cdm-email');
+
+                if (flatEl) flatEl.textContent = data.flat_no || '';
+                if (ownerEl) ownerEl.textContent = data.owner || '';
+                if (membersEl) membersEl.textContent = data.members || '0';
+                if (emailEl) emailEl.textContent = data.email || '-';
 
                 // Populate vehicles
                 const vehiclesDiv = document.getElementById('cdm-vehicles');
@@ -1233,32 +1104,20 @@
 
             const nonce = (window.sgvxDashboardData && window.sgvxDashboardData.nonce) ? window.sgvxDashboardData.nonce : (typeof sgvx51_nonce !== 'undefined' ? sgvx51_nonce : '');
 
-            fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'action=sgvx51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + nonce
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        populateReceiptModal(data.data);
-                        let modalEl = document.getElementById('receiptModal');
-                        if (!modalEl) modalEl = document.getElementById('sgvx-resident-receipt-modal');
+            SGVX.ajax({
+                action: 'sgvx51_get_receipt',
+                data: { invoice_id: invoiceId, nonce: nonce },
+                onSuccess: function (data) {
+                    populateReceiptModal(data);
+                    let modalEl = document.getElementById('receiptModal');
+                    if (!modalEl) modalEl = document.getElementById('sgvx-resident-receipt-modal');
 
-                        if (modalEl) {
-                            const modal = new bootstrap.Modal(modalEl);
-                            modal.show();
-                        }
-                    } else {
-                        SGVX.toast.error('Error loading receipt: ' + (data.data.message || 'Unknown error'));
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
                     }
-                })
-                .catch(error => {
-                    console.error('Receipt fetch error:', error);
-                    SGVX.toast.error('Error loading receipt. Please try again.');
-                });
+                }
+            });
         };
 
         function populateReceiptModal(receiptData) {
@@ -1373,41 +1232,24 @@
                 return;
             }
 
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
-
             const formData = new FormData(form);
-            formData.append('action', 'sgvx51_submit_payment_request');
             const nonce = (window.sgvxDashboardData && window.sgvxDashboardData.nonce) ? window.sgvxDashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
-            fetch(ajaxurl, {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        SGVX.toast.success(data.data.message || 'Payment confirmation sent!');
-                        const modalEl = document.getElementById('sgvx51PaymentModal');
-                        if (modalEl) {
-                            const modal = bootstrap.Modal.getInstance(modalEl);
-                            if (modal) modal.hide();
-                        }
-                        location.reload();
-                    } else {
-                        SGVX.toast.error('Error: ' + (data.data.message || 'Failed to submit request'));
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
+            SGVX.ajax({
+                action: 'sgvx51_submit_payment_request',
+                data: formData,
+                loadingButton: btn,
+                successMessage: 'Payment confirmation sent successfully!',
+                reload: true,
+                onSuccess: function () {
+                    const modalEl = document.getElementById('sgvx51PaymentModal');
+                    if (modalEl) {
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
                     }
-                })
-                .catch(error => {
-                    console.error('Submission Error:', error);
-                    SGVX.toast.error('An error occurred. Please try again.');
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                });
+                }
+            });
         }
 
         // --- Global Listeners for New Handlers ---

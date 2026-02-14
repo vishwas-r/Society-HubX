@@ -51,6 +51,9 @@
                                                     <span class="badge bg-danger rounded-pill ms-1" style="font-size: 0.6rem;">DEL PENDING</span>
                                                 <?php endif; ?>
                                             </div>
+                                            <?php if(!empty($fam['email'])): ?>
+                                                <div class="text-muted small mt-1" style="font-size: 10px;"><?php echo esc_html($fam['email']); ?></div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <!-- Actions -->

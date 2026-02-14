@@ -50,59 +50,11 @@
      * @param {object} data   Payload data
      * @returns {Promise}
      */
-    window.sgvxApiRequest = async function (action, data = {}) {
-        let formData;
-
-        if (data instanceof FormData) {
-            formData = data;
-        } else {
-            formData = new FormData();
-            for (const [key, val] of Object.entries(data)) {
-                if (Array.isArray(val)) {
-                    val.forEach(item => formData.append(key + '[]', item));
-                } else if (val !== null && val !== undefined) {
-                    formData.append(key, val);
-                }
-            }
-        }
-
-        if (!formData.has('action')) formData.append('action', action);
-
-        // Auto-inject Nonce if missing
-        if (!formData.has('_wpnonce')) {
-            // Fallback to various data sources if global isn't set
-            const nonce = (typeof sgvx51_nonce !== 'undefined') ? sgvx51_nonce : '';
-            if (nonce) formData.append('_wpnonce', nonce);
-        }
-
-        try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(text || 'Network response was not ok');
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                if (result.data && result.data.message) {
-                    window.sgvxShowToast(result.data.message, 'success');
-                }
-                return result.data || true;
-            } else {
-                const errorMsg = result.data && result.data.message ? result.data.message : 'Operation failed';
-                window.sgvxShowToast(errorMsg, 'error');
-                throw new Error(errorMsg);
-            }
-        } catch (error) {
-            console.error('SGVX API Error:', error);
-            window.sgvxShowToast(error.message, 'error');
-            throw error;
-        }
+    window.sgvxApiRequest = function (action, data = {}) {
+        return SGVX.ajax({
+            action: action,
+            data: data
+        });
     };
 
     /**

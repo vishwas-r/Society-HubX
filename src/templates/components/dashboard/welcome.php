@@ -15,6 +15,10 @@ $r = $data['resident'] ?? [];
                 <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( $r['flat_no'] ?? 'N/A' ); ?></span>
                 <span class="text-muted">•</span>
                 <span><?php echo esc_html( ucfirst( $r['type'] ?? 'Resident' ) ); ?></span>
+                <?php if(!empty($r['email'])): ?>
+                    <span class="text-muted">•</span>
+                    <span class="text-secondary"><?php echo esc_html($r['email']); ?></span>
+                <?php endif; ?>
             </p>
         </div>
     </div>

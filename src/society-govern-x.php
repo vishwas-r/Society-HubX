@@ -424,7 +424,11 @@ final class Society_Govern_X {
 
         // Main dashboard script (depends on core, toast, ajax)
         wp_enqueue_script( 'sgvx51-dashboard-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-dashboard.js', array('jquery', 'sgvx51-core', 'sgvx51-toast', 'sgvx51-ajax', 'sgvx51-bootstrap', 'sgvx51-canvasjs', 'sgvx51-search-init'), SGVX51_VERSION, true );
-        wp_enqueue_script( 'sgvx51-documents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-documents.js', array('jquery', 'sgvx51-core', 'sgvx51-toast', 'sgvx51-ajax', 'sgvx51-bootstrap'), SGVX51_VERSION, true );
+        
+        // Only load module-specific scripts if user is logged in
+        if ( is_user_logged_in() ) {
+            wp_enqueue_script( 'sgvx51-documents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-documents.js', array('jquery', 'sgvx51-core', 'sgvx51-toast', 'sgvx51-ajax', 'sgvx51-bootstrap'), SGVX51_VERSION, true );
+        }
 
 		// Localize AJAX URL for frontend (needed for resident login)
 		wp_localize_script( 'sgvx51-bootstrap', 'sgvx51_frontend', array(

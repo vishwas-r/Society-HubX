@@ -829,41 +829,14 @@ function handleRuleSubmit(e) {
     const formData = new FormData(e.target);
     const isEdit = formData.get('rule_id') !== '';
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: {
-            action: isEdit ? 'sgvx51_edit_rule' : 'sgvx51_add_rule',
-            ...Object.fromEntries(formData)
-        },
-        success: function(response) {
-            if(response.success) {
-                ruleModal.hide();
-                location.reload();
-            } else {
-                alert(response.data ? response.data.message : 'Error saving rule');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Rule Submit Error:', status, error, xhr.responseText);
-            
-            // Parse the error response to show validation messages
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.data && response.data.message) {
-                    // Show user-friendly message based on error type
-                    const msg = response.data.message;
-                    if (msg.includes('slug already exists')) {
-                        alert('A rule with this title already exists. Please use a different title.');
-                    } else {
-                        alert(msg);
-                    }
-                } else {
-                    alert('Error communicating with server. Please try again.');
-                }
-            } catch(e) {
-                alert('Error communicating with server. Please try again.');
-            }
+    SGVX.ajax({
+        action: isEdit ? 'sgvx51_edit_rule' : 'sgvx51_add_rule',
+        data: Object.fromEntries(formData),
+        loadingButton: jQuery(e.target).find('button[type="submit"]'),
+        successMessage: 'Rule saved successfully!',
+        reload: true,
+        onSuccess: function() {
+            ruleModal.hide();
         }
     });
 }
@@ -871,72 +844,28 @@ function handleRuleSubmit(e) {
 function publishRule(ruleId) {
     if(!confirm('Publish this rule? Residents will be notified.')) return;
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_publish_rule',
         data: {
-            action: 'sgvx51_publish_rule',
             rule_id: ruleId,
             _wpnonce: rulesNonce
         },
-        success: function(response) {
-            if(response.success) {
-                alert('Rule published successfully!');
-                location.reload();
-            } else {
-                alert(response.data ? response.data.message : 'Failed to publish rule');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Publish AJAX Error:', status, error, xhr.responseText);
-            
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.data && response.data.message) {
-                    alert(response.data.message);
-                } else {
-                    alert('Error: ' + (xhr.statusText || error));
-                }
-            } catch(e) {
-                alert('Error: ' + (xhr.statusText || error));
-            }
-        }
+        successMessage: 'Rule published successfully!',
+        reload: true
     });
 }
 
 function deleteRule(ruleId) {
     if(!confirm('Archive this rule? It will be hidden from residents.')) return;
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_delete_rule',
         data: {
-            action: 'sgvx51_delete_rule',
             rule_id: ruleId,
             _wpnonce: rulesNonce
         },
-        success: function(response) {
-            if(response.success) {
-                alert('Rule archived successfully!');
-                location.reload();
-            } else {
-                alert(response.data ? response.data.message : 'Failed to archive rule');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Archive AJAX Error:', status, error, xhr.responseText);
-            
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.data && response.data.message) {
-                    alert(response.data.message);
-                } else {
-                    alert('Error: ' + (xhr.statusText || error));
-                }
-            } catch(e) {
-                alert('Error: ' + (xhr.statusText || error));
-            }
-        }
+        successMessage: 'Rule archived successfully!',
+        reload: true
     });
 }
 
@@ -944,18 +873,16 @@ function viewVersionHistory(ruleId) {
     document.getElementById('versionHistoryContent').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
     versionHistoryModal.show();
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_get_version_history',
         data: {
-            action: 'sgvx51_get_version_history',
             rule_id: ruleId,
-            _wpnonce: '<?php echo wp_create_nonce('sgvx51_rule_nonce'); ?>'
+            _wpnonce: rulesNonce
         },
-        success: function(response) {
-            if(response.success && response.data.versions) {
+        onSuccess: function(data) {
+            if(data.versions) {
                 let html = '<div class="timeline">';
-                response.data.versions.forEach(v => {
+                data.versions.forEach(v => {
                     html += `
                         <div class="border-bottom pb-3 mb-3">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -999,20 +926,14 @@ function handleCategorySubmit(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
-        data: {
-            action: 'sgvx51_manage_category',
-            ...Object.fromEntries(formData)
-        },
-        success: function(response) {
-            if(response.success) {
-                categoryModal.hide();
-                location.reload();
-            } else {
-                alert(response.data.message || 'Error saving category');
-            }
+    SGVX.ajax({
+        action: 'sgvx51_manage_category',
+        data: Object.fromEntries(formData),
+        loadingButton: jQuery(e.target).find('button[type="submit"]'),
+        successMessage: 'Category saved successfully!',
+        reload: true,
+        onSuccess: function() {
+            categoryModal.hide();
         }
     });
 }
@@ -1020,41 +941,15 @@ function handleCategorySubmit(e) {
 function deleteCategory(catId) {
     if(!confirm('Are you sure you want to delete this category? This cannot be undone.')) return;
     
-    console.log('Deleting category:', catId);
-
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_manage_category',
         data: {
-            action: 'sgvx51_manage_category',
             category_action: 'delete',
             category_id: catId,
             _wpnonce: rulesNonce
         },
-        success: function(response) {
-            console.log('Delete response:', response);
-            if(response.success) {
-                alert('Category deleted successfully!');
-                location.reload();
-            } else {
-                alert(response.data ? response.data.message : 'Failed to delete category');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('AJAX Error:', status, error, xhr.responseText);
-            
-            // Try to parse the error response for validation messages
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.data && response.data.message) {
-                    alert(response.data.message);
-                } else {
-                    alert('Error: ' + (xhr.statusText || error));
-                }
-            } catch(e) {
-                alert('Error: ' + (xhr.statusText || error));
-            }
-        }
+        successMessage: 'Category deleted successfully!',
+        reload: true
     });
 }
 
@@ -1089,36 +984,29 @@ function resolveViolation(violationId) {
     const notes = prompt('Enter resolution notes (optional):');
     if(notes === null) return;
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_resolve_violation',
         data: {
-            action: 'sgvx51_resolve_violation',
             violation_id: violationId,
             status: 'resolved',
             admin_notes: notes,
-            _wpnonce: '<?php echo wp_create_nonce('sgvx51_rule_nonce'); ?>'
+            _wpnonce: rulesNonce
         },
-        success: function(response) {
-            if(response.success) location.reload();
-            else alert(response.data.message || 'Error resolving violation');
-        }
+        successMessage: 'Violation resolved successfully!',
+        reload: true
     });
 }
 
 function sendReminders() {
     if(!confirm('Send acknowledgment reminders to all residents with pending acknowledgments?')) return;
 
-    jQuery.ajax({
-        url: ajaxurl,
-        type: 'POST',
+    SGVX.ajax({
+        action: 'sgvx51_send_acknowledgment_reminders',
         data: {
-            action: 'sgvx51_send_acknowledgment_reminders',
-            _wpnonce: '<?php echo wp_create_nonce('sgvx51_rule_nonce'); ?>'
+            _wpnonce: rulesNonce
         },
-        success: function(response) {
-            alert(response.success ? 'Reminders sent successfully!' : 'Error sending reminders');
-        }
+        successMessage: 'Reminders sent successfully!',
+        reload: true
     });
 }
 </script>

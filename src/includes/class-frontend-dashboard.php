@@ -64,8 +64,6 @@ class SGVX51_Frontend_Dashboard {
 		add_action( 'wp_ajax_sgvx51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_action( 'wp_ajax_nopriv_sgvx51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_filter( 'show_admin_bar', array( $this, 'hide_admin_bar_for_residents' ) );
-
-		add_filter( 'template_include', array( $this, 'load_page_template' ) );
 	}
 
 	/**
@@ -134,6 +132,13 @@ class SGVX51_Frontend_Dashboard {
 	 */
 	public function render_dashboard( $atts ) {
 		if ( ! is_user_logged_in() ) {
+			$society_info = array(
+				'name'     => get_option( 'sgvx51_society_name', 'Our Society' ),
+				'address1' => get_option( 'sgvx51_society_address_line1', '' ),
+				'address2' => get_option( 'sgvx51_society_address_line2', '' ),
+				'city'     => get_option( 'sgvx51_society_city', '' ),
+				'contact'  => get_option( 'sgvx51_society_contact', '' )
+			);
 			ob_start();
 			include SGVX51_PLUGIN_DIR . 'templates/resident-login.php';
 			return ob_get_clean();
@@ -393,7 +398,7 @@ class SGVX51_Frontend_Dashboard {
 	foreach ( $all as $r ) {
 		if ( $r['flat_no'] === $flat_no && isset($r['type']) && $r['type'] === 'family' ) {
             $status = $r['status'] ?? 'approved';
-            if ($status === 'approved' || $status === 'deletion_pending') {
+            if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
 			    $mine[] = $r;
             }
 		}
@@ -412,22 +417,19 @@ class SGVX51_Frontend_Dashboard {
 
 			if($is_family_req && $req_flat_no === $flat_no && in_array($req['status'], ['pending', 'rejected'])) {
 				if($payload && $req['request_type'] !== 'delete') {
-					// Add dummy ID if not present in payload, referencing request
-                    // Use entity_id (the original ID) if available, else request ID
                     $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
 					$item = array_merge($payload, [
-                        'id' => $payload_id, // Ensure ID is preserved for matching
+                        'id' => $payload_id,
 						'status' => $req['status'],
 						'request_id' => $req['id']
 					]);
 
-                    // Check if this is an update to an existing member (Edit)
-                    // If entity_id matches an existing approved member, REPLACE it
+                    // Deduplicate
                     $found = false;
                     foreach($mine as $k => $existing) {
-                        if(isset($existing['id']) && $existing['id'] == $req['entity_id']) {
-                             $mine[$k] = $item; // Replace with pending/rejected version
+                        if(isset($existing['id']) && $existing['id'] == $payload_id) {
+                             $mine[$k] = $item; 
                              $found = true;
                              break;
                         }
@@ -479,7 +481,7 @@ class SGVX51_Frontend_Dashboard {
                 $status = strtolower($h['status'] ?? 'approved');
                 if ($status === 'archived') continue; // Exclude archived from active dashboard list
                 // Include approved and deletion_pending
-				if ($status === 'approved' || $status === 'deletion_pending') {
+				if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
                     $mine[] = array_merge($h, ['status' => $status]);
                 }
 			}
@@ -783,9 +785,9 @@ class SGVX51_Frontend_Dashboard {
 		
         try {
             $flat_no = $this->get_my_flat_number();
-            $id = sanitize_text_field( $_POST['member_id'] ?? '' );
+            $id = sanitize_text_field( $_POST['member_id'] ?? ($_POST['resident_id'] ?? '') );
             
-            error_log("SGVX51 Debug: Flat: $flat_no, ID: $id");
+            error_log("SGVX51 Debug: Entering handle_edit_family. Flat: $flat_no, ID: $id. POST: " . print_r($_POST, true));
 
             // Handle Photo Upload
            $photo_url = '';
@@ -1493,7 +1495,7 @@ class SGVX51_Frontend_Dashboard {
             if ( $v['flat_no'] === $flat_no ) {
                 $status = isset($v['status']) ? $v['status'] : 'approved';
                 // Include approved and deletion_pending
-                if($status === 'approved' || $status === 'deletion_pending') {
+                if($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
                     $mine[] = array_merge($v, ['status' => $status]);
                 }
             }
@@ -1586,7 +1588,8 @@ class SGVX51_Frontend_Dashboard {
                     'owner' => 'Unoccupied', 
                     'count' => 0, 
                     'occupied' => false,
-                    'all_names' => []
+                    'all_names' => [],
+                    'email' => ''
                 ];
             }
             
@@ -1598,6 +1601,7 @@ class SGVX51_Frontend_Dashboard {
             // Identify Owner
             if(stripos($r['type'] ?? '', 'owner') !== false) {
                 $flat_analyzed[$fno]['owner'] = $r['name'];
+                $flat_analyzed[$fno]['email'] = $r['email'] ?? '';
             }
         }
 
@@ -1743,6 +1747,7 @@ class SGVX51_Frontend_Dashboard {
                 'floor'   => $f['floor'],
                 'status'  => $res_data['occupied'] ? 'Occupied' : 'Vacant',
                 'owner'   => $res_data['owner'],
+                'email'   => $res_data['email'] ?? '',
                 'all_names' => $res_data['all_names'] ?? [],
                 'members' => $res_data['count'],
                 'parking' => $f['parking_slot'],
@@ -1765,6 +1770,7 @@ class SGVX51_Frontend_Dashboard {
                     'floor'   => '?',
                     'status'  => 'Occupied',
                     'owner'   => $data['owner'],
+                    'email'   => $data['email'] ?? '',
                     'all_names' => $data['all_names'] ?? [],
                     'members' => $data['count'],
                     'parking' => '', 
@@ -1784,18 +1790,6 @@ class SGVX51_Frontend_Dashboard {
         return $directory;
     }
 
-	/**
-	 * Load Custom Page Template.
-	 */
-	public function load_page_template( $template ) {
-		if ( is_page( 'resident-dashboard' ) || is_page( 'society-app' ) ) {
-			$new_template = SGVX51_PLUGIN_DIR . 'templates/page-society-app.php';
-			if ( file_exists( $new_template ) ) {
-				return $new_template;
-			}
-		}
-		return $template;
-	}
 	/**
 	 * Hide Admin Bar for Residents.
 	 */
@@ -1822,7 +1816,16 @@ class SGVX51_Frontend_Dashboard {
 		if ( is_wp_error( $user ) ) {
 			wp_send_json_error( array( 'message' => $user->get_error_message() ) );
 		}
+		
+		// Determine redirect URL
+		$redirect_url = home_url( '/resident-dashboard/' ); // Default
+		if ( user_can( $user, 'manage_options' ) ) {
+			$redirect_url = admin_url( 'admin.php?page=sgvx51-settings' );
+		}
 
-		wp_send_json_success( array( 'message' => 'Login successful' ) );
+		wp_send_json_success( array( 
+			'message' => 'Login successful',
+			'redirect_url' => $redirect_url
+		) );
 	}
 }

@@ -225,20 +225,16 @@
             const id = approveBtn.dataset.id;
             if (!confirm('Approve this request?')) return;
 
-            approveBtn.disabled = true;
-            approveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-
-            try {
-                await window.sgvxApiRequest('sgvx51_approve_request', {
+            SGVX.ajax({
+                action: 'sgvx51_approve_request',
+                data: {
                     id: id,
                     _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
-                });
-                // Row update logic: refresh page or remove row
-                window.location.reload();
-            } catch (err) {
-                approveBtn.disabled = false;
-                approveBtn.innerHTML = '<i class="bi bi-check-lg" style="font-size: 1.1rem;"></i>';
-            }
+                },
+                loadingButton: approveBtn,
+                successMessage: 'Request approved successfully!',
+                reload: true
+            });
         }
 
         if (rejectBtn) {
@@ -247,30 +243,27 @@
             const reason = prompt('Reason for rejection (optional):');
             if (reason === null) return; // Cancelled prompt
 
-            rejectBtn.disabled = true;
-            rejectBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-
-            try {
-                await window.sgvxApiRequest('sgvx51_reject_request', {
+            SGVX.ajax({
+                action: 'sgvx51_reject_request',
+                data: {
                     id: id,
                     admin_note: reason,
                     _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
-                });
-                window.location.reload();
-            } catch (err) {
-                rejectBtn.disabled = false;
-                rejectBtn.innerHTML = '<i class="bi bi-x-lg" style="font-size: 1.1rem;"></i>';
-            }
+                },
+                loadingButton: rejectBtn,
+                successMessage: 'Request rejected.',
+                reload: true
+            });
         }
     });
 
     /**
      * Bulk Action Logic
      */
-    window.sgvxBulkProcess = async function (action) {
+    window.sgvxBulkProcess = function (action) {
         const checkboxes = document.querySelectorAll('.sgvx-bulk-checkbox:checked');
         if (checkboxes.length === 0) {
-            window.sgvxShowToast('Please select at least one item', 'error');
+            SGVX.toast.warning('Please select at least one item');
             return;
         }
 
@@ -283,17 +276,17 @@
             if (!confirm(`Are you sure you want to approve ${ids.length} items?`)) return;
         }
 
-        try {
-            await window.sgvxApiRequest('sgvx51_bulk_process_requests', {
+        SGVX.ajax({
+            action: 'sgvx51_bulk_process_requests',
+            data: {
                 ids: ids,
                 bulk_action: action,
                 note: note,
                 _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
-            });
-            window.location.reload();
-        } catch (err) {
-            // Error already handled by sgvxApiRequest toast
-        }
+            },
+            successMessage: `Bulk ${action} processed successfully!`,
+            reload: true
+        });
     };
 
     // --- Bulk Checkbox Helpers ---

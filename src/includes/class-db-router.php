@@ -29,7 +29,7 @@ class SGVX51_DB_Router {
 	/**
 	 * List of supported "Tables" (Files/Modules).
 	 */
-	const TABLES = array( 'meta', 'flats', 'residents', 'vehicles', 'facilities', 'bookings', 'assets', 'notices', 'expenses', 'documents', 'daily_help', 'invoices', 'receipts', 'polls', 'votes', 'resident_history', 'requests', 'notification_channels', 'notification_events', 'notification_templates', 'notification_preferences', 'notification_logs', 'inapp_notifications' );
+	const TABLES = array( 'meta', 'flats', 'residents', 'vehicles', 'facilities', 'bookings', 'assets', 'notices', 'expenses', 'documents', 'daily_help', 'invoices', 'receipts', 'polls', 'votes', 'resident_history', 'requests', 'rules', 'rule_versions', 'rule_acknowledgments', 'rule_violations', 'rule_categories', 'audit_logs', 'notification_channels', 'notification_events', 'notification_templates', 'notification_preferences', 'notification_logs', 'inapp_notifications' );
 
 	/**
 	 * Constructor.

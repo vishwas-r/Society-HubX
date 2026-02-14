@@ -20,47 +20,33 @@
         if (Config.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'documents'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'documents' },
+                showOverlay: false,
+                suppressErrorToast: true
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
-                Config.deleteNonce = result.data.deleteNonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
+                Config.deleteNonce = result.deleteNonce || null;
                 Config.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
         }
     }
 
-    async function approveDoc(docId) {
-        try {
-            await sgvxApiRequest('sgvx51_approve_doc', { doc_id: docId, _wpnonce: Config.nonce });
-            const el = document.querySelector(`.sgvx-doc-card[data-id="${docId}"]`);
-            if (el) {
-                el.querySelectorAll('.position-absolute').forEach(b => b.remove());
-                window.sgvxShowToast('Document approved', 'success');
-                setTimeout(() => window.location.reload(), 400);
-            } else {
-                window.location.reload();
-            }
-        } catch (err) { }
+    function approveDoc(docId) {
+        SGVX.ajax({
+            action: 'sgvx51_approve_doc',
+            data: { doc_id: docId, _wpnonce: Config.nonce },
+            successMessage: 'Document approved!',
+            reload: true
+        });
     }
 
-    async function deleteDoc(payload) {
+    function deleteDoc(payload) {
         // payload: { id, flat, name, type }
         const modalEl = document.getElementById('deleteConfirmModal');
         const confirmBtn = document.getElementById('confirm-delete-btn');
@@ -72,20 +58,24 @@
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-        newConfirmBtn.addEventListener('click', async function () {
-            try {
-                const data = { flat: payload.flat, file: payload.name, type: payload.type };
-                if (payload.id) data.doc_id = payload.id;
-                await sgvxApiRequest('sgvx51_delete_doc', data);
+        newConfirmBtn.addEventListener('click', function () {
+            const data = { flat: payload.flat, file: payload.name, type: payload.type };
+            if (payload.id) data.doc_id = payload.id;
 
-                const el = payload.id ? document.querySelector(`.sgvx-doc-card[data-id="${payload.id}"]`) : null;
-                if (el) {
-                    el.style.opacity = '0.5';
-                    setTimeout(() => el.remove(), 400);
-                } else {
-                    window.location.reload();
+            SGVX.ajax({
+                action: 'sgvx51_delete_doc',
+                data: data,
+                successMessage: 'Document deleted',
+                onSuccess: function () {
+                    const el = payload.id ? document.querySelector(`.sgvx-doc-card[data-id="${payload.id}"]`) : null;
+                    if (el) {
+                        el.style.opacity = '0.5';
+                        setTimeout(() => el.remove(), 400);
+                    } else {
+                        window.location.reload();
+                    }
                 }
-            } catch (err) { }
+            });
             modal.hide();
         });
 
@@ -97,44 +87,28 @@
             // Upload form AJAX submit
             const uploadForm = document.getElementById('upload-form');
             if (uploadForm) {
-                uploadForm.addEventListener('submit', async function (e) {
+                uploadForm.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    const submitBtn = uploadForm.querySelector('button[type="submit"]');
-                    const original = submitBtn ? submitBtn.innerHTML : '';
-                    if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading...'; }
+                    const formData = new FormData(uploadForm);
+                    formData.set('action', 'sgvx51_upload_doc');
+                    if (Config.nonce) {
+                        formData.set('_wpnonce', Config.nonce);
+                    }
 
-                    try {
-                        // We will send form via fetch because files need to be passed
-                        const formData = new FormData(uploadForm);
-                        // Ensure action is correct
-                        formData.set('action', 'sgvx51_upload_doc');
-
-                        // Determine nonce (prioritize Config.nonce if available)
-                        const nonce = Config.nonce;
-                        if (nonce) formData.set('_wpnonce', nonce);
-
-                        const response = await fetch(ajaxurl, { method: 'POST', body: formData });
-                        const text = await response.text();
-                        let result = {};
-                        try { result = JSON.parse(text); } catch (e) { }
-
-                        if (result && result.success) {
-                            window.sgvxShowToast('Upload started', 'success');
-                            // close modal then reload
+                    SGVX.ajax({
+                        action: 'sgvx51_upload_doc',
+                        data: formData,
+                        loadingButton: $(uploadForm).find('button[type="submit"]'),
+                        successMessage: 'Document uploaded successfully!',
+                        reload: true,
+                        onSuccess: function () {
                             const modalEl = document.getElementById('uploadModal');
                             if (modalEl) {
-                                const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                const inst = bootstrap.Modal.getInstance(modalEl);
                                 if (inst) inst.hide();
                             }
-                            setTimeout(() => window.location.reload(), 400);
-                        } else {
-                            window.sgvxShowToast('Upload failed', 'error');
                         }
-                    } catch (err) {
-                        console.error('Upload error', err);
-                    } finally {
-                        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = original; }
-                    }
+                    });
                 });
             }
 

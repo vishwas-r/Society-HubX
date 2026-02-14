@@ -19,57 +19,43 @@
         if (Config.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'expenses'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'expenses' },
+                showOverlay: false,
+                suppressErrorToast: true
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
-                Config.deleteNonce = result.data.deleteNonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
+                Config.deleteNonce = result.deleteNonce || null;
                 Config.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
         }
     }
 
-    async function approveExpense(id) {
-        try {
-            await sgvxApiRequest('sgvx51_approve_expense', { expense_id: id, _wpnonce: Config.nonce });
-            window.sgvxShowToast('Expense approved', 'success');
-            setTimeout(() => window.location.reload(), 400);
-        } catch (err) { }
+    function approveExpense(id) {
+        SGVX.ajax({
+            action: 'sgvx51_approve_expense',
+            data: { expense_id: id, _wpnonce: Config.nonce },
+            successMessage: 'Expense approved successfully',
+            reload: true
+        });
     }
 
-    async function deleteExpense(id, date) {
+    function deleteExpense(id, date) {
         const modalEl = document.getElementById('deleteConfirmModal');
         const confirmBtn = document.getElementById('confirm-delete-btn');
 
         if (!modalEl || !confirmBtn) {
             if (!confirm('Delete this expense?')) return;
-            // Fallback to direct deletion if modal doesn't exist
-            try {
-                await sgvxApiRequest('sgvx51_delete_expense', { id: id, date: date, _wpnonce: Config.deleteNonce });
-                const row = document.querySelector(`.js-delete-expense[data-id="${id}"]`)?.closest('tr');
-                if (row) {
-                    row.style.opacity = '0.5';
-                    setTimeout(() => row.remove(), 400);
-                } else {
-                    window.location.reload();
-                }
-            } catch (err) { }
+            SGVX.ajax({
+                action: 'sgvx51_delete_expense',
+                data: { id: id, date: date, _wpnonce: Config.deleteNonce },
+                reload: true
+            });
             return;
         }
 
@@ -77,17 +63,21 @@
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-        newConfirmBtn.addEventListener('click', async function () {
-            try {
-                await sgvxApiRequest('sgvx51_delete_expense', { id: id, date: date, _wpnonce: Config.deleteNonce });
-                const row = document.querySelector(`.js-delete-expense[data-id="${id}"]`)?.closest('tr');
-                if (row) {
-                    row.style.opacity = '0.5';
-                    setTimeout(() => row.remove(), 400);
-                } else {
-                    window.location.reload();
+        newConfirmBtn.addEventListener('click', function () {
+            SGVX.ajax({
+                action: 'sgvx51_delete_expense',
+                data: { id: id, date: date, _wpnonce: Config.deleteNonce },
+                successMessage: 'Expense deleted',
+                onSuccess: function () {
+                    const row = document.querySelector(`.js-delete-expense[data-id="${id}"]`)?.closest('tr');
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        setTimeout(() => row.remove(), 400);
+                    } else {
+                        window.location.reload();
+                    }
                 }
-            } catch (err) { }
+            });
             modal.hide();
         });
 
@@ -99,60 +89,25 @@
         fetchModuleConfig().then(() => {
             const form = document.getElementById('expense-form');
             if (form) {
-                form.addEventListener('submit', async function (e) {
+                form.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    const btn = form.querySelector('button[type="submit"]');
-                    const orig = btn ? btn.innerHTML : '';
-                    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...'; }
+                    const formData = new FormData(form);
+                    if (!formData.get('action')) formData.append('action', 'sgvx51_add_expense');
 
-                    try {
-                        const formData = new FormData(form);
-                        // ensure action present
-                        if (!formData.get('action')) formData.append('action', 'sgvx51_add_expense');
-
-                        // Only add nonce if form doesn't already have it AND it's available in localized data
-                        if (!formData.get('_wpnonce') && window.sgvxExpensesData && window.sgvxExpensesData.addNonce) {
-                            formData.append('_wpnonce', window.sgvxExpensesData.addNonce);
-                        }
-
-                        // Debug: Log what we're sending
-                        console.log('=== EXPENSE FORM SUBMISSION DEBUG ===');
-                        console.log('Action:', formData.get('action'));
-                        console.log('Nonce:', formData.get('_wpnonce'));
-                        console.log('Category:', formData.get('category'));
-                        console.log('Amount:', formData.get('amount'));
-                        console.log('Description:', formData.get('description'));
-                        console.log('Date:', formData.get('date'));
-                        console.log('Account Type:', formData.get('account_type'));
-
-                        const response = await fetch(ajaxurl, { method: 'POST', body: formData });
-                        const text = await response.text();
-
-                        console.log('Response Status:', response.status);
-                        console.log('Response Text:', text);
-
-                        let result = {};
-                        try { result = JSON.parse(text); } catch (e) {
-                            console.error('Failed to parse response as JSON:', e);
-                            console.log('Raw response:', text);
-                        }
-
-                        if (result && result.success) {
-                            window.sgvxShowToast(result.data && result.data.message ? result.data.message : 'Expense saved', 'success');
+                    SGVX.ajax({
+                        action: formData.get('action'),
+                        data: formData,
+                        loadingButton: $(form).find('button[type="submit"]'),
+                        successMessage: 'Expense saved successfully!',
+                        reload: true,
+                        onSuccess: function () {
                             const modalEl = document.getElementById('expenseModal');
                             if (modalEl) {
-                                const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+                                const inst = bootstrap.Modal.getInstance(modalEl);
                                 if (inst) inst.hide();
                             }
-                            setTimeout(() => window.location.reload(), 400);
-                        } else {
-                            window.sgvxShowToast('Failed to save expense', 'error');
                         }
-                    } catch (err) {
-                        console.error('Expense save error', err);
-                    } finally {
-                        if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-                    }
+                    });
                 });
             }
 

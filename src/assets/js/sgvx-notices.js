@@ -14,7 +14,12 @@
     async function fetchModuleConfig() {
         if (Config.initialized) return;
         try {
-            const result = await sgvxApiRequest('sgvx51_get_module_config', { module: 'notices' });
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'notices' },
+                showOverlay: false,
+                suppressErrorToast: true
+            });
             if (result) {
                 Config.nonce = result.nonce;
                 Config.deleteNonce = result.deleteNonce;
@@ -65,52 +70,50 @@
     }
 
     // --- CRUD Actions ---
-    async function saveNotice(e) {
+    function saveNotice(e) {
         e.preventDefault();
         const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
 
         // Sync TinyMCE to Textarea
         if (window.tinymce && tinymce.get('notice_editor')) {
             document.getElementById('notice_editor').value = tinymce.get('notice_editor').getContent();
         }
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        const formData = new FormData(form);
+        const isUpdate = formData.get('id');
+        const action = isUpdate ? 'sgvx51_update_notice' : 'sgvx51_add_notice';
 
-        try {
-            const formData = new FormData(form);
-            formData.append('_wpnonce', Config.nonce);
-
-            const isUpdate = formData.get('id');
-            const action = isUpdate ? 'sgvx51_update_notice' : 'sgvx51_add_notice';
-
-            await sgvxApiRequest(action, formData);
-
-            noticeModal.hide();
-            setTimeout(() => window.location.reload(), 500);
-        } catch (err) {
-            console.error('Save failed:', err);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
+        SGVX.ajax({
+            action: action,
+            data: formData,
+            loadingButton: $(form).find('button[type="submit"]'),
+            successMessage: 'Announcement broadcasted successfully!',
+            reload: true,
+            onSuccess: function () {
+                if (noticeModal) noticeModal.hide();
+            }
+        });
     }
 
-    async function deleteNotice(id) {
+    function deleteNotice(id) {
         if (!confirm('Permanently remove this announcement? This cannot be undone.')) return;
-        try {
-            await sgvxApiRequest('sgvx51_delete_notice', { id, _wpnonce: Config.deleteNonce });
-            $(`.sgvx-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
-        } catch (err) { }
+        SGVX.ajax({
+            action: 'sgvx51_delete_notice',
+            data: { id, _wpnonce: Config.deleteNonce },
+            successMessage: 'Notice removed',
+            onSuccess: function () {
+                $(`.sgvx-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
+            }
+        });
     }
 
-    async function togglePin(id, pinned) {
-        try {
-            await sgvxApiRequest('sgvx51_toggle_pin', { id, pinned, _wpnonce: Config.nonce });
-            window.location.reload();
-        } catch (err) { }
+    function togglePin(id, pinned) {
+        SGVX.ajax({
+            action: 'sgvx51_toggle_pin',
+            data: { id, pinned, _wpnonce: Config.nonce },
+            successMessage: pinned ? 'Notice pinned to top' : 'Notice unpinned',
+            reload: true
+        });
     }
 
     // --- Initialization ---
@@ -126,16 +129,17 @@
         });
 
         // Delegate Edit/Pin/Delete
-        $(document).on('click', '.js-edit-notice', async function (e) {
+        $(document).on('click', '.js-edit-notice', function (e) {
             e.preventDefault();
             const id = $(this).data('id');
-            const card = $(`.sgvx-notice-card[data-id="${id}"]`);
 
-            // Fetch fresh data from server or use attributes? Fetching is safer.
-            try {
-                const data = await sgvxApiRequest('sgvx51_get_notice', { id, _wpnonce: Config.nonce });
-                openNoticeModal(data);
-            } catch (err) { }
+            SGVX.ajax({
+                action: 'sgvx51_get_notice',
+                data: { id, _wpnonce: Config.nonce },
+                onSuccess: function (data) {
+                    openNoticeModal(data);
+                }
+            });
         });
 
         $(document).on('click', '.js-toggle-pin', function (e) {

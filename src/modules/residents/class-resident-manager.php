@@ -438,44 +438,65 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Restore Resident from Archive.
 	 */
 	public function handle_restore_resident() {
-    if ( wp_doing_ajax() ) {
-        check_ajax_referer( 'sgvx51_restore_resident_nonce' );
-    } else {
-	    if ( ! check_admin_referer( 'sgvx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
-    }
+		if ( wp_doing_ajax() ) {
+			check_ajax_referer( 'sgvx51_restore_resident_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'sgvx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
+		}
 
-	$resident_id = sanitize_text_field( $_POST['resident_id'] );
-		$history = $this->db->get( 'resident_history' );
+		$resident_id = sanitize_text_field( $_POST['resident_id'] );
 		$to_restore = null;
+		$source = '';
 
-		foreach ( $history as $h ) {
-			if ( $h['id'] === $resident_id ) {
-				$to_restore = $h;
+		// Stage 1: Check if resident is in main table but archived (status flip logic)
+		$residents = $this->db->get( 'residents' );
+		foreach ( $residents as $r ) {
+			if ( $r['id'] === $resident_id && $r['status'] === 'archived' ) {
+				$to_restore = $r;
+				$source = 'residents';
 				break;
 			}
 		}
 
+		// Stage 2: Fallback to history table (table move logic)
+		if ( ! $to_restore ) {
+			$history = $this->db->get( 'resident_history' );
+			foreach ( $history as $h ) {
+				if ( $h['id'] === $resident_id ) {
+					$to_restore = $h;
+					$source = 'history';
+					break;
+				}
+			}
+		}
+
 		if ( $to_restore ) {
-			unset($to_restore['vacated_at']); // Remove archive timestamp
-			$this->db->insert('residents', $to_restore);
-			$this->db->delete('resident_history', ['id' => $resident_id]);
+			if ( $source === 'residents' ) {
+				// Simply flip status back to approved
+				$this->db->update('residents', ['status' => 'approved'], ['id' => $resident_id]);
+			} else {
+				// Move back from history to residents
+				unset($to_restore['vacated_at']); // Remove archive timestamp
+				$this->db->insert('residents', $to_restore);
+				$this->db->delete('resident_history', ['id' => $resident_id]);
+			}
 
-        // Log Audit
-        $rm = new SGVX51_Request_Manager();
-        $rm->log_audit('resident_restored', 'residents', $resident_id, "Resident: " . ($to_restore['name'] ?? 'Unknown'));
+			// Log Audit
+			$name = $to_restore['name'] ?? 'Unknown';
+			require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+			$rm = new SGVX51_Request_Manager();
+			$rm->log_audit('resident_restored', 'residents', $resident_id, "Resident: $name (source: $source)");
 
-            if ( wp_doing_ajax() ) {
-                // Aggressive Clean
-                while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                wp_send_json_success(['message' => 'Resident restored successfully']);
-            }
+			if ( wp_doing_ajax() ) {
+				while ( ob_get_level() > 0 ) { ob_end_clean(); }
+				wp_send_json_success(['message' => 'Resident restored successfully']);
+			}
 		} else {
-            if ( wp_doing_ajax() ) {
-                // Aggressive Clean
-                while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                wp_send_json_error(['message' => 'History record not found']);
-            }
-        }
+			if ( wp_doing_ajax() ) {
+				while ( ob_get_level() > 0 ) { ob_end_clean(); }
+				wp_send_json_error(['message' => 'Resident record not found in Archived status or History log']);
+			}
+		}
 
 		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=restored' ) );
 		exit;

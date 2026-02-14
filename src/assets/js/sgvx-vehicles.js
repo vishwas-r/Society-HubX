@@ -19,26 +19,17 @@
         if (Config.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'vehicles'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'vehicles' },
+                showOverlay: false, // Silent fetch for config
+                suppressErrorToast: true
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
-                Config.deleteNonce = result.data.deleteNonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
+                Config.deleteNonce = result.deleteNonce || null;
                 Config.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
@@ -144,25 +135,25 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
-            try {
-                await sgvxApiRequest('sgvx51_delete_vehicle', {
+            SGVX.ajax({
+                action: 'sgvx51_delete_vehicle',
+                data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
-                });
-
-                // Immediate UI update: Hide the row from active view
-                const row = document.querySelector(`.js-delete-vehicle[data-id="${id}"]`)?.closest('tr');
-                if (row) {
-                    row.style.opacity = '0.5';
-                    row.style.pointerEvents = 'none';
-                    setTimeout(() => {
-                        row.remove();
-                        // No reload needed if we just hide it, but since tabs rely on DOM, better to refresh or just hide.
-                        // For completeness:
-                        window.location.reload();
-                    }, 500);
+                },
+                successMessage: 'Vehicle archived successfully',
+                onSuccess: function () {
+                    const row = document.querySelector(`.js-delete-vehicle[data-id="${id}"]`)?.closest('tr');
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        row.style.pointerEvents = 'none';
+                        setTimeout(() => {
+                            row.remove();
+                            window.location.reload();
+                        }, 500);
+                    }
                 }
-            } catch (err) { }
+            });
             modal.hide();
         });
 
@@ -170,13 +161,15 @@
     };
 
     window.restoreVehicle = async function (id) {
-        try {
-            await sgvxApiRequest('sgvx51_restore_vehicle', {
+        SGVX.ajax({
+            action: 'sgvx51_restore_vehicle',
+            data: {
                 id: id,
                 _wpnonce: Config.nonce
-            });
-            window.location.reload();
-        } catch (err) { }
+            },
+            successMessage: 'Vehicle restored successfully!',
+            reload: true
+        });
     };
 
     // --- Init ---
@@ -206,25 +199,21 @@
 
             const $form = $('#add-vehicle-form');
             if ($form.length) {
-                $form.on('submit', async function (e) {
+                $form.on('submit', function (e) {
                     e.preventDefault();
-                    const $btn = $form.find('button[type="submit"]');
-                    const originalText = $btn.html();
-                    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+                    const action = $form.find('[name="action"]').val();
+                    const formData = new FormData($form[0]);
 
-                    try {
-                        const formData = new FormData($form[0]);
-                        const data = Object.fromEntries(formData.entries());
-
-                        await sgvxApiRequest(data.action, data);
-
-                        closeVehicleModal();
-                        window.location.reload();
-                    } catch (err) {
-                        console.error('Vehicle Save Error:', err);
-                    } finally {
-                        $btn.prop('disabled', false).html(originalText);
-                    }
+                    SGVX.ajax({
+                        action: action,
+                        data: formData,
+                        loadingButton: $form.find('button[type="submit"]'),
+                        successMessage: 'Vehicle details saved successfully',
+                        reload: true,
+                        onSuccess: function () {
+                            closeVehicleModal();
+                        }
+                    });
                 });
             }
             // Real-time Search

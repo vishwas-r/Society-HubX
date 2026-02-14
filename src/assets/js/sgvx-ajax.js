@@ -144,9 +144,16 @@
 
             if (requestData instanceof FormData) {
                 if (!requestData.has('action')) requestData.append('action', config.action);
-                if (!requestData.has('_wpnonce')) {
-                    const nonce = config.data._wpnonce || (typeof sgvx51_nonce !== 'undefined' ? sgvx51_nonce : '');
-                    if (nonce) requestData.append('_wpnonce', nonce);
+
+                // Robust nonce detection for FormData
+                if (!requestData.has('_wpnonce') || !requestData.get('_wpnonce')) {
+                    const fallbackNonce = (typeof sgvx51_nonce !== 'undefined' ? sgvx51_nonce : '');
+                    const providedNonce = (config.data && typeof config.data.get === 'function') ? config.data.get('_wpnonce') : (config.data ? config.data._wpnonce : null);
+                    const finalNonce = providedNonce || fallbackNonce;
+
+                    if (finalNonce) {
+                        requestData.set('_wpnonce', finalNonce);
+                    }
                 }
             } else {
                 requestData.action = config.action;
@@ -197,7 +204,11 @@
                     } else {
                         // Handle error response
                         const errorMsg = (response.data && response.data.message) ? response.data.message : config.errorMessage;
-                        SGVX.toast.error(errorMsg);
+
+                        // Only show toast if not suppressed
+                        if (!config.suppressErrorToast) {
+                            SGVX.toast.error(errorMsg);
+                        }
 
                         if (config.onError) {
                             config.onError(errorMsg, response);
@@ -212,7 +223,10 @@
                         ? xhr.responseJSON.data.message
                         : config.errorMessage;
 
-                    SGVX.toast.error(errorMsg);
+                    // Only show toast if not suppressed
+                    if (!config.suppressErrorToast) {
+                        SGVX.toast.error(errorMsg);
+                    }
 
                     if (config.onError) {
                         config.onError(errorMsg, xhr);

@@ -13,14 +13,39 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-5">
-                <div class="sgvx-login-card p-4 p-md-5">
+                <!-- 1. Intro Card -->
+                <div id="intro-card" class="sgvx-login-card p-4 p-md-5 text-center">
+                    <div class="sgvx-brand-icon mb-4 mx-auto">
+                        <i class="bi bi-building-fill text-white fs-2"></i>
+                    </div>
+                    <h1 class="h3 fw-bold text-dark mb-2"><?php echo esc_html( $society_info['name'] ); ?></h1>
+                    <?php if ( ! empty( $society_info['address1'] ) ) : ?>
+                        <p class="text-secondary mb-1"><?php echo esc_html( $society_info['address1'] ); ?></p>
+                    <?php endif; ?>
+                    <?php if ( ! empty( $society_info['city'] ) ) : ?>
+                        <p class="text-secondary small mb-4"><?php echo esc_html( $society_info['city'] ); ?></p>
+                    <?php endif; ?>
+
+                    <div class="d-grid gap-3">
+                        <button type="button" class="btn btn-primary py-3 fw-bold rounded-3 shadow-sm" onclick="showLoginForm()">
+                            <i class="bi bi-door-open-fill me-2"></i> Resident Dashboard
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-top border-light">
+                        <p class="small text-secondary m-0">Powered by <strong>Society GoVernX</strong></p>
+                    </div>
+                </div>
+
+                <!-- 2. Login Card (Initially Hidden) -->
+                <div id="login-card" class="sgvx-login-card p-4 p-md-5 d-none">
                     <!-- Logo / Brand -->
                     <div class="text-center mb-4">
                         <div class="sgvx-brand-icon mb-3 mx-auto">
                             <i class="bi bi-shield-lock-fill text-white fs-2"></i>
                         </div>
-                        <h2 class="h4 fw-bold text-dark m-0">Welcome Back</h2>
-                        <p class="text-secondary small">Sign in to your society dashboard</p>
+                        <h2 class="h4 fw-bold text-dark m-0">Member Login</h2>
+                        <p class="text-secondary small">Sign in to your society account</p>
                     </div>
 
                     <!-- Alert for Errors -->
@@ -54,11 +79,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <span class="btn-text">Sign In</span>
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         </button>
-                    </form>
 
-                    <div class="text-center mt-4 pt-3 border-top border-light">
-                        <p class="small text-secondary m-0">Need access? <a href="#" class="text-primary fw-medium text-decoration-none">Contact Manager</a></p>
-                    </div>
+                        <button type="button" class="btn btn-link w-100 mt-3 text-secondary text-decoration-none small" onclick="showIntro()">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Society Info
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -101,6 +126,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.1);
     position: relative;
     z-index: 1;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sgvx-login-card.fade-out {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
 }
 
 .sgvx-brand-icon {
@@ -152,6 +183,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 </style>
 
 <script>
+window.showLoginForm = function() {
+    const intro = document.getElementById('intro-card');
+    const login = document.getElementById('login-card');
+    intro.classList.add('fade-out');
+    setTimeout(() => {
+        intro.classList.add('d-none');
+        login.classList.remove('d-none');
+        setTimeout(() => login.classList.remove('fade-out'), 10);
+    }, 400);
+};
+
+window.showIntro = function() {
+    const intro = document.getElementById('intro-card');
+    const login = document.getElementById('login-card');
+    login.classList.add('fade-out');
+    setTimeout(() => {
+        login.classList.add('d-none');
+        intro.classList.remove('d-none');
+        setTimeout(() => intro.classList.remove('fade-out'), 10);
+    }, 400);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('resident-login-form');
     const errorDiv = document.getElementById('login-error');
@@ -179,7 +232,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    window.location.reload();
+                    if (data.data.redirect_url) {
+                        window.location.href = data.data.redirect_url;
+                    } else {
+                        window.location.reload();
+                    }
                 } else {
                     errorDiv.textContent = data.data.message || 'Login failed. Please try again.';
                     errorDiv.classList.remove('d-none');

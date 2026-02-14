@@ -24,26 +24,17 @@
         if (Config.initialized) return;
 
         try {
-            const response = await fetch(ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'sgvx51_get_module_config',
-                    module: 'facilities'
-                }).toString()
+            const result = await SGVX.ajax({
+                action: 'sgvx51_get_module_config',
+                data: { module: 'facilities' },
+                showOverlay: false,
+                suppressErrorToast: true
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-            if (result.success && result.data) {
-                Config.nonce = result.data.nonce || null;
-                Config.deleteNonce = result.data.deleteNonce || null;
+            if (result) {
+                Config.nonce = result.nonce || null;
+                Config.deleteNonce = result.deleteNonce || null;
                 Config.initialized = true;
-            } else {
-                console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
             }
         } catch (error) {
             console.error('Error fetching module config:', error);
@@ -104,7 +95,7 @@
         State.facilityModal.show();
     }
 
-    async function deleteFacility(id) {
+    function deleteFacility(id) {
         const modalEl = document.getElementById('deleteConfirmModal');
         const confirmBtn = document.getElementById('confirm-delete-btn');
         if (!modalEl || !confirmBtn) {
@@ -116,34 +107,32 @@
             const newConfirmBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-            newConfirmBtn.addEventListener('click', async function () {
-                try {
-                    await sgvxApiRequest('sgvx51_delete_facility', {
-                        id: id,
-                        _wpnonce: Config.deleteNonce
-                    });
-
-                    const row = document.querySelector(`.js-delete-facility[data-id="${id}"]`)?.closest('.list-group-item');
-                    if (row) {
-                        row.style.opacity = '0.5';
-                        row.style.pointerEvents = 'none';
-                        setTimeout(() => { row.remove(); }, 400);
+            newConfirmBtn.addEventListener('click', function () {
+                SGVX.ajax({
+                    action: 'sgvx51_delete_facility',
+                    data: { id: id, _wpnonce: Config.deleteNonce },
+                    successMessage: 'Facility deleted successfully',
+                    onSuccess: function () {
+                        const row = document.querySelector(`.js-delete-facility[data-id="${id}"]`)?.closest('.list-group-item');
+                        if (row) {
+                            row.style.opacity = '0.5';
+                            row.style.pointerEvents = 'none';
+                            setTimeout(() => { row.remove(); }, 400);
+                        }
                     }
-                } catch (err) { }
+                });
                 modal.hide();
             });
 
             modal.show();
         } else {
-            // Fallback to native if modal logic fails despite check
+            // Fallback
             if (!confirm('Delete facility?')) return;
-            try {
-                await sgvxApiRequest('sgvx51_delete_facility', {
-                    id: id,
-                    _wpnonce: Config.deleteNonce
-                });
-                window.location.reload();
-            } catch (err) { }
+            SGVX.ajax({
+                action: 'sgvx51_delete_facility',
+                data: { id: id, _wpnonce: Config.deleteNonce },
+                reload: true
+            });
         }
     }
 
@@ -176,30 +165,21 @@
             // Facility Form AJAX submit
             const form = document.getElementById('facility-form');
             if (form) {
-                form.addEventListener('submit', async function (e) {
+                form.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    const originalText = submitBtn ? submitBtn.innerHTML : '';
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
-                    }
+                    const action = form.querySelector('[name="action"]').value;
+                    const formData = new FormData(form);
 
-                    try {
-                        const formData = new FormData(form);
-                        const data = Object.fromEntries(formData.entries());
-                        await sgvxApiRequest(data.action, data);
-
-                        closeFacilityModal();
-                        window.location.href = window.location.origin + window.location.pathname + '?page=sgvx51-facilities';
-                    } catch (err) {
-                        console.error('Facility Save Error:', err);
-                    } finally {
-                        if (submitBtn) {
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = originalText;
+                    SGVX.ajax({
+                        action: action,
+                        data: formData,
+                        loadingButton: form.querySelector('button[type="submit"]'),
+                        successMessage: 'Facility configuration saved!',
+                        reload: true,
+                        onSuccess: function () {
+                            closeFacilityModal();
                         }
-                    }
+                    });
                 });
             }
 

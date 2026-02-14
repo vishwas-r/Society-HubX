@@ -19,9 +19,9 @@ $qr_url    = get_option('sgvx51_bank_qr');
     <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
       <input type="hidden" name="action" value="sgvx51_add_family">
       <?php wp_nonce_field( 'sgvx51_add_family_nonce' ); ?>
-      <input type="hidden" name="_wpnonce_add_family" value="<?php echo wp_create_nonce('sgvx51_add_family_nonce'); ?>">
-      <?php wp_nonce_field( 'sgvx51_edit_family_nonce', '_wpnonce_edit_family', false ); ?>
+      <?php wp_nonce_field( 'sgvx51_edit_family_nonce', '_wpnonce_edit_family' ); ?>
       <input type="hidden" name="member_id" value="">
+      <input type="hidden" name="resident_id" value="">
       
       <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
         <h5 class="fw-bold m-0" id="familyModalLabel">Add Family Member</h5>
@@ -31,10 +31,11 @@ $qr_url    = get_option('sgvx51_bank_qr');
           <?php 
           $args = [
               'context'  => 'frontend_family',
-              'resident' => [] 
+              'resident' => [
+                  'flat_no' => $profile_resident['flat_no'] ?? '',
+                  'type'    => 'family'
+              ] 
           ];
-          // Ensure resident-form.php variables are set for empty form
-          $resident = []; 
           include SGVX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
       </div>
@@ -215,63 +216,6 @@ $qr_url    = get_option('sgvx51_bank_qr');
   </div>
 </div>
 
-<!-- 5. Edit Family Modal (Redundant or Legacy) -->
-<div class="modal fade" id="editFamilyModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <form class="modal-content border-0 shadow-lg rounded-3" method="POST">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-dark">Edit Family Member</h5>
-        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-         <input type="hidden" name="action" value="sgvx51_edit_family_frontend">
-         <input type="hidden" name="member_id" value="">
-         <?php wp_nonce_field('sgvx51_edit_family_nonce'); ?>
-         
-         <div class="mb-3">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Name <span class="text-danger">*</span></label>
-             <input type="text" name="name" class="form-control rounded-3 border-light shadow-none" required>
-         </div>
-         <div class="row g-3 mb-3">
-             <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
-                 <select name="relation" class="form-select rounded-3 border-light shadow-none" required>
-                     <option>Spouse</option>
-                     <option>Child</option>
-                     <option>Parent</option>
-                     <option>Sibling</option>
-                     <option>Other</option>
-                 </select>
-             </div>
-             <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Date of Birth <span class="text-danger">*</span></label>
-                 <input type="date" name="dob" class="form-control rounded-3 border-light shadow-none" required>
-             </div>
-         </div>
-         <div class="row g-3 mb-3">
-             <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Blood Group</label>
-                 <select name="blood_group" class="form-select rounded-3 border-light shadow-none">
-                     <option value="">Select</option>
-                     <option>A+</option><option>A-</option>
-                     <option>B+</option><option>B-</option>
-                     <option>AB+</option><option>AB-</option>
-                     <option>O+</option><option>O-</option>
-                 </select>
-             </div>
-             <div class="col-6">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Phone</label>
-                 <input type="tel" name="phone" class="form-control rounded-3 border-light shadow-none" placeholder="Optional">
-             </div>
-         </div>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-light text-secondary rounded-3 px-4 shadow-none" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- 6. Upload Doc Modal -->
 <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
@@ -283,7 +227,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
       </div>
       <div class="modal-body">
          <input type="hidden" name="action" value="sgvx51_upload_doc">
-         <?php wp_nonce_field('sgvx51_upload_doc_nonce'); ?>
+         <?php wp_nonce_field('sgvx51_document_nonce'); ?>
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Document Name <span class="text-danger">*</span></label>
              <input type="text" name="doc_name" class="form-control rounded-3 border-light shadow-none" placeholder="Maintenance Bill/Possession Letter" required>
@@ -417,6 +361,10 @@ $qr_url    = get_option('sgvx51_bank_qr');
                  <label class="small text-muted text-uppercase fw-bold" style="font-size: 10px;">Family Size</label>
                  <div class="fw-bold d-flex align-items-center gap-2"><i class="bi bi-people text-primary"></i> <span id="cdm-members"></span> Members</div>
              </div>
+             <div class="col-6">
+                 <label class="small text-muted text-uppercase fw-bold" style="font-size: 10px;">Email</label>
+                 <div class="fw-bold d-flex align-items-center gap-2" id="cdm-email">-</div>
+             </div>
              <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Vehicles</label><div id="cdm-vehicles" class="d-flex flex-column align-items-start gap-2"></div></div>
              <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Daily Help</label><div id="cdm-help" class="d-flex flex-column align-items-start gap-2"></div></div>
          </div>
@@ -474,53 +422,21 @@ $qr_url    = get_option('sgvx51_bank_qr');
     // Redundant window.sgvxDashboardData assignment removed to avoid overwriting localized nonce.
 
     function saveProfileChanges() {
-      const btn = event.target;
+      const btn = event.target.closest('button');
       const form = document.getElementById('editProfileForm');
       if (!form) return;
 
-      const name = form.querySelector('[name="name"]')?.value || '';
-      const email = form.querySelector('[name="email"]')?.value || '';
-      const phone = form.querySelector('[name="phone"]')?.value || '';
-      const blood = form.querySelector('[name="blood_group"]')?.value || '';
-      const dob = form.querySelector('[name="dob"]')?.value || '';
-      const fileInput = document.getElementById('pic-frontend_profile');
-
-      if (!name.trim() || !email.trim()) { alert('❌ Name and Email are required'); return; }
-
-      btn.disabled = true;
-      const originalText = btn.innerHTML;
-      btn.innerHTML = 'Saving...';
-
-      const formData = new FormData();
+      const formData = new FormData(form);
       formData.append('action', 'sgvx51_edit_resident');
       formData.append('resident_id', '<?php echo esc_js($profile_resident['id'] ?? ''); ?>');
-      formData.append('name', name);
-      formData.append('email', email);
-      formData.append('phone', phone);
-      formData.append('blood_group', blood);
-      formData.append('dob', dob);
-      formData.append('flat_no', '<?php echo esc_js($profile_resident['flat_no'] ?? ''); ?>');
-      formData.append('type', '<?php echo esc_js($profile_resident['type'] ?? 'owner'); ?>');
       formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('sgvx51_frontend_nonce')); ?>');
-      if (fileInput && fileInput.files[0]) formData.append('profile_photo', fileInput.files[0]);
 
-      fetch(ajaxurl, { method: 'POST', body: formData })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) { 
-          alert('✅ Profile updated successfully!'); 
-          location.reload(); 
-        } else { 
-          alert('❌ ' + (data.data?.message || 'Error occurred while saving profile.')); 
-          btn.disabled = false; 
-          btn.innerHTML = originalText; 
-        }
-      })
-      .catch(err => {
-        console.error('Profile Save Error:', err);
-        alert('❌ Network error. Please try again.');
-        btn.disabled = false;
-        btn.innerHTML = originalText;
+      SGVX.ajax({
+          action: 'sgvx51_edit_resident',
+          data: formData,
+          loadingButton: $(btn),
+          successMessage: 'Profile updated successfully!',
+          reload: true
       });
     }
 
