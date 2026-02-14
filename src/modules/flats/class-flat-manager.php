@@ -24,6 +24,7 @@ class SGVX51_Flat_Manager {
 		add_action( 'wp_ajax_sgvx51_edit_flat', array( $this, 'handle_edit_flat' ) );
 		add_action( 'wp_ajax_sgvx51_delete_flat', array( $this, 'handle_delete_flat' ) );
 		add_action( 'wp_ajax_sgvx51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'wp_ajax_sgvx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
 
 		add_action( 'admin_post_sgvx51_add_flat', array( $this, 'handle_add_flat' ) );
 		add_action( 'admin_post_sgvx51_edit_flat', array( $this, 'handle_edit_flat' ) );
@@ -70,6 +71,23 @@ class SGVX51_Flat_Manager {
 	/**
 	 * Handle Edit.
 	 */
+	public function handle_hard_delete_flat() {
+		check_ajax_referer( 'sgvx51_hard_delete_flat_nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
+		}
+
+		$flat_id = sanitize_text_field( $_POST['flat_id'] );
+		$res = $this->db->delete( 'flats', array( 'id' => $flat_id ) );
+
+		if ( $res ) {
+			wp_send_json_success( array( 'message' => 'Flat permanently deleted' ) );
+		} else {
+			wp_send_json_error( array( 'message' => 'Failed to delete flat' ) );
+		}
+	}
+
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
             if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'sgvx51_add_flat_nonce') ) {

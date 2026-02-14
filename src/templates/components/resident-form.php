@@ -73,11 +73,17 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
                 <option value="">Select Flat</option>
                 <?php if(!empty($args['flats'])): ?>
                     <?php foreach($args['flats'] as $f): 
-                        $val = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                        // Smart Select: Match either the new Value OR the legacy ID
-                        $is_sel = ($flat_no == $val) || ($flat_no == $f['id']);
+                        $val = $f['id']; // Use the ID (e.g. A-101) for value
+                        $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                        $label = $f_num;
+                        $is_sel = ($flat_no == $val || $flat_no == $f_num);
                     ?>
-                        <option value="<?php echo esc_attr($val); ?>" <?php echo $is_sel ? 'selected' : ''; ?>><?php echo esc_html($val); ?></option>
+                        <option value="<?php echo esc_attr($val); ?>" 
+                                data-number="<?php echo esc_attr($f_num); ?>"
+                                data-id="<?php echo esc_attr($val); ?>"
+                                <?php echo $is_sel ? 'selected' : ''; ?>>
+                            <?php echo esc_html($label); ?>
+                        </option>
                     <?php endforeach; ?>
                 <?php endif; ?>
              </select>

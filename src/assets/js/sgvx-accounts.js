@@ -84,16 +84,16 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('Success: ' + result.data.message);
+                    SGVX.toast.success('Success: ' + result.data.message);
                     window.location.reload();
                 } else {
-                    alert('Error: ' + result.data.message);
+                    SGVX.toast.error('Error: ' + result.data.message);
                     btn.disabled = false;
                     btn.innerHTML = originalHtml;
                 }
             } catch (err) {
                 console.error(err);
-                alert('An error occurred while processing the request.');
+                SGVX.toast.error('An error occurred while processing the request.');
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
             }
@@ -335,7 +335,7 @@
 
         // Ensure all required fields are present
         if (!data.invoice_id || !data.amount || !data.method) {
-            alert('Please fill in all required fields');
+            SGVX.toast.warning('Please fill in all required fields');
             return;
         }
 
@@ -368,7 +368,7 @@
 
             if (!nonce) {
                 console.error('No nonce found for payment submission');
-                alert('Security error: nonce not found');
+                SGVX.toast.error('Security error: nonce not found');
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Record Payment';
@@ -396,7 +396,7 @@
             if (response.status === 302 || response.status === 301) {
                 // Redirect response - payment was recorded
                 console.log('✓ Payment recorded successfully');
-                alert('✅ Payment recorded successfully!');
+                SGVX.toast.success('✅ Payment recorded successfully!');
                 setTimeout(() => { window.location.reload(); }, 1000);
             } else if (response.ok) {
                 // HTML or JSON response
@@ -404,10 +404,10 @@
                 if (contentType && contentType.includes('application/json')) {
                     const json = await response.json();
                     if (json.success) {
-                        alert('✅ Payment recorded successfully!');
+                        SGVX.toast.success('✅ Payment recorded successfully!');
                         setTimeout(() => { window.location.reload(); }, 1000);
                     } else {
-                        alert('❌ Error: ' + (json.data?.message || 'Failed to record payment'));
+                        SGVX.toast.error('❌ Error: ' + (json.data?.message || 'Failed to record payment'));
                         if (submitBtn) {
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = 'Record Payment';
@@ -416,11 +416,11 @@
                 } else {
                     // HTML response - assume success and reload
                     console.log('Payment submitted, reloading...');
-                    alert('✅ Payment recorded successfully!');
+                    SGVX.toast.success('✅ Payment recorded successfully!');
                     setTimeout(() => { window.location.reload(); }, 1000);
                 }
             } else {
-                alert('❌ Error: HTTP ' + response.status);
+                SGVX.toast.error('❌ Error: HTTP ' + response.status);
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Record Payment';
@@ -428,7 +428,7 @@
             }
         } catch (err) {
             console.error('Payment submission error:', err);
-            alert('Error recording payment: ' + err.message);
+            SGVX.toast.error('Error recording payment: ' + err.message);
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Record Payment';

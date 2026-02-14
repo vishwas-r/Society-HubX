@@ -456,18 +456,18 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert(data.data.message || 'Saved successfully');
+                            SGVX.toast.success(data.data.message || 'Saved successfully');
                             location.reload();
                         } else {
                             const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            alert('Error: ' + msg);
+                            SGVX.toast.error('Error: ' + msg);
                             btn.disabled = false;
                             btn.innerText = originalText;
                         }
                     })
                     .catch(err => {
                         console.error('Fetch Error:', err);
-                        alert('Network error occurred.');
+                        SGVX.toast.error('Network error occurred.');
                         btn.disabled = false;
                         btn.innerText = originalText;
                     });
@@ -494,18 +494,18 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert(data.data.message || 'Saved successfully');
+                            SGVX.toast.success(data.data.message || 'Saved successfully');
                             location.reload();
                         } else {
                             const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            alert('Error: ' + msg);
+                            SGVX.toast.error('Error: ' + msg);
                             btn.disabled = false;
                             btn.innerText = originalText;
                         }
                     })
                     .catch(err => {
                         console.error('Fetch Error:', err);
-                        alert('Network error occurred.');
+                        SGVX.toast.error('Network error occurred.');
                         btn.disabled = false;
                         btn.innerText = originalText;
                     });
@@ -532,18 +532,18 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert(data.data.message || 'Request submitted successfully');
+                            SGVX.toast.success(data.data.message || 'Request submitted successfully');
                             location.reload();
                         } else {
                             const msg = (data.data && data.data.message) || (typeof data.data === 'string' ? data.data : 'Unknown error');
-                            alert('Error: ' + msg);
+                            SGVX.toast.error('Error: ' + msg);
                             btn.disabled = false;
                             btn.innerText = originalText;
                         }
                     })
                     .catch(err => {
                         console.error('Fetch Error:', err);
-                        alert('Network error occurred.');
+                        SGVX.toast.error('Network error occurred.');
                         btn.disabled = false;
                         btn.innerText = originalText;
                     });
@@ -610,7 +610,7 @@
                                 if (window.sgvxShowToast) {
                                     window.sgvxShowToast(msg, 'error');
                                 } else {
-                                    alert('Error: ' + msg);
+                                    SGVX.toast.error('Error: ' + msg);
                                 }
                                 btn.disabled = false;
                                 btn.innerText = originalText;
@@ -983,7 +983,7 @@
                 if (res.success) {
                     window.location.reload();
                 } else {
-                    alert(res.data || 'Deletion failed');
+                    SGVX.toast.error(res.data || 'Deletion failed');
                     btn.innerText = originalText;
                     btn.disabled = false;
                 }
@@ -1178,7 +1178,7 @@
         window.downloadReceipt = function () {
             const receiptElement = document.getElementById('receipt-content');
             if (!receiptElement) {
-                alert('Receipt not found!');
+                SGVX.toast.error('Receipt not found!');
                 return;
             }
 
@@ -1188,7 +1188,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
 
             if (typeof html2canvas === 'undefined') {
-                alert('Library not loaded. Please try again.');
+                SGVX.toast.error('Library not loaded. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 return;
@@ -1210,7 +1210,7 @@
                 btn.innerHTML = originalText;
             }).catch(error => {
                 console.error('Download error:', error);
-                alert('Error generating receipt image. Please try again.');
+                SGVX.toast.error('Error generating receipt image. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             });
@@ -1252,12 +1252,12 @@
                             modal.show();
                         }
                     } else {
-                        alert('Error loading receipt: ' + (data.data.message || 'Unknown error'));
+                        SGVX.toast.error('Error loading receipt: ' + (data.data.message || 'Unknown error'));
                     }
                 })
                 .catch(error => {
                     console.error('Receipt fetch error:', error);
-                    alert('Error loading receipt. Please try again.');
+                    SGVX.toast.error('Error loading receipt. Please try again.');
                 });
         };
 
@@ -1369,7 +1369,7 @@
             const amount = form.querySelector('[name="amount"]').value;
             const ref = form.querySelector('[name="reference"]').value;
             if (!amount || !ref) {
-                alert('Please fill in the Amount and Reference Number.');
+                SGVX.toast.warning('Please fill in the Amount and Reference Number.');
                 return;
             }
 
@@ -1389,7 +1389,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(data.data.message || 'Payment confirmation sent!');
+                        SGVX.toast.success(data.data.message || 'Payment confirmation sent!');
                         const modalEl = document.getElementById('sgvx51PaymentModal');
                         if (modalEl) {
                             const modal = bootstrap.Modal.getInstance(modalEl);
@@ -1397,14 +1397,14 @@
                         }
                         location.reload();
                     } else {
-                        alert('Error: ' + (data.data.message || 'Failed to submit request'));
+                        SGVX.toast.error('Error: ' + (data.data.message || 'Failed to submit request'));
                         btn.disabled = false;
                         btn.innerHTML = originalText;
                     }
                 })
                 .catch(error => {
                     console.error('Submission Error:', error);
-                    alert('An error occurred. Please try again.');
+                    SGVX.toast.error('An error occurred. Please try again.');
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 });

@@ -7,14 +7,29 @@ $db = new SGVX51_DB_Router();
 $flats = $db->get( 'flats' );
 $residents = $db->get( 'residents' );
 
-// Map Residents to Flats (Flat No -> Name)
+// Map Residents to Flats (Robust Mapping)
 $flat_owners = [];
 if ( ! empty( $residents ) && is_array( $residents ) ) {
+    // Priority 1: Owners
     foreach ( $residents as $r ) {
-        // We assume 'flat_no' in residents matches 'flat_number' in flats
-        // Use the first found resident as the "Owner/Primary" for listing
-        if ( ! empty( $r['flat_no'] ) && ! isset( $flat_owners[ $r['flat_no'] ] ) ) {
-            $flat_owners[ $r['flat_no'] ] = $r['name'];
+        if ( empty($r['flat_no']) || ($r['status'] ?? '') === 'archived' ) continue;
+        
+        $is_owner = (strtolower($r['type'] ?? '') === 'owner');
+        if (!$is_owner) continue;
+
+        $f_id = trim($r['flat_no']);
+        // Store by whatever ID is present (could be A-101 or 101)
+        if ( ! isset( $flat_owners[ $f_id ] ) ) {
+            $flat_owners[ $f_id ] = $r['name'];
+        }
+    }
+    // Priority 2: Others (if no owner found yet)
+    foreach ( $residents as $r ) {
+        if ( empty($r['flat_no']) || ($r['status'] ?? '') === 'archived' ) continue;
+        
+        $f_id = trim($r['flat_no']);
+        if ( ! isset( $flat_owners[ $f_id ] ) ) {
+            $flat_owners[ $f_id ] = $r['name'];
         }
     }
 }
@@ -115,7 +130,10 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         $p_status = strtolower($f['parking_status'] ?? 'vacant');
 						$sq_foot = isset($f['sq_foot']) ? $f['sq_foot'] : 0;
                         $flat_no = $f['flat_number'] ?? '-';
-                        $owner_name = $flat_owners[$flat_no] ?? null;
+                        $full_id = $f['id'] ?? '';
+                        
+                        // Robust lookup: Try ID first (A-101), then Flat Number (101)
+                        $owner_name = $flat_owners[$full_id] ?? ($flat_owners[$flat_no] ?? null);
                     ?>
                     <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
                         <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $flat_no ); ?></td>
@@ -149,14 +167,20 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         </td>
                         <td class="pe-3 pe-md-5 py-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(json_encode($f)); ?>">
+                                <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(json_encode($f)); ?>" title="Edit Unit">
                                     <i class="bi bi-pencil-square fs-6"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 p-2 js-delete-flat" data-id="<?php echo esc_attr($f['id']); ?>">
-                                    <i class="bi bi-archive fs-6"></i>
-                                </button>
                                 <?php if ($status === 'archived'): ?>
-                                    <button onclick="restoreFlat('<?php echo esc_js($f['id']); ?>')" class="btn btn-sm btn-success px-3 fw-bold" style="font-size: 10px;">RESTORE</button>
+                                    <button type="button" class="btn btn-sm btn-light text-success border shadow-sm rounded-3 p-2 js-restore-flat" data-id="<?php echo esc_attr($f['id']); ?>" title="Restore Unit">
+                                        <i class="bi bi-arrow-counterclockwise fs-6"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 p-2 js-hard-delete-flat" data-id="<?php echo esc_attr($f['id']); ?>" title="Permanently Delete">
+                                        <i class="bi bi-trash-fill fs-6"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 p-2 js-delete-flat" data-id="<?php echo esc_attr($f['id']); ?>" title="Archive Unit">
+                                        <i class="bi bi-archive fs-6"></i>
+                                    </button>
                                 <?php endif; ?>
                             </div>
                         </td>

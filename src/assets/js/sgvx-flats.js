@@ -8,6 +8,7 @@
     const Config = {
         nonce: null,
         deleteNonce: null,
+        hardDeleteNonce: null,
         initialized: false
     };
 
@@ -36,6 +37,7 @@
             if (result.success && result.data) {
                 Config.nonce = result.data.nonce || null;
                 Config.deleteNonce = result.data.deleteNonce || null;
+                Config.hardDeleteNonce = result.data.hardDeleteNonce || null;
                 Config.initialized = true;
             } else {
                 console.error('Failed to fetch module config:', result.data?.message || 'Unknown error');
@@ -135,42 +137,85 @@
     window.deleteFlat = async function (id) {
         const modalEl = document.getElementById('deleteConfirmModal');
         const confirmBtn = document.getElementById('confirm-delete-btn');
+        const modalTitle = modalEl ? modalEl.querySelector('.modal-title') : null;
+        const modalBody = modalEl ? modalEl.querySelector('.modal-text') : null;
+
         if (!modalEl || !confirmBtn) {
-            if (!confirm('Are you sure you want to delete Unit ' + id + '?')) return;
-            // Fallback to legacy if no modern modal
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = ajaxurl;
-            const fields = {
-                action: 'sgvx51_delete_flat',
+            // Legacy/Fallback direct AJAX using centralized wrapper
+            SGVX.ajax('sgvx51_delete_flat', {
                 flat_id: id,
-                _wpnonce: window.sgvxFlatsData.nonce // Note: Check if we need a specific delete nonce
-            };
-            // ... (rest of legacy form submit if needed)
+                _wpnonce: Config.deleteNonce || Config.nonce
+            }, {
+                success: 'Flat archived successfully',
+                reload: true
+            });
             return;
         }
 
+        // Set labels for Archive
+        if (modalTitle) modalTitle.textContent = 'Archive Unit?';
+        if (modalBody) modalBody.textContent = 'This unit will be moved to the archive registry.';
+
+        confirmBtn.classList.add('btn-danger');
+        confirmBtn.classList.remove('btn-dark');
+
         const modal = new bootstrap.Modal(modalEl);
+
+        // Remove old listeners to prevent double submit
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
             try {
-                await sgvxApiRequest('sgvx51_delete_flat', {
+                await SGVX.ajax('sgvx51_delete_flat', {
                     flat_id: id,
-                    _wpnonce: window.sgvxFlatsData.deleteNonce || window.sgvxFlatsData.nonce
+                    _wpnonce: Config.deleteNonce
+                }, {
+                    success: 'Flat archived successfully',
+                    reload: true
                 });
+            } catch (err) {
+                console.error('Archive Flat error:', err);
+            }
+            modal.hide();
+        });
 
-                const row = document.querySelector(`.js-delete-flat[data-id="${id}"]`)?.closest('tr');
-                if (row) {
-                    row.style.opacity = '0.5';
-                    row.style.pointerEvents = 'none';
-                    setTimeout(() => {
-                        row.remove();
-                        window.location.reload();
-                    }, 500);
-                }
-            } catch (err) { }
+        modal.show();
+    };
+
+    window.hardDeleteFlat = async function (id) {
+        const modalEl = document.getElementById('deleteConfirmModal');
+        const confirmBtn = document.getElementById('confirm-delete-btn');
+        const modalTitle = modalEl ? modalEl.querySelector('.modal-title') : null;
+        const modalBody = modalEl ? modalEl.querySelector('.modal-text') : null;
+
+        if (!modalEl || !confirmBtn) return;
+
+        // Set labels for Hard Delete
+        if (modalTitle) modalTitle.textContent = 'Permanently Delete?';
+        if (modalBody) modalBody.textContent = 'This action is IRREVERSIBLE. Are you sure you want to completely remove this unit?';
+
+        confirmBtn.classList.remove('btn-danger');
+        confirmBtn.classList.add('btn-dark');
+
+        const modal = new bootstrap.Modal(modalEl);
+
+        // Remove old listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        newConfirmBtn.addEventListener('click', async function () {
+            try {
+                await SGVX.ajax('sgvx51_hard_delete_flat', {
+                    flat_id: id,
+                    _wpnonce: Config.hardDeleteNonce
+                }, {
+                    success: 'Flat deleted permanently',
+                    reload: true
+                });
+            } catch (err) {
+                console.error('Hard Delete Flat error:', err);
+            }
             modal.hide();
         });
 
@@ -179,12 +224,16 @@
 
     window.restoreFlat = async function (id) {
         try {
-            await sgvxApiRequest('sgvx51_restore_flat', {
-                id: id,
+            await SGVX.ajax('sgvx51_restore_flat', {
+                flat_id: id,
                 _wpnonce: Config.nonce
+            }, {
+                success: 'Flat restored successfully',
+                reload: true
             });
-            window.location.reload();
-        } catch (err) { }
+        } catch (err) {
+            console.error('Restore Flat error:', err);
+        }
     };
 
     // --- Init ---
@@ -204,6 +253,18 @@
                 e.preventDefault();
                 const id = $(this).data('id');
                 if (id) window.deleteFlat(id);
+            });
+
+            $(document).on('click', '.js-restore-flat', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) window.restoreFlat(id);
+            });
+
+            $(document).on('click', '.js-hard-delete-flat', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) window.hardDeleteFlat(id);
             });
 
             // Real-time Search
@@ -236,7 +297,9 @@
                             parking_slot: data.parking_slot
                         });
 
-                        const resp = await sgvxApiRequest(data.action, data);
+                        const resp = await SGVX.ajax(data.action, data, {
+                            button: $btn
+                        });
                         console.log('SGVX Save response:', resp);
 
                         // If the server reports no rows affected, inform the user.
@@ -246,7 +309,7 @@
                         if (data.action === 'sgvx51_edit_flat') {
                             if (rows === 0) {
                                 console.warn('No changes detected for this flat (rows_affected=0).');
-                                alert('Save completed: No changes detected. The values you submitted match existing values.');
+                                SGVX.toast.info('Save completed: No changes detected. The values you submitted match existing values.');
                             } else {
                                 closeFlatModal();
                                 window.location.reload();

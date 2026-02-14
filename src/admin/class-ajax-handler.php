@@ -75,6 +75,7 @@ class SGVX51_AJAX_Handler {
 					'deleteNonce'        => wp_create_nonce( 'sgvx51_delete_resident_nonce' ),
 					'deleteHistoryNonce' => wp_create_nonce( 'sgvx51_delete_history_nonce' ),
 					'restoreNonce'       => wp_create_nonce( 'sgvx51_restore_resident_nonce' ),
+					'moveToHistoryNonce' => wp_create_nonce( 'sgvx51_move_to_history_nonce' ),
 				);
 				break;
 
@@ -121,11 +122,10 @@ class SGVX51_AJAX_Handler {
 				break;
 
 			case 'flats':
-				$config = array(
-					'nonce'       => wp_create_nonce( 'sgvx51_flat_nonce' ),
-					'deleteNonce' => wp_create_nonce( 'sgvx51_delete_flat_nonce' ),
-				);
-				break;
+                $config['nonce'] = wp_create_nonce('sgvx51_add_flat_nonce');
+                $config['deleteNonce'] = wp_create_nonce('sgvx51_delete_flat_nonce');
+                $config['hardDeleteNonce'] = wp_create_nonce('sgvx51_hard_delete_flat_nonce');
+                break;
 
 			case 'staff':
 				$config = array(

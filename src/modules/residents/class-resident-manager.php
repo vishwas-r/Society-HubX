@@ -27,6 +27,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		add_action( 'wp_ajax_sgvx51_edit_resident', array( $this, 'handle_edit_resident' ) );
 		add_action( 'wp_ajax_sgvx51_delete_resident', array( $this, 'handle_delete_resident' ) );
 		add_action( 'wp_ajax_sgvx51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'wp_ajax_sgvx51_move_to_history', array( $this, 'handle_move_to_history' ) );
 		add_action( 'wp_ajax_sgvx51_delete_history', array( $this, 'handle_delete_history' ) );
 
 		// Legacy Admin Post Actions (optional cleanup if no longer used)
@@ -34,6 +35,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		add_action( 'admin_post_sgvx51_edit_resident', array( $this, 'handle_edit_resident' ) );
 		add_action( 'admin_post_sgvx51_delete_resident', array( $this, 'handle_delete_resident' ) );
 		add_action( 'admin_post_sgvx51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'admin_post_sgvx51_move_to_history', array( $this, 'handle_move_to_history' ) );
 		add_action( 'admin_post_sgvx51_delete_history', array( $this, 'handle_delete_history' ) );
 		add_action( 'admin_post_sgvx51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
 
@@ -377,40 +379,60 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
 		$resident_id = sanitize_text_field( $_POST['resident_id'] );
         
-        // IF ADMIN: Action is immediate.
         if ( current_user_can( 'manage_options' ) ) {
-            // 1. Synchronize with Request Manager if a pending request exists
+            $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
+        } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
-            $sync_res = $rm->approve_request( $resident_id );
-            
-            if ( ! is_wp_error( $sync_res ) ) {
-                if ( wp_doing_ajax() ) {
-                    // Aggressive Clean
-                    while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                    wp_send_json_success(['message' => 'Resident archived and request synchronized']);
-                } else {
-                    wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=deleted' ) );
-                }
-                exit;
-            }
-
-            $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
+            $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
         }
-
-        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SGVX51_Request_Manager();
-        $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
 
         if ( wp_doing_ajax() ) {
             // Aggressive Clean
             while ( ob_get_level() > 0 ) { ob_end_clean(); }
-            wp_send_json_success(['message' => 'Request archived successfully']);
+            wp_send_json_success(['message' => 'Resident archived successfully']);
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=deleted' ) );
+		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=archived' ) );
 		exit;
 	}
+
+    /**
+     * Move from Residents to History (Permanent Delete from Residents)
+     */
+    public function handle_move_to_history() {
+        if ( wp_doing_ajax() ) {
+            check_ajax_referer( 'sgvx51_move_to_history_nonce' );
+        } else {
+            if ( ! check_admin_referer( 'sgvx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
+        }
+
+        if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
+
+        $resident_id = sanitize_text_field( $_POST['resident_id'] );
+        $residents = $this->db->get( 'residents' );
+        $to_archive = null;
+
+        foreach ( $residents as $r ) {
+            if ( $r['id'] === $resident_id ) {
+                $to_archive = $r;
+                break;
+            }
+        }
+
+        if ( $to_archive ) {
+            $this->archive_to_history( $to_archive );
+            $this->db->delete('residents', ['id' => $resident_id]);
+
+            if ( wp_doing_ajax() ) {
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+                wp_send_json_success(['message' => 'Resident moved to history']);
+            }
+        }
+
+        wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=permanently_deleted' ) );
+        exit;
+    }
 
 	/**
 	 * Restore Resident from Archive.
@@ -475,10 +497,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		}
 
 		if ( $to_archive ) {
-			$archive_res = $this->archive_to_history( $to_archive );
-            if ( is_wp_error($archive_res) ) return $archive_res;
-            
-			return $this->db->delete('residents', ['id' => $to_archive['id']]);
+			// Instead of deleting, we now update status to archived per user request
+            // History move only happens on "Permanent Delete"
+			return $this->db->update('residents', ['status' => 'archived'], ['id' => $to_archive['id']]);
 		}
         return false;
     }

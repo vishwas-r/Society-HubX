@@ -132,6 +132,15 @@ if (!isset($flats)) $flats = array();
                 </thead>
                 <tbody class="border-top-0">
                     <?php 
+                    // 0. Build Flat Mapping for display
+                    $flat_map = array();
+                    if ( ! empty( $flats ) ) {
+                        foreach ( $flats as $f ) {
+                            // User requested ONLY flat number
+                            $flat_map[$f['id']] = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
+                        }
+                    }
+
                     // 1. Index active residents
                     $rows_by_entity = array();
                     if ( ! empty( $residents ) ) {
@@ -142,6 +151,7 @@ if (!isset($flats)) $flats = array();
                             $r_status = $r['status'] ?? 'approved';
                             $r['is_request'] = in_array($r_status, ['pending', 'rejected']);
                             $r['is_archived'] = ($r_status === 'archived');
+                            $r['source'] = 'residents';
                             $r['request_id'] = '';
                             $rows_by_entity[$r_id] = $r;
                         }
@@ -182,6 +192,7 @@ if (!isset($flats)) $flats = array();
                             $h['status'] = 'archived';
                             $h['is_request'] = false;
                             $h['is_archived'] = true;
+                            $h['source']    = 'history';
                             $all_rows[] = $h;
                         }
                     }
@@ -228,7 +239,11 @@ if (!isset($flats)) $flats = array();
                             </td>
                             <td class="px-4 py-4">
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px;"><?php echo esc_html( $row['flat_no'] ?? '-' ); ?></span>
+                                    <?php 
+                                        $f_id = $row['flat_no'] ?? '-';
+                                        $display_f = $flat_map[$f_id] ?? $f_id;
+                                    ?>
+                                    <span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px;"><?php echo esc_html( $display_f ); ?></span>
                                     <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo $type_label; ?></span>
                                 </div>
                             </td>
@@ -276,7 +291,7 @@ if (!isset($flats)) $flats = array();
                                         <button class="btn btn-sm btn-light js-restore-resident text-success border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>" title="Restore">
                                             <i class="bi bi-arrow-counterclockwise fs-6"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light js-delete-permanent text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>" title="Delete Permanently">
+                                        <button class="btn btn-sm btn-light js-delete-permanent text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>" data-source="<?php echo esc_attr($row['source'] ?? 'residents'); ?>" title="Delete Permanently">
                                             <i class="bi bi-x-circle fs-6"></i>
                                         </button>
                                     <?php endif; ?>

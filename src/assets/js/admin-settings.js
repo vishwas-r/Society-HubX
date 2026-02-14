@@ -54,7 +54,7 @@
 
                 // Professional Check: Is wp.media available?
                 if (typeof wp === 'undefined' || !wp.media) {
-                    alert('WordPress Media Library not loaded properly. Please refresh the page.');
+                    SGVX.toast.error('WordPress Media Library not loaded properly. Please refresh the page.');
                     return;
                 }
 
