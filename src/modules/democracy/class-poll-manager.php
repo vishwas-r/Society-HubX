@@ -3,7 +3,7 @@
  * Class: Poll Manager
  * Handles Digital Democracy (Polling & Voting).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -3,7 +3,7 @@
  * Module: Rule Manager
  * Handles Society Rules & Regulations, Acknowledgments, and Violations.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,7 +22,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		// Initialize notifications with error handling
 		try {
-			$plugin_instance = Society_Govern_X::get_instance();
+			$plugin_instance = Society_GoVernX::get_instance();
 			if ( $plugin_instance && isset($plugin_instance->notifications) ) {
 				$this->notifications = $plugin_instance->notifications;
 			} else {

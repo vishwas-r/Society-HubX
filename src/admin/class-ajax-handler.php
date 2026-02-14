@@ -3,7 +3,7 @@
  * Class: AJAX Handler
  * Handles AJAX endpoints for module configuration and other dynamic requests.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -177,7 +177,7 @@ class SGVX51_AJAX_Handler {
 		$is_admin = current_user_can( 'manage_options' );
 
 		// Get invoice data
-		$plugin = Society_Govern_X::get_instance();
+		$plugin = Society_GoVernX::get_instance();
 		$invoice = $plugin->db->get_invoice( $invoice_id );
 
 		if ( ! $invoice ) {
@@ -280,7 +280,7 @@ class SGVX51_AJAX_Handler {
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		$channels = $db->get('notification_channels');
 
 		foreach($channels as $c) {
@@ -301,7 +301,7 @@ class SGVX51_AJAX_Handler {
 		$slug = isset($_POST['channel_slug']) ? sanitize_key($_POST['channel_slug']) : '';
 		$config = isset($_POST['config']) ? $_POST['config'] : []; // Recursive sanitization would be better
 		
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		$updated = $db->update('notification_channels', ['config' => json_encode($config)], ['channel_slug' => $slug]);
 
 		if(is_wp_error($updated)) wp_send_json_error(['message' => $updated->get_error_message()]);
@@ -318,7 +318,7 @@ class SGVX51_AJAX_Handler {
 		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
 		$active = isset($_POST['active']) ? (int)$_POST['active'] : 0;
 
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		$db->update('notification_channels', ['is_active' => $active], ['channel_slug' => $slug]);
 		wp_send_json_success();
 	}
@@ -334,7 +334,7 @@ class SGVX51_AJAX_Handler {
 		$channel = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
 		$enabled = isset($_POST['enabled']) ? (int)$_POST['enabled'] : 0;
 
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		$events = $db->get('notification_events');
 		
 		foreach($events as $e) {
@@ -361,7 +361,7 @@ class SGVX51_AJAX_Handler {
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		$templates = $db->get('notification_templates');
 
 		foreach($templates as $t) {
@@ -383,7 +383,7 @@ class SGVX51_AJAX_Handler {
 		$subject = isset($_POST['subject']) ? sanitize_text_field($_POST['subject']) : '';
 		$content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';
 		
-		$db = Society_Govern_X::get_instance()->db;
+		$db = Society_GoVernX::get_instance()->db;
 		
 		// Get current version to increment
 		$current = null;

@@ -3,7 +3,7 @@
  * Class: Log Manager
  * Handles log governance, purging, and automated maintenance.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ class SGVX51_Log_Manager {
 	private $db;
 
 	public function __construct($db = null) {
-		$this->db = $db ?: Society_Govern_X::get_instance()->db;
+		$this->db = $db ?: Society_GoVernX::get_instance()->db;
         
         // Hook into Action Scheduler for daily cleanup
 		add_action( 'sgvx51_daily_log_purge', array( $this, 'purge_old_logs' ) );

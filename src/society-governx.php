@@ -2,12 +2,13 @@
 /**
  * Plugin Name: Society GoVernX
  * Plugin URI:  https://www.vishwas.me
- * Description: A Society Management System. Features Facilities, Assets, Expenses, and Document Vault.
- * Version:     1.0.1
+ * Description: A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
+ * Version:     1.0.0
  * Author:      Vishwas R
  * Author URI:  https://www.vishwas.me
- * Text Domain: society-govern-x
+ * Text Domain: society-governx
  * License:     GPL-2.0+
+ * Tags:        society management, apartment management, resident portal, maintenance tracking, facility booking
  */
 
 // Exit if accessed directly.
@@ -16,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SGVX51_VERSION', '1.0.2' );
+define( 'SGVX51_VERSION', '1.0.0' );
 define( 'SGVX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SGVX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SGVX51_PREFIX', 'sgvx51' );
@@ -24,7 +25,7 @@ define( 'SGVX51_PREFIX', 'sgvx51' );
 /**
  * Main Plugin Class.
  */
-final class Society_Govern_X {
+final class Society_GoVernX {
 	/**
 	 * Instance of this class.
 	 *
@@ -196,7 +197,7 @@ final class Society_Govern_X {
 	 * Localization and setup.
 	 */
 	public function on_plugins_loaded() {
-		load_plugin_textdomain( 'society-govern-x', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'society-governx', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		
 		// Redirect after Login
 		add_filter( 'login_redirect', array( $this, 'custom_login_redirect' ), 10, 3 );
@@ -452,7 +453,7 @@ final class Society_Govern_X {
 	 * Load Custom Page Templates.
 	 * Logic:
 	 * 1. If explicit template is selected in dropdown.
-	 * 2. OR if the page contains string '[society_govern_x_dashboard]' - AUTO APPLY.
+	 * 2. OR if the page contains string '[Society_GoVernX_dashboard]' - AUTO APPLY.
 	 */
 	public function load_page_template( $template ) {
 		global $post;
@@ -464,7 +465,7 @@ final class Society_Govern_X {
 		}
 
 		// 2. Auto-detect Shortcode (Fallback if user can't select template)
-		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'society_govern_x_dashboard' ) ) {
+		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'Society_GoVernX_dashboard' ) ) {
 			 return SGVX51_PLUGIN_DIR . 'templates/page-society-app.php';
 		}
 
@@ -476,6 +477,6 @@ final class Society_Govern_X {
  * Initialize the plugin.
  */
 function sgvx51_init() {
-	return Society_Govern_X::get_instance();
+	return Society_GoVernX::get_instance();
 }
 add_action( 'plugins_loaded', 'sgvx51_init' );

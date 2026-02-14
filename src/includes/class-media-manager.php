@@ -3,7 +3,7 @@
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,8 +17,8 @@ class SGVX51_Media_Manager {
 
 	public function __construct() {
 		$upload_dir = wp_upload_dir();
-		$this->base_dir = $upload_dir['basedir'] . '/society-govern-x/profile-pics/';
-		$this->base_url = $upload_dir['baseurl'] . '/society-govern-x/profile-pics/';
+		$this->base_dir = $upload_dir['basedir'] . '/society-governx/profile-pics/';
+		$this->base_url = $upload_dir['baseurl'] . '/society-governx/profile-pics/';
 
 		if ( ! file_exists( $this->base_dir ) ) {
 			wp_mkdir_p( $this->base_dir );

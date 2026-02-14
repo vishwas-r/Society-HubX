@@ -3,7 +3,7 @@
  * Module: Account Manager
  * Handles Resident Invoices, Payments, and Maintenance Dues.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

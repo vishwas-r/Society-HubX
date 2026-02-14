@@ -100,7 +100,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
             <?php 
-            $display_flat = Society_Govern_X::get_instance()->db->get_flat_display_name( $flat_no );
+            $display_flat = Society_GoVernX::get_instance()->db->get_flat_display_name( $flat_no );
             ?>
             <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($display_flat); ?>" disabled>
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">

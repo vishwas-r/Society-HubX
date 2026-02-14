@@ -3,7 +3,7 @@
  * Module: Ledger Manager
  * Aggregates Financial Data (Invoices & Expenses) for Audit.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

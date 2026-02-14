@@ -4,7 +4,7 @@
  * Handles File Operations: Folders, Uploads, List.
  * Switches between Google Drive (Connected) and Local Uploads (Offline).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -20,7 +20,7 @@ class SGVX51_Drive_Manager {
 		$this->is_connected = (bool) get_option( 'sgvx51_google_refresh_token' );
 		
 		$upload_dir = wp_upload_dir();
-		$this->local_root = $upload_dir['basedir'] . '/society-govern-x/docs/';
+		$this->local_root = $upload_dir['basedir'] . '/society-governx/docs/';
 		
 		if ( ! $this->is_connected && ! file_exists( $this->local_root ) ) {
 			wp_mkdir_p( $this->local_root );
@@ -152,7 +152,7 @@ class SGVX51_Drive_Manager {
 				$upload_url = wp_upload_dir();
 				// This assumes folder_id follows local_root pattern
 				$rel = str_replace( $this->local_root, '', $folder_id );
-				$base_url = $upload_url['baseurl'] . '/society-govern-x/docs/' . $rel . '/';
+				$base_url = $upload_url['baseurl'] . '/society-governx/docs/' . $rel . '/';
 				
 				foreach ( $items as $item ) {
 					if ( '.' !== $item && '..' !== $item ) {
@@ -214,7 +214,7 @@ class SGVX51_Drive_Manager {
 			$rel = str_replace( $this->local_root, '', $folder );
 			// Fix slashes
 			$rel = trim( str_replace( '\\', '/', $rel ), '/' );
-			return $upload_url['baseurl'] . '/society-govern-x/docs/' . $rel . '/' . $file_array['name'];
+			return $upload_url['baseurl'] . '/society-governx/docs/' . $rel . '/' . $file_array['name'];
 		}
 	}
 

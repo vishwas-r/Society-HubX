@@ -3,7 +3,7 @@
  * Module: Facility Manager
  * Handles Facilities (Clubhouse, etc.) and Bookings.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

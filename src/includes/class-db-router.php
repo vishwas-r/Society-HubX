@@ -7,7 +7,7 @@
  * - Writes go to Google Sheets (if connected) then Update Local.
  * - If Offline, Writes go directly to Local JSON.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -39,7 +39,7 @@ class SGVX51_DB_Router {
 		$this->wpdb = $wpdb;
 		
 		$uploads = wp_upload_dir();
-		$this->data_dir = $uploads['basedir'] . '/society-govern-x/data/';
+		$this->data_dir = $uploads['basedir'] . '/society-governx/data/';
 
 		if ( ! file_exists( $this->data_dir ) ) {
 			wp_mkdir_p( $this->data_dir );

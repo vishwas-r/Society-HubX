@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Assets for Settings (if any specific ones needed, usually handled by main helper)
 // Data for Communication Tab
-$db = Society_Govern_X::get_instance()->db;
+$db = Society_GoVernX::get_instance()->db;
 $channels  = $db->get('notification_channels');
 $events    = $db->get('notification_events');
 $templates = $db->get('notification_templates');
@@ -686,6 +686,31 @@ $templates = $db->get('notification_templates');
                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill px-3 py-1 small fw-bold">Critical Actions</span>
                             </div>
                             
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden border border-danger border-opacity-10 mb-4" style="background-color: #fff9f9;">
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="bi bi-magic text-danger fs-5"></i>
+                                                <h6 class="fw-bold text-danger m-0">Relaunch Setup Wizard</h6>
+                                            </div>
+                                            <p class="small text-danger opacity-75 mb-0" style="max-width: 500px;">
+                                                Restart the initial configuration process. This will let you re-configure society details and property structure.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                                <input type="hidden" name="action" value="sgvx51_relaunch_wizard">
+                                                <?php wp_nonce_field( 'sgvx51_relaunch_nonce' ); ?>
+                                                <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
+                                                    Start Wizard
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="card border-0 shadow-sm rounded-4 overflow-hidden border border-danger border-opacity-10" style="background-color: #fff9f9;">
                                 <div class="card-body p-4">
                                     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">

@@ -3,7 +3,7 @@
  * Module: Notice Board
  * Handles Public/Private Notices with modern AJAX Support.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -146,7 +146,7 @@ class SGVX51_Notice_Board {
     private function broadcast_notice($notice) {
         $residents = $this->db->get('residents');
         $audience = $notice['audience'];
-        $dispatcher = Society_Govern_X::get_instance()->notifications;
+        $dispatcher = Society_GoVernX::get_instance()->notifications;
 
         if (!$dispatcher) return;
 

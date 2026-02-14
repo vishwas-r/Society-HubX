@@ -4,7 +4,7 @@
  * Handles receipt generation and numbering for payments.
  * Receipt format: SGVX-YYYYMMXXX (Year, Month, Auto-incremented number)
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

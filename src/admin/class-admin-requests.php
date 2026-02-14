@@ -3,7 +3,7 @@
  * Class: Admin Requests
  * Handles the "Requests" admin page and generalized approval logic.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

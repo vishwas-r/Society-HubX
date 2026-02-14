@@ -5,7 +5,7 @@
  * Standard interface for all Society GoVernX modules to support
  * centralized request handling (Approval/Rejection).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

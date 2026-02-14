@@ -3,7 +3,7 @@
  * Module: Flat Manager
  * Handles Flats/Units Master Data (Block, Number, Parking).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

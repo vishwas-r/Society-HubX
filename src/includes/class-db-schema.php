@@ -3,7 +3,7 @@
  * Class: DB Schema
  * Defines the SQL table structures and handles creation/updates via dbDelta.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -673,7 +673,7 @@ class SGVX51_DB_Schema {
      */
     public static function reset_json() {
         $uploads = wp_upload_dir();
-        $data_dir = $uploads['basedir'] . '/society-govern-x/data/';
+        $data_dir = $uploads['basedir'] . '/society-governx/data/';
         
         if ( is_dir( $data_dir ) ) {
             $files = glob( $data_dir . '*.json' );

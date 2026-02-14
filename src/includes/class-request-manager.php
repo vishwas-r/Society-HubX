@@ -3,7 +3,7 @@
  * Class: Request Manager
  * Processes resident requests (Add, Edit, Delete).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -234,8 +234,8 @@ class SGVX51_Request_Manager {
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_Govern_X') && !empty($target_request['created_by']) ) {
-                $sgvx = Society_Govern_X::get_instance();
+            if ( class_exists('Society_GoVernX') && !empty($target_request['created_by']) ) {
+                $sgvx = Society_GoVernX::get_instance();
                 if ( isset($sgvx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
@@ -335,8 +335,8 @@ class SGVX51_Request_Manager {
 			$this->log_audit('request_rejected', $module_slug, $actual_request_id, "Action: $action, Target: $entity_id, Note: $note, Rejected by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_Govern_X') && !empty($target_request['created_by']) ) {
-                $sgvx = Society_Govern_X::get_instance();
+            if ( class_exists('Society_GoVernX') && !empty($target_request['created_by']) ) {
+                $sgvx = Society_GoVernX::get_instance();
                 if ( isset($sgvx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');

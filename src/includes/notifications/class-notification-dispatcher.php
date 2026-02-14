@@ -20,7 +20,7 @@ class SGVX51_Notification_Dispatcher {
     private $db;
 
     public function __construct($db = null) {
-        $this->db = $db ?: Society_Govern_X::get_instance()->db;
+        $this->db = $db ?: Society_GoVernX::get_instance()->db;
         $this->load_providers();
         
         // Hook into Action Scheduler for background processing

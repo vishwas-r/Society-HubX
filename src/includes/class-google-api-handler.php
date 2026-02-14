@@ -3,7 +3,7 @@
  * Class: Google API Handler
  * Handles OAuth2 Authentication and API Requests via REST.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

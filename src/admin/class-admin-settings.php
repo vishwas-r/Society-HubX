@@ -3,7 +3,7 @@
  * Class: Admin Settings
  * Renders the Plugin Settings Page.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,6 +22,22 @@ class SGVX51_Admin_Settings {
 		add_action( 'admin_post_sgvx51_reset_db', array( $this, 'handle_reset_db' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		add_action( 'in_admin_footer', array( $this, 'render_storage_mode_indicator' ) );
+		add_action( 'admin_post_sgvx51_setup_action', array( $this, 'handle_setup_actions' ) );
+		add_action( 'admin_post_sgvx51_relaunch_wizard', array( $this, 'handle_relaunch_wizard' ) );
+		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
+	}
+
+	public function maybe_redirect_to_setup() {
+		if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) return;
+		if ( ! current_user_can( 'manage_options' ) ) return;
+
+		$is_setup = get_option( 'sgvx51_is_setup_complete' );
+		$page = $_GET['page'] ?? '';
+
+		if ( ! $is_setup && $page !== 'sgvx51-setup' ) {
+			wp_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
+			exit;
+		}
 	}
 
 	public function render_storage_mode_indicator() {
@@ -83,6 +99,16 @@ class SGVX51_Admin_Settings {
 			'sgvx51-polls',
 			array( $this, 'render_polls_page' )
 		);
+
+		// Hidden Setup Page
+		add_submenu_page(
+			null,
+			'Society Setup',
+			'Setup',
+			'manage_options',
+			'sgvx51-setup',
+			array( $this, 'render_setup_page' )
+		);
 	}
 
 	public function enqueue_admin_assets( $hook ) {
@@ -138,12 +164,31 @@ class SGVX51_Admin_Settings {
 	public function handle_setup_actions() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
-		// 1. Setup Wizard (Google Sync)
+		// 1. Setup Wizard Steps
+		if ( isset( $_POST['sgvx51_setup_step'] ) && check_admin_referer( 'sgvx51_setup_nonce' ) ) {
+			require_once SGVX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
+			$step = sanitize_text_field( $_POST['sgvx51_setup_step'] );
+			$results = SGVX51_Setup_Wizard::save_step( $step, $_POST );
+			
+			if ( $step === 'finalize' ) {
+				wp_redirect( admin_url( 'admin.php?page=sgvx51-settings&setup_complete=1' ) );
+			} else {
+				$next_step = 1;
+				if ( $step === 'identity' ) $next_step = 2;
+				elseif ( $step === 'property' ) $next_step = 3;
+				elseif ( $step === 'financials' ) $next_step = 4;
+				
+				wp_redirect( admin_url( 'admin.php?page=sgvx51-setup&step=' . $next_step ) );
+			}
+			exit;
+		}
+
+		// 2. Legacy Setup Wizard (Google Sync)
 		if ( isset( $_POST['sgvx51_action'] ) && check_admin_referer( 'sgvx51_setup', 'sgvx51_nonce' ) ) {
 			require_once SGVX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
 			if ( 'run_setup' === $_POST['sgvx51_action'] || 'run_setup_offline' === $_POST['sgvx51_action'] ) {
-				$results = SGVX51_Setup_Wizard::run_setup();
-				add_settings_error( 'sgvx51_messages', 'sgvx51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
+				// $results = SGVX51_Setup_Wizard::run_setup();
+				// add_settings_error( 'sgvx51_messages', 'sgvx51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
 			}
 		}
 	}
@@ -299,6 +344,15 @@ class SGVX51_Admin_Settings {
 		exit;
 	}
 
+	public function handle_relaunch_wizard() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
+		check_admin_referer( 'sgvx51_relaunch_nonce' );
+
+		update_option( 'sgvx51_is_setup_complete', false );
+		wp_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
+		exit;
+	}
+
 	private function record_exists( $table, $row, $original_id = null ) {
 		global $wpdb;
 		$sql_table = $wpdb->prefix . 'society_governx_' . $table;
@@ -373,5 +427,10 @@ class SGVX51_Admin_Settings {
 	public function render_activity_hub_page() {
 		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
         SGVX51_Admin_App::render_view( 'activity-hub' );
+	}
+
+	public function render_setup_page() {
+		require_once SGVX51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        SGVX51_Admin_App::render_view( 'setup' );
 	}
 }

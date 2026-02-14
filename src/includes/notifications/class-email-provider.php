@@ -38,7 +38,7 @@ class SGVX51_Email_Provider implements SGVX51_Notification_Provider_Interface {
     }
 
     public function is_ready() {
-        $channels = Society_Govern_X::get_instance()->db->get('notification_channels');
+        $channels = Society_GoVernX::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'email') return (bool) $c['is_active'];
         }

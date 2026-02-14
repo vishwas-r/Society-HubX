@@ -7,7 +7,7 @@
  * 3. Creates Local JSON files + Headers (if offline/shadow).
  * 4. Creates Drive Folder Hierarchy.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -32,34 +32,83 @@ class SGVX51_Setup_Wizard {
 	);
 
 	/**
-	 * Run the Setup Process.
-	 *
-	 * @return array Result message.
+	 * Run the Setup Process (Step-by-Step).
 	 */
-	public static function run_setup() {
-		$db = new SGVX51_DB_Router();
-		$is_connected = $db->is_connected();
+	public static function save_step( $step, $data ) {
+		error_log("SGVX51 Debug: Saving Setup Step: $step");
 		$log = array();
+		
+		switch ( $step ) {
+			case 'identity':
+				update_option( 'sgvx51_society_name', sanitize_text_field( $data['society_name'] ) );
+				update_option( 'sgvx51_society_address_line1', sanitize_text_field( $data['address_line1'] ) );
+				update_option( 'sgvx51_society_address_line2', sanitize_text_field( $data['address_line2'] ) );
+				update_option( 'sgvx51_society_city', sanitize_text_field( $data['city'] ) );
+				update_option( 'sgvx51_society_pincode', sanitize_text_field( $data['pincode'] ) );
+				update_option( 'sgvx51_society_contact', sanitize_text_field( $data['contact'] ) );
+				$log[] = 'Society identity saved.';
+				break;
 
-		// 1. Initialize Local JSONs (Always needed for Shadow Replica).
-		// Note: DB Router already creates empty files, but we need valid Initial Data (Headers/Structure) if meaningful.
-		// Actually, JSON doesn't need "Headers" like a CSV/Sheet. It's Key-Value. 
-		// But for Sheet Sync, we need to know the Columns.
-		// We'll trust the SCHEMA constant for mapping.
-		$log[] = 'Local Data Store verified.';
+			case 'property':
+				$log = self::generate_property_structure( $data );
+				break;
 
-		if ( $is_connected ) {
-			$log[] = self::setup_google_workspace();
-		} else {
-			$log[] = 'Offline Mode: Skipping Google Workspace setup.';
+			case 'financials':
+				update_option( 'sgvx51_maintenance_amount', floatval( $data['maintenance_amount'] ) );
+				update_option( 'sgvx51_bank_name', sanitize_text_field( $data['bank_name'] ) );
+				update_option( 'sgvx51_bank_account', sanitize_text_field( $data['bank_account'] ) );
+				update_option( 'sgvx51_bank_ifsc', sanitize_text_field( $data['bank_ifsc'] ) );
+				update_option( 'sgvx51_bank_upi', sanitize_text_field( $data['bank_upi'] ) );
+				$log[] = 'Financial settings updated.';
+				break;
+
+			case 'finalize':
+				self::create_frontend_pages();
+				update_option( 'sgvx51_is_setup_complete', true );
+				$log[] = 'Setup finalized successfully!';
+				break;
 		}
 
-		update_option( 'sgvx51_is_setup_complete', true );
+		return $log;
+	}
 
-		// 2. Auto-Create Frontend Pages.
-		$pages_log = self::create_frontend_pages();
-		$log = array_merge( $log, $pages_log );
-		
+	/**
+	 * Generate Flats based on input.
+	 */
+	private static function generate_property_structure( $data ) {
+		$log = array();
+		$blocks = ! empty( $data['blocks'] ) ? explode( ',', strtoupper( $data['blocks'] ) ) : array( 'A' );
+		$floors = intval( $data['floors'] ?? 1 );
+		$flats_per_floor = intval( $data['flats_per_floor'] ?? 1 );
+
+		$db = Society_GoVernX::get_instance()->db;
+		$count = 0;
+
+		foreach ( $blocks as $block ) {
+			$block = trim( $block );
+			for ( $f = 1; $f <= $floors; $f++ ) {
+				for ( $i = 1; $i <= $flats_per_floor; $i++ ) {
+					$flat_num = ( $f * 100 ) + $i;
+					$flat_id = 'flat_' . $block . '_' . $flat_num;
+					
+					$flat_data = array(
+						'id'          => $flat_id,
+						'block'       => $block,
+						'flat_number' => (string)$flat_num,
+						'floor'       => (string)$f,
+						'status'      => 'occupied',
+						'type'        => '2BHK',
+						'sq_foot'     => 1200.00,
+						'created_at'  => current_time( 'mysql' )
+					);
+
+					$db->insert( 'flats', $flat_data );
+					$count++;
+				}
+			}
+		}
+
+		$log[] = "Generated $count flats across " . count($blocks) . " blocks.";
 		return $log;
 	}
 
@@ -71,15 +120,15 @@ class SGVX51_Setup_Wizard {
 		$pages = array(
 			'Resident Dashboard' => array(
 				'slug'    => 'resident-dashboard',
-				'content' => '[society_govern_x_dashboard]',
+				'content' => '[society_governx_dashboard]',
 			),
 			'Society Notices' => array(
 				'slug'    => 'society-notices',
-				'content' => '[society_govern_x_notices]',
+				'content' => '[society_governx_notices]',
 			),
 			'Residents Directory' => array(
 				'slug'    => 'residents-directory',
-				'content' => '[society_govern_x_directory]',
+				'content' => '[society_governx_directory]',
 			),
 		);
 

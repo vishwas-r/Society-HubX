@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = Society_Govern_X::get_instance()->db;
+$db = Society_GoVernX::get_instance()->db;
 $audit_logs = $db->get('audit_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 

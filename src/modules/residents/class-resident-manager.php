@@ -3,7 +3,7 @@
  * Module: Resident Manager
  * Handles the "Residents" table and WP User Sync.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

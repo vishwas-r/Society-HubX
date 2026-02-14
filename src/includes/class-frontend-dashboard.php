@@ -3,7 +3,7 @@
  * Class: Frontend Dashboard
  * Handles the Resident Dashboard Shortcode.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,9 +21,9 @@ class SGVX51_Frontend_Dashboard {
 		$this->drive = new SGVX51_Drive_Manager();
 		$this->media = new SGVX51_Media_Manager();
 		
-		add_shortcode( 'society_govern_x_dashboard', array( $this, 'render_dashboard' ) );
-		add_shortcode( 'society_govern_x_notices', array( $this, 'render_notices' ) );
-		add_shortcode( 'society_govern_x_directory', array( $this, 'render_directory' ) );
+		add_shortcode( 'Society_GoVernX_dashboard', array( $this, 'render_dashboard' ) );
+		add_shortcode( 'Society_GoVernX_notices', array( $this, 'render_notices' ) );
+		add_shortcode( 'Society_GoVernX_directory', array( $this, 'render_directory' ) );
 		// Form Handlers
 		add_action( 'admin_post_sgvx51_update_profile', array( $this, 'handle_profile_update' ) );
 		add_action( 'admin_post_sgvx51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );

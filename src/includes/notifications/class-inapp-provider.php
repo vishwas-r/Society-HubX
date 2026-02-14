@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SGVX51_InApp_Provider implements SGVX51_Notification_Provider_Interface {
     
     public function send($user_id, $content, $args = []) {
-        $db = Society_Govern_X::get_instance()->db;
+        $db = Society_GoVernX::get_instance()->db;
 
         $inserted = $db->insert('inapp_notifications', [
             'user_id'    => $user_id,
@@ -39,7 +39,7 @@ class SGVX51_InApp_Provider implements SGVX51_Notification_Provider_Interface {
 
     public function is_ready() {
         // In-App is usually always ready if the DB is up, but we respect the Admin toggle
-        $channels = Society_Govern_X::get_instance()->db->get('notification_channels');
+        $channels = Society_GoVernX::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'inapp') return (bool) $c['is_active'];
         }

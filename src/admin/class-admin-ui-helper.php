@@ -3,7 +3,7 @@
  * Class: Admin UI Helper
  * Enqueues Bootstrap and custom styles for Admin Backend.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -135,7 +135,7 @@ class SGVX51_Admin_UI {
     }
 
 	public static function enqueue_admin_assets( $hook ) {
-		// Assets are now centrally handled in society-govern-x.php with priority 999 
+		// Assets are now centrally handled in society-governx.php with priority 999 
         // to ensure correct loading order and Bootstrap overrides.
         return;
         

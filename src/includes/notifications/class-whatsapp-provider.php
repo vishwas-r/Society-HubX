@@ -21,7 +21,7 @@ class SGVX51_WhatsApp_Provider implements SGVX51_Notification_Provider_Interface
             return new WP_Error('budget_exceeded', 'WhatsApp monthly budget reached');
         }
 
-        $resident = Society_Govern_X::get_instance()->db->get_resident_by_wp_id($user_id);
+        $resident = Society_GoVernX::get_instance()->db->get_resident_by_wp_id($user_id);
         if (!$resident || empty($resident['phone'])) {
             return new WP_Error('invalid_phone', 'Resident phone number not found');
         }
@@ -54,7 +54,7 @@ class SGVX51_WhatsApp_Provider implements SGVX51_Notification_Provider_Interface
     }
 
     private function get_config() {
-        $channels = Society_Govern_X::get_instance()->db->get('notification_channels');
+        $channels = Society_GoVernX::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'whatsapp') {
                 $settings = json_decode($c['config'], true) ?: [];

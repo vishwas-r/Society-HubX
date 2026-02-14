@@ -3,7 +3,7 @@
  * Module: Expense Manager
  * Handles Expenses and Receipts.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

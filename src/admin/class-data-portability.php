@@ -3,7 +3,7 @@
  * Class: Data Portability
  * Handles Import/Export of Society Data (CSV/JSON/ZIP).
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

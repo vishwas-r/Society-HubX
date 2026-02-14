@@ -3,7 +3,7 @@
  * Module: Document Manager
  * Handles the "Document Vault".
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -233,13 +233,13 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		$this->db->update( 'documents', array( 'status' => $status ), array( 'id' => $doc_id ) );
 
         // Manual Notification Trigger (Backup for direct admin actions)
-        if ( class_exists('Society_Govern_X') ) {
+        if ( class_exists('Society_GoVernX') ) {
             $docs = $this->db->get('documents');
             $doc = null;
             foreach($docs as $d) { if($d['id'] === $doc_id) { $doc = $d; break; } }
             
             if ( $doc && !empty($doc['uploaded_by']) && in_array($status, ['approved', 'rejected']) ) {
-                $sgvx = Society_Govern_X::get_instance();
+                $sgvx = Society_GoVernX::get_instance();
                 $event = ($status === 'approved') ? 'request_approved' : 'request_rejected';
                 
                 $admin_user = wp_get_current_user();

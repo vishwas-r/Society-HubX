@@ -3,7 +3,7 @@
  * Module: Staff Manager
  * Handles Maintenance Staff & Daily Help.
  *
- * @package Society_Govern_X
+ * @package Society_GoVernX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
