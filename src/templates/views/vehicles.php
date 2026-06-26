@@ -122,7 +122,8 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                     // 2. Merge Pending Requests (from requests table) to deduplicate
                     if ( ! empty( $pending ) ) {
                         foreach ( $pending as $p ) {
-                            $payload = json_decode($p['payload'], true) ?: [];
+                            $payload = is_array($p['payload'] ?? null) ? $p['payload'] : json_decode($p['payload'], true);
+                            if ( ! is_array($payload) ) $payload = [];
                             $entity_id = $p['entity_id'] ?? '';
                             $request_id = $p['id'];
                             

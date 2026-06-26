@@ -14,7 +14,7 @@ if ( ! empty( $data['invoices'] ) ) {
         }
 
         $paid = 0;
-        $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : [];
+        $payments = $inv['payments'] ?? [];
         if ( is_array( $payments ) ) {
             foreach ( $payments as $p ) $paid += (float)($p['amount'] ?? 0);
         }
@@ -27,7 +27,8 @@ $has_pending_total_payment = false;
 $pending_payment_total = 0;
 if ( ! empty( $data['pending_payment_requests'] ) ) {
     foreach ( $data['pending_payment_requests'] as $pr ) {
-        $p_payload = json_decode( $pr['payload'] ?? '{}', true );
+        $p_payload = is_array($pr['payload'] ?? null) ? $pr['payload'] : json_decode( $pr['payload'] ?? '{}', true );
+        if ( ! $p_payload ) continue;
         $pending_payment_total += (float)($p_payload['amount'] ?? 0);
         if ( ( $p_payload['invoice_id'] ?? '' ) === 'Total Outstanding' ) {
             $has_pending_total_payment = true;
@@ -119,10 +120,10 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                                 $month_label = !empty($inv['month']) ? date('M Y', strtotime($inv['month'])) : '';
                                 if($month_label && strpos($desc, $month_label) === false) $desc = "$month_label - $desc";
 
-                                // A. Check explicit payments JSON
-                                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : [];
-                                if ( is_array( $payments ) && !empty($payments) ) {
-                                    foreach($payments as $p) {
+                                 // A. Check explicit payments relation
+                                 $payments = $inv['payments'] ?? [];
+                                 if ( is_array( $payments ) && !empty($payments) ) {
+                                     foreach($payments as $p) {
                                         $all_payments[] = [
                                             'date' => $p['date'] ?? date('Y-m-d'),
                                             'amount' => $p['amount'],
@@ -156,15 +157,20 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                         // C. Include Pending Payment Requests from Requests Table
                         if (!empty($data['pending_payment_requests'])) {
                             foreach ($data['pending_payment_requests'] as $pr) {
-                                $p_payload = json_decode($pr['payload'] ?? '{}', true);
+                                $p_payload = is_array($pr['payload'] ?? null) ? $pr['payload'] : json_decode($pr['payload'] ?? '{}', true);
+                                if ( ! $p_payload ) continue;
+                                
+                                $status = $pr['status'] ?? 'pending';
+                                $is_approved = ($status === 'approved');
+
                                 $all_payments[] = [
                                     'date'   => $p_payload['date'] ?? date('Y-m-d'),
                                     'amount' => $p_payload['amount'] ?? 0,
                                     'method' => $p_payload['method'] ?? 'UPI',
                                     'ref'    => $p_payload['reference'] ?? '-',
-                                    'desc'   => 'Awaiting Verification: ' . ($p_payload['invoice_id'] ?? 'Dues'),
+                                    'desc'   => ($is_approved ? 'Verified Payment: ' : 'Awaiting Verification: ') . ($p_payload['invoice_id'] ?? 'Dues'),
                                     'inv_id' => '-',
-                                    'status' => 'pending'
+                                    'status' => ($is_approved ? 'paid' : 'pending')
                                 ];
                             }
                         }

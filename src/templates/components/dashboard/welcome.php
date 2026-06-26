@@ -22,4 +22,12 @@ $r = $data['resident'] ?? [];
             </p>
         </div>
     </div>
+    <div class="d-flex gap-2">
+        <button data-bs-toggle="modal" data-bs-target="#sgvx51GeneralRequestModal" class="btn btn-primary rounded-3 text-sm fw-medium shadow-none">
+            <i class="bi bi-plus-circle me-1"></i> Raise Request
+        </button>
+        <button data-bs-toggle="modal" data-bs-target="#editProfileModal" class="btn btn-outline-secondary border-light rounded-3 text-sm fw-medium shadow-none">
+            Edit Profile
+        </button>
+    </div>
 </div>

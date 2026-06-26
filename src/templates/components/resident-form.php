@@ -161,18 +161,27 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     </div>
 
      <!-- Society Role (Admin Only) -->
-     <?php if($is_admin): ?>
+     <?php if($is_admin): 
+        $all_rbac_roles = Society_GoVernX::get_instance()->rbac->get_all_roles();
+        $selected_roles = is_array($role) ? $role : array_filter(explode(',', (string)$role));
+     ?>
         <div class="col-12 text-start" id="society-role-wrapper-<?php echo $context; ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
-            <label class="form-label small fw-bold text-secondary text-uppercase">Society Role</label>
-            <select name="role" class="form-select rounded-3 border-light shadow-none">
-                <option value="">None / Resident</option>
-                <option value="President" <?php selected($role, 'President'); ?>>President</option>
-                <option value="Vice-President" <?php selected($role, 'Vice-President'); ?>>Vice-President</option>
-                <option value="Secretary" <?php selected($role, 'Secretary'); ?>>Secretary</option>
-                <option value="Treasurer" <?php selected($role, 'Treasurer'); ?>>Treasurer</option>
-                <option value="Committee Member" <?php selected($role, 'Committee Member'); ?>>Committee Member</option>
-                <option value="Management" <?php selected($role, 'Management'); ?>>Management</option>
-            </select>
+            <label class="form-label small fw-bold text-secondary text-uppercase">Society Role(s)</label>
+            <div class="row g-2 px-1">
+                <?php foreach($all_rbac_roles as $rbac_role): 
+                    $is_checked = in_array($rbac_role['id'], $selected_roles);
+                ?>
+                    <div class="col-md-4 col-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="role[]" value="<?php echo esc_attr($rbac_role['id']); ?>" id="role-<?php echo $rbac_role['id']; ?>-<?php echo $context; ?>" <?php checked($is_checked); ?>>
+                            <label class="form-check-label small" for="role-<?php echo $rbac_role['id']; ?>-<?php echo $context; ?>">
+                                <?php echo esc_html($rbac_role['name']); ?>
+                            </label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="text-muted smaller mt-1"><i class="bi bi-info-circle me-1"></i>Assign multiple roles (e.g. Resident + Treasurer)</div>
         </div>
     <?php endif; ?>
 </div>

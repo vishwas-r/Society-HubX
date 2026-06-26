@@ -16,15 +16,8 @@ $total_dues = 0;
 if ( ! empty( $data['invoices'] ) ) {
     foreach ( $data['invoices'] as $inv ) {
         $paid = 0;
-        if ( ! empty( $inv['payments'] ) ) {
-            // Payments might be JSON string from DB, so parse it
-            $payments = $inv['payments'];
-            if ( is_string( $payments ) ) {
-                $payments = json_decode( $payments, true );
-            }
-            if ( is_array( $payments ) ) {
-                foreach ( $payments as $p ) $paid += (float) $p['amount'];
-            }
+        if ( ! empty( $inv['payments'] ) && is_array( $inv['payments'] ) ) {
+            foreach ( $inv['payments'] as $p ) $paid += (float) $p['amount'];
         }
         $balance = (float) $inv['amount'] - $paid;
         if ( $balance > 0 ) {
@@ -38,8 +31,8 @@ if ( ! empty( $data['invoices'] ) ) {
 $has_pending_total_payment = false;
 if (!empty($data['pending_payment_requests'])) {
     foreach($data['pending_payment_requests'] as $pr) {
-        $p_payload = json_decode($pr['payload'], true);
-        if(($p_payload['invoice_id'] ?? '') === 'Total Outstanding') {
+        $p_payload = is_array($pr['payload'] ?? null) ? $pr['payload'] : json_decode($pr['payload'] ?? '{}', true);
+        if($p_payload && ($p_payload['invoice_id'] ?? '') === 'Total Outstanding') {
             $has_pending_total_payment = true;
             break;
         }
@@ -47,30 +40,32 @@ if (!empty($data['pending_payment_requests'])) {
 }
 
 // Helper for Indian Numbering Format
-function sgvx_in_fmt($num, $decimals = 2) {
-    $num = (float)$num;
-    if (class_exists('NumberFormatter')) {
-        $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
-        $fmt->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
-        $fmt->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
-        $res = $fmt->format($num);
-        if ($res !== false) return $res;
-    }
+if ( ! function_exists( 'sgvx_in_fmt' ) ) {
+    function sgvx_in_fmt($num, $decimals = 2) {
+        $num = (float)$num;
+        if (class_exists('NumberFormatter')) {
+            $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
+            $fmt->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+            $fmt->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+            $res = $fmt->format($num);
+            if ($res !== false) return $res;
+        }
 
-    // Manual Fallback for Indian Numbering System
-    $negative = $num < 0;
-    $num = abs($num);
-    $explated = explode('.', (string)number_format($num, $decimals, '.', ''));
-    $int = $explated[0];
-    $dec = isset($explated[1]) ? '.' . $explated[1] : '';
+        // Manual Fallback for Indian Numbering System
+        $negative = $num < 0;
+        $num = abs($num);
+        $explated = explode('.', (string)number_format($num, $decimals, '.', ''));
+        $int = $explated[0];
+        $dec = isset($explated[1]) ? '.' . $explated[1] : '';
 
-    $last_three = substr($int, -3);
-    $rest = substr($int, 0, -3);
-    if ($rest != '') {
-        $rest = preg_replace("/\B(?=(\d{2})+(?!\d))/", ",", $rest) . ",";
+        $last_three = substr($int, -3);
+        $rest = substr($int, 0, -3);
+        if ($rest != '') {
+            $rest = preg_replace("/\B(?=(\d{2})+(?!\d))/", ",", $rest) . ",";
+        }
+        $formatted = $rest . $last_three . $dec;
+        return ($negative ? '-' : '') . $formatted;
     }
-    $formatted = $rest . $last_three . $dec;
-    return ($negative ? '-' : '') . $formatted;
 }
 ?>
 
@@ -88,6 +83,7 @@ function sgvx_in_fmt($num, $decimals = 2) {
     <!-- Tab Contents -->
     <?php include 'components/dashboard/tab-home.php'; ?>
     <?php include 'components/dashboard/tab-notices.php'; ?>
+    <?php include 'components/dashboard/tab-requests.php'; ?>
     <?php include 'components/dashboard/tab-notifications.php'; ?>
     <?php include 'components/dashboard/tab-community.php'; ?>
     <?php include 'components/dashboard/tab-accounts.php'; ?>
@@ -115,5 +111,31 @@ function sgvx_in_fmt($num, $decimals = 2) {
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const requestForm = document.getElementById('sgvx51GeneralRequestForm');
+    if (requestForm) {
+        requestForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = 'Submitting...';
+
+            const formData = new FormData(this);
+            formData.append('action', 'sgvx51_submit_general_request');
+            formData.append('_wpnonce', '<?php echo wp_create_nonce("sgvx51_frontend_nonce"); ?>');
+
+            SGVX.ajax({
+                action: 'sgvx51_submit_general_request',
+                data: formData,
+                loadingButton: btn,
+                reload: true
+            });
+        });
+    }
+});
+</script>
 
 <?php // End of Resident Dashboard ?>

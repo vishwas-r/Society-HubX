@@ -82,32 +82,31 @@ class SGVX51_Ledger_Manager {
 		}
 
 		// 2. Get Invoices (Credit) - Actual Payments Received
-		$invoices = $this->db->get( 'invoices' );
+		$invoices = $this->db->get( 'invoices', array( 'load_relations' => true ) );
 		if ( ! empty( $invoices ) ) {
 			foreach ( $invoices as $inv ) {
 				$entries_added = false;
 
-				// Priority 1: Check `payments` JSON column (Partial payments or multiple entries)
-				if ( ! empty( $inv['payments'] ) ) {
-					$payments_list = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-					
-					// Validate JSON decode
-					if ( is_array( $payments_list ) && ! empty( $payments_list ) ) {
-						foreach ( $payments_list as $pay ) {
-							if ( date( 'Y', strtotime( $pay['date'] ) ) == $year ) {
-								$entries[] = array(
-									'date'        => $pay['date'],
-									'type'        => 'Credit',
-									'description' => 'Payment for ' . $inv['description'] . ' (' . $inv['month'] . ')',
-									'amount'      => floatval( $pay['amount'] ),
-									'bank_balance' => 0,
-									'cash_balance' => 0,
-									'ref_id'      => isset($pay['id']) ? strtoupper($pay['id']) : 'PAY-' . $inv['flat_no'],
-									'entity'      => 'Flat ' . $inv['flat_no'],
-									'account_type'=> $pay['account_type'] ?? ( (strtolower($pay['method'] ?? '') === 'cash') ? 'cash' : 'bank' )
-								);
-								$entries_added = true;
-							}
+				// Priority 1: Check `payments` relation (Partial payments or multiple entries)
+				if ( ! empty( $inv['payments'] ) && is_array( $inv['payments'] ) ) {
+					foreach ( $inv['payments'] as $pay ) {
+						// De-duplicate: If this came from a Request, skip calculating here
+						// We will count the request separately to keep the ledger consolidated.
+						if ( ! empty( $pay['request_id'] ) ) continue;
+
+						if ( date( 'Y', strtotime( $pay['date'] ) ) == $year ) {
+							$entries[] = array(
+								'date'        => $pay['date'],
+								'type'        => 'Credit',
+								'description' => 'Payment for ' . $inv['description'] . ' (' . $inv['month'] . ')',
+								'amount'      => floatval( $pay['amount'] ),
+								'bank_balance' => 0,
+								'cash_balance' => 0,
+								'ref_id'      => isset($pay['id']) ? strtoupper($pay['id']) : 'PAY-' . ($inv['block'] ?? '') . '-' . $inv['flat_no'],
+								'entity'      => 'Flat ' . ($inv['block'] ? $inv['block'] . '-' : '') . $inv['flat_no'],
+								'account_type'=> $pay['account_type'] ?? ( (strtolower($pay['method'] ?? '') === 'cash') ? 'cash' : 'bank' )
+							);
+							$entries_added = true;
 						}
 					}
 				}
@@ -128,8 +127,8 @@ class SGVX51_Ledger_Manager {
 							'amount'      => floatval( $inv['amount'] ), // Full Amount
 							'bank_balance' => 0,
 							'cash_balance' => 0,
-							'ref_id'      => !empty($inv['payment_ref']) ? $inv['payment_ref'] : 'PAY-' . $inv['flat_no'],
-							'entity'      => 'Flat ' . $inv['flat_no'],
+							'ref_id'      => !empty($inv['payment_ref']) ? $inv['payment_ref'] : 'PAY-' . ($inv['block'] ?? '') . '-' . $inv['flat_no'],
+							'entity'      => 'Flat ' . ($inv['block'] ? $inv['block'] . '-' : '') . $inv['flat_no'],
 							'account_type'=> 'bank' // Default to bank for imported bulk data
 						);
 					}
@@ -142,20 +141,24 @@ class SGVX51_Ledger_Manager {
 		if ( ! empty( $all_requests ) ) {
 			foreach ( $all_requests as $req ) {
 				$module = $req['module'] ?? ($req['entity_type'] ?? '');
-				if ( ($module === 'accounts') && ($req['status'] === 'pending') && ($req['request_type'] === 'record_payment') ) {
-					$p_payload = json_decode( $req['payload'], true );
+				$status = $req['status'] ?? 'pending';
+				$is_pending = in_array( $status, array( 'pending', 'pending_secretary', 'pending_treasurer' ) );
+				$is_approved = ($status === 'approved');
+
+				if ( ($module === 'accounts' || $module === 'finance') && ($is_pending || $is_approved) && ($req['request_type'] === 'record_payment') ) {
+					$p_payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode( $req['payload'], true );
 					if ( ! empty( $p_payload ) && date( 'Y', strtotime( $p_payload['date'] ?? '' ) ) == $year ) {
 						$entries[] = array(
 							'date'        => $p_payload['date'] ?? date('Y-m-d'),
 							'type'        => 'Credit',
-							'description' => 'Payment for ' . ($p_payload['invoice_id'] ?? 'Maintenance') . ' (Awaiting Verification)',
+							'description' => 'Payment for ' . ($p_payload['invoice_id'] ?? 'Maintenance') . ($is_pending ? ' (' . ucfirst(str_replace('pending_', '', $status)) . ' Verification)' : ''),
 							'amount'      => floatval( $p_payload['amount'] ?? 0 ),
 							'bank_balance' => 0,
 							'cash_balance' => 0,
-							'ref_id'      => 'PENDING-' . substr($req['id'], -4),
-							'entity'      => 'Flat ' . ($p_payload['flat_no'] ?? 'Unknown'),
+							'ref_id'      => ($is_pending ? 'PENDING-' : 'APR-') . substr($req['id'], -4),
+							'entity'      => 'Flat ' . ($p_payload['block'] ? $p_payload['block'] . '-' : '') . ($p_payload['flat_no'] ?? 'Unknown'),
 							'account_type'=> $p_payload['account_type'] ?? ( (strtolower($p_payload['method'] ?? '') === 'cash') ? 'cash' : 'bank' ),
-							'is_pending'  => true
+							'is_pending'  => $is_pending
 						);
 					}
 				}
@@ -233,50 +236,106 @@ class SGVX51_Ledger_Manager {
     public function get_monthly_summary($month = null) {
         if(!$month) $month = date('Y-m');
         
-        $flats = $this->db->get('flats');
-        $invoices = $this->db->get('invoices');
+        $all_flats = $this->db->get('flats');
+        $invoices = $this->db->get('invoices', array( 'load_relations' => true ));
         
+        // De-duplicate flats by block + number
+        $flats = [];
+        $seen = [];
+        foreach($all_flats as $f) {
+            $b = trim(strtoupper($f['block'] ?? ''));
+            $n = trim(strtoupper($f['flat_number'] ?? ($f['id'] ?? '')));
+            if (!$n) continue;
+            
+            $key = $b . '-' . $n;
+            if (!isset($seen[$key])) {
+                $flats[] = [
+                    'id'          => $f['id'],
+                    'block'       => $b,
+                    'flat_number' => $n,
+                    'resident_name'=> $f['resident_name'] ?? ''
+                ];
+                $seen[$key] = true;
+            }
+        }
+
         $summary = [];
         foreach($flats as $f) {
-            $status = 'unpaid';
+            $flat_id = $f['flat_number'];
+            $block = $f['block'];
+            
+            $current_month_status = 'unpaid';
             $paid_amt = 0;
             $due_amt = 0;
+            $unpaid_months = [];
+            $has_previous_unpaid = false;
 
-            // Match invoice by Flat Number (e.g. 101) instead of ID (flat_A_101)
-            $flat_id = $f['flat_number'] ?? ($f['id'] ?? 'N/A'); 
+            // Sort all invoices by month to detect previous ones
+            $flat_invoices = array_filter($invoices, function($inv) use ($flat_id, $block) {
+                return (string)($inv['flat_no'] ?? '') === (string)$flat_id 
+                    && (string)($inv['block'] ?? '') === (string)$block
+                    && ($inv['type'] ?? '') === 'maintenance';
+            });
+            
+            usort($flat_invoices, function($a, $b) { return strcmp($a['month'], $b['month']); });
 
-            foreach($invoices as $inv) {
-                // Use loose comparison for string/int match
-                if(isset($inv['flat_no']) && (string)$inv['flat_no'] === (string)$flat_id && isset($inv['month']) && $inv['month'] === $month && ($inv['type'] ?? '') === 'maintenance') {
-                    $status = $inv['status'] ?? 'unpaid';
-                    $due_amt = $inv['amount'] ?? 0;
-                    if (!empty($inv['payments'])) {
-                        // Payments might be JSON string from DB, parse if needed
-                        $payments_list = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-                        if ( is_array( $payments_list ) ) {
-                            foreach($payments_list as $p) $paid_amt += ($p['amount'] ?? 0);
-                        }
+            foreach($flat_invoices as $inv) {
+                $inv_month = $inv['month'] ?? '';
+                $inv_status = strtolower($inv['status'] ?? 'unpaid');
+                $inv_due = (float)($inv['amount'] ?? 0);
+                $inv_paid = 0;
+
+                if (!empty($inv['payments']) && is_array($inv['payments'])) {
+                    foreach($inv['payments'] as $p) $inv_paid += (float)($p['amount'] ?? 0);
+                }
+                
+                // Fallback for Imported Data
+                if($inv_paid == 0 && $inv_status === 'paid') $inv_paid = $inv_due;
+
+                $is_fully_paid = ($inv_paid >= $inv_due && $inv_due > 0);
+
+                if ($inv_month === $month) {
+                    $current_month_status = $inv_status;
+                    $paid_amt = $inv_paid;
+                    $due_amt = $inv_due;
+                }
+
+                if (!$is_fully_paid) {
+                    $unpaid_months[] = date('M Y', strtotime($inv_month));
+                    if ($inv_month < $month) {
+                        $has_previous_unpaid = true;
                     }
-                    
-                    // Fallback for Imported Data
-                    if($paid_amt == 0 && (strtolower($status) === 'paid')) {
-                        $paid_amt = $due_amt;
-                    }
-                    break;
                 }
             }
 
+            // Determine Status Group for UI
+            $status_type = 'paid';
+            if (empty($unpaid_months)) {
+                $status_type = 'paid';
+            } elseif ($current_month_status === 'unpaid') {
+                $status_type = $has_previous_unpaid ? 'chronic' : 'danger';
+            } else {
+                $status_type = 'warning';
+            }
+
             $summary[] = [
-                'flat_no'   => $flat_id,
-                'resident'  => ($f['resident_name'] ?? '') ?: 'Vacant',
-                'status'    => $status,
-                'paid'      => $paid_amt,
-                'due'       => $due_amt
+                'flat_no'             => $flat_id,
+                'block'               => $block,
+                'resident'            => $f['resident_name'] ?: 'Vacant',
+                'status'              => $current_month_status,
+                'paid'                => $paid_amt,
+                'due'                 => $due_amt,
+                'unpaid_months'       => $unpaid_months,
+                'has_previous_unpaid' => $has_previous_unpaid,
+                'status_type'         => $status_type
             ];
         }
 
-        // Sort by Flat No
-        usort($summary, function($a, $b) { return strnatcmp($a['flat_no'], $b['flat_no']); });
+        // Sort by Block then Flat No
+        usort($summary, function($a, $b) { 
+            if ($a['block'] !== $b['block']) return strcmp($a['block'], $b['block']);
+            return strnatcmp($a['flat_no'], $b['flat_no']); 
+        });
         
         return $summary;
     }

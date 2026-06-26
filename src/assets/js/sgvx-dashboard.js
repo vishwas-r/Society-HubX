@@ -12,16 +12,20 @@
     // --- Chart Logic ---
     function initCharts() {
         if (!window.CanvasJS || !window.sgvxDashboardData) {
+            console.warn('SGVX Dashboard: CanvasJS or sgvxDashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
         // --- 0. Tab Switching Logic (Migrated from frontend.js) ---
-        const tabs = ['home', 'notices', 'facilities', 'accounts', 'expenses', 'polls', 'rules', 'community', 'directory', 'notifications']; // Added directory, notifications, rules
+        const tabs = ['home', 'notices', 'requests', 'facilities', 'accounts', 'expenses', 'polls', 'rules', 'community', 'directory', 'notifications']; // Added requests
 
         function activateTab(tabName) {
             const btnId = 'btn-tab-' + tabName;
             const btn = document.getElementById(btnId);
-            if (!btn) return;
+            if (!btn) {
+                console.error('SGVX Dashboard: Tab button not found:', btnId);
+                return;
+            }
 
             const targetId = btn.getAttribute('data-tab-target');
 
@@ -121,7 +125,7 @@
 
         // 1. Society Expense Trend
         const expenseContainer = document.getElementById('expensesChart');
-        if (expenseContainer && window.sgvxDashboardData.expenseChartData) {
+        if (expenseContainer && window.sgvxDashboardData && window.sgvxDashboardData.expenseChartData) {
             const expenseData = window.sgvxDashboardData.expenseChartData;
             const dps = [];
 
@@ -163,7 +167,7 @@
 
         // 2. Resident Payment History
         const paymentContainer = document.getElementById('paymentHistoryChart');
-        if (paymentContainer && window.sgvxDashboardData.paymentHistory) {
+        if (paymentContainer && window.sgvxDashboardData && window.sgvxDashboardData.paymentHistory) {
             const paymentData = window.sgvxDashboardData.paymentHistory;
             const dps = [];
             if (Array.isArray(paymentData)) {
@@ -231,8 +235,12 @@
 
     // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('SGVX Dashboard: DOMContentLoaded fired. Initializing...');
         // Init Charts
         initCharts();
+        
+        // Init Real-Time Sync
+        initPaymentSync();
 
         // Initialize Bootstrap Tooltips
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -898,7 +906,6 @@
         // --- Open Directory Modal ---
         window.openDirModal = function (card) {
             if (!card || !card.dataset.json) return;
-            console.log(card)
             try {
                 const data = JSON.parse(card.dataset.json);
                 const modal = document.getElementById('communityDetailModal');
@@ -907,13 +914,54 @@
                 // Populate modal with data
                 const flatEl = document.getElementById('cdm-flat');
                 const ownerEl = document.getElementById('cdm-owner');
-                const membersEl = document.getElementById('cdm-members');
+                const membersCountEl = document.getElementById('cdm-members-count');
                 const emailEl = document.getElementById('cdm-email');
+                const parkingEl = document.getElementById('cdm-parking');
 
                 if (flatEl) flatEl.textContent = data.flat_no || '';
                 if (ownerEl) ownerEl.textContent = data.owner || '';
-                if (membersEl) membersEl.textContent = data.members || '0';
+                
+                const ownerPhotoEl = document.getElementById('cdm-owner-photo');
+                if (ownerPhotoEl) {
+                    if (data.owner_photo && data.owner_photo !== '') {
+                        ownerPhotoEl.src = data.owner_photo;
+                        ownerPhotoEl.style.display = 'block';
+                    } else if (data.owner && data.owner !== 'Unoccupied') {
+                        ownerPhotoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.owner) + '&background=random&color=fff';
+                        ownerPhotoEl.style.display = 'block';
+                    } else {
+                        ownerPhotoEl.style.display = 'none';
+                    }
+                }
+                
+                if (membersCountEl) membersCountEl.textContent = data.members || '0';
                 if (emailEl) emailEl.textContent = data.email || '-';
+                if (parkingEl) parkingEl.textContent = (data.parking && data.parking !== 'N/A' && data.parking !== '') ? data.parking : 'Not Allocated';
+
+                // Populate Family Members
+                const familyList = document.getElementById('cdm-family-list');
+                if (familyList) {
+                    familyList.innerHTML = '';
+                    if (data.family && data.family.length > 0) {
+                        data.family.forEach(function (m) {
+                            const item = document.createElement('div');
+                            item.className = 'd-flex align-items-center gap-3 border-bottom border-light pb-2';
+                            
+                            const photoSrc = (m.photo && m.photo !== '') ? m.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name) + '&background=random&color=fff';
+                            
+                            item.innerHTML = `
+                                <img src="${photoSrc}" class="rounded-circle border border-white shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark fs-6">${m.name}</div>
+                                    <div class="text-muted small">${m.relation || (m.type === 'owner' ? 'Owner' : 'Family')}</div>
+                                </div>
+                            `;
+                            familyList.appendChild(item);
+                        });
+                    } else {
+                        familyList.innerHTML = '<div class="text-muted small">No family details added</div>';
+                    }
+                }
 
                 // Populate vehicles
                 const vehiclesDiv = document.getElementById('cdm-vehicles');
@@ -921,10 +969,16 @@
                     vehiclesDiv.innerHTML = '';
                     if (data.vehicles && data.vehicles.length > 0) {
                         data.vehicles.forEach(function (v) {
-                            const badge = document.createElement('div');
-                            badge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle fw-normal d-flex align-items-center gap-1';
-                            badge.innerHTML = '<i class="bi bi-car-front" style="font-size:12px;"></i> ' + (v.number || 'N/A');
-                            vehiclesDiv.appendChild(badge);
+                            const item = document.createElement('div');
+                            item.className = 'd-flex align-items-center justify-content-between bg-light rounded-2 p-2 border border-secondary border-opacity-10';
+                            item.innerHTML = `
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-car-front text-primary"></i>
+                                    <span class="fw-medium text-dark small font-monospace">${v.number || 'N/A'}</span>
+                                </div>
+                                <span class="badge bg-white text-secondary border border-light small fw-normal">${v.brand || 'Vehicle'}</span>
+                            `;
+                            vehiclesDiv.appendChild(item);
                         });
                     } else {
                         vehiclesDiv.innerHTML = '<span class="text-muted small">None registered</span>';
@@ -937,10 +991,20 @@
                     helpDiv.innerHTML = '';
                     if (data.help && data.help.length > 0) {
                         data.help.forEach(function (h) {
-                            const badge = document.createElement('div');
-                            badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle fw-normal d-flex align-items-center gap-1';
-                            badge.innerHTML = '<i class="bi bi-person-badge" style="font-size:12px;"></i> ' + (h.name || 'N/A') + ' (' + (h.role || 'Staff') + ')';
-                            helpDiv.appendChild(badge);
+                            const item = document.createElement('div');
+                            item.className = 'd-flex align-items-center gap-3 bg-light rounded-2 p-2 border border-secondary border-opacity-10';
+                            
+                            const photoSrc = (h.photo && h.photo !== '') ? h.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(h.name) + '&background=E9ECEF&color=6C757D';
+
+                            item.innerHTML = `
+                                <img src="${photoSrc}" class="rounded-circle shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold text-dark fs-6">${h.name}</div>
+                                    <div class="text-muted small">${h.role || 'Staff'}</div>
+                                </div>
+                                <div class="text-primary fs-4"><i class="bi bi-person-badge"></i></div>
+                            `;
+                            helpDiv.appendChild(item);
                         });
                     } else {
                         helpDiv.innerHTML = '<span class="text-muted small">None registered</span>';
@@ -1229,6 +1293,23 @@
             `;
         }
 
+        // --- Handle Pay Now Button Click ---
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('.js-btn-pay');
+            if (btn) {
+                const amount = btn.getAttribute('data-amount');
+                const invoiceId = btn.getAttribute('data-invoice-id');
+                
+                const form = document.getElementById('payment-confirmation-form');
+                if (form) {
+                    const amountInput = form.querySelector('[name="amount"]');
+                    const invoiceInput = form.querySelector('[name="invoice_id"]');
+                    if (amountInput) amountInput.value = amount || '';
+                    if (invoiceInput) invoiceInput.value = invoiceId || '';
+                }
+            }
+        });
+
         // --- Payment Confirmation Handler ---
         function submitPaymentConfirmation(btn) {
             const form = document.getElementById('payment-confirmation-form');
@@ -1464,4 +1545,220 @@
         if (vVehicleModal) vVehicleModal.addEventListener('show.bs.modal', e => handleViewModalShow(e, 'vehicle'));
 
     });
+
+    // --- Resident Request View Detail ---
+    window.viewResidentRequestDetail = function(requestId) {
+        if (!window.sgvxDashboardData || !window.sgvxDashboardData.my_requests) return;
+        
+        const req = window.sgvxDashboardData.my_requests.find(r => r.id === requestId);
+        if (!req) return;
+
+        const modalEl = document.getElementById('residentRequestDetailModal');
+        if (!modalEl) return;
+
+        try {
+            const payload = JSON.parse(req.payload);
+            const status = req.status || 'pending';
+            
+            // Populate Modal
+            document.getElementById('rrd-id').innerText = 'ID: #' + req.id.substring(req.id.length - 8);
+            
+            let category = payload.category || (req.request_type ? req.request_type.charAt(0).toUpperCase() + req.request_type.slice(1) : 'General Request');
+            if (req.module === 'general') category = payload.category || 'General Request';
+            document.getElementById('rrd-category').innerText = category;
+            
+            const badge = document.getElementById('rrd-status-badge');
+            badge.innerText = status.charAt(0).toUpperCase() + status.slice(1);
+            badge.className = 'badge rounded-pill fw-normal px-3 py-1 ';
+            
+            const icon = document.getElementById('rrd-icon');
+            const iconWrapper = document.getElementById('rrd-icon-wrapper');
+            
+            if (status === 'approved') {
+                badge.classList.add('bg-success-subtle', 'text-success');
+                icon.className = 'bi bi-check-circle-fill text-success fs-3';
+                iconWrapper.className = 'rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center border border-success border-opacity-25 shadow-sm mb-3';
+            } else if (status === 'rejected') {
+                badge.classList.add('bg-danger-subtle', 'text-danger');
+                icon.className = 'bi bi-x-circle-fill text-danger fs-3';
+                iconWrapper.className = 'rounded-circle bg-danger bg-opacity-10 d-inline-flex align-items-center justify-content-center border border-danger border-opacity-25 shadow-sm mb-3';
+            } else {
+                badge.classList.add('bg-warning-subtle', 'text-warning');
+                icon.className = 'bi bi-clock-history text-warning fs-3';
+                iconWrapper.className = 'rounded-circle bg-warning bg-opacity-10 d-inline-flex align-items-center justify-content-center border border-warning border-opacity-25 shadow-sm mb-3';
+            }
+
+            document.getElementById('rrd-comments').innerText = payload.comments || '-';
+            document.getElementById('rrd-date').innerText = new Date(req.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            document.getElementById('rrd-updated').innerText = req.updated_at ? new Date(req.updated_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+
+            const feedback = document.getElementById('rrd-admin-feedback');
+            if (req.admin_note) {
+                feedback.classList.remove('d-none');
+                document.getElementById('rrd-admin-note').innerText = req.admin_note;
+            } else {
+                feedback.classList.add('d-none');
+            }
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        } catch (e) {
+            console.error('Error parsing request payload:', e);
+        }
+    };
+
+    // --- Real-time Payment Sync (Optimistic UI) ---
+    function initPaymentSync() {
+        if (!window.sgvxDashboardData || !window.sgvxDashboardData.rest_url || !window.sgvxDashboardData.rest_nonce) {
+            return;
+        }
+
+        let currentHash = null;
+        let isPolling = false;
+        const POLL_INTERVAL = 4000; // 4 seconds
+        const API_BASE = window.sgvxDashboardData.rest_url;
+        const NONCE = window.sgvxDashboardData.rest_nonce;
+
+        async function pollStateHash() {
+            if (isPolling) return;
+            isPolling = true;
+
+            try {
+                const response = await fetch(`${API_BASE}state-hash`, {
+                    method: 'GET',
+                    headers: { 'X-WP-Nonce': NONCE, 'Accept': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.hash) {
+                        if (currentHash === null) {
+                            currentHash = data.hash; // Initial load
+                        } else if (currentHash !== data.hash) {
+                            console.log('SGVX: State Hash change detected. Refreshing data...');
+                            currentHash = data.hash;
+                            await refreshDashboard();
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('SGVX Sync Error:', err);
+            } finally {
+                isPolling = false;
+                setTimeout(pollStateHash, POLL_INTERVAL);
+            }
+        }
+
+        async function refreshDashboard() {
+            try {
+                // 1. Fetch updated JSON for Charts
+                const resJson = await fetch(`${API_BASE}dashboard-data`, {
+                    method: 'GET',
+                    headers: { 'X-WP-Nonce': NONCE, 'Accept': 'application/json' }
+                });
+
+                if (resJson.ok) {
+                    const data = await resJson.json();
+                    if (data.success && data.data) {
+                        window.sgvxDashboardData.paymentHistory = data.data.paymentHistory;
+                        window.sgvxDashboardData.expenseChartData = data.data.expenseChartData;
+
+                        // Update Charts seamlessly
+                        if (paymentChart && data.data.paymentHistory) {
+                            const dps = [];
+                            data.data.paymentHistory.forEach(p => dps.push({ x: new Date(p.x), y: p.y }));
+                            paymentChart.options.data[0].dataPoints = dps;
+                            const tabHome = document.getElementById('tab-home');
+                            const tabAccounts = document.getElementById('tab-accounts');
+                            if ((tabHome && !tabHome.classList.contains('d-none')) || (tabAccounts && !tabAccounts.classList.contains('d-none'))) {
+                                paymentChart.render();
+                            }
+                        }
+
+                        if (expensesChart && data.data.expenseChartData) {
+                             const dps = [];
+                             for (const [label, y] of Object.entries(data.data.expenseChartData)) {
+                                 dps.push({ label: label, y: y });
+                             }
+                             expensesChart.options.data[0].dataPoints = dps;
+                             const tab = document.getElementById('tab-expenses');
+                             if (tab && !tab.classList.contains('d-none')) {
+                                 expensesChart.render();
+                             }
+                        }
+                    }
+                }
+
+                // 2. Fetch updated HTML for DOM partial replacement (PJAX)
+                const resHtml = await fetch(window.location.href);
+                if (resHtml.ok) {
+                    const htmlText = await resHtml.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+
+                    // Replace Accounts Tab InnerHTML preserving the chart canvas
+                    const newAccountsTab = doc.getElementById('tab-accounts');
+                    const oldAccountsTab = document.getElementById('tab-accounts');
+                    if (newAccountsTab && oldAccountsTab) {
+                        const chartDiv = document.getElementById('paymentHistoryChart');
+                        if (chartDiv) document.body.appendChild(chartDiv); // Save it
+
+                        oldAccountsTab.innerHTML = newAccountsTab.innerHTML;
+
+                        const newChartContainer = oldAccountsTab.querySelector('#paymentHistoryChart');
+                        if (newChartContainer && chartDiv) {
+                            newChartContainer.parentNode.replaceChild(chartDiv, newChartContainer);
+                        }
+                    }
+
+                    // Replace Expenses Tab InnerHTML preserving the chart canvas
+                    const newExpensesTab = doc.getElementById('tab-expenses');
+                    const oldExpensesTab = document.getElementById('tab-expenses');
+                    if (newExpensesTab && oldExpensesTab) {
+                        const chartDiv = document.getElementById('expensesChart');
+                        if (chartDiv) document.body.appendChild(chartDiv); // Save it
+
+                        oldExpensesTab.innerHTML = newExpensesTab.innerHTML;
+
+                        const newChartContainer = oldExpensesTab.querySelector('#expensesChart');
+                        if (newChartContainer && chartDiv) {
+                            newChartContainer.parentNode.replaceChild(chartDiv, newChartContainer);
+                        }
+                    }
+
+                    // Replace Home Tab Summaries if they exist
+                    const newHomeTab = doc.getElementById('tab-home');
+                    const oldHomeTab = document.getElementById('tab-home');
+                    if (newHomeTab && oldHomeTab) {
+                        // In Home Tab, we just want to replace the "Pending Dues" card.
+                        // Assuming it has some class or structure. For safety, we can just let it be 
+                        // or do a broader replacement. Since we didn't inspect tab-home.php, we'll
+                        // just replace the whole innerHTML but save the possible chart.
+                        const chartDiv = document.getElementById('paymentHistoryChart');
+                        if (chartDiv && oldHomeTab.contains(chartDiv)) {
+                            document.body.appendChild(chartDiv); // Save it
+                        }
+
+                        // Reattach event listeners via global delegation anyway!
+                        oldHomeTab.innerHTML = newHomeTab.innerHTML;
+                        
+                        const newChartContainer = oldHomeTab.querySelector('#paymentHistoryChart');
+                        if (newChartContainer && chartDiv && oldHomeTab.contains(chartDiv)) {
+                            newChartContainer.parentNode.replaceChild(chartDiv, newChartContainer);
+                        }
+                    }
+                    
+                    if (window.SGVX && window.SGVX.toast) {
+                        window.SGVX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
+                    }
+                }
+
+            } catch (err) {
+                console.error('SGVX Dashboard Refresh Error:', err);
+            }
+        }
+
+        setTimeout(pollStateHash, 2000);
+    }
+
 })(jQuery);

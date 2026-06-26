@@ -141,6 +141,15 @@ if (!isset($flats)) $flats = array();
                         }
                     }
 
+                    // 0.1 Build Role Mapping for display
+                    $role_map = array();
+                    $all_rbac_roles = Society_GoVernX::get_instance()->rbac->get_all_roles();
+                    if ( ! empty( $all_rbac_roles ) ) {
+                        foreach ( $all_rbac_roles as $role_def ) {
+                            $role_map[$role_def['id']] = $role_def['name'];
+                        }
+                    }
+
                     // 1. Index active residents
                     $rows_by_entity = array();
                     if ( ! empty( $residents ) ) {
@@ -160,7 +169,8 @@ if (!isset($flats)) $flats = array();
                     // 2. Merge Pending Requests to deduplicate
                     if ( ! empty( $pending ) ) {
                         foreach ( $pending as $p ) {
-                            $payload = json_decode($p['payload'], true) ?: [];
+                            $payload = is_array($p['payload'] ?? null) ? $p['payload'] : json_decode($p['payload'], true);
+                            if ( ! is_array($payload) ) $payload = [];
                             $entity_id = $p['entity_id'] ?? '';
                             $request_id = $p['id'];
                             
@@ -233,7 +243,7 @@ if (!isset($flats)) $flats = array();
                                     <?php echo SGVX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
                                     <div>
                                         <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>"><?php echo esc_html( $row['name'] ); ?></div>
-                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( $row['email'] ?? '-' ); ?></div>
+                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( SGVX51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
                                     </div>
                                 </div>
                             </td>
@@ -248,8 +258,16 @@ if (!isset($flats)) $flats = array();
                                 </div>
                             </td>
                             <td class="px-4 py-4">
-                                <?php if(!empty($row['roles'])): ?>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html($row['roles']); ?></span>
+                                <?php if(!empty($row['roles'])): 
+                                    $role_ids = is_array($row['roles']) ? $row['roles'] : explode(',', $row['roles']);
+                                    $role_names = [];
+                                    foreach($role_ids as $r_id) {
+                                        $r_id = trim($r_id);
+                                        $role_names[] = isset($role_map[$r_id]) ? $role_map[$r_id] : ucfirst(str_replace('_', ' ', $r_id));
+                                    }
+                                    $roles_list = implode(', ', $role_names);
+                                ?>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html($roles_list); ?></span>
                                 <?php else: ?>
                                     <span class="text-muted small">Resident</span>
                                 <?php endif; ?>
@@ -267,7 +285,7 @@ if (!isset($flats)) $flats = array();
                                 ?>
                             </td>
                             <td class="px-4 py-4">
-                                <div class="text-secondary fw-bold small"><?php echo esc_html( $row['phone'] ?? '-' ); ?></div>
+                                <div class="text-secondary fw-bold small"><?php echo esc_html( SGVX51_Privacy_Manager::mask_data($row['phone'] ?? '-', 'phone') ); ?></div>
                             </td>
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">

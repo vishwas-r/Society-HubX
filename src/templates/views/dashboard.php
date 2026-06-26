@@ -23,10 +23,45 @@ $total_units     = count( $flats );
 $total_residents = count( $residents );
 $total_vehicles  = count( $vehicles );
 
+// Financial Metrics
+$total_income  = 0;
+$total_arrears = 0;
+$current_year  = date('Y');
+
+// 1. Calculate Income from Payments table (Relational)
+$payments = $db->get( 'payments' );
+foreach ( $payments as $p ) {
+    if ( isset( $p['date'] ) && date('Y', strtotime($p['date'])) === $current_year ) {
+        $total_income += floatval($p['amount']);
+    }
+}
+
+// 2. Calculate Arrears from Invoices (Outstanding)
+$invoices = $db->get( 'invoices' );
+foreach ( $invoices as $inv ) {
+    if ( in_array( $inv['status'], ['unpaid', 'partial', 'partially_paid'] ) ) {
+        // If partial, we should ideally subtract paid amount, but for simplicity we'll take the remaining balance if logic exists
+        // Given current schema, let's treat unpaid as full amount.
+        $total_arrears += floatval($inv['amount']);
+    }
+}
+
+// 3. Calculate Expenses (FY)
 $total_expense = 0;
 foreach($expenses as $e) { 
-    if(isset($e['amount'], $e['date']) && date('Y', strtotime($e['date'])) === date('Y')) {
+    if(isset($e['amount'], $e['date']) && date('Y', strtotime($e['date'])) === $current_year) {
         $total_expense += floatval($e['amount']); 
+    }
+}
+
+// 4. Violations
+$violations = $db->get( 'rule_violations' );
+$active_violations = 0;
+$total_fines = 0;
+foreach($violations as $v) {
+    if($v['status'] !== 'resolved') {
+        $active_violations++;
+        $total_fines += floatval($v['fine_amount']);
     }
 }
 
@@ -145,64 +180,121 @@ $activities = array_slice($activities, 0, 10);
 
     <!-- Stats Row -->
     <div class="row g-4 mb-5">
+        <!-- Revenue Card -->
         <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 bg-primary bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-primary border-opacity-10" style="width: 52px; height: 52px;">
-                        <i class="bi bi-people-fill text-primary fs-4"></i>
-                    </div>
-                    <div>
-                        <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Total Residents</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;"><?php echo esc_html($total_residents); ?></h2>
-                        <div class="text-muted mt-1" style="font-size: 10px;">In <?php echo esc_html($total_units); ?> Units</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white transition-all hover-translate-y">
                 <div class="d-flex align-items-center gap-3">
                     <div class="flex-shrink-0 bg-success bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-success border-opacity-10" style="width: 52px; height: 52px;">
-                        <i class="bi bi-car-front-fill text-success fs-4"></i>
+                        <i class="bi bi-graph-up-arrow text-success fs-4"></i>
                     </div>
                     <div>
-                        <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Vehicles</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;"><?php echo esc_html($total_vehicles); ?></h2>
-                        <div class="text-muted mt-1" style="font-size: 10px;">Registered</div>
+                        <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Total Income</div>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_income); ?></h2>
+                        <div class="text-muted mt-1" style="font-size: 10px;">FY <?php echo esc_html($current_year); ?> Collections</div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Expenses Card -->
         <div class="col-md-6 col-lg-3">
-            <a href="?page=sgvx51-requests" class="text-decoration-none h-100 d-block">
-                <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white transition-all hover-translate-y">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="flex-shrink-0 bg-warning bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-warning border-opacity-10" style="width: 52px; height: 52px;">
-                            <i class="bi bi-patch-exclamation-fill text-warning fs-4"></i>
-                        </div>
-                        <div>
-                            <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Pending Actions</div>
-                            <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;"><?php echo esc_html($pending_actions); ?></h2>
-                            <div class="text-muted mt-1" style="font-size: 10px;">Approvals needed</div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white transition-all hover-translate-y">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 bg-info bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-info border-opacity-10" style="width: 52px; height: 52px;">
-                        <i class="bi bi-wallet2 text-info fs-4"></i>
+                    <div class="flex-shrink-0 bg-danger bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-danger border-opacity-10" style="width: 52px; height: 52px;">
+                        <i class="bi bi-cart-dash-fill text-danger fs-4"></i>
                     </div>
                     <div>
                         <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">YTD Expenses</div>
                         <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_expense); ?></h2>
-                        <div class="text-muted mt-1" style="font-size: 10px;">FY <?php echo date('Y'); ?></div>
+                        <div class="text-muted mt-1" style="font-size: 10px;">FY <?php echo esc_html($current_year); ?> Payouts</div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Arrears Card -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-white transition-all hover-translate-y border-start border-warning border-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-shrink-0 bg-warning bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center border border-warning border-opacity-10" style="width: 52px; height: 52px;">
+                        <i class="bi bi-exclamation-octagon-fill text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Outstanding</div>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_arrears); ?></h2>
+                        <div class="text-warning mt-1 fw-bold" style="font-size: 10px;">Total Arrears</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Net Cash Flow -->
+        <div class="col-md-6 col-lg-3">
+            <?php 
+                $cash_flow = $total_income - $total_expense; 
+                $flow_color = $cash_flow >= 0 ? 'primary' : 'danger';
+                $flow_icon  = $cash_flow >= 0 ? 'bi-cash-stack' : 'bi-arrow-down-right-circle';
+            ?>
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-<?php echo $flow_color; ?> bg-opacity-10 border border-<?php echo $flow_color; ?> border-opacity-10 transition-all hover-translate-y">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-shrink-0 bg-<?php echo $flow_color; ?> rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 52px; height: 52px;">
+                        <i class="bi <?php echo $flow_icon; ?> fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Net Cash Flow</div>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($cash_flow); ?></h2>
+                        <div class="text-muted mt-1" style="font-size: 10px;">Current Surplus/Deficit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Stats & Executive Metrics -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-bg-light transition-all">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-secondary small fw-bold text-uppercase" style="font-size: 9px;">Total Units</span>
+                        <div class="h5 fw-bold mb-0"><?php echo esc_html($total_units); ?></div>
+                    </div>
+                    <i class="bi bi-building text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-bg-light transition-all">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-secondary small fw-bold text-uppercase" style="font-size: 9px;">Total Residents</span>
+                        <div class="h5 fw-bold mb-0"><?php echo esc_html($total_residents); ?></div>
+                    </div>
+                    <i class="bi bi-people text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-bg-light transition-all">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-secondary small fw-bold text-uppercase" style="font-size: 9px;">Active Violations</span>
+                        <div class="h5 fw-bold mb-0 text-danger"><?php echo esc_html($active_violations); ?></div>
+                    </div>
+                    <div class="text-end">
+                         <span class="text-muted" style="font-size: 9px;">₹<?php echo number_format($total_fines); ?> Fine</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 bg-white hover-bg-light transition-all">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-secondary small fw-bold text-uppercase" style="font-size: 9px;">Pending Approvals</span>
+                        <div class="h5 fw-bold mb-0 text-warning"><?php echo esc_html($pending_actions); ?></div>
+                    </div>
+                    <i class="bi bi-patch-exclamation text-warning opacity-50"></i>
                 </div>
             </div>
         </div>

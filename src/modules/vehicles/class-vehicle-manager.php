@@ -171,7 +171,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 			'sgvx51-settings',
 			'Vehicle Registry',
 			'Vehicles',
-			'manage_options',
+			'read', // Granular check in render_page
 			'sgvx51-vehicles',
 			array( $this, 'render_page' )
 		);
@@ -191,8 +191,11 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             $payload['id'] = uniqid('veh_');
         }
         
-        // IF ADMIN: Immediate Add
-        if ( current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
+
+        // IF ADMIN or has vehicles_manage: Immediate Add
+        if ( $has_manage ) {
             $res = $this->perform_save_vehicle( $payload, false );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean(); // Capture any premature output
@@ -252,8 +255,11 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 
 		$id = isset($_POST['vehicle_id']) ? sanitize_text_field( $_POST['vehicle_id'] ) : '';
         
-        // IF ADMIN: Immediate
-        if ( current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
+
+        // IF ADMIN or has vehicles_manage: Immediate
+        if ( $has_manage ) {
             // 1. Synchronize with Request Manager if a pending request exists
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
@@ -316,8 +322,11 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( $_POST['id'] ) : (isset($_GET['id']) ? sanitize_text_field($_GET['id']) : '');
         
-        // IF ADMIN: Immediate
-        if ( current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
+
+        // IF ADMIN or has vehicles_manage: Immediate
+        if ( $has_manage ) {
             // 1. Synchronize with Request Manager if a pending request exists
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
@@ -359,7 +368,10 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( $_POST['id'] ) : (isset($_GET['id']) ? sanitize_text_field($_GET['id']) : '');
         
-        if ( current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
+
+        if ( $has_manage ) {
             $this->db->update( 'vehicles', array( 'status' => 'approved' ), array( 'id' => $id ) );
 
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -379,7 +391,8 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 	public function handle_approve_vehicle() {
 		// Use the same nonce as add/edit for now or generic custom one? 
 		// Simpler to rely on generic admin nonce for actions if not form.
-		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'vehicles_manage' ) ) wp_die('Unauthorized');
 		
 		$id = sanitize_text_field( $_GET['id'] );
 		$this->db->update( 'vehicles', array( 'status' => 'approved' ), array( 'id' => $id ) );
@@ -388,6 +401,11 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 	}
 
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'vehicles_view' ) ) {
+            wp_die( 'You do not have permission to view the Vehicle Registry.' );
+        }
+
         $rm = new SGVX51_Request_Manager();
         $unified = $rm->get_unified_data( 'vehicles', 'vehicles' );
         

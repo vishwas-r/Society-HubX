@@ -45,10 +45,12 @@ if ( ! defined( 'ABSPATH' ) ) {
             if ( is_user_logged_in() ) : 
                 $current_user = wp_get_current_user();
                 $user_avatar = get_avatar_url( $current_user->ID );
-                // Attempt to get resident photo if available via simple query or user meta? 
-                // For now, Gravatar is standard WP. 
-                // Ideally, we should fetch the custom resident photo if we can, but that requires DB access here.
-                // We'll stick to Gravatar/Default for now as per "Standard UI".
+                
+                // Fetch custom profile photo from resident records
+                $resident = Society_GoVernX::get_instance()->db->get_resident_by_wp_id( $current_user->ID );
+                if ( $resident && ! empty( $resident['profile_photo'] ) ) {
+                    $user_avatar = $resident['profile_photo'];
+                }
             ?>
             <div class="dropdown">
                 <button class="d-flex align-items-center gap-3 border-0 bg-transparent p-0 dropdown-toggle-no-caret shadow-none px-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -62,24 +62,27 @@
             <div class="row g-2">
             <?php foreach(($data['monthly_summary'] ?? []) as $s):  
 
-                $status = strtolower($s['status'] ?? 'unpaid');
+                $status_type = $s['status_type'] ?? 'danger';
 
-                /* Tooltip gradient class */
-                $tooltip_class = 'tooltip-danger';
-                /* Div gradient class */
-                $div_class = 'div-danger';
+                /* Map status_type to CSS classes */
+                $class_map = [
+                    'paid'    => ['tooltip' => 'tooltip-success', 'div' => 'div-success'],
+                    'warning' => ['tooltip' => 'tooltip-warning', 'div' => 'div-warning'],
+                    'danger'  => ['tooltip' => 'tooltip-danger',  'div' => 'div-danger'],
+                    'chronic' => ['tooltip' => 'tooltip-chronic', 'div' => 'div-chronic']
+                ];
 
-                if($status === 'paid') {
-                    $tooltip_class = 'tooltip-success';
-                    $div_class = 'div-success';
-                } elseif($status === 'partial') {
-                    $tooltip_class = 'tooltip-warning';
-                    $div_class = 'div-warning';
+                $ui = $class_map[$status_type] ?? $class_map['danger'];
+                $tooltip_class = $ui['tooltip'];
+                $div_class = $ui['div'];
+
+                // Tooltip Logic
+                if ($status_type === 'paid') {
+                    $tooltip = ($s['resident'] ?? 'Unknown Member') . " - No Outstanding Dues (All Months Paid)";
+                } else {
+                    $unpaid_list = !empty($s['unpaid_months']) ? implode(', ', $s['unpaid_months']) : 'Current';
+                    $tooltip = ($s['resident'] ?? 'Unknown Member') . " - Unpaid Months: " . $unpaid_list;
                 }
-
-                $tooltip = ($s['resident'] ?? 'Unknown') . 
-                        " - " . ucfirst($status) . 
-                        " (Paid: ₹" . ($s['paid'] ?? 0) . ")";
             ?>
 
                 <div class="col-4 col-sm-3 col-md-2 col-lg-1">
@@ -90,16 +93,16 @@
                         data-bs-custom-class="<?php echo $tooltip_class; ?>">
 
                         <div class="fw-bold lh-1" style="font-size: 0.85rem;">
-                            <?php echo esc_html($s['flat_no'] ?? 'N/A'); ?>
+                            <?php echo (!empty($s['block']) ? esc_html($s['block']) . '-' : '') . esc_html($s['flat_no'] ?? 'N/A'); ?>
                         </div>
 
-                        <?php if($status !== 'paid'): ?>
-                            <div class="opacity-75 mt-1 fw-bold" style="font-size: 0.6rem;">
-                                Due
-                            </div>
-                        <?php else: ?>
+                        <?php if($status_type === 'paid'): ?>
                             <div class="opacity-75 mt-1" style="font-size: 0.6rem;">
                                 <i class="bi bi-check-lg"></i>
+                            </div>
+                        <?php else: ?>
+                            <div class="opacity-75 mt-1 fw-bold" style="font-size: 0.6rem;">
+                                DUE
                             </div>
                         <?php endif; ?>
 
@@ -162,10 +165,14 @@
         .tooltip-danger .tooltip-inner { background: linear-gradient(135deg, #dc3545, #b02a37); color: #fff; }
         .tooltip-danger .tooltip-arrow::after { background: linear-gradient(135deg, #dc3545, #b02a37); }
 
+        .tooltip-chronic .tooltip-inner { background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fff; }
+        .tooltip-chronic .tooltip-arrow::after { background: linear-gradient(135deg, #7f1d1d, #450a0a); }
+
         /* Div gradient variants */
         .div-success { background: linear-gradient(135deg, #198754, #157347); color: #fff; }
         .div-warning { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
         .div-danger { background: linear-gradient(135deg, #dc3545, #b02a37); color: #fff; }
+        .div-chronic { background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fff; }
       </style>
 
 

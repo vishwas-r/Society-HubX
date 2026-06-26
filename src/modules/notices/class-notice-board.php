@@ -34,13 +34,17 @@ class SGVX51_Notice_Board {
 			'sgvx51-settings',
 			'Notice Board',
 			'Notices',
-			'manage_options',
+			'read', // Granular check inside render_page
 			'sgvx51-notices',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'notices_view' ) ) {
+            wp_die( 'You do not have permission to view notices.' );
+        }
 		SGVX51_Admin_App::render_view('notices');
 	}
 
@@ -67,6 +71,11 @@ class SGVX51_Notice_Board {
      */
     public function ajax_save_notice() {
         check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
+            wp_send_json_error(['message' => 'Unauthorized'], 403);
+        }
 
         $id = !empty($_POST['id']) ? sanitize_text_field($_POST['id']) : uniqid('ntc_');
         $is_update = !empty($_POST['id']);
@@ -120,6 +129,11 @@ class SGVX51_Notice_Board {
     public function ajax_delete_notice() {
         check_ajax_referer('sgvx51_delete_notice_nonce', '_wpnonce');
         
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
+            wp_send_json_error(['message' => 'Unauthorized'], 403);
+        }
+
         $id = sanitize_text_field($_POST['id']);
         $this->db->delete('notices', ['id' => $id]);
         
@@ -132,6 +146,11 @@ class SGVX51_Notice_Board {
     public function ajax_toggle_pin() {
         check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
         
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
+            wp_send_json_error(['message' => 'Unauthorized'], 403);
+        }
+
         $id = sanitize_text_field($_POST['id']);
         $pinned = !empty($_POST['pinned']) ? 1 : 0;
 

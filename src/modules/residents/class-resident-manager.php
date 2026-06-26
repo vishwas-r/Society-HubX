@@ -96,7 +96,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'sgvx51-settings',
 			'Residents Directory',
 			'Residents',
-			'manage_options',
+			'read', // Granular check in render_page
 			'sgvx51-residents',
 			array( $this, 'render_page' )
 		);
@@ -114,7 +114,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         }
 	
     // IF ADMIN: Immediate
-   if ( current_user_can( 'manage_options' ) ) {
+   $rbac = Society_GoVernX::get_instance()->rbac;
+   if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
        $_POST['status'] = 'approved';
        $res = $this->process_add_resident( $_POST );
        
@@ -177,13 +178,45 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     }
 
     // Handle Photo Upload (for both Admin and Resident requests)
-    $photo_url = $this->handle_photo_upload($flat_no, $name);
-    if ( $photo_url ) {
-        $_POST['profile_photo'] = $photo_url;
+    error_log("SGVX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing'));
+    
+    if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
+        $photo_url = $this->handle_photo_upload($flat_no, $name);
+        if ( is_wp_error( $photo_url ) ) {
+            error_log("SGVX51 Error: Photo upload failed: " . $photo_url->get_error_message());
+            if ( wp_doing_ajax() ) {
+                while ( ob_get_level() > 0 ) { ob_end_clean(); }
+                wp_send_json_error(['message' => 'Photo upload failed: ' . $photo_url->get_error_message()]);
+                exit;
+            }
+        } else {
+            $_POST['profile_photo'] = $photo_url;
+            error_log("SGVX51 Debug: Photo uploaded successfully to: " . $photo_url);
+        }
     }
     
-    // IF ADMIN: Immediate
-    if ( current_user_can( 'manage_options' ) ) {
+    // IF ADMIN OR RESIDENT EDITING OWN BASIC PROFILE: Immediate
+    $rbac = Society_GoVernX::get_instance()->rbac;
+    $is_admin = $rbac->has_capability( get_current_user_id(), 'residents_manage' );
+    
+    // Check if it's a self-profile edit (basic details only)
+    $is_self_edit = false;
+    $current_wp_user_id = get_current_user_id();
+    $target_resident = $this->db->get_resident_by_wp_id( $current_wp_user_id );
+    
+    if ( $target_resident && $target_resident['id'] === $id ) {
+        $is_self_edit = true;
+    }
+
+    if ( $is_admin || $is_self_edit ) {
+        // Security: If not admin, strip sensitive fields from the direct update
+        if ( ! $is_admin ) {
+            $sensitive_fields = array( 'flat_no', 'type', 'role', 'roles', 'status', 'maintenance_balance' );
+            foreach ( $sensitive_fields as $field ) {
+                unset( $_POST[$field] );
+            }
+        }
+
         // 1. Synchronize with Request Manager if a pending request exists
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
@@ -195,9 +228,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
                 ob_get_clean();
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                wp_send_json_success(['message' => 'Resident updated and request synchronized']);
+                wp_send_json_success(['message' => 'Profile updated and request synchronized']);
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
+                wp_redirect( admin_url( 'admin.php?page=sgvx-profile&status=updated' ) ); // Contextual redirect might be needed
             }
             exit;
         }
@@ -211,7 +244,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             if ( is_wp_error( $res ) ) {
                 wp_send_json_error(['message' => $res->get_error_message()]);
             }
-            wp_send_json_success(['message' => 'Resident updated successfully']);
+            wp_send_json_success(['message' => 'Profile updated successfully']);
             exit;
         }
     } else {
@@ -298,19 +331,32 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'blood_group'   => isset($data['blood_group']) ? sanitize_text_field( $data['blood_group'] ) : ($existing_resident['blood_group'] ?? ''),
 			'relation'      => isset($data['relation']) ? sanitize_text_field( $data['relation'] ) : ($existing_resident['relation'] ?? ''),
 			'dob'           => isset($data['dob']) ? sanitize_text_field( $data['dob'] ) : ($existing_resident['dob'] ?? ''),
-			'roles'         => isset($data['role']) ? sanitize_text_field($data['role']) : ($existing_resident['roles'] ?? ''),
             'status'        => 'approved', // Reset to approved upon edit approval or admin edit
 		);
 
+        // Relational Roles (Multi-Role Support)
+        $roles = isset($data['role']) ? $data['role'] : (isset($data['roles']) ? $data['roles'] : array());
+        if ( ! is_array( $roles ) ) {
+            $roles = array_filter( explode( ',', (string)$roles ) );
+        }
+        
+        $this->db->save_relations( 'resident_role_map', 'resident_id', $resident_id, 'role_id', $roles );
+
+        // Update CSV column for legacy views
+        $update_data['roles'] = implode( ',', $roles );
+
         // Handle Photo Upload
         // Priority 1: Already uploaded (e.g. from handle_edit_resident or approved request)
-        if ( ! empty( $data['profile_photo'] ) ) {
+        if ( ! empty( $data['profile_photo'] ) && ! is_wp_error( $data['profile_photo'] ) ) {
             $update_data['profile_photo'] = sanitize_text_field( $data['profile_photo'] );
         } else {
             // Priority 2: Upload now (e.g. direct admin edit where handle_edit_resident didn't run or failed)
-            $photo_url = $this->handle_photo_upload($update_data['flat_no'], $update_data['name']);
-            if ( $photo_url ) {
-                $update_data['profile_photo'] = $photo_url;
+            // Only try if a file is actually present
+            if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
+                $photo_url = $this->handle_photo_upload($update_data['flat_no'], $update_data['name']);
+                if ( $photo_url && ! is_wp_error( $photo_url ) ) {
+                    $update_data['profile_photo'] = $photo_url;
+                }
             }
         }
 
@@ -360,11 +406,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
                      'first_name'   => $update_data['name'], // Simplified, or split by space
                  ];
                  wp_update_user($wp_user_data);
+
+                 // Sync Society Roles to WP Roles
+                 $this->sync_wp_user_roles( $user->ID, $resident_id );
              }
         }
 
 		return $this->db->update('residents', $update_data, ['id' => $resident_id]);
-        return false;
     }
 
 	/**
@@ -379,7 +427,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
 		$resident_id = sanitize_text_field( $_POST['resident_id'] );
         
-        if ( current_user_can( 'manage_options' ) ) {
+        $rbac = Society_GoVernX::get_instance()->rbac;
+        if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
             $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
         } else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -407,7 +456,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             if ( ! check_admin_referer( 'sgvx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
+        $rbac = Society_GoVernX::get_instance()->rbac;
+        if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die('Unauthorized');
 
         $resident_id = sanitize_text_field( $_POST['resident_id'] );
         $residents = $this->db->get( 'residents' );
@@ -438,6 +488,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Restore Resident from Archive.
 	 */
 	public function handle_restore_resident() {
+        $rbac = Society_GoVernX::get_instance()->rbac;
+        if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
+
 		if ( wp_doing_ajax() ) {
 			check_ajax_referer( 'sgvx51_restore_resident_nonce' );
 		} else {
@@ -536,6 +589,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Permanently Delete from History Archive.
 	 */
 	public function handle_delete_history() {
+    $rbac = Society_GoVernX::get_instance()->rbac;
+    if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
+
     if ( wp_doing_ajax() ) {
         check_ajax_referer( 'sgvx51_delete_history_nonce' );
     } else {
@@ -563,6 +619,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
+        $rbac = Society_GoVernX::get_instance()->rbac;
+        if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
+
 		if ( ! check_admin_referer( 'sgvx51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
@@ -608,10 +667,14 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		);
 
 		// Handle Photo Upload
-		$photo_url = $this->handle_photo_upload($data['flat_no'], $data['name']);
-		if ( $photo_url ) {
-			$data['profile_photo'] = $photo_url;
-		}
+        if ( ! empty( $post_data['profile_photo'] ) ) {
+            $data['profile_photo'] = sanitize_text_field( $post_data['profile_photo'] );
+        } else {
+            $photo_url = $this->handle_photo_upload($data['flat_no'], $data['name']);
+            if ( $photo_url && ! is_wp_error( $photo_url ) ) {
+                $data['profile_photo'] = $photo_url;
+            }
+        }
 
 		// 0. Server-Side Validation: Flat Existence
 		$flats = $this->db->get( 'flats' );
@@ -635,12 +698,20 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			'blood_group'   => isset($post_data['blood_group']) ? sanitize_text_field( $post_data['blood_group'] ) : '',
 			'relation'      => isset($post_data['relation']) ? sanitize_text_field( $post_data['relation'] ) : '',
 			'dob'           => isset($post_data['dob']) ? sanitize_text_field( $post_data['dob'] ) : '',
-			'roles'         => isset($post_data['role']) ? sanitize_text_field($post_data['role']) : '',
 		'status'        => isset($post_data['status']) ? $post_data['status'] : 'approved',
 		'wp_user_id'    => '', 
 		'id'            => isset($post_data['id']) ? $post_data['id'] : uniqid('res_'), 
 		'created_at'    => current_time( 'mysql' ),
 	) );
+
+        // Add Relational Roles (Multi-Role Support)
+        $roles = isset($post_data['role']) ? $post_data['role'] : (isset($post_data['roles']) ? $post_data['roles'] : array());
+        if ( ! is_array( $roles ) ) {
+            $roles = array_filter( explode( ',', (string)$roles ) );
+        }
+        
+        $this->db->save_relations( 'resident_role_map', 'resident_id', $data['id'], 'role_id', $roles );
+        $data['roles'] = implode( ',', $roles );
 
 		// 0.1 Auto-Archive existing occupant (Owner/Tenant) if new one added for same flat.
 		if ( in_array( $data['type'], array( 'owner', 'tenant' ) ) ) {
@@ -672,6 +743,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			if ( $user && ! is_wp_error( $user ) ) {
 				$data['wp_user_id'] = $user->ID;
 				update_user_meta( $user->ID, 'sgvx51_flat_no', $data['flat_no'] );
+
+                // Sync Roles immediately
+                $this->sync_wp_user_roles( $user->ID, $data['id'] );
 			}
 		}
 
@@ -680,9 +754,14 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	}
 
 	public function render_page() {
+        $rbac = Society_GoVernX::get_instance()->rbac;
+        if ( ! $rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
+            wp_die( 'You do not have permission to view the Residents Directory.' );
+        }
 		// Pass Residents and Flats for the form dropdown
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
-        $unified = $rm->get_unified_data( 'residents', 'residents', 'resident_history' );
+        $unified = $rm->get_unified_data( 'residents', 'residents', 'resident_history', true ); // Added load_relations
         $flats = $this->db->get('flats');
 		
 		SGVX51_Admin_App::render_view('residents', [
@@ -691,6 +770,45 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             'history'   => $unified['archived'],
 			'flats'     => $flats
 		]);
+	}
+
+	/**
+	 * Sync Society Roles to WordPress User Roles.
+	 */
+	public function sync_wp_user_roles( $user_id, $resident_id ) {
+		$rbac = Society_GoVernX::get_instance()->rbac;
+		$society_roles = $this->db->get_mysql( 'resident_role_map', array( 'where' => array( 'resident_id' => $resident_id ) ) );
+		
+		$wp_user = new WP_User( $user_id );
+		if ( ! $wp_user->exists() ) return;
+
+		// 1. Remove all existing SGVX roles from user
+		$current_wp_roles = $wp_user->roles;
+		foreach ( $current_wp_roles as $role_slug ) {
+			if ( strpos( $role_slug, 'sgvx_' ) === 0 ) {
+				$wp_user->remove_role( $role_slug );
+			}
+		}
+
+		// 2. Add new roles based on society mapping
+		foreach ( $society_roles as $map ) {
+			$role_id = $map['role_id'];
+			$wp_role_id = 'sgvx_' . sanitize_title( $role_id );
+            
+            // Ensure role exists in WP (double check)
+            if ( ! get_role( $wp_role_id ) ) {
+                $role_def = $rbac->get_role( $role_id );
+                $role_name = $role_def ? $role_def['name'] : ucfirst( str_replace( '_', ' ', $role_id ) );
+                add_role( $wp_role_id, 'SGVX: ' . $role_name, array( 'read' => true ) );
+            }
+
+			$wp_user->add_role( $wp_role_id );
+		}
+        
+        // Ensure 'subscriber' is present if no other roles (for frontend access)
+        if ( empty( $wp_user->roles ) ) {
+            $wp_user->add_role( 'subscriber' );
+        }
 	}
 
 	/**

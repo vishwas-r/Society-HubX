@@ -38,7 +38,7 @@ class SGVX51_Flat_Manager {
 			'sgvx51-settings',
 			'Society Units / Flats',
 			'Flats & Units',
-			'manage_options',
+			'read', // Granular check inside render_page
 			'sgvx51-flats',
 			array( $this, 'render_page' )
 		);
@@ -74,7 +74,7 @@ class SGVX51_Flat_Manager {
 	public function handle_hard_delete_flat() {
 		check_ajax_referer( 'sgvx51_hard_delete_flat_nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'manage_options' ) && ! (new SGVX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 		}
 
@@ -126,6 +126,9 @@ class SGVX51_Flat_Manager {
 
 		error_log( 'SGVX51 handle_edit_flat: Update result: ' . json_encode( $res ) );
 
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
+
 	    if ( wp_doing_ajax() ) {
 	        if ( is_wp_error( $res ) ) {
 	            wp_send_json_error( array( 'message' => $res->get_error_message() ) );
@@ -150,6 +153,9 @@ class SGVX51_Flat_Manager {
         } else {
 		    if ( ! check_admin_referer( 'sgvx51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
+
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = sanitize_text_field( $_POST['flat_id'] );
 		$res = $this->db->update( 'flats', ['status' => 'archived'], array( 'id' => $id ) );
@@ -257,6 +263,10 @@ class SGVX51_Flat_Manager {
 	}
 
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'flats_view' ) ) {
+            wp_die( 'You do not have permission to view flats.' );
+        }
 		SGVX51_Admin_App::render_view('flats');
 	}
 }

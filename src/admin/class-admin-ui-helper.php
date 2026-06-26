@@ -55,6 +55,15 @@ class SGVX51_Admin_UI {
         $radius = 8; // rounded-3 equivalent
         $style = sprintf('width: %dpx; height: %dpx; font-size: %frem; flex-shrink: 0;', $size, $size, ($size / 40));
         
+        // 0. Path Correction (Legacy/Absolute Path Fix)
+        if ( ! empty( $photo_url ) && ( strpos( $photo_url, ':\\' ) !== false || strpos( $photo_url, ':/' ) !== false ) ) {
+            $upload_dir = wp_upload_dir();
+            $base_dir = str_replace( '\\', '/', $upload_dir['basedir'] );
+            $base_url = $upload_dir['baseurl'];
+            $photo_url = str_replace( '\\', '/', $photo_url );
+            $photo_url = str_replace( $base_dir, $base_url, $photo_url );
+        }
+
         // 1. Profile Photo Case
         if ( ! empty( $photo_url ) ) {
             return sprintf(
@@ -64,14 +73,13 @@ class SGVX51_Admin_UI {
                 $style,
                 esc_url( $photo_url ),
                 esc_attr( $name ),
-                $email ? get_avatar( $email, $size, '', '', ['class' => 'w-100 h-100']) : strtoupper(substr($name ?? 'U', 0, 1))
+                $email ? get_avatar( $email, $size, '', '', ['class' => 'w-100 h-100']) : '<div class=\"w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white fw-bold\">' . strtoupper(substr($name ?? 'U', 0, 1)) . '</div>'
             );
         }
-
+        
         // 2. Gravatar Fallback (if email exists)
         if ( ! empty( $email ) ) {
             $gravatar = get_avatar_url( $email, ['size' => $size] );
-            // Check if it's a default/mystery man (approximate check)
             if ( strpos($gravatar, 'd=mm') === false && strpos($gravatar, 'd=mp') === false && strpos($gravatar, 'd=blank') === false ) {
                  return sprintf(
                     '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s font-size: 0px;">

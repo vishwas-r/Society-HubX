@@ -494,24 +494,46 @@ $qr_url    = get_option('sgvx51_bank_qr');
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-3">
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
-            <span id="cdm-flat" class="badge bg-primary rounded-pill"></span>
-            <span id="cdm-owner"></span>
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-3">
+            <div class="position-relative">
+                <img id="cdm-owner-photo" src="" class="rounded-circle border border-white shadow-sm" style="width: 64px; height: 64px; object-fit: cover; display: none;">
+                <span id="cdm-flat" class="badge bg-primary rounded-pill position-absolute" style="bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 10px; border: 2px solid #fff; padding: 4px 8px;"></span>
+            </div>
+            <span id="cdm-owner" class="ms-2"></span>
         </h5>
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-         <div class="row g-3">
-             <div class="col-6">
-                 <label class="small text-muted text-uppercase fw-bold" style="font-size: 10px;">Family Size</label>
-                 <div class="fw-bold d-flex align-items-center gap-2"><i class="bi bi-people text-primary"></i> <span id="cdm-members"></span> Members</div>
+      <div class="modal-body p-4">
+         <div class="row g-4">
+             <div class="col-12">
+                 <label class="small text-secondary fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Family Members (<span id="cdm-members-count">0</span>)</label>
+                 <div id="cdm-family-list" class="d-flex flex-column gap-3"></div>
              </div>
-             <div class="col-6">
-                 <label class="small text-muted text-uppercase fw-bold" style="font-size: 10px;">Email</label>
-                 <div class="fw-bold d-flex align-items-center gap-2" id="cdm-email">-</div>
+             
+             <div class="col-12">
+                 <div class="bg-light rounded-3 p-3">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Parking Slot</label>
+                            <div class="fw-bold text-primary" id="cdm-parking">-</div>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Society Email</label>
+                            <div class="fw-medium text-dark small text-truncate" id="cdm-email">-</div>
+                        </div>
+                    </div>
+                 </div>
              </div>
-             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Vehicles</label><div id="cdm-vehicles" class="d-flex flex-column align-items-start gap-2"></div></div>
-             <div class="col-12 mt-4"><label class="small text-muted text-uppercase fw-bold mb-2 d-block" style="font-size: 10px;">Daily Help</label><div id="cdm-help" class="d-flex flex-column align-items-start gap-2"></div></div>
+
+             <div class="col-12 mt-1">
+                 <label class="small text-secondary fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Registered Vehicles</label>
+                 <div id="cdm-vehicles" class="d-flex flex-column gap-2"></div>
+             </div>
+
+             <div class="col-12 mt-1">
+                 <label class="small text-secondary fw-bold text-uppercase d-block mb-2" style="font-size: 10px; letter-spacing: 0.05em;">Daily Help Staff</label>
+                 <div id="cdm-help" class="d-flex flex-column gap-2"></div>
+             </div>
          </div>
       </div>
     </div>
@@ -579,10 +601,96 @@ $qr_url    = get_option('sgvx51_bank_qr');
       SGVX.ajax({
           action: 'sgvx51_edit_resident',
           data: formData,
-          loadingButton: $(btn),
+          loadingButton: jQuery(btn),
           successMessage: 'Profile updated successfully!',
           reload: true
       });
     }
 
 </script>
+
+<!-- General Request Modal -->
+<div class="modal fade" id="sgvx51GeneralRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Raise a Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="sgvx51GeneralRequestForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Category</label>
+                        <select name="category" class="form-select border-light shadow-none rounded-3" required>
+                            <option value="">Select Category</option>
+                            <option value="Swimming Pool">Swimming Pool Time Change</option>
+                            <option value="CCTV">CCTV Footage Request</option>
+                            <option value="Play-time">Play-time Change</option>
+                            <option value="Maintenance">Maintenance Issue</option>
+                            <option value="Security">Security Concern</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Comments / Details</label>
+                        <textarea name="comments" class="form-control border-light shadow-none rounded-3" rows="4" placeholder="Describe your request in detail..." required></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold rounded-3 shadow-sm">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resident Request Detail Modal -->
+<div class="modal fade" id="residentRequestDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div id="rrd-icon-wrapper" class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border shadow-sm mb-3" style="width: 64px; height: 64px;">
+                        <i id="rrd-icon" class="bi bi-chat-left-text text-primary fs-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1" id="rrd-category"></h5>
+                    <div id="rrd-status-badge" class="badge rounded-pill fw-normal px-3 py-1"></div>
+                    <div class="mt-2 small text-muted font-monospace" id="rrd-id"></div>
+                </div>
+
+                <div class="bg-light rounded-3 p-3 mb-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Details / Comments</label>
+                            <div class="text-dark bg-white border border-light rounded p-2" style="font-size: 0.9rem; min-height: 60px;" id="rrd-comments"></div>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Submitted On</label>
+                            <span class="fw-medium text-dark" id="rrd-date">-</span>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-secondary fw-bold text-uppercase d-block mb-1">Last Updated</label>
+                            <span class="fw-medium text-dark" id="rrd-updated">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rrd-admin-feedback" class="d-none">
+                    <label class="small text-secondary fw-bold text-uppercase d-block mb-2">Admin Feedback</label>
+                    <div class="bg-primary bg-opacity-10 border border-primary border-opacity-10 rounded-3 p-3 text-primary-emphasis" style="font-size: 0.9rem;">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <span id="rrd-admin-note"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light text-secondary rounded-3 px-4 w-100" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php // End of Modals ?>

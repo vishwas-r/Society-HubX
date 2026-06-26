@@ -97,12 +97,10 @@ class SGVX51_Receipt_Manager {
 		$payments = array();
 		$total_paid = 0;
 
-		if ( $include_payments && ! empty( $invoice['payments'] ) ) {
-			$payment_list = is_string( $invoice['payments'] ) 
-				? json_decode( $invoice['payments'], true ) 
-				: $invoice['payments'];
+		if ( $include_payments ) {
+			$payment_list = $invoice['payments'] ?? array();
 
-			if ( is_array( $payment_list ) ) {
+			if ( ! empty( $payment_list ) && is_array( $payment_list ) ) {
 				foreach ( $payment_list as $payment ) {
 					$amount = floatval( $payment['amount'] ?? 0 );
 					$total_paid += $amount;
@@ -113,6 +111,17 @@ class SGVX51_Receipt_Manager {
 						'ref'    => $payment['reference'] ?? $payment['ref'] ?? $payment['txn_id'] ?? 'N/A',
 					);
 				}
+			} elseif ( strtolower( trim( $invoice['status'] ?? '' ) ) === 'paid' ) {
+				// Fallback for legacy "Paid" status without explicit payment rows (Imported Data)
+				$total_paid = floatval( $invoice['amount'] ?? 0 );
+				$payments[] = array(
+					'date'   => !empty($invoice['payment_date'] ?? '') && $invoice['payment_date'] !== '0000-00-00 00:00:00' 
+								? date('Y-m-d', strtotime($invoice['payment_date'])) 
+								: ($invoice['created_at'] ? date('Y-m-d', strtotime($invoice['created_at'])) : date('Y-m-d')),
+					'amount' => $total_paid,
+					'method' => $invoice['payment_mode'] ?? 'Recorded',
+					'ref'    => $invoice['payment_ref'] ?? 'Legacy Record',
+				);
 			}
 		}
 

@@ -3,8 +3,36 @@
  * Pure Bootstrap 5 Based Theme with Custom Components
  */
 
+:root {
+    --sgvx-bg: #f8fafc;
+    --sgvx-card-bg: #ffffff;
+    --sgvx-primary: #3b82f6;
+    --sgvx-primary-dark: #2563eb;
+    --sgvx-text-main: #0f172a;
+    --sgvx-text-muted: #64748b;
+    --sgvx-border: #e2e8f0;
+    --sgvx-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --sgvx-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --sgvx-radius: 16px;
+    --sgvx-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--sgvx-bg);
+}
+
+.transition-all {
+    transition: var(--sgvx-transition) !important;
+}
+
+.hover-translate-y:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sgvx-shadow-md) !important;
+}
+
+.rounded-2xl {
+    border-radius: var(--sgvx-radius) !important;
 }
 
 /* --- Custom Components --- */

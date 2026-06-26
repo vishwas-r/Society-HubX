@@ -56,7 +56,7 @@ class SGVX51_Expense_Manager {
 			'payee'       => sanitize_text_field( $_POST['payee'] ),
 			'added_by'    => get_current_user_id(),
 			'receipt_url' => '',
-			'status'      => 'pending',
+			'status'      => 'pending_secretary',
             'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
 		);
 
@@ -76,10 +76,18 @@ class SGVX51_Expense_Manager {
 
 		$result = $this->db->insert( $table, $data );
 
-		if ( is_wp_error( $result ) ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
-		} else {
+		if ( ! is_wp_error( $result ) ) {
+            // Create a request for approval
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
+            
+            if ( ! is_wp_error( $req_id ) ) {
+                $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
+            }
 			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
+		} else {
+			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		}
 		exit;
 	}
@@ -157,9 +165,11 @@ class SGVX51_Expense_Manager {
 		$date = sanitize_text_field( $_POST['expense_date'] );
 
 		$year = date( 'Y', strtotime( $date ) );
-		$table = 'expenses';
 
-		$result = $this->db->update( $table, array( 'status' => 'approved' ), array( 'id' => $id ) );
+        // Direct approval is now replaced by multi-stage workflow if requested via Admin UI
+        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SGVX51_Request_Manager();
+        $result = $rm->approve_request( $id );
 
 		if ( is_wp_error( $result ) ) {
 			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
@@ -191,7 +201,7 @@ class SGVX51_Expense_Manager {
 			'payee'       => sanitize_text_field( $_POST['payee'] ?? '' ),
 			'added_by'    => get_current_user_id(),
 			'receipt_url' => '',
-			'status'      => 'pending',
+			'status'      => 'pending_secretary',
 			'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
 		);
 		
@@ -218,13 +228,22 @@ class SGVX51_Expense_Manager {
 		
 		$result = $this->db->insert( $table, $data );
 		
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
-		} else {
+		if ( ! is_wp_error( $result ) ) {
+            // Create a request for approval
+            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SGVX51_Request_Manager();
+            $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
+
+            if ( ! is_wp_error( $req_id ) ) {
+                $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
+            }
+
 			wp_send_json_success( array( 
-				'message' => 'Expense added successfully',
+				'message' => 'Expense added successfully and sent for approval',
 				'id' => $result
 			) );
+		} else {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 	}
 	

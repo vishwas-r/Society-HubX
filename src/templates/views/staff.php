@@ -169,7 +169,8 @@ $all_flats = $flats;
                     // 2. Merge Pending Requests (from requests table) to deduplicate
                     if ( ! empty( $pending ) ) {
                         foreach ( $pending as $p ) {
-                            $payload = json_decode($p['payload'], true) ?: [];
+                            $payload = is_array($p['payload'] ?? null) ? $p['payload'] : json_decode($p['payload'], true);
+                            if ( ! is_array($payload) ) $payload = [];
                             $entity_id = $p['entity_id'] ?? '';
                             $request_id = $p['id'];
                             
@@ -265,12 +266,11 @@ $all_flats = $flats;
                                     ?>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
-                                    <div class="text-dark fw-bold small"><?php echo esc_html( $s['phone'] ); ?></div>
+                                    <div class="text-dark fw-bold small"><?php echo esc_html( SGVX51_Privacy_Manager::mask_data( $s['phone'] ) ); ?></div>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
                                     <?php 
-                                        $served_flats_raw = $s['flats_served'] ?? '';
-                                        $served_flats = is_array($served_flats_raw) ? $served_flats_raw : (!empty($served_flats_raw) ? json_decode($served_flats_raw, true) : []);
+                                        $served_flats = $s['flats_served'] ?? [];
                                         if(empty($served_flats) && !empty($s['flat_no'])) $served_flats = [$s['flat_no']];
                                         
                                         if(empty($served_flats)): ?>

@@ -197,6 +197,11 @@ $templates = $db->get('notification_templates');
                         <i class="bi bi-tools me-2"></i>Data & Maintenance
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-privacy" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-shield-lock me-2"></i>Privacy & DPDP
+                    </button>
+                </li>
             </ul>
         </div>
         

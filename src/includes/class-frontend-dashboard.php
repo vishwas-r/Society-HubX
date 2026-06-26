@@ -60,6 +60,9 @@ class SGVX51_Frontend_Dashboard {
         add_action( 'wp_ajax_sgvx51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
         add_action( 'wp_ajax_sgvx51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
 		
+        // Payment Submission Handler
+        add_action( 'wp_ajax_sgvx51_submit_payment_request', array( $this, 'handle_submit_payment' ) );
+
 		// Login & Access Control
 		add_action( 'wp_ajax_sgvx51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_action( 'wp_ajax_nopriv_sgvx51_resident_login', array( $this, 'handle_resident_login' ) );
@@ -120,6 +123,55 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	/**
+	 * Handle Payment Confirmation (Frontend)
+	 */
+	public function handle_submit_payment() {
+		check_ajax_referer( 'sgvx51_admin_nonce', '_ajax_nonce' );
+		if ( ! is_user_logged_in() ) wp_send_json_error( ['message' => 'Unauthorized'] );
+
+		$user_id = get_current_user_id();
+		$invoice_id = sanitize_text_field( $_POST['invoice_id'] ?? '' );
+		$amount = floatval( $_POST['amount'] ?? 0 );
+		$reference = sanitize_text_field( $_POST['reference'] ?? '' );
+		$date = sanitize_text_field( $_POST['date'] ?? current_time('Y-m-d') );
+		$method = sanitize_text_field( $_POST['method'] ?? 'Bank Transfer' );
+
+		if ( empty($invoice_id) || $amount <= 0 || empty($reference) ) {
+			wp_send_json_error( ['message' => 'Missing valid payment details.'] );
+		}
+
+		// Find Resident
+		$residents = $this->db->get( 'residents' );
+		$resident = null;
+		foreach ( $residents as $r ) {
+			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
+				$resident = $r;
+				break;
+			}
+		}
+
+		if ( ! $resident ) wp_send_json_error( ['message' => 'Resident profile not found.'] );
+
+		$req_manager = new SGVX51_Request_Manager();
+		$payload = [
+			'category'   => 'Payment Confirmation',
+			'invoice_id' => $invoice_id,
+			'amount'     => $amount,
+			'reference'  => $reference,
+			'date'       => $date,
+			'method'     => $method,
+		];
+
+		$res = $req_manager->create_request( 'accounts', 'payment', $payload, $invoice_id, 'invoices', $resident['flat_no'] );
+
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( ['message' => $res->get_error_message()] );
+		}
+
+		wp_send_json_success( ['message' => 'Payment confirmation submitted for review.'] );
+	}
+
+	/**
 	 * Handle Document Upload (Frontend)
 	 */
 	public function handle_doc_upload() {
@@ -145,140 +197,29 @@ class SGVX51_Frontend_Dashboard {
 		}
 
 		$user_id = get_current_user_id();
+		$data = $this->get_dashboard_data( $user_id );
 		
-		// 1. Fetch Resident Profile.
-		// Optimized: In a real DB we'd use SQL. Here we filter the JSON.
-		$all_residents = $this->db->get( 'residents' );
-		$resident = null;
-		foreach ( $all_residents as $r ) {
-			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
-				$resident = $r;
-				break;
+		if ( is_wp_error($data) ) {
+			if ( $data->get_error_code() === 'no_resident' ) {
+				if ( current_user_can( 'manage_options' ) ) {
+					return '<div class="sgvx51-alert alert alert-info">
+								<h4>Welcome Admin!</h4>
+								<p>Your account is not linked to a specific Resident Profile (Flat), so you cannot view the Resident Dashboard.</p>
+								<a href="' . admin_url( 'admin.php?page=sgvx51-settings' ) . '" class="btn btn-primary">Go to Admin Settings</a>
+							</div>';
+				}
+				return '<div class="sgvx51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
 			}
 		}
 
-		if ( ! $resident ) {
-			error_log("SGVX51 Debug: Resident NOT found in render_dashboard for user_id: " . $user_id);
-			if ( current_user_can( 'manage_options' ) ) {
-				return '<div class="sgvx51-alert alert alert-info">
-							<h4>Welcome Admin!</h4>
-							<p>Your account is not linked to a specific Resident Profile (Flat), so you cannot view the Resident Dashboard.</p>
-							<a href="' . admin_url( 'admin.php?page=sgvx51-settings' ) . '" class="btn btn-primary">Go to Admin Settings</a>
-						</div>';
-			}
-			return '<div class="sgvx51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
-		}
-
-		error_log("SGVX51 Debug: Resident FOUND in render_dashboard: " . ($resident['id'] ?? 'NO_ID') . " | Name: " . ($resident['name'] ?? 'NO_NAME'));
-
-		// Success Message
-        if ( isset( $_GET['request_submitted'] ) ) {
-            echo '<div class="container-fluid mt-3"><div class="alert alert-info alert-dismissible fade show">Request submitted for admin approval. <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></div>';
-        }
-		if ( isset( $_GET['profile_updated'] ) ) {
-			echo '<div class="container-fluid mt-3"><div class="alert alert-success alert-dismissible fade show">Profile updated successfully. <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div></div>';
-		}
-
-		// 2. Fetch Module Data.
-		$all_flats = $this->db->get( 'flats' );
-		$my_flat = null;
-		foreach($all_flats as $f) { if($f['id'] === $resident['flat_no']) { $my_flat = $f; break; } }
-
-		// $all_vehicles = $this->db->get( 'vehicles' );
-		// $my_vehicles = array_filter($all_vehicles, function($v) use ($resident) { return $v['flat_no'] === $resident['flat_no']; });
-        $my_vehicles = $this->get_my_vehicles( $resident['flat_no'] );
-
-		$ledger_mgr = new SGVX51_Ledger_Manager();
-        $summary_month = isset($_GET['summary_month']) ? sanitize_text_field($_GET['summary_month']) : date('Y-m');
-       
-	// Fetch pending payment requests for this resident
-	$all_requests = $this->db->get('requests');
-	$pending_payment_requests = array_filter($all_requests, function($r) use ($resident) {
-		return ($r['module'] === 'accounts' || $r['entity_type'] === 'accounts') 
-			&& $r['status'] === 'pending'
-			&& isset($r['payload']);
-	});
-
-		$data = array(
-			'resident'   => $resident,
-			'flat'       => $my_flat,
-			'vehicles'   => $my_vehicles,
-			'family'     => $this->get_my_family( $resident['flat_no'] ),
-			'daily_help' => $this->get_my_daily_help( $resident['flat_no'] ),
-			'notices'    => $this->get_my_notices( $resident['type'] ),
-			'my_docs'    => $this->get_my_documents( $resident['flat_no'] ),
-			'notices'    => $this->get_my_notices( $resident['type'] ),
-			'my_docs'    => $this->get_my_documents( $resident['flat_no'] ),
-			'facilities' => $this->db->get( 'facilities' ),
-            'assets'     => $this->db->get( 'assets' ),
-			'my_bookings'=> $this->get_my_bookings( $resident['flat_no'] ), // Using Flat No as ID for now
-			'expenses'   => $this->db->get( 'expenses' ), // Summary only
-			'invoices'   => $this->get_my_invoices( isset($my_flat['flat_number']) ? $my_flat['flat_number'] : $resident['flat_no'] ),
-			'detailed_expenses' => $this->get_expenses_filtered(),
-            'current_balance'   => $ledger_mgr->get_current_balance(),
-            'monthly_summary'   => $ledger_mgr->get_monthly_summary($summary_month),
-            'summary_month'     => $summary_month,
-			'directory'         => $this->get_directory_data(),
-			'pending_payment_requests' => $pending_payment_requests,
-            'notifications'     => $this->get_my_notifications( $user_id ),
-		);
-
-
-		// Prepare Chart Data
-		$expense_chart_data = [];
-		if ( ! empty( $data['detailed_expenses'] ) ) {
-			foreach ( $data['detailed_expenses'] as $ex ) {
-				$month_key = date('M Y', strtotime($ex['date']));
-				if ( ! isset( $expense_chart_data[$month_key] ) ) $expense_chart_data[$month_key] = 0;
-				$expense_chart_data[$month_key] += (float) $ex['amount'];
-			}
-		}
-        // Limit to last 12 months
-        $expense_chart_data = array_slice($expense_chart_data, -12, null, true);
-
-        // Resident Payment History - Detailed by Date
-       $payment_history = [];
-       if ( ! empty( $data['invoices'] ) ) {
-           foreach ( $data['invoices'] as $inv ) {
-               $has_explicit_payments = false;
-               if ( ! empty( $inv['payments'] ) ) {
-                   $payments = is_string( $inv['payments'] ) ? json_decode( $inv['payments'], true ) : $inv['payments'];
-                   if ( is_array( $payments ) && ! empty( $payments ) ) {
-                       $has_explicit_payments = true;
-                       foreach ( $payments as $p ) {
-                           $p_date = ! empty( $p['date'] ) ? $p['date'] : substr( $inv['created_at'], 0, 10 );
-                           if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
-                           $payment_history[ $p_date ] += (float) $p['amount'];
-                       }
-                   }
-               }
-               
-               // Fallback for imported data (legacy paid status without transactions)
-               if ( ! $has_explicit_payments && ( strtolower( $inv['status'] ?? '' ) === 'paid' ) ) {
-                   // Use 1st of invoice month as fallback date
-                   $p_date = date( 'Y-m-d', strtotime( $inv['month'] . '-01' ) );
-                   if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
-                   $payment_history[ $p_date ] += (float) $inv['amount'];
-               }
-           }
-       }
-       
-       ksort( $payment_history ); // Sort by date ASC
-       
-       // Format for CanvasJS (x: numeric timestamp, y: amount)
-       $chart_payments = [];
-       foreach ( $payment_history as $date_str => $amount ) {
-           $chart_payments[] = array(
-               'x'     => strtotime( $date_str ) * 1000, // Milliseconds for JS
-               'y'     => $amount,
-               'label' => date( 'd M Y', strtotime( $date_str ) ) // For tooltips
-           );
-       }
-       $payment_history = array_slice( $chart_payments, -20 ); // Last 20 payments for clarity
-
-		// 3. Prepare $data for template
-		$data['expenseChartData'] = $expense_chart_data;
-		$data['paymentHistory']   = $payment_history;
+		$resident = $data['resident'];
+		$expense_chart_data = $data['expenseChartData'];
+		$payment_history = $data['paymentHistory'];
+		$my_requests = $data['my_requests'];
+		$my_flat = $data['flat'];
+		$my_vehicles = $data['vehicles'];
+		$pending_payment_requests = $data['pending_payment_requests'];
+		$summary_month = $data['summary_month'];
 
 		// 4. Render Template.
          
@@ -289,12 +230,139 @@ class SGVX51_Frontend_Dashboard {
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
-            'nonce'            => wp_create_nonce('sgvx51_frontend_nonce')
+            'my_requests'      => array_values($my_requests), // Pass resident requests
+            'nonce'            => wp_create_nonce('sgvx51_frontend_nonce'),
+            'rest_url'         => esc_url_raw( rest_url( 'sgvx/v1/' ) ),
+            'rest_nonce'       => wp_create_nonce( 'wp_rest' )
          ));
         
 		ob_start();
 		include SGVX51_PLUGIN_DIR . 'templates/dashboard.php';
 		return ob_get_clean();
+	}
+
+	public function get_dashboard_data( $user_id ) {
+		// 1. Fetch Resident Profile.
+		$all_residents = $this->db->get( 'residents' );
+		$resident = null;
+		foreach ( $all_residents as $r ) {
+			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
+				$resident = $r;
+				break;
+			}
+		}
+
+		if ( ! $resident ) {
+			return new WP_Error('no_resident', 'No resident profile linked to your account.');
+		}
+
+		// 2. Fetch Module Data.
+		$all_flats = $this->db->get( 'flats' );
+		$my_flat = null;
+		$my_flat = null;
+		foreach($all_flats as $f) {
+            if((string)$f['flat_number'] === (string)$resident['flat_no'] && (string)($f['block'] ?? '') === (string)($resident['block'] ?? '')) {
+                $my_flat = $f; break;
+            }
+        }
+
+        $my_vehicles = $this->get_my_vehicles( $resident['flat_no'], $resident['block'] ?? '' );
+
+		$ledger_mgr = new SGVX51_Ledger_Manager();
+        $summary_month = isset($_GET['summary_month']) ? sanitize_text_field($_GET['summary_month']) : date('Y-m');
+       
+		// Fetch relevant payment requests for this resident (Pending + Approved)
+		$all_requests = $this->db->get('requests');
+		$pending_payment_requests = array_filter($all_requests, function($r) use ($resident) {
+			$status = $r['status'] ?? 'pending';
+			$is_relevant = in_array( $status, array( 'pending', 'pending_secretary', 'pending_treasurer', 'approved' ) );
+			return (($r['module'] ?? '') === 'accounts' || ($r['entity_type'] ?? '') === 'accounts') 
+				&& $is_relevant
+				&& isset($r['payload'])
+				&& (string)($r['flat_no'] ?? '') === (string)($resident['flat_no'] ?? '')
+                && (string)($r['block'] ?? '') === (string)($resident['block'] ?? '');
+		});
+
+		$my_requests = array_filter($all_requests, function($r) use ($resident, $user_id) {
+			return ((string)$r['flat_no'] === (string)$resident['flat_no'] && (string)($r['block'] ?? '') === (string)($resident['block'] ?? '')) || ((int)$r['created_by'] === (int)$user_id);
+		});
+		
+		// Sort Newest First
+		usort($my_requests, function($a, $b) {
+			return strtotime($b['created_at']) - strtotime($a['created_at']);
+		});
+
+		$data = array(
+			'resident'   => $resident,
+			'flat'       => $my_flat,
+			'vehicles'   => $my_vehicles,
+			'family'     => $this->get_my_family( $resident['flat_no'], $resident['block'] ?? '' ),
+			'daily_help' => $this->get_my_daily_help( $resident['flat_no'], $resident['block'] ?? '' ),
+			'notices'    => $this->get_my_notices( $resident['type'] ),
+			'my_docs'    => $this->get_my_documents( $resident['flat_no'], $resident['block'] ?? '' ),
+			'facilities' => $this->db->get( 'facilities' ),
+            'assets'     => $this->db->get( 'assets' ),
+			'my_bookings'=> $this->get_my_bookings( $resident['flat_no'], $resident['block'] ?? '' ),
+			'expenses'   => $this->db->get( 'expenses' ),
+			'invoices'   => $this->get_my_invoices( isset($my_flat['flat_number']) ? $my_flat['flat_number'] : $resident['flat_no'], $resident['block'] ?? '' ),
+			'detailed_expenses' => $this->get_expenses_filtered(),
+            'current_balance'   => $ledger_mgr->get_current_balance(),
+            'monthly_summary'   => $ledger_mgr->get_monthly_summary($summary_month),
+            'summary_month'     => $summary_month,
+			'directory'         => $this->get_directory_data(),
+			'pending_payment_requests' => $pending_payment_requests,
+            'my_requests'       => $my_requests,
+            'notifications'     => $this->get_my_notifications( $user_id ),
+		);
+
+		// Prepare Chart Data
+		$expense_chart_data = [];
+		if ( ! empty( $data['detailed_expenses'] ) ) {
+			foreach ( $data['detailed_expenses'] as $ex ) {
+				$month_key = date('M Y', strtotime($ex['date']));
+				if ( ! isset( $expense_chart_data[$month_key] ) ) $expense_chart_data[$month_key] = 0;
+				$expense_chart_data[$month_key] += (float) $ex['amount'];
+			}
+		}
+        $expense_chart_data = array_slice($expense_chart_data, -12, null, true);
+
+       $payment_history = [];
+       if ( ! empty( $data['invoices'] ) ) {
+           foreach ( $data['invoices'] as $inv ) {
+               $has_explicit_payments = false;
+               if ( ! empty( $inv['payments'] ) && is_array( $inv['payments'] ) ) {
+                   $has_explicit_payments = true;
+                   foreach ( $inv['payments'] as $p ) {
+                       $p_date = ! empty( $p['date'] ) ? $p['date'] : substr( $inv['created_at'], 0, 10 );
+                       if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
+                       $payment_history[ $p_date ] += (float) $p['amount'];
+                   }
+               }
+               
+               if ( ! $has_explicit_payments && ( strtolower( $inv['status'] ?? '' ) === 'paid' ) ) {
+                   $p_date = date( 'Y-m-d', strtotime( $inv['month'] . '-01' ) );
+                   if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
+                   $payment_history[ $p_date ] += (float) $inv['amount'];
+               }
+           }
+       }
+       
+       ksort( $payment_history );
+       
+       $chart_payments = [];
+       foreach ( $payment_history as $date_str => $amount ) {
+           $chart_payments[] = array(
+               'x'     => strtotime( $date_str ) * 1000,
+               'y'     => $amount,
+               'label' => date( 'd M Y', strtotime( $date_str ) )
+           );
+       }
+       $payment_history = array_slice( $chart_payments, -20 );
+
+		$data['expenseChartData'] = $expense_chart_data;
+		$data['paymentHistory']   = $payment_history;
+
+		return $data;
 	}
 
 	private function get_my_notices( $type ) {
@@ -322,12 +390,12 @@ class SGVX51_Frontend_Dashboard {
 		return $my_notices;
 	}
 
-	private function get_my_documents( $flat_no ) {
+	private function get_my_documents( $flat_no, $block = '' ) {
 		// 1. Fetch Managed Docs (from DB Metadata) - OPTIMIZED
-		$args = array(
-			'where' => array( 'flat_no' => $flat_no )
-		);
-		$all_meta_docs = $this->db->get( 'documents', $args );
+		$where = array( 'flat_no' => $flat_no );
+        if ( $block ) $where['block'] = $block;
+
+		$all_meta_docs = $this->db->get( 'documents', array( 'where' => $where ) );
 		
 		$my_docs = array();
 		$known_paths = array(); // Track ALL DB entries for this flat
@@ -347,7 +415,8 @@ class SGVX51_Frontend_Dashboard {
 		}
 
 		// 2. Fetch Physical Files (Admin Uploads / Legacy)
-		$folder_id = $this->drive->ensure_flat_folder( $flat_no );
+        // Note: For physical files, we might still use A-101 format for folders if not migrated
+		$folder_id = $this->drive->ensure_flat_folder( ($block ? $block . '-' : '') . $flat_no );
 		if ( ! is_wp_error( $folder_id ) ) {
 			$raw_files = $this->drive->list_files( $folder_id );
 			
@@ -367,6 +436,7 @@ class SGVX51_Frontend_Dashboard {
 							'name'    => $f['name'],
 							'url'     => $f['url'],
 							'status'  => 'approved',
+                            'block'   => $block,
 							'flat_no' => $flat_no
 						);
 					}
@@ -381,22 +451,24 @@ class SGVX51_Frontend_Dashboard {
 		return $my_docs;
 	}
 
-	private function get_my_bookings( $flat_no ) {
+	private function get_my_bookings( $flat_no, $block = '' ) {
 		$args = array(
-			'where' => array( 'resident_id' => $flat_no ) // Assuming resident_id stores flat_no based on original code
+			'where' => array( 'flat_no' => $flat_no )
 		);
+        if ( $block ) $args['where']['block'] = $block;
+
 		$mine = $this->db->get( 'bookings', $args );
 		
 		// Sort Newest First
 		return array_reverse( $mine );
 	}
 
-	private function get_my_family( $flat_no ) {
+	private function get_my_family( $flat_no, $block = '' ) {
 		// 1. Approved Residents (only)
 	$all = $this->db->get( 'residents' );
 	$mine = array();
 	foreach ( $all as $r ) {
-		if ( $r['flat_no'] === $flat_no && isset($r['type']) && $r['type'] === 'family' ) {
+		if ( (string)$r['flat_no'] === (string)$flat_no && (string)($r['block'] ?? '') === (string)$block && isset($r['type']) && $r['type'] === 'family' ) {
             $status = $r['status'] ?? 'approved';
             if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
 			    $mine[] = $r;
@@ -412,10 +484,12 @@ class SGVX51_Frontend_Dashboard {
             $e_type = $req['entity_type'] ?? '';
             $is_family_req = ($e_type === 'family');
             
-            $payload = json_decode($req['payload'], true);
+            $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
+            if ( ! $payload ) continue;
             $req_flat_no = !empty($req['flat_no']) ? $req['flat_no'] : ($payload['flat_no'] ?? '');
+            $req_block = !empty($req['block']) ? $req['block'] : ($payload['block'] ?? '');
 
-			if($is_family_req && $req_flat_no === $flat_no && in_array($req['status'], ['pending', 'rejected'])) {
+			if($is_family_req && (string)$req_flat_no === (string)$flat_no && (string)$req_block === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
 				if($payload && $req['request_type'] !== 'delete') {
                     $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
@@ -459,47 +533,27 @@ class SGVX51_Frontend_Dashboard {
 		return $mine;
 	}
 
-	private function get_my_daily_help( $flat_no ) {
-		// 1. Approved Staff
-		$all = $this->db->get( 'daily_help' );
-		$mine = array();
-		foreach ( $all as $h ) {
-            // Check legacy flat string or JSON array
-            $served = [];
-            if(isset($h['flats_served'])) {
-                 $val = $h['flats_served'];
-                 if (is_array($val)) {
-                     $served = $val;
-                 } else {
-                     $decoded = json_decode($val, true);
-                     $served = is_array($decoded) ? $decoded : explode(',', $val);
-                 }
-            }
-            // Fallback for resident-added staff who have direct flat_no
-            if(isset($h['flat_no']) && $h['flat_no'] === $flat_no) {
-                $served[] = $flat_no;
-            }
-
-			if ( in_array($flat_no, $served) ) {
-                $status = strtolower($h['status'] ?? 'approved');
-                if ($status === 'archived') continue; // Exclude archived from active dashboard list
-                // Include approved and deletion_pending
-				if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
-                    $mine[] = array_merge($h, ['status' => $status]);
+	private function get_my_daily_help( $flat_no, $block = '' ) {
+		// 1. Approved help
+		$all_help = $this->db->get( 'daily_help' );
+		$mine = [];
+		foreach ( $all_help as $h ) {
+			if ( ! empty($h['flat_no']) ) {
+                $h_flats = is_string($h['flat_no']) ? explode( ',', $h['flat_no'] ) : (is_array($h['flat_no']) ? $h['flat_no'] : []);
+                foreach($h_flats as $f) {
+                    $f = trim($f);
+                    // Match Block-Flat specifically
+                    if ( (string)$f === (string)$flat_no || (string)$f === (string)($block . '-' . $flat_no) ) {
+                        $mine[] = $h; break;
+                    }
                 }
-			}
+            }
 		}
 
         // 2. Pending Requests
         $requests = $this->db->get('requests');
         foreach($requests as $req) {
-            $e_type = $req['entity_type'] ?? '';
-            $is_help_req = in_array($e_type, ['daily_help', 'staff', 'staffs']);
-            
-            $payload = json_decode($req['payload'], true);
-            $req_flat_no = !empty($req['flat_no']) ? $req['flat_no'] : ($payload['flat_no'] ?? '');
-            
-            if($is_help_req && $req_flat_no === $flat_no && in_array($req['status'], ['pending', 'rejected'])) {
+            if(($req['entity_type'] === 'daily_help') && (string)$req['flat_no'] === (string)$flat_no && (string)($req['block'] ?? '') === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
                 
                 if($req['request_type'] === 'delete' && $req['status'] === 'pending') {
                      // Handle Pending Deletion
@@ -512,8 +566,9 @@ class SGVX51_Frontend_Dashboard {
                     }
                 } else if ($req['request_type'] !== 'delete') {
                     // Add/Edit
-                    $payload = json_decode($req['payload'], true);
-                    if($payload) {
+                        $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
+                    if ( ! $payload ) continue;
+                        if($payload) {
                         $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
                         $item = array_merge($payload, [
@@ -1143,30 +1198,30 @@ class SGVX51_Frontend_Dashboard {
 		exit;
 	}
 
-	private function get_my_flat_number() {
+	private function get_my_flat_info() {
 		$user_id = get_current_user_id();
 		$residents = $this->db->get('residents');
 		foreach($residents as $r) {
-			if(isset($r['wp_user_id']) && (int)$r['wp_user_id'] === $user_id) return $r['flat_no'];
+			if(isset($r['wp_user_id']) && (int)$r['wp_user_id'] === $user_id) {
+                return array(
+                    'block' => $r['block'] ?? '',
+                    'flat_no' => $r['flat_no'] ?? ''
+                );
+            }
 		}
 		return null;
 	}
 
-	private function get_my_invoices( $flat_no ) {
-		// Optimized Query
-		$args = array(
-			'where' => array( 'flat_no' => $flat_no ),
-			'orderby' => 'month',
-			'order' => 'DESC'
-		);
-		$invoices = $this->db->get( 'invoices', $args );
-		
-		// Sort manually just in case JSON mode or other sort requirements matches exact logic
-		usort( $invoices, function($a, $b) {
-			return strtotime($b['created_at']) - strtotime($a['created_at']);
-		});
-		
-		return $invoices;
+	public function get_my_invoices( $flat_no, $block = '' ) {
+        $where = array( 'flat_no' => $flat_no );
+        if ( $block ) $where['block'] = $block;
+
+		return $this->db->get( 'invoices', array(
+			'where'          => $where,
+			'orderby'        => 'month',
+			'order'          => 'DESC',
+			'load_relations' => true
+		));
 	}
 
 	private function get_expenses_filtered() {
@@ -1179,7 +1234,7 @@ class SGVX51_Frontend_Dashboard {
 		
 		// Debug: Log expenses
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( 'SGVX51 Frontend Expenses: Mode=' . $this->db->get_mode() . ', Table=' . $this->db->get_table_name_debug('expenses') . ', Total=' . count($expenses) );
+			error_log( 'SGVX51 Frontend Expenses: Total=' . count($expenses) );
 		}
 		
 		if ( empty( $expenses ) ) return [];
@@ -1436,11 +1491,21 @@ class SGVX51_Frontend_Dashboard {
                             <div class="card border-light shadow-sm rounded-3 h-100 transition-all">
                                 <div class="card-body p-4">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h5 class="fw-bold text-dark m-0"><?php echo esc_html( $r['name'] ); ?></h5>
-                                            <span class="badge <?php echo strtolower($r['type']) === 'owner' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'; ?> rounded-pill mt-2" style="font-size: 0.7rem;">
-                                                <?php echo esc_html( ucfirst( $r['type'] ) ); ?>
-                                            </span>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <!-- Floating DP / Avatar -->
+                                            <div class="position-relative">
+                                                <?php 
+                                                    $dp_url = !empty($r['owner_photo']) ? $r['owner_photo'] : 'https://ui-avatars.com/api/?name=' . urlencode($r['owner'] ?? $r['name']) . '&background=random&color=fff';
+                                                ?>
+                                                <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 52px; height: 52px; object-fit: cover;">
+                                                <div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;" title="Occupied"></div>
+                                            </div>
+                                            <div>
+                                                <h5 class="fw-bold text-dark m-0"><?php echo esc_html( $r['owner'] ?? $r['name'] ); ?></h5>
+                                                <span class="badge <?php echo strtolower($r['status'] ?? '') === 'occupied' ? 'bg-success-subtle text-success' : 'bg-primary-subtle text-primary'; ?> rounded-pill mt-1" style="font-size: 0.65rem;">
+                                                    <?php echo esc_html( $r['status'] ?? 'Occupied' ); ?>
+                                                </span>
+                                            </div>
                                         </div>
                                         <div class="fs-4 fw-bold text-light"><?php echo esc_html( $r['flat_no'] ); ?></div>
                                     </div>
@@ -1465,11 +1530,30 @@ class SGVX51_Frontend_Dashboard {
                                         if(!empty($my_vehicles)): 
                                     ?>
                                         <div class="pt-3 border-top border-light">
-                                            <div class="small fw-bold text-secondary text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Vehicles</div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div class="small fw-bold text-secondary text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Details</div>
+                                                <!-- Help Staff Tooltip Icons -->
+                                                <?php if(!empty($r['help'])): ?>
+                                                    <div class="d-flex gap-1">
+                                                        <?php foreach($r['help'] as $h): ?>
+                                                            <div class="rounded-circle bg-light border border-white d-flex align-items-center justify-content-center" 
+                                                                 style="width: 24px; height: 24px; cursor: help;"
+                                                                 data-bs-toggle="tooltip" 
+                                                                 data-bs-placement="top"
+                                                                 title="<?php echo esc_attr($h['name'] . ' (' . $h['role'] . ')'); ?>">
+                                                                <i class="bi bi-person-badge text-primary" style="font-size: 0.6rem;"></i>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
                                             <div class="d-flex flex-wrap gap-2">
-                                                <?php foreach($my_vehicles as $mv): ?>
-                                                    <span class="badge bg-light text-dark border border-light rounded px-2 py-1 fw-medium font-monospace" style="font-size: 0.75rem;">
-                                                        <i class="bi bi-car-front-fill me-1"></i>
+                                                <?php foreach($r['vehicles'] as $mv): ?>
+                                                    <span class="badge bg-light text-dark border border-light rounded px-2 py-1 fw-medium font-monospace" 
+                                                          style="font-size: 0.75rem; cursor: help;"
+                                                          data-bs-toggle="tooltip"
+                                                          title="<?php echo esc_attr(($mv['brand'] ? $mv['brand'] . ' ' : '') . $mv['type']); ?>">
+                                                        <i class="bi bi-car-front-fill me-1 text-primary"></i>
                                                         <?php echo esc_html($mv['number']); ?>
                                                     </span>
                                                 <?php endforeach; ?>
@@ -1487,12 +1571,12 @@ class SGVX51_Frontend_Dashboard {
 		return ob_get_clean();
 	}
 
-	private function get_my_vehicles( $flat_no ) {
+	private function get_my_vehicles( $flat_no, $block = '' ) {
         // 1. Approved
         $all = $this->db->get( 'vehicles' );
         $mine = array();
         foreach ( $all as $v ) {
-            if ( $v['flat_no'] === $flat_no ) {
+            if ( (string)$v['flat_no'] === (string)$flat_no && (string)($v['block'] ?? '') === (string)$block ) {
                 $status = isset($v['status']) ? $v['status'] : 'approved';
                 // Include approved and deletion_pending
                 if($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
@@ -1504,7 +1588,7 @@ class SGVX51_Frontend_Dashboard {
         // 2. Pending Requests
         $requests = $this->db->get('requests');
         foreach($requests as $req) {
-            if(in_array($req['entity_type'], ['vehicle', 'vehicles']) && $req['flat_no'] === $flat_no && in_array($req['status'], ['pending', 'rejected'])) {
+            if(in_array($req['entity_type'], ['vehicle', 'vehicles']) && (string)$req['flat_no'] === (string)$flat_no && (string)($req['block'] ?? '') === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
                 
                 if($req['request_type'] === 'delete' && $req['status'] === 'pending') {
                      // Handle Pending Deletion
@@ -1516,7 +1600,8 @@ class SGVX51_Frontend_Dashboard {
                     }
                 } else if ($req['request_type'] !== 'delete') {
                     // Add/Edit
-                    $payload = json_decode($req['payload'], true);
+                    $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
+                    if ( ! $payload ) continue;
                     if($payload) {
                         $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
@@ -1571,7 +1656,7 @@ class SGVX51_Frontend_Dashboard {
         $flats = $this->db->get('flats');
         $residents = $this->db->get('residents');
         $vehicles = $this->db->get('vehicles');
-        $daily_help = $this->db->get('daily_help');
+        $daily_help = $this->db->get('daily_help', array('load_relations' => true));
         $invoices = $this->db->get('invoices');
         
         // Ensure arrays
@@ -1597,14 +1682,28 @@ class SGVX51_Frontend_Dashboard {
             }
             
             // Increment Count
-            $flat_analyzed[$fno]['count']++;
+            // Initial State for Flat
             $flat_analyzed[$fno]['occupied'] = true;
             $flat_analyzed[$fno]['all_names'][] = $r['name'];
             
-            // Identify Owner
-            if(stripos($r['type'] ?? '', 'owner') !== false) {
+            // Identify Main Owner
+            $is_owner = stripos($r['type'] ?? '', 'owner') !== false;
+            if($is_owner && !isset($flat_analyzed[$fno]['owner_found'])) {
                 $flat_analyzed[$fno]['owner'] = $r['name'];
                 $flat_analyzed[$fno]['email'] = $r['email'] ?? '';
+                $flat_analyzed[$fno]['owner_photo'] = $r['profile_photo'] ?? '';
+                $flat_analyzed[$fno]['owner_found'] = true;
+            } else {
+                // Store as Family Member (or co-owner)
+                if (!isset($flat_analyzed[$fno]['family'])) $flat_analyzed[$fno]['family'] = [];
+                $flat_analyzed[$fno]['family'][] = [
+                    'name'     => $r['name'],
+                    'relation' => $r['relation'] ?? ($is_owner ? 'Co-Owner' : 'Member'),
+                    'photo'    => $r['profile_photo'] ?? '',
+                    'type'     => $r['type'] ?? ''
+                ];
+                // Increment Family Member Count
+                $flat_analyzed[$fno]['count']++;
             }
         }
 
@@ -1641,10 +1740,11 @@ class SGVX51_Frontend_Dashboard {
                 $f = trim($f);
                 if($f) {
                     $help_data = [
-                        'name' => $h['name'],
-                        'role' => $h['role'],
+                        'name'  => $h['name'],
+                        'role'  => $h['role'],
                         'phone' => isset($h['phone']) ? $h['phone'] : '',
-                        'visiting_hours' => isset($h['visiting_hours']) ? $h['visiting_hours'] : ''
+                        'visiting_hours' => isset($h['visiting_hours']) ? $h['visiting_hours'] : '',
+                        'photo' => isset($h['profile_photo']) ? $h['profile_photo'] : ''
                     ];
                     
                     // Index by the original flat designator
@@ -1673,11 +1773,15 @@ class SGVX51_Frontend_Dashboard {
                 $flat_invoices[$fno] = ['maintenance' => 'Paid', 'adhoc' => 'None'];
             }
             
-            // Maintenance Check (with defensive check for type field)
+            // Maintenance Check (Unpaid from last 60 days)
             $inv_type = $inv['type'] ?? 'maintenance';
-            if($inv_type === 'maintenance' && $inv['month'] === $current_month) {
-                if($inv['status'] === 'unpaid' || $inv['status'] === 'pending') {
-                    $flat_invoices[$fno]['maintenance'] = 'Pending';
+            if($inv_type === 'maintenance') {
+                $inv_time = strtotime($inv['created_at'] ?? $inv['month'] . '-01');
+                $sixty_days_ago = time() - (60 * 24 * 60 * 60);
+                if($inv_time > $sixty_days_ago) {
+                    if($inv['status'] === 'unpaid' || $inv['status'] === 'pending') {
+                        $flat_invoices[$fno]['maintenance'] = 'Pending';
+                    }
                 }
             }
             
@@ -1750,15 +1854,18 @@ class SGVX51_Frontend_Dashboard {
                 'floor'   => $f['floor'],
                 'status'  => $res_data['occupied'] ? 'Occupied' : 'Vacant',
                 'owner'   => $res_data['owner'],
+                'owner_photo' => $res_data['owner_photo'] ?? '',
                 'email'   => $res_data['email'] ?? '',
                 'all_names' => $res_data['all_names'] ?? [],
-                'members' => $res_data['count'],
-                'parking' => $f['parking_slot'],
+                'family'    => $res_data['family'] ?? [],
+                'members'   => $res_data['count'],
+                'parking'   => $f['parking_slot'],
                 'parking_status' => $f['parking_status'],
                 'vehicles' => $my_vehicles,
                 'help'    => $my_help,
                 'maintenance_status' => $inv_data['maintenance'],
-                'adhoc_status' => $inv_data['adhoc']
+                'adhoc_status' => $inv_data['adhoc'],
+                'finance_status' => ($inv_data['maintenance'] === 'Pending' || $inv_data['adhoc'] === 'Pending') ? 'unpaid' : 'paid'
             ];
         }
         
@@ -1775,8 +1882,9 @@ class SGVX51_Frontend_Dashboard {
                     'owner'   => $data['owner'],
                     'email'   => $data['email'] ?? '',
                     'all_names' => $data['all_names'] ?? [],
-                    'members' => $data['count'],
-                    'parking' => '', 
+                    'family'    => $data['family'] ?? [],
+                    'members'   => $data['count'],
+                    'parking'   => '', 
                     'vehicles' => isset($flat_vehicles[$key]) ? $flat_vehicles[$key] : [],
                     'help'    => isset($flat_help[$key]) ? $flat_help[$key] : [],
                     'maintenance_status' => $inv_data['maintenance'],

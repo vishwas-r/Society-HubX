@@ -234,10 +234,21 @@
             setVal('dob', r.dob);
             setVal('blood_group', r.blood_group);
 
-            // Handle Role (try roles or role)
+            // Handle Role(s) for Checkboxes
             const roleVal = r.roles || r.role || '';
-            const roleSelect = form.querySelector('[name="role"]');
-            if (roleSelect) roleSelect.value = roleVal;
+            const roleArray = (typeof roleVal === 'string') ? roleVal.split(',').map(s => s.trim()) : (Array.isArray(roleVal) ? roleVal : []);
+            
+            // Clear all existing checkboxes
+            const roleChecks = form.querySelectorAll('input[name="role[]"]');
+            roleChecks.forEach(chk => chk.checked = false);
+            
+            // Check the ones that match
+            roleArray.forEach(roleId => {
+                if(roleId) {
+                    const chk = form.querySelector(`input[name="role[]"][value="${roleId}"]`);
+                    if(chk) chk.checked = true;
+                }
+            });
 
             setVal('action', 'sgvx51_edit_resident');
             setVal('resident_id', r.id);

@@ -7,8 +7,13 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Filter requests
-$pending = array_filter( $requests, function($r) { return ($r['status'] ?? '') === 'pending'; } );
-$history = array_filter( $requests, function($r) { return ($r['status'] ?? '') !== 'pending'; } );
+$pending_statuses = array( 'pending', 'pending_secretary', 'pending_treasurer' );
+$pending = array_filter( $requests, function($r) use ($pending_statuses) { 
+    return in_array( $r['status'] ?? '', $pending_statuses ); 
+} );
+$history = array_filter( $requests, function($r) use ($pending_statuses) { 
+    return ! in_array( $r['status'] ?? '', $pending_statuses ); 
+} );
 
 // Sort by date desc
 usort($pending, function($a, $b) { return strtotime($b['created_at']) - strtotime($a['created_at']); });
@@ -116,7 +121,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     <?php foreach ( $pending as $req ) : 
                         $module = $req['module'] ?: ($req['entity_type'] ?? 'unknown');
                         $action = $req['request_type'];
-                        $payload = json_decode($req['payload'], true);
+                        $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'], true);
                         $user = get_userdata($req['created_by']);
                         $name = $user ? $user->display_name : 'Unknown';
                     ?>
@@ -133,6 +138,11 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="bg-<?php echo $action==='add'?'success':($action==='delete'?'danger':'info'); ?> bg-opacity-10 rounded-circle" style="width: 8px; height: 8px;"></div>
                                     <span class="fw-bold text-dark text-uppercase small" style="font-size: 10px;"><?php echo esc_html($action); ?></span>
+                                    <?php if ( $req['status'] === 'pending_secretary' ) : ?>
+                                        <span class="badge bg-info bg-opacity-10 text-info border-info border-opacity-25 ms-1" style="font-size: 8px;">SEC. REVIEW</span>
+                                    <?php elseif ( $req['status'] === 'pending_treasurer' ) : ?>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border-primary border-opacity-25 ms-1" style="font-size: 8px;">TRES. REVIEW</span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                             <td class="px-4 py-4">
@@ -142,8 +152,8 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                         if($module === 'finance' || $module === 'accounts') {
                                             echo "<strong>₹" . number_format($payload['amount'] ?? 0) . "</strong> | " . esc_html($payload['method'] ?? '') . " | <span class='text-primary'>" . esc_html($payload['reference'] ?? '') . "</span>";
                                         } else {
-                                            if(isset($payload['name'])) echo "Name: " . esc_html($payload['name']);
-                                            elseif(isset($payload['number'])) echo "Num: " . esc_html($payload['number']);
+                                            if(isset($payload['category'])) echo "<strong>" . esc_html($payload['category']) . "</strong>";
+                                            if(isset($payload['comments'])) echo " | <span class='text-muted'>" . esc_html($payload['comments']) . "</span>";
                                         }
                                         
                                         if(isset($payload['flat_no'])) echo " | Flat: " . esc_html($payload['flat_no']);
@@ -195,7 +205,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     $status = $req['status'];
                     $user = get_userdata($req['processed_by']);
                     $module = $req['module'] ?: ($req['entity_type'] ?? 'unknown');
-                    $payload = json_decode($req['payload'], true);
+                    $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'], true);
                 ?>
                     <tr class="bg-white border-bottom border-light">
                         <td class="ps-5 py-3">

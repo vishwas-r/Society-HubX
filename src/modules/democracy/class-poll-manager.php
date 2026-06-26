@@ -63,7 +63,8 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
 	 * Create a new Poll.
 	 */
 	public function handle_create_poll() {
-		if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -99,7 +100,8 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
      * Delete a Poll.
      */
     public function handle_delete_poll() {
-        if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -131,7 +133,8 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
      * Close a Poll manually.
      */
     public function handle_close_poll() {
-        if ( ! current_user_can( 'manage_options' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'sgvx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 

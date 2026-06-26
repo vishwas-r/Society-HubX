@@ -38,9 +38,9 @@ class SGVX51_AJAX_Handler {
 			wp_send_json_error( array( 'message' => 'Not authenticated' ), 401 );
 		}
 
-		// Verify user has permission
-		// Admins can access everything, others might be limited by the module check in get_module_config
-		if ( ! current_user_can( 'manage_options' ) && ! is_user_logged_in() ) {
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		// Nonces and module config are allowed for any logged-in user who can access the dashboard.
+		if ( ! current_user_can( 'read' ) ) {
 			wp_send_json_error( array( 'message' => 'Insufficient permissions' ), 403 );
 		}
 
@@ -213,7 +213,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Approve Request
 	 */
 	public function handle_approve_request() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		
 		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
 		if (!$id) wp_send_json_error(['message' => 'Missing ID'], 400);
@@ -230,7 +234,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Reject Request
 	 */
 	public function handle_reject_request() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 
 		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
 		$note = isset($_POST['admin_note']) ? sanitize_textarea_field($_POST['admin_note']) : '';
@@ -248,7 +256,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Bulk Process Requests
 	 */
 	public function handle_bulk_process_requests() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 
 		$ids = isset($_POST['ids'] ) ? (array)$_POST['ids'] : [];
 		$action = isset($_POST['bulk_action']) ? sanitize_text_field($_POST['bulk_action']) : '';
@@ -276,7 +288,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Get Channel Config
 	 */
 	public function handle_get_channel_config() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
@@ -295,7 +311,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Save Channel Config
 	 */
 	public function handle_save_channel_config() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$slug = isset($_POST['channel_slug']) ? sanitize_key($_POST['channel_slug']) : '';
@@ -312,7 +332,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Toggle Channel
 	 */
 	public function handle_toggle_channel() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
@@ -327,7 +351,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Update Event Mapping
 	 */
 	public function handle_update_event_mapping() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$slug = isset($_POST['event']) ? sanitize_key($_POST['event']) : '';
@@ -357,7 +385,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Get Notification Template
 	 */
 	public function handle_get_template() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
@@ -376,7 +408,11 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Save Notification Template
 	 */
 	public function handle_save_template() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
 		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';

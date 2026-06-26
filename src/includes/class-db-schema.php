@@ -41,6 +41,7 @@ class SGVX51_DB_Schema {
 		// 2. Residents Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_residents (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			profile_photo text NOT NULL,
@@ -65,6 +66,7 @@ class SGVX51_DB_Schema {
 		// 3. Resident History Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_resident_history (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			email varchar(100) DEFAULT '' NOT NULL,
@@ -135,9 +137,11 @@ class SGVX51_DB_Schema {
 		// 7. Invoices Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_invoices (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			resident_name varchar(255) DEFAULT '' NOT NULL,
 			amount decimal(15,2) NOT NULL,
+			total_paid decimal(15,2) DEFAULT 0.00 NOT NULL,
 			month varchar(20) NOT NULL,
 			type varchar(50) DEFAULT 'maintenance' NOT NULL,
 			status varchar(20) DEFAULT 'unpaid' NOT NULL,
@@ -179,6 +183,7 @@ class SGVX51_DB_Schema {
 		// 10. Votes Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_votes (
 			id int(11) NOT NULL AUTO_INCREMENT,
+			block varchar(20) DEFAULT '' NOT NULL,
 			poll_id varchar(50) NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			user_id bigint(20) NOT NULL,
@@ -192,6 +197,7 @@ class SGVX51_DB_Schema {
 		// 11. Vehicles Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_vehicles (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			type varchar(20) NOT NULL,
 			plate_no varchar(20) NOT NULL,
@@ -223,6 +229,8 @@ class SGVX51_DB_Schema {
 		// 12. Bookings Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_bookings (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
+			flat_no varchar(50) NOT NULL,
 			facility_id varchar(50) NOT NULL,
 			resident_id varchar(50) NOT NULL,
 			start_time datetime NOT NULL,
@@ -232,7 +240,8 @@ class SGVX51_DB_Schema {
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY facility_id (facility_id),
-			KEY resident_id (resident_id)
+			KEY resident_id (resident_id),
+			KEY flat_no (flat_no)
 		) $charset_collate;";
 
 		// 13. Daily Help Table
@@ -296,6 +305,7 @@ class SGVX51_DB_Schema {
 		// 16. Rule Acknowledgments Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_acknowledgments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
+			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
 			rule_version int(11) NOT NULL,
 			resident_id varchar(50) NOT NULL,
@@ -314,6 +324,7 @@ class SGVX51_DB_Schema {
 		// 17. Rule Violations Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_rule_violations (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			resident_id varchar(50) DEFAULT '' NOT NULL,
@@ -357,6 +368,7 @@ class SGVX51_DB_Schema {
 		// 19. Documents Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_documents (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
 			title varchar(255) NOT NULL,
 			category varchar(50) DEFAULT 'other' NOT NULL,
@@ -374,6 +386,7 @@ class SGVX51_DB_Schema {
 		// 15. Requests Table (Audit Trail)
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_requests (
 			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			module varchar(50) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
 			entity_type varchar(50) NOT NULL,
@@ -489,6 +502,53 @@ class SGVX51_DB_Schema {
 			PRIMARY KEY  (id),
 			KEY user_id (user_id),
 			KEY is_read (is_read)
+		) $charset_collate;";
+
+		// 24. Custom Roles Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_roles (
+			id varchar(50) NOT NULL,
+			name varchar(100) NOT NULL,
+			capabilities longtext NOT NULL,
+			is_system tinyint(1) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id)
+		) $charset_collate;";
+
+		// 25. Staff-Flat Mapping Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_staff_flats (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			staff_id varchar(50) NOT NULL,
+			flat_id varchar(50) NOT NULL,
+			PRIMARY KEY  (id),
+			KEY staff_id (staff_id),
+			KEY flat_id (flat_id)
+		) $charset_collate;";
+
+		// 26. Resident-Role Mapping Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_resident_role_map (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			resident_id varchar(50) NOT NULL,
+			role_id varchar(50) NOT NULL,
+			PRIMARY KEY  (id),
+			KEY resident_id (resident_id),
+			KEY role_id (role_id)
+		) $charset_collate;";
+
+		// 27. Detailed Payments Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_governx_payments (
+			id varchar(50) NOT NULL,
+			invoice_id varchar(50) NOT NULL,
+			amount decimal(15,2) NOT NULL,
+			method varchar(20) DEFAULT 'UPI' NOT NULL,
+			reference varchar(100) DEFAULT '' NOT NULL,
+			date datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			recorded_by bigint(20) DEFAULT 0 NOT NULL,
+			request_id varchar(50) DEFAULT '' NOT NULL,
+			metadata longtext,
+			PRIMARY KEY  (id),
+			KEY invoice_id (invoice_id),
+			KEY date (date)
 		) $charset_collate;";
 
 		foreach ( $tables as $sql ) {
@@ -620,6 +680,46 @@ class SGVX51_DB_Schema {
 				$wpdb->insert($categories_table, $cat);
 			}
 		}
+
+		// 5. Seed Default Roles
+		$roles_table = "{$wpdb->prefix}society_governx_roles";
+		$existing_roles = $wpdb->get_var("SELECT COUNT(*) FROM $roles_table");
+		
+		if ($existing_roles == 0) {
+			$all_caps = array_keys(SGVX51_RBAC_Manager::get_available_capabilities());
+			$default_roles = [
+				[
+					'id'           => 'society_admin',
+					'name'         => 'Society Admin',
+					'capabilities' => json_encode($all_caps),
+					'is_system'    => 1
+				],
+				[
+					'id'           => 'treasurer',
+					'name'         => 'Treasurer',
+					'capabilities' => json_encode(['dashboard_view', 'finance_view', 'finance_manage', 'residents_view']),
+					'is_system'    => 1
+				],
+				[
+					'id'           => 'security_head',
+					'name'         => 'Security Head',
+					'capabilities' => json_encode(['dashboard_view', 'staff_manage', 'vehicles_manage', 'visitor_alerts']),
+					'is_system'    => 1
+				],
+				[
+					'id'           => 'resident_rep',
+					'name'         => 'Resident Representative',
+					'capabilities' => json_encode(['dashboard_view', 'residents_view', 'notices_manage', 'rules_manage']),
+					'is_system'    => 1
+				]
+			];
+			
+			foreach ($default_roles as $role) {
+				$role['created_at'] = current_time('mysql');
+				$role['updated_at'] = current_time('mysql');
+				$wpdb->insert($roles_table, $role);
+			}
+		}
 	}
     
     /**
@@ -660,7 +760,11 @@ class SGVX51_DB_Schema {
             'society_governx_notification_templates',
             'society_governx_notification_preferences',
             'society_governx_notification_logs',
-            'society_governx_inapp_notifications'
+            'society_governx_inapp_notifications',
+            'society_governx_roles',
+            'society_governx_staff_flats',
+            'society_governx_resident_role_map',
+            'society_governx_payments'
         );
         
         foreach($tables as $t) {

@@ -5,9 +5,10 @@
 ?>
 <!-- Modern Tabs -->
 <div class="mb-4 border-bottom border-light">
-    <nav class="nav-tabs-custom" aria-label="Tabs">
+    <nav class="nav-tabs-custom d-flex overflow-auto text-nowrap pb-1 no-scrollbar" aria-label="Tabs" style="-webkit-overflow-scrolling: touch;">
         <button id="btn-tab-home" data-tab-target="#tab-home" class="tab-btn active text-primary border-primary">My Home</button>
         <button id="btn-tab-community" data-tab-target="#tab-community" class="tab-btn">Community</button>
+        <button id="btn-tab-requests" data-tab-target="#tab-requests" class="tab-btn">My Requests</button>
         <button id="btn-tab-accounts" data-tab-target="#tab-accounts" class="tab-btn">My Accounts</button>        
         <button id="btn-tab-expenses" data-tab-target="#tab-expenses" class="tab-btn">Society Finance</button>
         <button id="btn-tab-facilities" data-tab-target="#tab-facilities" class="tab-btn">Facilities</button>

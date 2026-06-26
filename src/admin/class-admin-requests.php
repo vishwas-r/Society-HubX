@@ -38,14 +38,20 @@ class SGVX51_Admin_Requests {
 			'sgvx51-settings',
 			'Approval Requests',
 			'Requests' . $badge,
-			'manage_options',
+			'read', // RBAC checked in render_page and handle functions
 			'sgvx51-requests',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function handle_approve() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		
+		// For finance/accounts, we need specific roles. For other modules, we check the request type.
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can('manage_options') ) {
+			wp_die( 'Unauthorized' );
+		}
 		check_admin_referer( 'sgvx51_request_action' );
 
 		$request_id = sanitize_text_field( $_GET['id'] );
@@ -68,7 +74,12 @@ class SGVX51_Admin_Requests {
 	}
 
 	public function handle_reject() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can('manage_options') ) {
+			wp_die( 'Unauthorized' );
+		}
 		check_admin_referer( 'sgvx51_request_action' );
 
 		$request_id = sanitize_text_field( $_POST['id'] );
@@ -88,6 +99,11 @@ class SGVX51_Admin_Requests {
 	}
 
 	public function render_page() {
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can('manage_options') ) {
+			wp_die( 'You do not have permission to access the Requests page.' );
+		}
         $requests = $this->db->get( 'requests' );
         
         // Decorate requests with original data for comparison view

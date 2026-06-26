@@ -3,7 +3,7 @@
  * Plugin Name: Society GoVernX
  * Plugin URI:  https://www.vishwas.me
  * Description: A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
- * Version:     1.0.0
+ * Version:     1.0.3
  * Author:      Vishwas R
  * Author URI:  https://www.vishwas.me
  * Text Domain: society-governx
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SGVX51_VERSION', '1.0.0' );
+define( 'SGVX51_VERSION', '1.0.3' );
 define( 'SGVX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SGVX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SGVX51_PREFIX', 'sgvx51' );
@@ -46,6 +46,27 @@ final class Society_GoVernX {
 	 * @var SGVX51_Notification_Dispatcher
 	 */
 	public $notifications = null;
+
+	/**
+	 * RBAC Manager Instance.
+	 *
+	 * @var SGVX51_RBAC_Manager
+	 */
+	public $rbac = null;
+
+	/**
+	 * Privacy Manager Instance.
+	 *
+	 * @var SGVX51_Privacy_Manager
+	 */
+	public $privacy = null;
+
+	/**
+	 * REST Manager Instance.
+	 *
+	 * @var SGVX51_REST_Manager
+	 */
+	public $rest = null;
 
 	/**
 	 * Return an instance of this class.
@@ -82,6 +103,16 @@ final class Society_GoVernX {
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-receipt-manager.php';
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-log-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-background-worker.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-privacy-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-rest-manager.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-data-migrator.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/class-payment-service.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
+		require_once SGVX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
 		
 		// Notifications
 		require_once SGVX51_PLUGIN_DIR . 'includes/notifications/interface-notification-provider.php';
@@ -97,6 +128,13 @@ final class Society_GoVernX {
 		$this->db = new SGVX51_DB_Router();
 		$this->notifications = new SGVX51_Notification_Dispatcher( $this->db );
 		new SGVX51_Log_Manager( $this->db );
+		new SGVX51_Background_Worker();
+		$this->rbac = new SGVX51_RBAC_Manager();
+		$this->privacy = new SGVX51_Privacy_Manager();
+		$this->rest    = new SGVX51_REST_Manager();
+
+		// Version Check / Database Initialization
+		$this->maybe_update_db();
 
 		// Initialize Admin Settings
 		if ( is_admin() ) {
@@ -147,6 +185,9 @@ final class Society_GoVernX {
         require_once SGVX51_PLUGIN_DIR . 'modules/staff/class-staff-manager.php';
 		new SGVX51_Staff_Manager();
 
+        require_once SGVX51_PLUGIN_DIR . 'modules/class-general-request-manager.php';
+        new SGVX51_General_Request_Manager();
+
 		require_once SGVX51_PLUGIN_DIR . 'modules/rules/class-rule-manager.php';
 		new SGVX51_Rule_Manager();
 
@@ -188,8 +229,18 @@ final class Society_GoVernX {
 	 */
 	public function maybe_update_db() {
 		if ( get_option( 'sgvx51_version' ) !== SGVX51_VERSION ) {
+			// Ensure tables are created first
 			SGVX51_DB_Schema::create_tables();
 			update_option( 'sgvx51_version', SGVX51_VERSION );
+		}
+
+		// Ensure data migration is triggered after tables exist
+		if ( is_admin() && get_option( 'sgvx51_storage_migrated' ) !== SGVX51_VERSION ) {
+			// Double check dependencies are loaded
+			if ( class_exists( 'SGVX51_Data_Migrator' ) ) {
+				SGVX51_Data_Migrator::run_all();
+				update_option( 'sgvx51_storage_migrated', SGVX51_VERSION );
+			}
 		}
 	}
 
@@ -207,27 +258,37 @@ final class Society_GoVernX {
 	 * Custom Login Redirect.
 	 */
 	public function custom_login_redirect( $redirect_to, $request, $user ) {
-		// Is there a user to check?
-		if ( isset( $user->roles ) && is_array( $user->roles ) ) {
-			// Check for admins
-			if ( in_array( 'administrator', $user->roles ) ) {
-				// Redirect to plugin settings page
-				return admin_url( 'admin.php?page=sgvx51-settings' );
-			} else {
-				// Redirect normal users to a page with our dashboard shortcode
-				// Optimally, we should know the URL. For now, we search for a page with the shortcode 
-				// or default to home.
-				
-				// Try to find the dashboard page ID
-				$page = get_page_by_path( 'resident-dashboard' ); // Common slug
-				if ( $page ) {
-					return get_permalink( $page->ID );
+		if ( ! $user || is_wp_error( $user ) ) return $redirect_to;
+
+		// 1. Administrators go to settings
+		if ( in_array( 'administrator', (array)$user->roles ) ) {
+			return admin_url( 'admin.php?page=sgvx51-settings' );
+		}
+
+		// 2. Management Roles (Secretary, Treasurer, etc.) go to their respective admin tools
+		if ( isset( $this->rbac ) ) {
+			// If they have any management capability, let them stay in admin
+			$has_mgmt = false;
+			$caps = array( 'dashboard_view', 'finance_manage', 'residents_manage', 'polls_manage' );
+			foreach ( $caps as $cap ) {
+				if ( $this->rbac->has_capability( $user->ID, $cap ) ) {
+					$has_mgmt = true;
+					break;
 				}
-				
-				return home_url( '/resident-dashboard/' ); // Logical default
+			}
+
+			if ( $has_mgmt ) {
+				return admin_url( 'admin.php?page=sgvx51-settings' );
 			}
 		}
-		return $redirect_to;
+
+		// 3. Normal Residents go to frontend dashboard
+		$page = get_page_by_path( 'resident-dashboard' );
+		if ( $page ) {
+			return get_permalink( $page->ID );
+		}
+		
+		return home_url( '/resident-dashboard/' );
 	}
 
 	/**
@@ -238,7 +299,25 @@ final class Society_GoVernX {
 			return;
 		}
 
-		if ( ! current_user_can( 'administrator' ) && ( current_user_can( 'subscriber' ) || current_user_can( 'resident' ) ) ) {
+		if ( ! is_user_logged_in() ) return;
+
+		$user_id = get_current_user_id();
+
+		// 1. Administrators are exempt
+		if ( current_user_can( 'administrator' ) ) return;
+
+		// 2. Management Roles are exempt
+		if ( isset( $this->rbac ) ) {
+			$caps = array( 'dashboard_view', 'finance_manage', 'residents_manage', 'polls_manage' );
+			foreach ( $caps as $cap ) {
+				if ( $this->rbac->has_capability( $user_id, $cap ) ) {
+					return; // Allow access
+				}
+			}
+		}
+
+		// 3. Regular Residents/Subscribers are redirected
+		if ( current_user_can( 'subscriber' ) || current_user_can( 'resident' ) ) {
 			wp_redirect( home_url( '/resident-dashboard/' ) );
 			exit;
 		}

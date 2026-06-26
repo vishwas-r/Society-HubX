@@ -66,14 +66,15 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			'sgvx51-settings',
 			'Facilities & Bookings',
 			'Facilities',
-			'manage_options',
+			'read', // RBAC checked in render_page
 			'sgvx51-facilities',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function handle_add_facility() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
 			check_ajax_referer( 'sgvx51_facility_nonce', '_wpnonce' );
@@ -117,7 +118,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 	}
 
 	public function handle_edit_facility() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
 			check_ajax_referer( 'sgvx51_facility_nonce', '_wpnonce' );
@@ -170,7 +172,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 	}
 
 	public function handle_delete_facility() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
         if ( wp_doing_ajax() ) {
             check_ajax_referer( 'sgvx51_delete_facility_nonce' );
@@ -297,7 +300,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 	}
 
 	public function handle_edit_booking() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
 			check_ajax_referer( 'sgvx51_facility_nonce', '_wpnonce' );
@@ -379,7 +383,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 	}
 
 	public function handle_delete_booking() {
-		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
 			check_ajax_referer( 'sgvx51_facility_nonce', '_wpnonce' );
@@ -486,6 +491,10 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 	}
 
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_view' ) ) {
+            wp_die( 'You do not have permission to access Facilities & Bookings.' );
+        }
 		SGVX51_Admin_App::render_view('facilities');
 	}
 }

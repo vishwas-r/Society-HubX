@@ -26,8 +26,41 @@ class SGVX51_Request_Manager {
         // Self-Heal Schema
         if ( is_admin() ) {
             $this->db->verify_column( 'requests', 'flat_no', 'varchar(50) NOT NULL' );
+            $this->db->verify_column( 'requests', 'approvals', 'TEXT' ); // Store approval log
         }
 	}
+
+    /**
+     * Get Resident with Secretary role.
+     */
+    public function get_secretary() {
+        $residents = $this->db->get( 'residents', array( 'load_relations' => true ) );
+        foreach ( $residents as $r ) {
+            $roles = isset( $r['roles'] ) ? ( is_array( $r['roles'] ) ? $r['roles'] : explode( ',', $r['roles'] ) ) : array();
+            foreach ( $roles as $role ) {
+                if ( stripos( $role, 'Secretary' ) !== false ) {
+                    return $r;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get Resident with Treasurer role.
+     */
+    public function get_treasurer() {
+        $residents = $this->db->get( 'residents', array( 'load_relations' => true ) );
+        foreach ( $residents as $r ) {
+            $roles = isset( $r['roles'] ) ? ( is_array( $r['roles'] ) ? $r['roles'] : explode( ',', $r['roles'] ) ) : array();
+            foreach ( $roles as $role ) {
+                if ( stripos( $role, 'Treasurer' ) !== false ) {
+                    return $r;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * AJAX: Approve Request
@@ -115,8 +148,19 @@ class SGVX51_Request_Manager {
         }
 
         // 2. Prepare Data
+        // Normalize flat_no to display name if it looks like an ID
+        if ( ! empty( $flat_no ) && ( strpos( $flat_no, 'flat_' ) === 0 || is_numeric( $flat_no ) ) ) {
+            $flat_no = $this->db->get_flat_display_name( $flat_no );
+        }
+
+        // Also normalize within payload for consistency in detail view
+        if ( isset( $payload['flat_no'] ) && ( strpos( $payload['flat_no'], 'flat_' ) === 0 || is_numeric( $payload['flat_no'] ) ) ) {
+            $payload['flat_no'] = $this->db->get_flat_display_name( $payload['flat_no'] );
+        }
+
         $data = array(
             'module'       => $module_slug,
+            'block'        => $payload['block'] ?? '',
             'flat_no'      => $flat_no,
             'request_type' => $action,
             'entity_type'  => !empty($entity_type) ? $entity_type : $module_slug, 
@@ -152,10 +196,11 @@ class SGVX51_Request_Manager {
 			}
 		}
 
-		// Fallback: If not found by Request ID, try finding a pending request for this Entity ID
+		// Fallback: If not found by Request ID, try finding ANY pending request for this Entity ID
 		if ( ! $target_request ) {
 			foreach ( $requests as $req ) {
-				if ( isset($req['entity_id']) && $req['entity_id'] === $request_id && ($req['status'] ?? 'pending') === 'pending' ) {
+                $status = $req['status'] ?? 'pending';
+				if ( isset($req['entity_id']) && $req['entity_id'] === $request_id && strpos($status, 'pending') === 0 ) {
 					$target_request = $req;
 					break;
 				}
@@ -171,7 +216,7 @@ class SGVX51_Request_Manager {
         if (in_array($module_slug, ['staff', 'staffs'])) $module_slug = 'daily_help';
 
 		$action      = $target_request['request_type']; 
-		$payload     = json_decode( $target_request['payload'], true );
+		$payload     = is_array($target_request['payload'] ?? null) ? $target_request['payload'] : json_decode( $target_request['payload'], true );
 		
         $module_instance = apply_filters( 'sgvx51_get_module_' . $module_slug, null );
 
@@ -183,7 +228,105 @@ class SGVX51_Request_Manager {
              return new WP_Error( 'no_module', "Module handler for '$module_slug' not found." );
         }
 
-        $result = $module_instance->execute_request( $action, $payload );
+        // 3. Multi-stage Approval Logic for Finance & Expenses (and potentially Accounts)
+        $current_user_id = get_current_user_id();
+        $is_secretary = false;
+        $is_treasurer = false;
+        
+        $residents = $this->db->get( 'residents', array( 'load_relations' => true ) );
+        foreach ( $residents as $res_obj ) {
+            if ( isset( $res_obj['wp_user_id'] ) && (int)$res_obj['wp_user_id'] === (int)$current_user_id ) {
+                $roles = isset( $res_obj['roles'] ) ? ( is_array( $res_obj['roles'] ) ? $res_obj['roles'] : explode( ',', $res_obj['roles'] ) ) : array();
+                foreach ( $roles as $role ) {
+                    if ( stripos( $role, 'Secretary' ) !== false ) $is_secretary = true;
+                    if ( stripos( $role, 'Treasurer' ) !== false ) $is_treasurer = true;
+                }
+                break;
+            }
+        }
+
+        // Admin fallback - if admin is approving, bypass multi-stage
+        if ( current_user_can( 'manage_options' ) ) {
+            $is_secretary = true; $is_treasurer = true;
+        }
+
+        $status = $target_request['status'] ?? 'pending';
+
+        // Check stages for finance/expenses/accounts if multi-stage is applicable
+        if ( in_array( $module_slug, array( 'finance', 'expenses', 'accounts' ) ) ) {
+            // IF ADMIN (manage_options), bypass the stages and proceed to final approval
+            if ( current_user_can( 'manage_options' ) ) {
+                $status = 'pending_treasurer'; // Force state to final stage for immediate execution
+            } else {
+                // Logic: pending -> pending_secretary -> pending_treasurer -> approved
+                
+                // Stage 1: Secretary Approval (Initial)
+                if ( $status === 'pending' || $status === 'pending_secretary' ) {
+                    // If not Secretary, block. 
+                    if ( ! $is_secretary ) return new WP_Error( 'unauthorized', 'Only Secretary can perform initial approval.' );
+                    
+                    // If NOT Treasurer too, just move to next stage and return.
+                    if ( ! $is_treasurer ) {
+                        $update_data = array(
+                            'status' => 'pending_treasurer',
+                            'approvals' => ($target_request['approvals'] ?? '') . "\nSecretary Approved at " . current_time('mysql') . " by User ID " . $current_user_id
+                        );
+                        $this->db->update( 'requests', $update_data, array( 'id' => $target_request['id'] ) );
+                        
+                        // Sync expense status
+                        if ( $module_slug === 'expenses' && ! empty( $target_request['entity_id'] ) ) {
+                            $this->db->update( 'expenses', array( 'status' => 'pending_treasurer' ), array( 'id' => $target_request['entity_id'] ) );
+                        }
+
+                        $this->log_audit( 'request_sec_approved', $module_slug, $target_request['id'], "Secretary approved. Moving to Treasurer." );
+                        return true; 
+                    }
+                    
+                    // If IS Treasurer (Admin), fall through to Stage 2 check immediately
+                    $status = 'pending_treasurer'; 
+                }
+
+                // Stage 2: Treasurer Approval (Final)
+                if ( $status === 'pending_treasurer' ) {
+                    if ( ! $is_treasurer ) return new WP_Error( 'unauthorized', 'Only Treasurer can perform final approval.' );
+                    // All clear - proceed to execution below
+                }
+            }
+        }
+
+        // Logic for invoice payment approval
+        if ( $module_slug === 'accounts' ) {
+            
+            // Re-map request payload variables for perform_record_payment format
+            $payment_data = array(
+                'request_id' => $target_request['id'],
+                'invoice_id' => $payload['invoice_id'] ?? ($target_request['entity_id'] ?? ''),
+                'amount'     => $payload['amount'] ?? 0,
+                'method'     => $payload['method'] ?? 'Manual',
+                'reference'  => $payload['reference'] ?? '',
+                'date'       => $payload['date'] ?? current_time('Y-m-d'),
+                'flat_no'    => $payload['flat_no'] ?? ($target_request['flat_no'] ?? ''),
+                'block'      => $payload['block'] ?? ($target_request['block'] ?? '')
+            );
+            
+            // Try using the module instance first
+            if ( $module_instance && method_exists( $module_instance, 'perform_record_payment' ) ) {
+                $payment_result = $module_instance->perform_record_payment( $payment_data );
+            } else {
+                // Fallback direct instantiation if filter failed
+                require_once SGVX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+                $am = new SGVX51_Account_Manager();
+                $payment_result = $am->perform_record_payment( $payment_data );
+            }
+            
+            if ( is_wp_error( $payment_result ) ) {
+                return $payment_result;
+            }
+            
+            $result = true;
+        } else {
+            $result = $module_instance->execute_request( $action, $payload );
+        }
 
 		if ( ! is_wp_error( $result ) && $result !== false ) {
 			$actual_request_id = $target_request['id'];
@@ -250,12 +393,20 @@ class SGVX51_Request_Manager {
                     $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
                     $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
 
+                    // Enhancement: Extract category/type for better notification title
+                    $request_desc = ucfirst(str_replace('_', ' ', $action));
+                    if (!empty($payload['category'])) {
+                        $request_desc = $payload['category'];
+                    } elseif ($module_slug === 'general') {
+                        $request_desc = 'General Request';
+                    }
+
                     $sgvx->notifications->trigger('request_approved', $target_request['created_by'], [
                         'resident_name' => $resident_name,
-                        'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,
                         'time'          => $time_formatted,
-                        'details'       => "Your request for " . $module_slug . " was approved."
+                        'details'       => ($module_slug === 'accounts') ? "Your payment of ₹" . ($payload['amount']??'') . " has been approved." : "Your request for " . $request_desc . " was approved."
                     ], true, $update_data['processed_by']);
                 }
             }
@@ -296,6 +447,7 @@ class SGVX51_Request_Manager {
 		$module_slug = !empty($target_request['module']) ? $target_request['module'] : ($target_request['entity_type'] ?? '');
 		$action = $target_request['request_type'];
 		$entity_id = $target_request['entity_id'] ?? '';
+		$payload = is_array($target_request['payload'] ?? null) ? $target_request['payload'] : json_decode( $target_request['payload'], true );
 
 		// Status Update Logic: If it was an 'add' or 'upload' request, update the record status to 'rejected' in the module table 
 		// so it remains visible to the resident as rejected, rather than disappearing.
@@ -351,9 +503,17 @@ class SGVX51_Request_Manager {
                     $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
                     $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
 
+                    // Enhancement: Extract category/type for better notification title
+                    $request_desc = ucfirst(str_replace('_', ' ', $action));
+                    if (!empty($payload['category'])) {
+                        $request_desc = $payload['category'];
+                    } elseif ($module_slug === 'general') {
+                        $request_desc = 'General Request';
+                    }
+
                     $sgvx->notifications->trigger('request_rejected', $target_request['created_by'], [
                         'resident_name' => $resident_name,
-                        'request_type'  => ucfirst(str_replace('_', ' ', $action)),
+                        'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,
                         'time'          => $time_formatted,
                         'admin_note'    => $note ?: 'No specific reason provided.'
@@ -383,7 +543,7 @@ class SGVX51_Request_Manager {
     /**
      * Get original data for an entity associated with a request.
      */
-    public function get_original_data( $request ) {
+    public function get_original_data( $request, $load_relations = false ) {
         $module = !empty($request['module']) ? $request['module'] : ($request['entity_type'] ?? '');
         $entity_id = $request['entity_id'] ?? '';
 
@@ -406,7 +566,7 @@ class SGVX51_Request_Manager {
             return null;
         }
 
-        $all = $this->db->get( $target_table );
+        $all = $this->db->get( $target_table, array( 'load_relations' => $load_relations ) );
         foreach ( $all as $row ) {
             if ( isset( $row['id'] ) && $row['id'] === $entity_id ) {
                 return $row;
@@ -419,21 +579,21 @@ class SGVX51_Request_Manager {
     /**
      * Unified method to get data for a module (Active + Pending + Archived)
      */
-    public function get_unified_data( $module_slug, $main_table, $history_table = '' ) {
-        $active  = $this->db->get( $main_table );
-        $pending = array_filter( $this->db->get( 'requests' ), function($r) use ($module_slug) {
+    public function get_unified_data( $module_slug, $main_table, $history_table = '', $load_relations = false ) {
+        $active  = $this->db->get( $main_table, array( 'load_relations' => $load_relations ) );
+        $pending = array_filter( $this->db->get( 'requests', array( 'load_relations' => $load_relations ) ), function($r) use ($module_slug) {
             return ($r['module'] === $module_slug || $r['entity_type'] === $module_slug) && $r['status'] === 'pending';
         });
 
         // Attach original data for pending edits
-        $pending = array_map( function( $r ) {
+        $pending = array_map( function( $r ) use ( $load_relations ) {
             if ( $r['request_type'] === 'edit' ) {
-                $r['original_data'] = $this->get_original_data( $r );
+                $r['original_data'] = $this->get_original_data( $r, $load_relations );
             }
             return $r;
         }, $pending );
 
-        $archived = $history_table ? $this->db->get( $history_table ) : array();
+        $archived = $history_table ? $this->db->get( $history_table, array( 'load_relations' => $load_relations ) ) : array();
 
         return array(
             'active'   => $active,

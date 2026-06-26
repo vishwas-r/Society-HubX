@@ -4,17 +4,54 @@
  */
 
 $db = new SGVX51_DB_Router();
-$invoices = $db->get( 'invoices' );
-$residents = $db->get( 'residents' );
+$invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
+$residents = $db->get( 'residents', array( 'load_relations' => true ) );
 
 $ledger_mgr = new SGVX51_Ledger_Manager();
 $selected_year = isset( $_GET['year'] ) ? sanitize_text_field( $_GET['year'] ) : date('Y');
 $ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
-// Fetch Pending Payment Requests
-$pending_reqs = array_filter($db->get('requests'), function($r) {
-    return (($r['module'] ?? '') === 'accounts' || ($r['entity_type'] ?? '') === 'accounts') && ($r['status'] === 'pending');
+// Fetch Relevant Payment Requests (Any Stage)
+$relevant_reqs = array_filter($db->get('requests'), function($r) use ($selected_year) {
+    if ( ( ($r['module'] ?? '') !== 'accounts' && ($r['entity_type'] ?? '') !== 'accounts' ) ) return false;
+    $status = $r['status'] ?? '';
+    if ( in_array($status, ['pending', 'pending_secretary', 'pending_treasurer']) ) return true;
+    if ( $status === 'approved' && date('Y', strtotime($r['processed_at'] ?? $r['created_at'])) == $selected_year ) return true;
+    return false;
 });
+
+// Inject "Total Outstanding" requests as dummy invoices so they appear in the table UI
+foreach($relevant_reqs as $pr) {
+    if ( is_string($pr['payload']) ) {
+        $p_payload = json_decode($pr['payload'], true) ?: [];
+    } else {
+        $p_payload = $pr['payload'] ?: [];
+    }
+
+    if( ($p_payload['invoice_id'] ?? '') === 'Total Outstanding' ) {
+        $resident_name = 'Resident';
+        $resident_block = $p_payload['block'] ?? '';
+        $resident_flat = $p_payload['flat_no'] ?? '';
+
+        foreach($residents as $res) {
+            if((string)($res['flat_no'] ?? '') === (string)$resident_flat && (string)($res['block'] ?? '') === (string)$resident_block) {
+                $resident_name = $res['name'] ?? 'Resident'; break;
+            }
+        }
+        $invoices[] = [
+            'id'            => 'req_' . $pr['id'],
+            'block'         => $resident_block,
+            'flat_no'       => $resident_flat,
+            'resident_name' => $resident_name,
+            'month'         => date('Y-m-d', strtotime($pr['created_at'])),
+            'description'   => 'Payment towards Total Outstanding',
+            'amount'        => $p_payload['amount'] ?? 0,
+            'status'        => 'pending_total',
+            'created_at'    => $pr['created_at'],
+            'payments'      => []
+        ];
+    }
+}
 
 // Helper for Indian Numbering Format
 function sgvx_in_fmt($num, $decimals = 2) {
@@ -65,12 +102,15 @@ $variance = $actual_total - $net_balance;
 $total_demand = 0;
 $total_collected = 0;
 foreach($invoices as $inv) {
+    // Skip dummy invoices injected for pending UI representations
+    if ( ($inv['status'] ?? '') === 'pending_total' ) continue;
+
     if (date('Y', strtotime($inv['month'])) == $selected_year) {
         $total_demand += $inv['amount'];
         
         $collected_this_inv = 0;
         if(!empty($inv['payments'])) {
-            $payments = is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments'];
+            $payments = $inv['payments'];
             if(is_array($payments) && !empty($payments)) {
                 foreach($payments as $p) {
                    if(date('Y', strtotime($p['date'])) == $selected_year) $collected_this_inv += $p['amount'];
@@ -114,6 +154,9 @@ $paid_count = 0;
 $unpaid_count = 0;
 $partial_count = 0;
 foreach($invoices as $inv) {
+    // Skip dummy invoices injected for pending UI representations
+    if ( ($inv['status'] ?? '') === 'pending_total' ) continue;
+
     if (date('Y', strtotime($inv['month'])) == $selected_year) {
         $inv_status = $inv['status'] ?? 'unpaid';
         if($inv_status === 'paid') $paid_count++;
@@ -201,6 +244,38 @@ if ( isset( $_GET['success'] ) ) {
             </div>
         </div>
     </div>
+
+    <!-- Background Processing Status -->
+    <?php
+    $all_options = wp_load_alloptions();
+    $running_jobs = array();
+    foreach ( $all_options as $key => $val ) {
+        if ( strpos( $key, 'sgvx51_job_bulk_invoice_' ) === 0 ) {
+            $job = maybe_unserialize( $val );
+            if ( $job && $job['status'] === 'running' ) {
+                $running_jobs[] = $job;
+            }
+        }
+    }
+    ?>
+    <?php if ( ! empty( $running_jobs ) ) : ?>
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-4 mb-5 border-start border-5 border-info">
+            <h6 class="fw-bold text-dark mb-3">Background Tasks in Progress</h6>
+            <?php foreach ( $running_jobs as $job ) : 
+                $pct = ( $job['total'] > 0 ) ? round( ( $job['processed'] / $job['total'] ) * 100 ) : 0;
+            ?>
+                <div class="mb-3 last-child-mb-0">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-bold text-secondary">Generating <?php echo esc_html( ucfirst( $job['type'] ) ); ?> Invoices for <?php echo esc_html( date( 'F Y', strtotime( $job['month'] ) ) ); ?></span>
+                        <span class="badge bg-info text-white fw-bold" style="font-size: 10px;"><?php echo $pct; ?>%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: <?php echo $pct; ?>%"></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Global Stats Grid -->
     <div class="row g-4 mb-5">
@@ -364,11 +439,9 @@ if ( isset( $_GET['success'] ) ) {
                             <?php else : ?>
                                     <?php foreach ( array_reverse( $invoices ) as $inv ) : 
                                         $paid = 0;
-                                        if(!empty($inv['payments'])) {
-                                            $payments = is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments'];
-                                            if(is_array($payments)) {
-                                                foreach($payments as $p) $paid += floatval($p['amount']);
-                                            }
+                                        $payments = $inv['payments'] ?? [];
+                                        if(is_array($payments)) {
+                                            foreach($payments as $p) $paid += floatval($p['amount']);
                                         }
 
                                         // Fallback for Imported Data
@@ -379,8 +452,9 @@ if ( isset( $_GET['success'] ) ) {
                                         // Check for pending request
                                         $pending_request = null;
                                         foreach($pending_reqs as $pr) {
-                                            $p_payload = json_decode($pr['payload'], true);
-                                            if(($p_payload['invoice_id'] ?? '') === $inv['id']) {
+                                            $p_payload = is_array($pr['payload'] ?? null) ? $pr['payload'] : json_decode($pr['payload'], true);
+                                            // Match exact invoice ID, OR match the injected "Total Outstanding" dummy invoice
+                                            if(($p_payload['invoice_id'] ?? '') === $inv['id'] || $inv['id'] === 'req_' . $pr['id']) {
                                                 $pending_request = $pr;
                                                 break;
                                             }
@@ -418,7 +492,7 @@ if ( isset( $_GET['success'] ) ) {
                                             <?php if ( ($inv['status'] ?? '') === 'paid' ) : ?>
                                                 <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">FULL PAID</span>
                                             <?php elseif ( $pending_request ) : 
-                                                $p_payload = json_decode($pending_request['payload'], true);
+                                                $p_payload = is_array($pending_request['payload'] ?? null) ? $pending_request['payload'] : json_decode($pending_request['payload'], true);
                                             ?>
                                                 <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold mb-1" style="font-size: 9px;">VERIFICATION PENDING</span>
                                                 <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo sgvx_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
@@ -444,19 +518,21 @@ if ( isset( $_GET['success'] ) ) {
                                                  <?php endif; ?>
                                                  
                                                  <div class="d-flex gap-1">
-                                                     <?php if ( $paid == 0 ) : ?>
+                                                     <?php if ( $paid == 0 && ($inv['status'] ?? '') !== 'pending_total' ) : ?>
                                                          <button type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-invoice rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="Edit">
                                                              <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                                          </button>
                                                      <?php endif; ?>
-                                                      <?php if( $paid > 0 && !$pending_request ): ?>
+                                                      <?php if( $paid > 0 && !$pending_request && ($inv['status'] ?? '') !== 'pending_total' ): ?>
                                                           <button type="button" class="btn btn-sm btn-light border border-light p-2 js-open-receipt rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="View Receipt">
                                                               <i class="bi bi-file-earmark-medical fs-6 text-muted"></i>
                                                           </button>
                                                       <?php endif; ?>
-                                                     <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger js-delete-invoice rounded-3 shadow-none" data-id="<?php echo esc_attr($inv['id']); ?>" title="Delete">
-                                                         <i class="bi bi-trash fs-6"></i>
-                                                     </button>
+                                                      <?php if( ($inv['status'] ?? '') !== 'pending_total' ): ?>
+                                                         <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger js-delete-invoice rounded-3 shadow-none" data-id="<?php echo esc_attr($inv['id']); ?>" title="Delete">
+                                                             <i class="bi bi-trash fs-6"></i>
+                                                         </button>
+                                                      <?php endif; ?>
                                                  </div>
                                              </div>
                                          </td>
@@ -1324,7 +1400,101 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
         console.error('CanvasJS not loaded');
     }
+    
+    // --- Real-time Admin Sync (Optimistic UI) ---
+    initAdminPaymentSync();
 });
 
+function initAdminPaymentSync() {
+    let currentHash = null;
+    let isPolling = false;
+    
+    async function pollState() {
+        if (isPolling) return;
+        isPolling = true;
+        
+        try {
+            const formData = new URLSearchParams();
+            formData.append('action', 'sgvx51_poll_state_hash');
+            formData.append('_wpnonce', window.sgvx51AdminNonce);
+            
+            const req = await fetch(window.ajaxurl, {
+                method: 'POST',
+                body: formData
+            });
+            const res = await req.json();
+            
+            if (res.success && res.data && res.data.hash) {
+                if (currentHash === null) {
+                    currentHash = res.data.hash;
+                } else if (currentHash !== res.data.hash) {
+                    console.log('SGVX Admin: State Hash changed. Syncing UI...');
+                    currentHash = res.data.hash;
+                    await refreshAdminDashboard();
+                }
+            }
+        } catch(e) {
+            console.error('SGVX Admin Sync Error:', e);
+        }
+        
+        isPolling = false;
+        setTimeout(pollState, 4000); // 4 Seconds
+    }
+    
+    async function refreshAdminDashboard() {
+        try {
+            const req = await fetch(window.location.href);
+            if (!req.ok) return;
+            const html = await req.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            
+            const currentContent = document.querySelector('.mb-5.px-1')?.parentNode;
+            const newContent = doc.querySelector('.mb-5.px-1')?.parentNode;
+            
+            if (currentContent && newContent) {
+                // Save charts to avoid CanvasJS breaking
+                const chartsToSave = ['cashFlowChart', 'collectionChart', 'expenseCategoryChart'];
+                const savedNodes = {};
+                chartsToSave.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        savedNodes[id] = el;
+                        document.body.appendChild(el); 
+                    }
+                });
+                
+                // Replace HTML
+                currentContent.innerHTML = newContent.innerHTML;
+                
+                // Restore charts into new containers
+                chartsToSave.forEach(id => {
+                    const newEl = document.getElementById(id);
+                    if (newEl && savedNodes[id]) {
+                        newEl.parentNode.replaceChild(savedNodes[id], newEl);
+                    }
+                });
+                
+                // Update chart data from the new script block
+                const scripts = doc.querySelectorAll('script');
+                scripts.forEach(s => {
+                    if (s.textContent.includes('sgvxAccountsChartData')) {
+                        try {
+                            eval(s.textContent); 
+                            initCharts(); 
+                        } catch(err) {}
+                    }
+                });
+                
+                if (window.SGVX && window.SGVX.toast) {
+                    SGVX.toast.success('Live Update: Financials synced in real-time.', { icon: 'check-circle' });
+                }
+            }
+        } catch(e) {
+            console.error('SGVX Admin Refresh Error:', e);
+        }
+    }
+    
+    setTimeout(pollState, 2000);
+}
 
 </script>

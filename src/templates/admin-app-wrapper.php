@@ -24,31 +24,49 @@ if ( ! isset( $requests ) || empty( $requests ) ) {
 
 $pending_count = 0;
 foreach ( $requests as $req ) {
-    if ( isset( $req['status'] ) && $req['status'] === 'pending' ) {
+    $status = $req['status'] ?? '';
+    if ( in_array( $status, ['pending', 'pending_secretary', 'pending_treasurer'] ) ) {
         $pending_count++;
     }
 }
 
+// RBAC Integration
+$sgvx = Society_GoVernX::get_instance();
+$user_id = get_current_user_id();
+
 // Navigation Menu Config
-// Maps: View Name => [ Label, URL, Icon Class/SVG Path ]
-$nav_items = [
-    'dashboard' => ['Dashboard', admin_url('admin.php?page=sgvx51-settings'), 'bi-speedometer2'],
-    'flats'     => ['Flats & Units', admin_url('admin.php?page=sgvx51-flats'), 'bi-building'],
-    'residents' => ['Residents', admin_url('admin.php?page=sgvx51-residents'), 'bi-people'],
-    'rules'     => ['Rules & Regulations', admin_url('admin.php?page=sgvx51-rules'), 'bi-book'],
-    'vehicles'  => ['Vehicles', admin_url('admin.php?page=sgvx51-vehicles'), 'bi-car-front'],
-    'staff'     => ['Staff & Help', admin_url('admin.php?page=sgvx51-staff'), 'bi-shield-shaded'],
-    'documents' => ['Documents', admin_url('admin.php?page=sgvx51-documents'), 'bi-file-earmark-text'],
-    'accounts'  => ['Accounts', admin_url('admin.php?page=sgvx51-accounts'), 'bi-wallet2'],
-    'expenses'  => ['Expenses', admin_url('admin.php?page=sgvx51-expenses'), 'bi-cart-dash'],
-    'assets'    => ['Assets', admin_url('admin.php?page=sgvx51-assets'), 'bi-box-seam'],
-    'facilities'=> ['Facilities', admin_url('admin.php?page=sgvx51-facilities'), 'bi-calendar-event'],
-    'notices'   => ['Notices', admin_url('admin.php?page=sgvx51-notices'), 'bi-megaphone'],
-    'polls'     => ['Democracy', admin_url('admin.php?page=sgvx51-polls'), 'bi-journal-check'],
-    'requests'  => ['Pending Requests', admin_url('admin.php?page=sgvx51-requests'), 'bi-patch-exclamation'],
-    'activity-hub' => ['Activity Hub', admin_url('admin.php?page=sgvx51-activity-hub'), 'bi-clock-history'],
-    'settings'  => ['Settings', admin_url('admin.php?page=sgvx51-global-settings'), 'bi-gear'],
+// Maps: View Name => [ Label, URL, Icon Class, Required Capability ]
+$nav_items_raw = [
+    'dashboard'    => ['Dashboard', admin_url('admin.php?page=sgvx51-settings'), 'bi-speedometer2', 'dashboard_view'],
+    'flats'        => ['Flats & Units', admin_url('admin.php?page=sgvx51-flats'), 'bi-building', 'flats_manage'],
+    'residents'    => ['Residents', admin_url('admin.php?page=sgvx51-residents'), 'bi-people', 'residents_view'],
+    'rules'        => ['Rules & Regulations', admin_url('admin.php?page=sgvx51-rules'), 'bi-book', 'rules_manage'],
+    'vehicles'     => ['Vehicles', admin_url('admin.php?page=sgvx51-vehicles'), 'bi-car-front', 'residents_view'],
+    'staff'        => ['Staff & Help', admin_url('admin.php?page=sgvx51-staff'), 'bi-shield-shaded', 'staff_manage'],
+    'documents'    => ['Documents', admin_url('admin.php?page=sgvx51-documents'), 'bi-file-earmark-text', 'residents_view'],
+    'accounts'     => ['Accounts', admin_url('admin.php?page=sgvx51-accounts'), 'bi-wallet2', 'finance_view'],
+    'expenses'     => ['Expenses', admin_url('admin.php?page=sgvx51-expenses'), 'bi-cart-dash', 'finance_manage'],
+    'assets'       => ['Assets', admin_url('admin.php?page=sgvx51-assets'), 'bi-box-seam', 'finance_view'],
+    'facilities'   => ['Facilities', admin_url('admin.php?page=sgvx51-facilities'), 'bi-calendar-event', 'residents_view'],
+    'notices'      => ['Notices', admin_url('admin.php?page=sgvx51-notices'), 'bi-megaphone', 'notices_manage'],
+    'polls'        => ['Democracy', admin_url('admin.php?page=sgvx51-polls'), 'bi-journal-check', 'residents_view'],
+    'requests'     => ['Pending Requests', admin_url('admin.php?page=sgvx51-requests'), 'bi-patch-exclamation', 'settings_manage'],
+    'activity-hub' => ['Activity Hub', admin_url('admin.php?page=sgvx51-activity-hub'), 'bi-clock-history', 'settings_manage'],
+    'roles'        => ['User Roles', admin_url('admin.php?page=sgvx51-roles'), 'bi-shield-lock', 'settings_manage'],
+    'settings'     => ['Settings', admin_url('admin.php?page=sgvx51-global-settings'), 'bi-gear', 'settings_manage'],
 ];
+
+$nav_items = [];
+foreach ($nav_items_raw as $key => $nav) {
+    if ($sgvx->rbac->has_capability($user_id, $nav[3])) {
+        $nav_items[$key] = $nav;
+    }
+}
+
+// Security: If current view is not allowed, redirect or show error
+if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
+    $current_view = 'unauthorized';
+}
 
 ?>
 <!-- Admin App Wrapper Output -->

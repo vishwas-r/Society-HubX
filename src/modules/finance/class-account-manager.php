@@ -59,7 +59,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 			'sgvx51-settings',
 			'Society Accounts',
 			'Accounts',
-			'manage_options',
+			'read', // Granular check inside render_page
 			'sgvx51-accounts',
 			array( $this, 'render_page' )
 		);
@@ -69,6 +69,10 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Render Admin View.
 	 */
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_view' ) ) {
+            wp_die( 'You do not have permission to view accounts.' );
+        }
 		SGVX51_Admin_App::render_view('accounts');
 	}
 
@@ -77,6 +81,9 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 */
 	public function handle_generate_invoices() {
 		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+        
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$month = sanitize_text_field( $_POST['month'] ); // YYYY-MM
 		$amount = floatval( $_POST['amount'] );
@@ -84,72 +91,91 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 		$description = sanitize_text_field( $_POST['description'] );
         $type = isset( $_POST['type'] ) ? sanitize_text_field( $_POST['type'] ) : 'maintenance';
 
-		// If Maintenance, update the default amount setting if requested or just silently (let's just update it if it's the standard maintenance)
-        if ( $type === 'maintenance' && $amount > 0 ) {
-            update_option( 'sgvx51_maintenance_amount', $amount );
-        }
-
 		if ( ! $month || ! $amount ) wp_die( 'Invalid Data' );
 
-		$residents = $this->db->get( 'residents' ); // Only active residents?
-		$invoices = $this->db->get( 'invoices' );
-		
-		$generated_count = 0;
+        // Check if job already running
+        $job_key = "sgvx51_job_bulk_invoice_{$month}_{$type}";
+        $existing_job = get_option( $job_key );
+        if ( $existing_job && $existing_job['status'] === 'running' ) {
+            wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&error=job_running' ) );
+            exit;
+        }
+
+        // Enterprise Upgrade: Background Processing
+        if ( class_exists('SGVX51_Background_Worker') ) {
+            $worker = new SGVX51_Background_Worker();
+            if ( $worker->is_available() ) {
+                $worker->schedule_bulk_invoices( $month, $amount, $type );
+                wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=scheduled' ) );
+                exit;
+            }
+        }
         
-        // Calculate Next Sequence for YYYYMM
-        $prefix = str_replace('-', '', $month); // 2024-05 -> 202405
+        // Fallback to synchronous if worker missing or unavailable
+        $this->perform_bulk_invoice_generation( $month, $amount, $type, $due_date, $description );
+        wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=generated' ) );
+		exit;
+	}
+
+    /**
+     * Logic for bulk generation, now extractable for background processing.
+     */
+    public function perform_bulk_invoice_generation( $month, $amount, $type, $due_date = '', $description = '' ) {
+        $residents = $this->db->get( 'residents' );
+        $invoices = $this->db->get( 'invoices', array( 'where' => array( 'month' => $month, 'type' => $type ) ) );
+        
+        $generated_count = 0;
+        $prefix = str_replace( '-', '', $month ); // 2024-05 -> 202405
+        
+        // Generate Safe ID limits
+        $all_invoices = $this->db->get( 'invoices' ); 
         $max_seq = 0;
-        foreach($invoices as $inv) {
-            // Check if ID starts with prefix
-            if(strpos($inv['id'], $prefix) === 0) {
-                $seq = intval(substr($inv['id'], 6));
-                if($seq > $max_seq) $max_seq = $seq;
+        foreach ( $all_invoices as $inv ) {
+            if ( strpos( $inv['id'], $prefix ) === 0 ) {
+                $seq = intval( substr( $inv['id'], 6 ) );
+                if ( $seq > $max_seq ) $max_seq = $seq;
             }
         }
         $next_seq = $max_seq + 1;
 
-		foreach ( $residents as $r ) {
-			// Skip if invoice already exists for this Flat + Month + Type
-			$exists = false;
-			foreach($invoices as $inv) {
-				if( $inv['flat_no'] === $r['flat_no'] && $inv['month'] === $month && $inv['type'] === $type && $inv['description'] === $description ) {
-					$exists = true; break;
-				}
-			}
-			
-			if ( ! $exists ) {
-                $new_id = $prefix . str_pad($next_seq, 3, '0', STR_PAD_LEFT);
+        foreach ( $residents as $r ) {
+            // Check if already generated for this month and type
+            $exists = false;
+            foreach ( $invoices as $inv ) {
+                if ( (string)$inv['flat_no'] === (string)$r['flat_no'] && (string)($inv['block'] ?? '') === (string)($r['block'] ?? '') ) {
+                    $exists = true; break;
+                }
+            }
+            
+            if ( ! $exists ) {
+                $new_id = $prefix . str_pad( $next_seq, 3, '0', STR_PAD_LEFT );
+                $data = array(
+                    'id'            => $new_id,
+                    'block'         => $r['block'] ?? '',
+                    'flat_no'       => $r['flat_no'],
+                    'resident_name' => $r['name'] ?? '',
+                    'month'         => $month,
+                    'amount'        => $amount,
+                    'total_paid'    => 0,
+                    'status'        => 'unpaid',
+                    'type'          => $type,
+                    'due_date'      => $due_date,
+                    'description'   => $description ? $description : ucfirst( $type ) . ' for ' . $month,
+                    'created_at'    => current_time( 'mysql' ),
+                    'payments'      => '[]'
+                );
                 
-				$invoices[] = array(
-					'id'            => $new_id,
-					'flat_no'       => $r['flat_no'],
-					'resident_name' => $r['name'],
-					'month'         => $month,
-					'amount'        => $amount,
-					'due_date'      => $due_date,
-					'status'        => 'unpaid', // unpaid, paid, partial
-					'type'          => $type,
-					'description'   => $description,
-					'created_at'    => current_time('mysql'),
-					'payments'      => []
-				);
-				
-				// Encode payments for DB
-				$save_data = $invoices[count($invoices)-1]; // Get the one we just made
-				$save_data['payments'] = json_encode($save_data['payments']);
-				
-				$this->db->insert('invoices', $save_data);
-
-				$generated_count++;
+                $this->db->insert( 'invoices', $data );
+                $generated_count++;
                 $next_seq++;
-			}
-		}
 
-		// file_put_contents removed
-		
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=generated&count=' . $generated_count ) );
-		exit;
-	}
+                // Sync: Immediately update pending payment status
+                $my_invoices = $this->db->get('invoices', array('where'=>array('flat_no' => $r['flat_no'])));
+                // We update total dues on the resident dashboard calculation directly
+            }
+        }
+        return $generated_count;
+    }
 
 	/**
 	 * Record a Payment manually.
@@ -157,6 +183,9 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	public function handle_record_payment() {
 		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
 		
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+
         $invoice_id = sanitize_text_field( $_POST['invoice_id'] ?? '' );
         
         // 1. Synchronize with Request Manager if a pending request exists
@@ -185,36 +214,43 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Internal logic to record a payment.
 	 * Can be called by admin_post or by execute_request (approval).
 	 */
-	private function perform_record_payment( $data ) {
+	public function perform_record_payment( $data ) {
 		$invoice_id = sanitize_text_field( $data['invoice_id'] ?? '' );
 		$amount_remaining = floatval( $data['amount'] ?? 0 );
 		$method = sanitize_text_field( $data['method'] ?? 'UPI' );
 		$ref = sanitize_text_field( $data['reference'] ?? '-' );
 		$date = sanitize_text_field( $data['date'] ?? date('Y-m-d') );
         $flat_no = sanitize_text_field( $data['flat_no'] ?? '' );
+        $block = sanitize_text_field( $data['block'] ?? '' );
+        $request_id = sanitize_text_field( $data['request_id'] ?? '' );
         
         // Debug Log
-        error_log("SGVX51 Payment: Processing Payment for Flat: $flat_no, Amount: $amount_remaining, Inv: $invoice_id");
+        error_log("SGVX51 Payment: Processing Payment for Flat: $block-$flat_no, Amount: $amount_remaining, Inv: $invoice_id");
 
 		$affected_invoices = [];
 
         // CASE 1: Specific Invoice Payment
 		if ( $invoice_id && $invoice_id !== 'Total Outstanding' ) {
-            $invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $invoice_id ) ) );
+            $invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $invoice_id ), 'load_relations' => true ) );
             if ( ! empty( $invoices ) ) {
                 $inv = $invoices[0];
                 $flat_no = $inv['flat_no'];
-                $this->apply_payment_to_invoice_record( $inv, $amount_remaining, $date, $method, $ref );
+                $block = $inv['block'] ?? '';
+                $this->apply_payment_to_invoice_record( $inv, $amount_remaining, $date, $method, $ref, $request_id );
                 $affected_invoices[] = $inv;
             }
         } 
         // CASE 2: General Payment (Total Outstanding) - FIFO Logic
         elseif ( $flat_no ) {
             // New Scalable Fetch: Only unpaid invoices for THIS flat
+            $where = array( 'flat_no' => $flat_no );
+            if ( ! empty( $block ) ) $where['block'] = $block;
+
             $my_invoices = $this->db->get( 'invoices', array( 
-                'where'   => array( 'flat_no' => $flat_no ),
+                'where'   => $where,
                 'orderby' => 'month',
-                'order'   => 'ASC'
+                'order'   => 'ASC',
+                'load_relations' => true
             ));
             
             // Filter out already PAID invoices in PHP (since DB Router currently only does equality)
@@ -227,11 +263,10 @@ class SGVX51_Account_Manager implements SGVX51_Module {
             foreach ( $unpaid_invoices as $inv ) {
                 if ( $amount_remaining <= 0 ) break;
 
-                // Calculate remaining balance for this invoice
+                // Calculate remaining balance for this invoice (Relational)
                 $already_paid = 0;
-                $payments = isset($inv['payments']) ? (is_string($inv['payments']) ? json_decode($inv['payments'], true) : $inv['payments']) : array();
-                if ( is_array($payments) ) {
-                    foreach ( $payments as $p ) $already_paid += (float)($p['amount'] ?? 0);
+                if ( ! empty( $inv['payments'] ) && is_array( $inv['payments'] ) ) {
+                    foreach ( $inv['payments'] as $p ) $already_paid += (float)($p['amount'] ?? 0);
                 }
                 $inv_balance = (float)($inv['amount'] ?? 0) - $already_paid;
 
@@ -242,8 +277,8 @@ class SGVX51_Account_Manager implements SGVX51_Module {
                 $payment_towards_this_inv = min( $amount_remaining, $inv_balance );
                 
                 if($payment_towards_this_inv > 0) {
-                     $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref );
-                     $affected_invoices[] = $inv;
+                         $this->apply_payment_to_invoice_record( $inv, $payment_towards_this_inv, $date, $method, $ref, $request_id );
+                         $affected_invoices[] = $inv;
                      $amount_remaining -= $payment_towards_this_inv;
                      
                      error_log("SGVX51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']);
@@ -251,14 +286,14 @@ class SGVX51_Account_Manager implements SGVX51_Module {
             }
         }
 
-        // Save all affected invoices
-        error_log("SGVX51 Payment: Saving " . count($affected_invoices) . " affected invoices.");
+        // Save all affected invoices (Status + Aggregate Data updates)
+        error_log("SGVX51 Payment: Saving status for " . count($affected_invoices) . " affected invoices.");
         foreach ( $affected_invoices as $inv ) {
-            $save_data = $inv;
-            if ( is_array( $save_data['payments'] ) ) {
-                $save_data['payments'] = json_encode( $save_data['payments'] );
-            }
-            $this->db->update( 'invoices', $save_data, ['id' => $inv['id']] );
+            $this->db->update( 'invoices', array( 
+                'status'     => $inv['status'],
+                'total_paid' => $inv['total_paid'] ?? 0,
+                'payments'   => $inv['payments'] ?? array()
+            ), array( 'id' => $inv['id'] ) );
         }
 
 		// 2. Update Resident's Maintenance Balance
@@ -266,10 +301,18 @@ class SGVX51_Account_Manager implements SGVX51_Module {
             $amount_total = floatval( $data['amount'] ?? 0 );
             $residents = $this->db->get( 'residents' );
             foreach ( $residents as $j => $res ) {
-                if ( (string)($res['flat_no'] ?? $res['id']) === (string)$flat_no ) {
+                $r_flat = (string)($res['flat_no'] ?? '');
+                $r_block = (string)($res['block'] ?? '');
+
+                if ( $r_flat === (string)$flat_no && ( empty($block) || $r_block === (string)$block ) ) {
                     $current_balance = floatval( $res['maintenance_balance'] ?? 0 );
                     $new_balance = max( 0, $current_balance - $amount_total );
                     $this->db->update( 'residents', ['maintenance_balance' => $new_balance], ['id' => $res['id']] );
+                    
+                    // 3. Financial Ledger Integration
+                    // We don't have a direct 'ledger' table, ledger is a virtual view of Invoices (Payments) and Expenses.
+                    // However, we can ensure the payment is recorded in the 'payments' table (already done in apply_payment_to_invoice_record)
+                    // and that it has all necessary metadata for the Ledger Manager to pick it up.
                     break;
                 }
             }
@@ -281,33 +324,43 @@ class SGVX51_Account_Manager implements SGVX51_Module {
     /**
      * Helper to append a payment record to an invoice array.
      */
-    private function apply_payment_to_invoice_record( &$invoice, $amount, $date, $method, $ref ) {
-        if ( ! isset( $invoice['payments'] ) ) {
-            $invoice['payments'] = [];
-        } elseif ( is_string( $invoice['payments'] ) ) {
-            $invoice['payments'] = json_decode( $invoice['payments'], true ) ?: [];
-        }
-
-        $invoice['payments'][] = [
-            'id' => uniqid('txn_'),
-            'amount' => $amount,
-            'date' => $date,
-            'method' => $method,
-            'reference' => $ref,
-            'recorded_by' => get_current_user_id(),
-            'account_type' => (strtolower($method) === 'cash') ? 'cash' : 'bank'
-        ];
-
-        // Recalculate Status
-        $paid = 0;
-        foreach( $invoice['payments'] as $p ) {
-            $paid += floatval( $p['amount'] ?? 0 );
-        }
+    private function apply_payment_to_invoice_record( &$invoice, $amount, $date, $method, $ref, $request_id = '' ) {
+        $txn_id = uniqid('txn_');
         
-        if ( $paid >= floatval( $invoice['amount'] ) ) {
+        $payment_data = array(
+            'id'          => $txn_id,
+            'invoice_id'  => $invoice['id'],
+            'amount'      => $amount,
+            'date'        => $date,
+            'method'      => $method,
+            'reference'   => $ref,
+            'recorded_by' => get_current_user_id(),
+            'request_id'  => $request_id,
+            'metadata'    => json_encode( array( 'account_type' => ( strtolower($method) === 'cash' ) ? 'cash' : 'bank' ) )
+        );
+
+        $this->db->insert( 'payments', $payment_data );
+
+        // Update the invoice object in memory (Aggregate Data)
+        $invoice['total_paid'] = (float)($invoice['total_paid'] ?? 0) + $amount;
+        $payments_json = is_array($invoice['payments'] ?? null) ? $invoice['payments'] : (json_decode($invoice['payments'] ?? '[]', true) ?: array());
+        
+        $payments_json[] = array(
+            'id'         => $txn_id,
+            'request_id' => $request_id,
+            'amount'     => $amount,
+            'date'       => $date,
+            'method'     => $method,
+            'reference'  => $ref
+        );
+        $invoice['payments'] = $payments_json;
+        
+        if ( $invoice['total_paid'] >= floatval( $invoice['amount'] ) ) {
             $invoice['status'] = 'paid';
-        } elseif ( $paid > 0 ) {
+        } elseif ( $invoice['total_paid'] > 0 ) {
             $invoice['status'] = 'partial';
+        } else {
+            $invoice['status'] = 'unpaid';
         }
     }
 
@@ -344,12 +397,19 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 			'reference'  => $ref,
 			'date'       => $date,
 			'resident_id'=> $user_id,
+			'block'      => $resident ? ($resident['block'] ?? '') : '',
 			'flat_no'    => $resident ? $resident['flat_no'] : 'Unknown',
 			'resident_name' => $resident ? $resident['name'] : 'Unknown'
 		];
 
 		$rm = new SGVX51_Request_Manager();
 		$res = $rm->create_request( 'accounts', 'record_payment', $payload, $invoice_id );
+
+        if ( ! is_wp_error( $res ) ) {
+            // Update the request status to 'pending_secretary' explicitly
+            // because create_request defaults to 'pending'
+            $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $res ) );
+        }
 
 		if ( is_wp_error( $res ) ) {
 			wp_send_json_error( ['message' => $res->get_error_message()] );
@@ -363,52 +423,39 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	public function handle_delete_payment() {
 		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
 
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+
 		$invoice_id = sanitize_text_field( $_GET['invoice_id'] );
 		$txn_id = sanitize_text_field( $_GET['txn_id'] );
 		
-		$invoices = $this->db->get( 'invoices' );
-		$target_index = -1;
-		
-		foreach($invoices as $i => $inv) {
-			if($inv['id'] === $invoice_id) {
-				$target_index = $i;
-				break;
-			}
-		}
+        // 1. Delete from payments table
+        $this->db->delete( 'payments', array( 'id' => $txn_id ) );
 
-		if ( $target_index > -1 ) {
-			$payments = isset($invoices[$target_index]['payments']) ? $invoices[$target_index]['payments'] : [];
-			if ( is_string($payments) ) $payments = json_decode($payments, true);
-			if ( !is_array($payments) ) $payments = [];
-			
-			// Filter out the payment
-			$new_payments = [];
-			foreach($payments as $p) {
-				if( ($p['id'] ?? '') !== $txn_id ) {
-					$new_payments[] = $p;
-				}
-			}
-			
-			// Recalc Status
-			$paid = 0;
-			foreach($new_payments as $p) $paid += floatval($p['amount']);
-			
-			$invoices[$target_index]['status'] = ($paid >= floatval($invoices[$target_index]['amount'])) ? 'paid' : (($paid > 0) ? 'partial' : 'unpaid');
-			
-			$save_data = $invoices[$target_index];
-			$save_data['payments'] = json_encode($new_payments);
-			
-			$this->db->update('invoices', $save_data, ['id' => $invoice_id]);
-			
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=updated' ) );
-		} else {
-			wp_die('Invoice not found');
-		}
+        // 2. Fetch invoice and recalculate status
+        $invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $invoice_id ), 'load_relations' => true ) );
+        if ( ! empty( $invoices ) ) {
+            $inv = $invoices[0];
+            $paid = 0;
+            if ( ! empty( $inv['payments'] ) ) {
+                foreach ( $inv['payments'] as $p ) $paid += floatval( $p['amount'] );
+            }
+            
+            $status = ( $paid >= floatval( $inv['amount'] ) ) ? 'paid' : ( ( $paid > 0 ) ? 'partial' : 'unpaid' );
+            $this->db->update( 'invoices', array( 'status' => $status ), array( 'id' => $invoice_id ) );
+            
+            wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=updated' ) );
+        } else {
+            wp_die( 'Invoice not found' );
+        }
 		exit;
 	}
 
 	public function handle_edit_invoice() {
 		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = sanitize_text_field( $_POST['invoice_id'] );
 		$data = array(
@@ -417,90 +464,34 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 			'due_date'    => sanitize_text_field( $_POST['due_date'] ),
 		);
 
-		// We need to fetch the existing invoice to preserve other fields?
-		// db->update merges? No, db->update usually needs full row or updates specific fields.
-		// WPDB update updates only specified fields. SGVX51_DB_Router update implementation?
-		// Looking at DB Router usage in other files, it seems to take $data and $where.
-		// However, the DB Router works with JSON files in this plugin?
-		// Wait, SGVX51_DB_Router::update($table, $data, $where)
-		// If it's a JSON file based "DB" (which `get` and `insert` usages suggest simple array manipulation), 
-		// `update` likely finds the row by $where and merges $data.
-		// Let's assume standard behavior: Update specific fields.
-		
-		// ACTUALLY, checking previous code:
-		// $this->db->update( 'vehicles', $data, array( 'id' => $id ) );
-		// It seems to work like WPDB.
-		
-		// One catch: Invoices are in a single `invoices` array in JSON? 
-		// If so, I need to be careful not to overwrite the whole record if DB Router replaces it.
-		// Let's look at `handle_record_payment` implementation I just viewed.
-		// It fetches ALL invoices, loops, updates specific one, then calls `$this->db->update('invoices', $update_data, ['id' => ...])`
-		// Wait, `handle_record_payment` does: $this->db->update('invoices', $update_data, ['id' => $invoice_id]);
-		// And $update_data is the FULL modified array.
-		// So `db->update` might be replacing the entire row if it finds it?
-		// OR `db->update` logic in this specific plugin might be "Update row where ID matches with these fields".
-		
-		// To be safe, I will fetch, modify, and update like `handle_record_payment` does.
-		
-		$invoices = $this->db->get( 'invoices' );
-		$target_index = -1;
-		foreach($invoices as $i => $inv) {
-			if($inv['id'] === $id) {
-				$target_index = $i;
-				break;
-			}
-		}
+		$invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $id ), 'load_relations' => true ) );
 
-		if($target_index > -1) {
-			$invoices[$target_index]['description'] = $data['description'];
-			$invoices[$target_index]['amount'] = $data['amount'];
-			$invoices[$target_index]['due_date'] = $data['due_date'];
-			
-			// Recalculate status if amount changed?
+		if ( ! empty( $invoices ) ) {
+            $inv = $invoices[0];
 			$paid = 0;
-			$payments = isset($invoices[$target_index]['payments']) ? $invoices[$target_index]['payments'] : [];
-			// Payments might be JSON string if fetched directly from file but `db->get` usually decodes?
-			// `handle_record_payment` does `$inv['payments'] = json_encode(...)` before saving.
-			// `db->get` returns array.
-			// Let's trust `db->get` returns array of arrays.
-			// If `payments` is a string in the array, we might need to decode.
-			// Checking `handle_record_payment`: `$invoices[$i]['payments'][] = ...` implies it acts as array.
-			
-			if( is_string($payments) ) $payments = json_decode($payments, true);
-			if( !is_array($payments) ) $payments = [];
-
-			foreach($payments as $p) $paid += floatval($p['amount']);
-			
-			if ( $paid >= $data['amount'] ) {
-				$invoices[$target_index]['status'] = 'paid';
-			} elseif ( $paid > 0 ) {
-				$invoices[$target_index]['status'] = 'partial';
-			} else {
-				$invoices[$target_index]['status'] = 'unpaid';
+			if ( ! empty( $inv['payments'] ) ) {
+				foreach ( $inv['payments'] as $p ) $paid += floatval( $p['amount'] );
 			}
-
-            // DB update expects the full row? Or partial?
-            // `handle_record_payment` passes the FULL row `$update_data`.
-            // So I should pass the full row.
+			
+			$status = ( $paid >= $data['amount'] ) ? 'paid' : ( ( $paid > 0 ) ? 'partial' : 'unpaid' );
             
-            // Re-encode payments if needed?
-            // `handle_record_payment` does: `$update_data['payments'] = json_encode($update_data['payments']);`
-            // So I must do the same.
+            $update_data = $data;
+            $update_data['status'] = $status;
             
-            $save_data = $invoices[$target_index];
-            $save_data['payments'] = json_encode($payments);
-            
-			$this->db->update('invoices', $save_data, ['id' => $id]);
+			$this->db->update( 'invoices', $update_data, array( 'id' => $id ) );
 			
 			wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=updated' ) );
 		} else {
-			wp_die('Invoice not found');
+			wp_die( 'Invoice not found' );
 		}
 		exit;
 	}
 
 	public function handle_delete_invoice() {
 		if ( ! check_admin_referer( 'sgvx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = sanitize_text_field( $_GET['id'] );
 		$this->db->delete( 'invoices', array( 'id' => $id ) );

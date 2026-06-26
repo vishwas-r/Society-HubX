@@ -222,13 +222,20 @@
 
         e.preventDefault();
         const data = viewBtn.dataset;
-        const payload = JSON.parse(data.payload || '{}');
-        const original = JSON.parse(data.original || '{}');
+        const modalEl = document.getElementById('requestDetailModal');
+        if (!modalEl) return;
+
+        let payload = {};
+        let original = {};
         const module = data.module;
         const type = data.requestType;
 
-        const modalEl = document.getElementById('requestDetailModal');
-        if (!modalEl) return;
+        try {
+            payload = JSON.parse(data.payload || '{}');
+            original = JSON.parse(data.original || '{}');
+        } catch (err) {
+            console.error('SGVX: Error parsing request payload', err, data.payload);
+        }
 
         // Relocate to body if not already there to fix z-index/stacking context issues in WP Admin
         if (modalEl.parentElement !== document.body) {
@@ -265,27 +272,52 @@
         grid.innerHTML = '';
 
         const summaryFields = {
-            'name': 'Name',
+            'name': 'Full Name',
             'flat_no': 'Flat / Unit',
-            'phone': 'Phone',
-            'email': 'Email',
-            'number': 'Vehicle #',
-            'brand': 'Brand',
-            'model': 'Model',
-            'role': 'Role / Job',
-            'category': 'Category',
-            'amount': 'Amount',
-            'method': 'Method'
+            'phone': 'Phone Number',
+            'email': 'Email Address',
+            'number': 'Vehicle Number',
+            'brand': 'Vehicle Brand',
+            'model': 'Vehicle Model',
+            'role': 'Role / Occupation',
+            'category': 'Request Category',
+            'comments': 'Comments / Details',
+            'resident_name': 'Resident Name',
+            'invoice_id': 'Payment Towards',
+            'amount': 'Invoice Amount',
+            'method': 'Payment Method',
+            'reference': 'Reference / UTR',
+            'date': 'Transaction Date',
+            'type': 'Type',
+            'relation': 'Relation'
         };
 
-        Object.keys(summaryFields).forEach(key => {
+        const skipKeys = ['id', 'resident_id', 'action', '_wpnonce', 'original_data', 'module', 'status'];
+
+        // Sort keys to show important ones first (name, flat, category, then others, then comments last)
+        const keys = Object.keys(payload).sort((a, b) => {
+            const order = ['name', 'resident_name', 'flat_no', 'category', 'type', 'amount', 'method'];
+            const idxA = order.indexOf(a);
+            const idxB = order.indexOf(b);
+            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+            if (idxA !== -1) return -1;
+            if (idxB !== -1) return 1;
+            if (a === 'comments') return 1;
+            if (b === 'comments') return -1;
+            return a.localeCompare(b);
+        });
+
+        keys.forEach(key => {
+            if (skipKeys.includes(key)) return;
             const newVal = payload[key];
             const oldVal = original[key];
 
-            if (newVal) {
+            if (newVal !== undefined && newVal !== null && newVal !== '') {
                 const col = document.createElement('div');
-                col.className = 'col-md-6';
+                // Give comments more space
+                col.className = (key === 'comments' || String(newVal).length > 40) ? 'col-12' : 'col-md-6';
 
+                let label = summaryFields[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 let valueHtml = `<div class="fw-bold text-dark">${newVal}</div>`;
 
                 // If it's an edit and the value has changed, show comparison
@@ -300,7 +332,7 @@
 
                 col.innerHTML = `
                     <div class="bg-light p-3 rounded-3 border-0 h-100">
-                        <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 10px;">${summaryFields[key]}</div>
+                        <div class="text-secondary small fw-bold text-uppercase mb-1" style="font-size: 10px;">${label}</div>
                         ${valueHtml}
                     </div>
                 `;

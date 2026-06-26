@@ -54,31 +54,71 @@ $directory = $data['directory'] ?? [];
                           <div class="bg-white rounded-3 shadow-sm border border-secondary border-opacity-25 overflow-hidden h-100 cursor-pointer transition-all card-hover">
                              <div class="px-4 py-3 border-bottom border-light bg-light d-flex justify-content-between align-items-center">
                                  <div class="d-flex align-items-center gap-3">
-                                     <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
-                                         <?php echo esc_html($d['flat_no']); ?>
+                                     <div class="position-relative">
+                                         <!-- Resident Display Picture -->
+                                         <?php 
+                                            // Handle potential empty owner_photo and fallback to initials
+                                            $dp_url = !empty($d['owner_photo']) ? $d['owner_photo'] : 'https://ui-avatars.com/api/?name=' . urlencode($d['owner']) . '&background=random&color=fff';
+                                         ?>
+                                         <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                         
+                                         <!-- Flat Number Badge (Floating) with Finance Status Color -->
+                                         <?php 
+                                            $status_class = 'bg-danger'; // Unpaid
+                                            $dot_title = 'Payment Pending';
+                                            if (isset($d['finance_status'])) {
+                                                if ($d['finance_status'] === 'paid') { $status_class = 'bg-success'; $dot_title = 'Paid'; }
+                                                elseif ($d['finance_status'] === 'partial') { $status_class = 'bg-warning'; $dot_title = 'Partially Paid'; }
+                                            }
+                                         ?>
+                                         <span class="position-absolute top-100 start-50 translate-middle badge rounded-pill <?php echo esc_attr($status_class); ?> border border-white shadow-sm" 
+                                               style="font-size: 0.65rem; margin-top: -3px; min-width: 32px;"
+                                               data-bs-toggle="tooltip"
+                                               title="Status: <?php echo esc_attr($dot_title); ?>">
+                                             <?php echo esc_html($d['flat_no']); ?>
+                                         </span>
                                      </div>
-                                     <div>
-                                         <h4 class="fw-semibold text-dark m-0 small"><?php echo esc_html($d['owner']); ?></h4>
-                                         <span class="badge bg-light text-secondary fw-normal small border border-light">Block <?php echo esc_html($d['block']); ?></span>
+                                     <div class="ms-1">
+                                         <h4 class="fw-bold text-dark m-0" style="font-size: 0.95rem;"><?php echo esc_html($d['owner']); ?></h4>
+                                         <span class="badge bg-light text-secondary fw-normal small border border-light" style="font-size: 0.7rem;">Block <?php echo esc_html($d['block']); ?></span>
                                      </div>
                                  </div>
                                  <div class="text-muted"><i class="bi bi-chevron-right"></i></div>
                              </div>
                              <div class="p-4">
-                                  <div class="d-flex flex-wrap gap-2">
-                                     <span class="badge bg-info-subtle text-info border border-info-subtle fw-normal d-flex align-items-center gap-1">
-                                         <i class="bi bi-people" style="font-size:12px;"></i> <?php echo esc_html($d['members']); ?>
-                                     </span>
-                                     <?php if(!empty($d['vehicles'])): ?>
-                                          <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal d-flex align-items-center gap-1">
-                                             <i class="bi bi-car-front" style="font-size:12px;"></i> <?php echo count($d['vehicles']); ?>
-                                         </span>
-                                     <?php endif; ?>
-                                     <?php if(!empty($d['help'])): ?>
-                                          <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-normal d-flex align-items-center gap-1">
-                                             <i class="bi bi-person-badge" style="font-size:12px;"></i> <?php echo count($d['help']); ?>
-                                         </span>
-                                     <?php endif; ?>
+                                  <div class="d-flex justify-content-between align-items-center">
+                                      <div class="d-flex flex-wrap gap-2">
+                                         <?php if(!empty($d['members'])): ?>
+                                             <span class="badge bg-info-subtle text-info border border-info-subtle fw-normal d-flex align-items-center gap-1">
+                                                 <i class="bi bi-people" style="font-size:12px;"></i> <?php echo esc_html($d['members']); ?>
+                                             </span>
+                                         <?php endif; ?>
+                                         <?php if(!empty($d['vehicles'])): ?>
+                                              <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-normal d-flex align-items-center gap-1"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="bottom"
+                                                    title="<?php 
+                                                        $v_list = array_map(function($v){ return $v['number'] . ' (' . ($v['brand'] ?: 'Vehicle') . ')'; }, $d['vehicles']);
+                                                        echo esc_attr(implode(', ', $v_list));
+                                                    ?>">
+                                                 <i class="bi bi-car-front" style="font-size:12px;"></i> <?php echo count($d['vehicles']); ?>
+                                              </span>
+                                         <?php endif; ?>
+                                         <?php if(!empty($d['help'])): ?>
+                                              <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-normal d-flex align-items-center gap-1"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="bottom"
+                                                    title="<?php 
+                                                        $staff_details = [];
+                                                        foreach($d['help'] as $h) {
+                                                            $staff_details[] = esc_attr($h['name']) . ' (' . esc_attr($h['role']) . ')';
+                                                        }
+                                                        echo implode(', ', $staff_details);
+                                                    ?>">
+                                                 <i class="bi bi-person-badge" style="font-size:12px;"></i> <?php echo count($d['help']); ?>
+                                              </span>
+                                         <?php endif; ?>
+                                      </div>
                                   </div>
                              </div>
                           </div>

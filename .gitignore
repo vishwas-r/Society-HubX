@@ -1,0 +1,13 @@
+# Exclude generated zip files
+*.zip
+
+# Exclude temporary directories
+dist/
+wordpress/
+wordpress-temp.zip
+
+# Developer local configs
+.env
+.env.local
+.vscode/
+.idea/

@@ -12,7 +12,7 @@ $all_expenses = $db->get( 'expenses' );
 
 // Debug: Log the raw expenses returned
 if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-	error_log( 'SGVX51 Expenses Admin: Mode=' . $db->get_mode() . ', Table=' . $db->get_table_name_debug('expenses') . ', Count=' . count( $all_expenses ) );
+	error_log( 'SGVX51 Expenses Admin: Count=' . count( $all_expenses ) );
 	if ( count( $all_expenses ) > 0 ) {
 		error_log( 'SGVX51 First Expense Sample: ' . wp_json_encode( array_slice( $all_expenses[0], 0, 3 ) ) );
 	} else {

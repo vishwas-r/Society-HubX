@@ -107,7 +107,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			'sgvx51-settings',
 			'Rules & Regulations',
 			'Rules',
-			'manage_options',
+			'read', // Granular check inside render_page
 			'sgvx51-rules',
 			array( $this, 'render_page' )
 		);
@@ -235,7 +235,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_delete_rule() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -258,7 +259,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_publish_rule() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -342,7 +344,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_restore_version() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -519,7 +522,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_add_violation() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -589,7 +593,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_resolve_violation() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -653,7 +658,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_manage_category() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+        $rbac = new SGVX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -771,45 +777,30 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	 * Notifications
 	 */
 	private function send_rule_published_notifications($rule) {
-		// Safety check: ensure notifications is initialized
-		if ( !$this->notifications ) {
-			error_log('SGVX51_Rule_Manager: Notifications not initialized - unable to notify residents about published rule: ' . $rule['title']);
-			return; // Don't fail - the rule is still published
-		}
-		
-		// Get all approved residents
+        // Enterprise Upgrade: Defer to Background Worker
+        if ( class_exists('SGVX51_Background_Worker') ) {
+            $worker = new SGVX51_Background_Worker();
+            $worker->schedule_notification_blast( 'rule_published', array(
+                'title'    => $rule['title'],
+                'deadline' => $rule['acknowledgment_deadline'] ? date('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
+            ));
+            return;
+        }
+
+		// Fallback (Synchronous)
+		if ( !$this->notifications ) return;
 		$residents = $this->db->get('residents', ['status' => 'approved']);
-		
-		if ( empty($residents) ) {
-			error_log('SGVX51_Rule_Manager: No approved residents found to notify');
-			return;
-		}
-		
-		$notified_count = 0;
+		if ( empty($residents) ) return;
+
 		foreach ( $residents as $resident ) {
-			if ( empty($resident['wp_user_id']) ) {
-				error_log("SGVX51_Rule_Manager: Skipping resident {$resident['name']} - no wp_user_id");
-				continue;
-			}
+			if ( empty($resident['wp_user_id']) ) continue;
 			
-			$placeholders = array(
+			$this->notifications->trigger( 'rule_published', $resident['wp_user_id'], array(
 				'resident_name' => $resident['name'],
-				'title' => $rule['title'],
-				'deadline' => $rule['acknowledgment_deadline'] ? date('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
-			);
-			
-			error_log("SGVX51_Rule_Manager: Attempting to notify {$resident['name']} (user_id: {$resident['wp_user_id']})");
-			
-			try {
-				$result = $this->notifications->trigger('rule_published', $resident['wp_user_id'], $placeholders);
-				error_log("SGVX51_Rule_Manager: Notification trigger returned: " . ($result ? 'true' : 'false'));
-				$notified_count++;
-			} catch ( Exception $e ) {
-				error_log('SGVX51_Rule_Manager: Failed to notify resident ' . $resident['name'] . ': ' . $e->getMessage());
-			}
+				'title'         => $rule['title'],
+				'deadline'      => $rule['acknowledgment_deadline'] ? date('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
+			), true );
 		}
-		
-		error_log("SGVX51_Rule_Manager: Successfully notified {$notified_count} residents about rule: " . $rule['title']);
 	}
 
 	private function send_violation_notifications($violation_id, $flat_no) {
@@ -903,8 +894,13 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	}
 
 	public function render_page() {
+        $rbac = new SGVX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'rules_view' ) ) {
+            wp_die( 'You do not have permission to view society rules.' );
+        }
+
 		$rules = $this->db->get('rules');
-		$categories = $this->db->get('rule_categories'); // Removed is_active filter - hard delete now
+		$categories = $this->db->get('rule_categories'); 
 		$violations = $this->db->get('rule_violations');
 		
 		// Get acknowledgment stats
