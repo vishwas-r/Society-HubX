@@ -175,34 +175,34 @@ $templates = $db->get('notification_templates');
         
         <!-- Navigation Tabs (Integrated) -->
         <div class="px-2 bg-white border-bottom border-light overflow-x-auto no-scrollbar">
-            <ul class="nav nav-tabs border-0 gap-5 text-nowrap flex-nowrap" id="settingsTabs" role="tablist">
+            <ul class="nav nav-tabs border-0 gap-5 text-nowrap flex-nowrap" id="sgvx-settings-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button" role="tab" style="background:none;">
+                    <button id="tab-btn-profile" class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" onclick="switchSettingsTab('profile')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-building me-2"></i>Society Profile
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-bank" type="button" role="tab" style="background:none;">
+                    <button id="tab-btn-bank" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('bank')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-bank me-2"></i>Bank & Payments
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-approval" type="button" role="tab" style="background:none;">
+                    <button id="tab-btn-approval" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('approval')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-check-all me-2"></i>Approval Workflow
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-communication" type="button" role="tab" style="background:none;">
+                    <button id="tab-btn-communication" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('communication')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-chat-left-dots me-2"></i>Communication
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button" role="tab" style="background:none;">
+                    <button id="tab-btn-maintenance" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('maintenance')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-tools me-2"></i>Data & Maintenance
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-secondary border-transparent" data-bs-toggle="tab" data-bs-target="#tab-privacy" type="button" role="tab" style="background:none;">
+                <li class="nav-item d-none" role="presentation">
+                    <button id="tab-btn-privacy" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('privacy')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-shield-lock me-2"></i>Privacy & DPDP
                     </button>
                 </li>
@@ -213,7 +213,7 @@ $templates = $db->get('notification_templates');
             <div class="tab-content" id="settingsTabContent">
                 
                 <!-- Tab: Profile -->
-                <div class="tab-pane fade show active" id="tab-profile">
+                <div class="settings-tab-pane" id="tab-content-profile">
                     <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Bank Details -->
@@ -281,7 +281,7 @@ $templates = $db->get('notification_templates');
                 </div>
 
                 <!-- Tab: Bank -->
-                <div class="tab-pane fade" id="tab-bank">
+                <div class="settings-tab-pane hidden" id="tab-content-bank">
                     <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
@@ -345,7 +345,7 @@ $templates = $db->get('notification_templates');
                 </div>
 
                 <!-- Tab: Communication (Migrated from Notifications) -->
-                <div class="tab-pane fade" id="tab-communication">
+                <div class="settings-tab-pane hidden" id="tab-content-communication">
                     <div class="accordion accordion-flush" id="communicationAccordion">
                         
                         <!-- 1. Delivery Channels -->
@@ -542,7 +542,7 @@ $templates = $db->get('notification_templates');
                 </div>
 
                 <!-- Tab: Approval Workflow -->
-                <div class="tab-pane fade" id="tab-approval">
+                <div class="settings-tab-pane hidden" id="tab-content-approval">
                     <form method="post" action="options.php">
                         <?php settings_fields( 'sgvx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
@@ -593,7 +593,7 @@ $templates = $db->get('notification_templates');
                 </div>
 
                 <!-- Tab: Data & Maintenance (Combined) -->
-                <div class="tab-pane fade" id="tab-maintenance">
+                <div class="settings-tab-pane hidden" id="tab-content-maintenance">
                     <div>
                         
                         <!-- 1. Data Portability -->
@@ -759,6 +759,55 @@ $templates = $db->get('notification_templates');
                     </div>
                 </div>
 
+                <!-- Tab: Privacy & DPDP -->
+                <div class="tab-pane settings-tab-pane hidden" id="tab-content-privacy">
+                    <form method="post" action="options.php">
+                        <?php settings_fields( 'sgvx51_options_group' ); ?>
+                        <!-- Preserve Society Profile Settings -->
+                        <input type="hidden" name="sgvx51_society_name" value="<?php echo esc_attr( get_option('sgvx51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="sgvx51_society_address_line1" value="<?php echo esc_attr( get_option('sgvx51_society_address_line1') ); ?>">
+                        <input type="hidden" name="sgvx51_society_address_line2" value="<?php echo esc_attr( get_option('sgvx51_society_address_line2') ); ?>">
+                        <input type="hidden" name="sgvx51_society_city" value="<?php echo esc_attr( get_option('sgvx51_society_city') ); ?>">
+                        <input type="hidden" name="sgvx51_society_pincode" value="<?php echo esc_attr( get_option('sgvx51_society_pincode') ); ?>">
+                        <input type="hidden" name="sgvx51_society_contact" value="<?php echo esc_attr( get_option('sgvx51_society_contact') ); ?>">
+                        <input type="hidden" name="sgvx51_maintenance_amount" value="<?php echo esc_attr( get_option('sgvx51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="sgvx51_opening_bank" value="<?php echo esc_attr( get_option('sgvx51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="sgvx51_opening_cash" value="<?php echo esc_attr( get_option('sgvx51_opening_cash', '0') ); ?>">
+                        <!-- Preserve Bank Details -->
+                        <input type="hidden" name="sgvx51_bank_name" value="<?php echo esc_attr( get_option('sgvx51_bank_name') ); ?>">
+                        <input type="hidden" name="sgvx51_bank_account" value="<?php echo esc_attr( get_option('sgvx51_bank_account') ); ?>">
+                        <input type="hidden" name="sgvx51_bank_ifsc" value="<?php echo esc_attr( get_option('sgvx51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="sgvx51_bank_upi" value="<?php echo esc_attr( get_option('sgvx51_bank_upi') ); ?>">
+                        <input type="hidden" name="sgvx51_bank_qr" value="<?php echo esc_attr( get_option('sgvx51_bank_qr') ); ?>">
+                        
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">DPDP Compliance & Data Privacy</h5>
+                            <p class="small text-secondary mb-4">Configure compliance settings in accordance with the Digital Personal Data Protection (DPDP) Act.</p>
+                            
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="p-4 bg-light rounded-4 border border-light d-flex align-items-center justify-content-between">
+                                        <div class="pe-3">
+                                            <label class="fw-bold text-dark small mb-1">Mask Resident Contact Information</label>
+                                            <p class="x-small text-muted m-0">Enable phone/email obfuscation for unauthorized admin/staff viewers to protect personal identifiable info (PII).</p>
+                                        </div>
+                                        <label class="sgvx-premium-toggle">
+                                            <input type="checkbox" name="sgvx51_privacy_masking" value="1" <?php checked(get_option('sgvx51_privacy_masking', 1), 1); ?>/>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-secondary">Personal Data Export Consent Notice</label>
+                                    <textarea name="sgvx51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_textarea( get_option('sgvx51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ); ?></textarea>
+                                    <div class="x-small text-muted mt-1">This text is displayed during personal data exports.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-top border-light">
+                            <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm rounded-3">Save Privacy Settings</button>
+                        </div>
+                    </form>
                 </div>
 
             </div>
@@ -766,6 +815,11 @@ $templates = $db->get('notification_templates');
     </div>
 </div>
 
+<style>
+    .hidden {
+        display: none !important;
+    }
+</style>
 
 <script>
 // Tab Persistence or initial setup if needed (Bootstrap Tab API is native)

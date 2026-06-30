@@ -10,11 +10,11 @@
         $('.settings-tab-pane').addClass('hidden');
         $('#tab-content-' + tab).removeClass('hidden');
 
-        $('#sgvx-settings-tabs button').removeClass('border-primary text-primary')
+        $('#sgvx-settings-tabs button').removeClass('active border-primary text-primary')
             .addClass('border-transparent text-muted');
 
         $('#tab-btn-' + tab).removeClass('border-transparent text-muted')
-            .addClass('border-primary text-primary');
+            .addClass('active border-primary text-primary');
 
         // Persistence: Update URL without reloading
         const url = new URL(window.location);

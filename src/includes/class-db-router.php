@@ -16,6 +16,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SGVX51_DB_Router {
 	/**
+	 * List of all database table slugs for hybrid storage and data portability.
+	 */
+	const TABLES = array(
+		'residents',
+		'flats',
+		'daily_help',
+		'invoices',
+		'transactions',
+		'notices',
+		'amenities',
+		'bookings',
+		'vehicles',
+		'visitors',
+		'complaints',
+		'suggestions',
+		'polls',
+		'poll_options',
+		'poll_votes',
+		'documents',
+		'events',
+		'vendors',
+		'staff',
+		'settings',
+		'requests',
+		'audit_logs',
+		'roles',
+		'staff_flats',
+		'resident_role_map',
+		'payments',
+	);
+
+	/**
 	 * WordPress Database Instance.
 	 *
 	 * @var wpdb
