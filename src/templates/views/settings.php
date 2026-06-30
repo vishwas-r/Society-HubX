@@ -856,3 +856,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+
+<?php
+// Hook modals into sgvx51_admin_modals
+add_action('sgvx51_admin_modals', function() {
+?>
+<!-- Channel Configuration Modal -->
+<div class="modal fade" id="sgvx-channel-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0"><span id="sgvx-modal-channel-name">Channel</span> Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sgvx-channel-form">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="channel_slug" id="sgvx-modal-channel-slug">
+                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('sgvx51_request_action'); ?>">
+                    <div id="sgvx-channel-settings-fields">
+                        <!-- Fields dynamically rendered by JS -->
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light px-4 py-3">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Save Configuration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Template Editing Modal -->
+<div class="modal fade" id="sgvx-template-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0">Edit Template: <span id="sgvx-template-event-name" class="text-primary text-capitalize">Event</span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="sgvx-template-form">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="id" id="sgvx-template-id">
+                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('sgvx51_request_action'); ?>">
+                    
+                    <div class="mb-3 subject-field">
+                        <label class="form-label small fw-bold text-slate-700">Subject</label>
+                        <input type="text" class="form-control rounded-3" name="subject" id="sgvx-template-subject" placeholder="Enter message subject">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">Content</label>
+                        <textarea class="form-control rounded-3" name="content" id="sgvx-template-content" rows="6" placeholder="Enter template body text" required></textarea>
+                        <div class="form-text small text-muted">
+                            Supported placeholders: <code>{resident_name}</code>, <code>{title}</code>, <code>{deadline}</code>, <code>{flat_no}</code>, <code>{amount}</code>, <code>{date}</code>, <code>{status}</code>, <code>{notes}</code> (depending on the event).
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light px-4 py-3">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">Save Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php
+});
+?>
+
