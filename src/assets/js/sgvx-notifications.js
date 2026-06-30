@@ -40,7 +40,7 @@ jQuery(document).ready(function ($) {
             html = `
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-700">Delivery Method</label>
-                    <select class="form-select rounded-3" name="config[method]">
+                    <select class="form-select rounded-3" id="sgvx-email-method" name="config[method]">
                         <option value="wp_mail" ${config.method === 'wp_mail' ? 'selected' : ''}>WordPress Default (wp_mail)</option>
                         <option value="gmail" ${config.method === 'gmail' ? 'selected' : ''}>Gmail API (OAuth2)</option>
                         <option value="smtp" ${config.method === 'smtp' ? 'selected' : ''}>Custom SMTP</option>
@@ -49,6 +49,58 @@ jQuery(document).ready(function ($) {
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-700">Sender Name</label>
                     <input type="text" class="form-control rounded-3" name="config[from_name]" value="${config.from_name || ''}" placeholder="Society GoVernX">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">Sender Email</label>
+                    <input type="email" class="form-control rounded-3" name="config[from_email]" value="${config.from_email || ''}" placeholder="noreply@society.com">
+                </div>
+
+                <!-- Gmail API Config Fields -->
+                <div id="sgvx-email-config-gmail" class="sgvx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
+                    <h6 class="fw-bold mb-3 small text-primary"><i class="bi bi-google me-2"></i>Gmail OAuth2 Settings</h6>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">Gmail Client ID</label>
+                        <input type="text" class="form-control rounded-3" name="config[gmail_client_id]" value="${config.gmail_client_id || ''}" placeholder="client-id.apps.googleusercontent.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">Gmail Client Secret</label>
+                        <input type="password" class="form-control rounded-3" name="config[gmail_client_secret]" value="${config.gmail_client_secret || ''}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">Authorized Redirect URI</label>
+                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=sgvx51_gmail_oauth_callback" readonly>
+                    </div>
+                </div>
+
+                <!-- Custom SMTP Config Fields -->
+                <div id="sgvx-email-config-smtp" class="sgvx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
+                    <h6 class="fw-bold mb-3 small text-primary"><i class="bi bi-envelope-check me-2"></i>Custom SMTP Settings</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold text-slate-700">SMTP Host</label>
+                            <input type="text" class="form-control rounded-3" name="config[smtp_host]" value="${config.smtp_host || ''}" placeholder="smtp.mailtrap.io">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-slate-700">SMTP Port</label>
+                            <input type="number" class="form-control rounded-3" name="config[smtp_port]" value="${config.smtp_port || 587}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">Encryption</label>
+                        <select class="form-select rounded-3" name="config[smtp_encryption]">
+                            <option value="tls" ${config.smtp_encryption === 'tls' ? 'selected' : ''}>TLS (Recommended)</option>
+                            <option value="ssl" ${config.smtp_encryption === 'ssl' ? 'selected' : ''}>SSL</option>
+                            <option value="none" ${config.smtp_encryption === 'none' ? 'selected' : ''}>None</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">SMTP Username</label>
+                        <input type="text" class="form-control rounded-3" name="config[smtp_user]" value="${config.smtp_user || ''}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-slate-700">SMTP Password</label>
+                        <input type="password" class="form-control rounded-3" name="config[smtp_pass]" value="${config.smtp_pass || ''}">
+                    </div>
                 </div>
             `;
         } else if (channel === 'whatsapp') {
@@ -77,11 +129,26 @@ jQuery(document).ready(function ($) {
         }
 
         $fieldsContainer.html(html);
+
+        // Bind dynamic visibility trigger for delivery methods
+        if (channel === 'email') {
+            const toggleEmailMethodFields = () => {
+                const method = $('#sgvx-email-method').val();
+                $('.sgvx-email-sub-config').hide();
+                if (method === 'gmail') {
+                    $('#sgvx-email-config-gmail').show();
+                } else if (method === 'smtp') {
+                    $('#sgvx-email-config-smtp').show();
+                }
+            };
+            $('#sgvx-email-method').on('change', toggleEmailMethodFields);
+            toggleEmailMethodFields(); // Run initially
+        }
     }
 
     $channelForm.on('submit', function (e) {
         e.preventDefault();
-        const formData = $(this).serializeArray();
+        const formData = Object.fromEntries(new FormData(this));
 
         SGVX.ajax({
             action: 'sgvx51_save_channel_config',
@@ -157,7 +224,7 @@ jQuery(document).ready(function ($) {
 
     $templateForm.on('submit', function (e) {
         e.preventDefault();
-        const formData = $(this).serializeArray();
+        const formData = Object.fromEntries(new FormData(this));
 
         SGVX.ajax({
             action: 'sgvx51_save_template',
