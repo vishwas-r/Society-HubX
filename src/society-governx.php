@@ -7,8 +7,8 @@
  * Author:      Vishwas R
  * Author URI:  https://www.vishwas.me
  * Text Domain: society-governx
- * License:     GPL-2.0+
- * Tags:        society management, apartment management, resident portal, maintenance tracking, facility booking
+ * License:     GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // Exit if accessed directly.
