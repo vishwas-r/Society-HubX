@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Society GoVernX
- * Plugin URI:  https://www.vishwas.me
+ * Plugin URI:  https://github.com/vishwas-r/Society-GovernX
  * Description: A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
  * Version:     1.0.3
  * Author:      Vishwas R
