@@ -33,6 +33,44 @@ graph TD
 
 ---
 
+## Plugin Features & Core Modules
+
+The **Society GoVernX** plugin delivers a full suite of administrative and community engagement tools:
+
+* **Flat Management:** Track flat details, block structure, occupancy types (Owner/Tenant), and allocation.
+* **Resident & Member Directory:** Register residents, manage member approvals, and search resident directory.
+* **Rules & Regulations:** Post society rules, track violations, issue fines, and collect digital resident acknowledgments.
+* **Staff & Vendor Management:** Keep records of society staff members, gatekeepers, and vendors with granular role-based capabilities.
+* **Notice Board:** Dispatch real-time notices to residents via in-app feeds, emails, or WhatsApp alerts.
+* **Democracy & Polls:** Create community polls, collect votes, and automatically compute results for transparent decision-making.
+* **Facility & Amenity Booking:** Add facilities (e.g., clubhouse, gym, pool) and allow residents to book slots online.
+* **Vehicle & Parking Management:** Track registered resident vehicles and assign parking bays.
+* **Helpdesk & Requests:** Dedicated resident ticketing/request portal (My Requests) with customized approval workflows.
+* **Finance, Billing & Ledger:** Generate maintenance bills, record payments, and track society financial ledgers with customizable billing cycles.
+
+---
+
+## Required Configurations & Settings
+
+After setup, navigate to **GovernX > Settings** in the WordPress Admin Dashboard to configure your society:
+
+1. **Society Profile:** Manage basic details (Society Name, Registration Number, Address, and Contact Info) and upload the society logo.
+2. **Bank Settings:** Enter banking details (Account Name, Account Number, Bank Name, IFSC, UPI ID) used to generate dynamic payment links and receipts.
+3. **Approval Workflow:** Configure registration/ticketing approval steps (e.g., decide whether new residents, tickets, or vehicles require manual admin approval or are auto-approved).
+4. **Communication Settings:** Toggle active channels (In-App notifications, Email, or WhatsApp) and notification triggers for billing dues, rule violations, new notices, and reminders.
+5. **Data & Maintenance:** Import or Export database tables (e.g., Residents list, Notice templates, Rules log) using CSV format for easy migration.
+
+---
+
+## Frontend Shortcodes
+
+Render portal components on any frontend WordPress page using the following shortcodes:
+* `[Society_GoVernX_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
+* `[Society_GoVernX_notices]` - Renders a standalone public notice board.
+* `[Society_GoVernX_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
+
+---
+
 ## Build & Packaging Automation (Cross-Platform)
 
 To pack the webapp bundle, we provide automation scripts for both Windows and Linux/macOS developers. These scripts fetch WordPress core, overlay the plugin source files and setup wizard, package it, and clean up temporary files.
