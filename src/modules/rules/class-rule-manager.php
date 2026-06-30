@@ -46,7 +46,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		add_action( 'wp_ajax_sgvx51_publish_rule', array( $this, 'handle_publish_rule' ) );
 		add_action( 'wp_ajax_sgvx51_get_version_history', array( $this, 'handle_get_version_history' ) );
 		add_action( 'wp_ajax_sgvx51_restore_version', array( $this, 'handle_restore_version' ) );
-		add_action( 'wp_ajax_sgvx51_add_violation', array( $this, 'handle_add_violation' ) );
+		add_action( 'wp_ajax_sgvx51_add_violation', array( $this, 'handle_submit_violation' ) );
 		add_action( 'wp_ajax_sgvx51_resolve_violation', array( $this, 'handle_resolve_violation' ) );
 		add_action( 'wp_ajax_sgvx51_send_acknowledgment_reminders', array( $this, 'handle_send_reminders' ) );
 		add_action( 'wp_ajax_sgvx51_manage_category', array( $this, 'handle_manage_category' ) );
@@ -120,9 +120,11 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	 * Add / Edit Rule
 	 */
 	public function handle_add_rule() {
+		ob_start(); // Capture any stray output so it doesn't corrupt the JSON response
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
+			ob_end_clean();
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -145,13 +147,15 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		// Validation
 		if ( empty($title) || empty($content) ) {
+			ob_end_clean();
 			wp_send_json_error( array( 'message' => 'Title and content are required' ), 400 );
 		}
 		
 		// Check slug uniqueness
 		$existing_rule = $this->get_rule_by_slug($slug);
 		if ( $existing_rule && $existing_rule['id'] !== $rule_id ) {
-			wp_send_json_error( array( 'message' => 'A rule with this slug already exists' ), 400 );
+			ob_end_clean();
+			wp_send_json_error( array( 'message' => 'A rule with this slug already exists. Please use a different title.' ), 400 );
 		}
 		
 		$data = array(
@@ -173,7 +177,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		if ( $is_edit ) {
 			// Get existing rule for version tracking
-			$existing = $this->db->get('rules', ['id' => $rule_id]);
+			$existing = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
 			if ( !empty($existing) ) {
 				$old_rule = $existing[0];
 				
@@ -204,11 +208,14 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			
 			$result = $this->db->insert('rules', $data);
 			
-			// Save initial version
-			$this->save_version($rule_id, $data, 'Initial version');
+			// Save initial version only if insert succeeded
+			if ( $result && ! is_wp_error( $result ) ) {
+				$this->save_version($rule_id, $data, 'Initial version');
+			}
 		}
 		
 		if ( is_wp_error( $result ) ) {
+			ob_end_clean();
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 		
@@ -216,7 +223,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		if ( $status === 'published' ) {
 			error_log("SGVX51_Rule_Manager: Rule saved with published status, sending notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			try {
-				$rules = $this->db->get('rules', ['id' => $rule_id]);
+				$rules = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
 				if ( !empty($rules) ) {
 					$this->send_rule_published_notifications($rules[0]);
 				}
@@ -225,6 +232,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			}
 		}
 		
+		ob_end_clean();
 		wp_send_json_success( array( 
 			'message' => $is_edit ? 'Rule updated successfully' : 'Rule created successfully',
 			'rule_id' => $rule_id
@@ -287,7 +295,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		// Send notifications to residents
 		try {
 			// Get rule details for notification
-			$rules = $this->db->get('rules', ['id' => $rule_id]);
+			$rules = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
 			error_log("SGVX51_Rule_Manager: Fetched rule for notifications: " . (!empty($rules) ? 'found' : 'not found')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			
 			if ( !empty($rules) ) {
@@ -311,18 +319,29 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	private function save_version($rule_id, $rule_data, $change_summary = '') {
 		global $wpdb;
 		$table = "{$wpdb->prefix}society_governx_rule_versions";
+
+		// Silently skip if table does not exist yet (avoids corrupting AJAX JSON response)
+		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		if ( ! $table_exists ) {
+			error_log( 'SGVX51_Rule_Manager: rule_versions table missing, skipping save_version.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			return false;
+		}
 		
 		$version_data = array(
-			'rule_id' => $rule_id,
-			'version' => isset($rule_data['version']) ? intval($rule_data['version']) : 1,
-			'title' => $rule_data['title'],
-			'content' => $rule_data['content'],
+			'rule_id'        => $rule_id,
+			'version'        => isset($rule_data['version']) ? intval($rule_data['version']) : 1,
+			'title'          => $rule_data['title'],
+			'content'        => $rule_data['content'],
 			'change_summary' => $change_summary,
-			'changed_by' => get_current_user_id(),
-			'changed_at' => current_time('mysql')
+			'changed_by'     => get_current_user_id(),
+			'changed_at'     => current_time('mysql')
 		);
 		
-		return $wpdb->insert($table, $version_data);
+		$wpdb->suppress_errors( true );
+		$result = $wpdb->insert( $table, $version_data );
+		$wpdb->suppress_errors( false );
+		
+		return $result;
 	}
 
 	public function handle_get_version_history() {
@@ -371,7 +390,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		}
 		
 		// Get current rule for new version save
-		$current = $this->db->get('rules', ['id' => $rule_id]);
+		$current = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
 		if ( !empty($current) ) {
 			$this->save_version($rule_id, $current[0], 'Saved before restore');
 		}
@@ -415,7 +434,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		// Get resident details
 		$user_id = get_current_user_id();
 		$flat_no = get_user_meta($user_id, 'sgvx51_flat_no', true);
-		$residents = $this->db->get('residents', ['wp_user_id' => $user_id]);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
 		error_log("SGVX51_Rule_Manager: User ID: {$user_id}, Flat: {$flat_no}, Resident ID: {$resident_id}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
@@ -492,7 +511,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		}
 		
 		$user_id = get_current_user_id();
-		$residents = $this->db->get('residents', ['wp_user_id' => $user_id]);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
 		$pending_rules = $this->get_pending_acknowledgments($resident_id);
@@ -565,7 +584,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		}
 		
 		// Get resident ID
-		$residents = $this->db->get('residents', ['flat_no' => $flat_no]);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'flat_no' => $flat_no ) ) );
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
 		$violation_id = uniqid('violation_');
@@ -624,7 +643,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		}
 		
 		// Send notification
-		$violations = $this->db->get('rule_violations', ['id' => $violation_id]);
+		$violations = $this->db->get( 'rule_violations', array( 'where' => array( 'id' => $violation_id ) ) );
 		if ( !empty($violations) ) {
 			$this->send_violation_resolved_notifications($violations[0]);
 		}
@@ -710,7 +729,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 	if ( $action === 'delete' && !empty($category_id) ) {
 		// Get category details to find its slug
-		$category = $this->db->get('rule_categories', ['id' => $category_id]);
+		$category = $this->db->get( 'rule_categories', array( 'where' => array( 'id' => $category_id ) ) );
 		
 		if ( empty($category) ) {
 			wp_send_json_error( array( 'message' => 'Category not found' ), 404 );
@@ -796,7 +815,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 
 		// Fallback (Synchronous)
 		if ( !$this->notifications ) return;
-		$residents = $this->db->get('residents', ['status' => 'approved']);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'status' => 'approved' ) ) );
 		if ( empty($residents) ) return;
 
 		foreach ( $residents as $resident ) {
@@ -811,16 +830,16 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	}
 
 	private function send_violation_notifications($violation_id, $flat_no) {
-		$violations = $this->db->get('rule_violations', ['id' => $violation_id]);
+		$violations = $this->db->get( 'rule_violations', array( 'where' => array( 'id' => $violation_id ) ) );
 		if ( empty($violations) ) return;
 		
 		$violation = $violations[0];
-		$residents = $this->db->get('residents', ['flat_no' => $flat_no, 'status' => 'approved']);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'flat_no' => $flat_no, 'status' => 'approved' ) ) );
 		
 		foreach ( $residents as $resident ) {
 			if ( empty($resident['wp_user_id']) ) continue;
 			
-			$rules = $this->db->get('rules', ['id' => $violation['rule_id']]);
+			$rules = $this->db->get( 'rules', array( 'where' => array( 'id' => $violation['rule_id'] ) ) );
 			$rule_title = !empty($rules) ? $rules[0]['title'] : 'Unknown Rule';
 			
 			$placeholders = array(
@@ -836,7 +855,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	}
 
 	private function send_violation_resolved_notifications($violation) {
-		$residents = $this->db->get('residents', ['flat_no' => $violation['flat_no'], 'status' => 'approved']);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'flat_no' => $violation['flat_no'], 'status' => 'approved' ) ) );
 		
 		foreach ( $residents as $resident ) {
 			if ( empty($resident['wp_user_id']) ) continue;
@@ -854,7 +873,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 
 	public function send_daily_reminders() {
 		// Get residents with pending acknowledgments
-		$residents = $this->db->get('residents', ['status' => 'approved']);
+		$residents = $this->db->get( 'residents', array( 'where' => array( 'status' => 'approved' ) ) );
 		
 		foreach ( $residents as $resident ) {
 			$pending = $this->get_pending_acknowledgments($resident['id']);

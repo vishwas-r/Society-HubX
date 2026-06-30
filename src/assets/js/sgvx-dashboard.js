@@ -1557,7 +1557,10 @@
         if (!modalEl) return;
 
         try {
-            const payload = JSON.parse(req.payload);
+            // payload may already be a decoded object (DB router auto-decodes JSON fields)
+            const payload = (typeof req.payload === 'object' && req.payload !== null)
+                ? req.payload
+                : JSON.parse(req.payload);
             const status = req.status || 'pending';
             
             // Populate Modal

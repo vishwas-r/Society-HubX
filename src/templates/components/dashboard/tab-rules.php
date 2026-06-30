@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $db = new SGVX51_DB_Router();
 $user_id = get_current_user_id();
-$residents = $db->get('residents', ['wp_user_id' => $user_id]);
+$residents = $db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 $resident_id = !empty($residents) ? $residents[0]['id'] : '';
 $flat_no = !empty($residents) ? $residents[0]['flat_no'] : '';
 
 // Get published rules
-$all_rules = $db->get('rules', ['status' => 'published']);
-$categories = $db->get('rule_categories', ['is_active' => 1]);
+$all_rules = $db->get( 'rules', array( 'where' => array( 'status' => 'published' ) ) );
+$categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' => 1 ) ) );
 
 // Get pending acknowledgments
 global $wpdb;
@@ -42,7 +42,7 @@ $pending_rules = $wpdb->get_results($wpdb->prepare("
 ", $resident_id), ARRAY_A);
 
 // Get my violations
-$violations = $db->get('rule_violations', ['flat_no' => $flat_no]);
+$violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' => $flat_no ) ) );
 ?>
 
 <div id="tab-rules" class="tab-content d-none">
@@ -459,11 +459,11 @@ function handleAcknowledge(e) {
                 sgvxShowToast('Rule acknowledged successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                alert(response.data.message || 'Error acknowledging rule');
+                sgvxShowToast(response.data?.message || 'Error acknowledging rule', 'error');
             }
         },
         error: function() {
-            alert('Error communicating with server');
+            sgvxShowToast('Error communicating with server', 'error');
         }
     });
 }
