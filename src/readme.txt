@@ -25,6 +25,10 @@ Society GoVernX is a feature-rich, premium WordPress plugin designed to streamli
 * **Helpdesk & Requests:** Dedicated resident ticketing/request portal (My Requests) with customized approval workflows.
 * **Finance, Billing & Ledger:** Generate maintenance bills, record payments, and track society financial ledgers with customizable billing cycles.
 
+### GitHub & Support:
+* **GitHub Repository:** [github.com/vishwas-r/Society-GovernX](https://github.com/vishwas-r/Society-GovernX)
+* **Issue Tracker:** [github.com/vishwas-r/Society-GovernX/issues](https://github.com/vishwas-r/Society-GovernX/issues)
+
 == Installation ==
 
 1. Upload the entire `society-governx` folder to the `/wp-content/plugins/` directory, or install it directly via the WordPress Admin panel under Plugins > Add New.

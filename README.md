@@ -6,6 +6,12 @@ This repository packages the **Society GoVernX WordPress Plugin** alongside a de
 
 ---
 
+## Links & Support
+* **GitHub Repository**: [https://github.com/vishwas-r/Society-GovernX](https://github.com/vishwas-r/Society-GovernX)
+* **Bug Tracker & Issues**: [https://github.com/vishwas-r/Society-GovernX/issues](https://github.com/vishwas-r/Society-GovernX/issues)
+
+---
+
 ## Architecture Overview
 
 ```mermaid
