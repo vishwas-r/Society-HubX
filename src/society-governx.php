@@ -1,14 +1,16 @@
 <?php
-/**
- * Plugin Name: Society GoVernX
- * Plugin URI:  https://github.com/vishwas-r/Society-GovernX
- * Description: A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
- * Version:     1.0.3
- * Author:      Vishwas R
- * Author URI:  https://www.vishwas.me
- * Text Domain: society-governx
- * License:     GPLv2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+/*
+ * Plugin Name:       Society GoVernX
+ * Plugin URI:        https://github.com/vishwas-r/Society-GovernX
+ * Description:       A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
+ * Version:           1.0.4
+ * Requires at least: 6.0
+ * Requires PHP:      7.4
+ * Author:            Vishwas R
+ * Author URI:        https://www.vishwas.me
+ * Text Domain:       society-governx
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // Exit if accessed directly.
