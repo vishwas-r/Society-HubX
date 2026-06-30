@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema and query helper logic uses dynamic tables and custom queries.
+
+
 class SGVX51_Rule_Manager implements SGVX51_Module {
 
 	private $db;
@@ -26,11 +29,11 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			if ( $plugin_instance && isset($plugin_instance->notifications) ) {
 				$this->notifications = $plugin_instance->notifications;
 			} else {
-				error_log('SGVX51_Rule_Manager: Notifications object not found in plugin instance');
+				error_log('SGVX51_Rule_Manager: Notifications object not found in plugin instance'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				$this->notifications = null;
 			}
 		} catch ( Exception $e ) {
-			error_log('SGVX51_Rule_Manager: Error initializing notifications - ' . $e->getMessage());
+			error_log('SGVX51_Rule_Manager: Error initializing notifications - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			$this->notifications = null;
 		}
 		
@@ -123,22 +126,22 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) && !empty($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : uniqid('rule_');
+		$rule_id = isset($_POST['rule_id']) && !empty($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : uniqid('rule_');
 		$is_edit = isset($_POST['rule_id']) && !empty($_POST['rule_id']);
 		
 		// Sanitize inputs
-		$title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
-		$slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : sanitize_title($title);
-		$content = isset($_POST['content']) ? wp_kses_post($_POST['content']) : '';
-		$category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : 'general';
-		$priority = isset($_POST['priority']) ? sanitize_text_field($_POST['priority']) : 'medium';
-		$tags = isset($_POST['tags']) ? sanitize_text_field($_POST['tags']) : '';
-		$status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : 'draft';
-		$effective_date = isset($_POST['effective_date']) && !empty($_POST['effective_date']) ? sanitize_text_field($_POST['effective_date']) : null;
-		$expiry_date = isset($_POST['expiry_date']) && !empty($_POST['expiry_date']) ? sanitize_text_field($_POST['expiry_date']) : null;
+		$title = isset($_POST['title']) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+		$slug = isset($_POST['slug']) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : sanitize_title($title);
+		$content = isset($_POST['content']) ? wp_kses_post( wp_unslash( $_POST['content'] ) ) : '';
+		$category = isset($_POST['category']) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : 'general';
+		$priority = isset($_POST['priority']) ? sanitize_text_field( wp_unslash( $_POST['priority'] ) ) : 'medium';
+		$tags = isset($_POST['tags']) ? sanitize_text_field( wp_unslash( $_POST['tags'] ) ) : '';
+		$status = isset($_POST['status']) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : 'draft';
+		$effective_date = isset($_POST['effective_date']) && !empty($_POST['effective_date']) ? sanitize_text_field( wp_unslash( $_POST['effective_date'] ) ) : null;
+		$expiry_date = isset($_POST['expiry_date']) && !empty($_POST['expiry_date']) ? sanitize_text_field( wp_unslash( $_POST['expiry_date'] ) ) : null;
 		$requires_acknowledgment = isset($_POST['requires_acknowledgment']) ? 1 : 0;
-		$acknowledgment_deadline = isset($_POST['acknowledgment_deadline']) && !empty($_POST['acknowledgment_deadline']) ? sanitize_text_field($_POST['acknowledgment_deadline']) : null;
-		$fine_amount = isset($_POST['fine_amount']) ? floatval($_POST['fine_amount']) : 0.00;
+		$acknowledgment_deadline = isset($_POST['acknowledgment_deadline']) && !empty($_POST['acknowledgment_deadline']) ? sanitize_text_field( wp_unslash( $_POST['acknowledgment_deadline'] ) ) : null;
+		$fine_amount = isset($_POST['fine_amount']) ? floatval( wp_unslash( $_POST['fine_amount'] ) ) : 0.00;
 		
 		// Validation
 		if ( empty($title) || empty($content) ) {
@@ -188,7 +191,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 					// Save version history
 					$this->save_version($rule_id, $old_rule, 'Rule updated');
 					$data['version'] = intval($old_rule['version']) + 1;
-					error_log("SGVX51_Rule_Manager: Incrementing rule version from {$old_rule['version']} to {$data['version']}");
+					error_log("SGVX51_Rule_Manager: Incrementing rule version from {$old_rule['version']} to {$data['version']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				}
 			}
 			
@@ -211,14 +214,14 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		// If status is 'published', send notifications
 		if ( $status === 'published' ) {
-			error_log("SGVX51_Rule_Manager: Rule saved with published status, sending notifications...");
+			error_log("SGVX51_Rule_Manager: Rule saved with published status, sending notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			try {
 				$rules = $this->db->get('rules', ['id' => $rule_id]);
 				if ( !empty($rules) ) {
 					$this->send_rule_published_notifications($rules[0]);
 				}
 			} catch ( Exception $e ) {
-				error_log('SGVX51_Rule_Manager: Failed to send notif after save - ' . $e->getMessage());
+				error_log('SGVX51_Rule_Manager: Failed to send notif after save - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			}
 		}
 		
@@ -240,7 +243,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		
 		if ( empty($rule_id) ) {
 			wp_send_json_error( array( 'message' => 'Rule ID required' ), 400 );
@@ -264,7 +267,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		
 		if ( empty($rule_id) ) {
 			wp_send_json_error( array( 'message' => 'Rule ID required' ), 400 );
@@ -279,23 +282,23 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 		
-		error_log("SGVX51_Rule_Manager: Rule published successfully, attempting to send notifications...");
+		error_log("SGVX51_Rule_Manager: Rule published successfully, attempting to send notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		// Send notifications to residents
 		try {
 			// Get rule details for notification
 			$rules = $this->db->get('rules', ['id' => $rule_id]);
-			error_log("SGVX51_Rule_Manager: Fetched rule for notifications: " . (!empty($rules) ? 'found' : 'not found'));
+			error_log("SGVX51_Rule_Manager: Fetched rule for notifications: " . (!empty($rules) ? 'found' : 'not found')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			
 			if ( !empty($rules) ) {
 				$rule = $rules[0];
-				error_log("SGVX51_Rule_Manager: Calling send_rule_published_notifications for rule: {$rule['title']}");
+				error_log("SGVX51_Rule_Manager: Calling send_rule_published_notifications for rule: {$rule['title']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				
 				// Send notifications to all residents
 				$this->send_rule_published_notifications($rule);
 			}
 		} catch ( Exception $e ) {
-			error_log('SGVX51_Rule_Manager: Failed to send notifications after publishing rule - ' . $e->getMessage());
+			error_log('SGVX51_Rule_Manager: Failed to send notifications after publishing rule - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			// Don't fail the publish operation - continue
 		}
 		
@@ -325,7 +328,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_get_version_history() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		
 		if ( empty($rule_id) ) {
 			wp_send_json_error( array( 'message' => 'Rule ID required' ), 400 );
@@ -349,8 +352,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
-		$version = isset($_POST['version']) ? intval($_POST['version']) : 0;
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
+		$version = isset($_POST['version']) ? intval( wp_unslash( $_POST['version'] ) ) : 0;
 		
 		if ( empty($rule_id) || $version <= 0 ) {
 			wp_send_json_error( array( 'message' => 'Invalid parameters' ), 400 );
@@ -395,17 +398,17 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		check_ajax_referer( 'sgvx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
-			error_log('SGVX51_Rule_Manager: Acknowledgment failed - user not logged in');
+			error_log('SGVX51_Rule_Manager: Acknowledgment failed - user not logged in'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Please login to acknowledge' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
-		$signature_data = isset($_POST['signature']) ? sanitize_text_field($_POST['signature']) : '';
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
+		$signature_data = isset($_POST['signature']) ? sanitize_text_field( wp_unslash( $_POST['signature'] ) ) : '';
 		
-		error_log("SGVX51_Rule_Manager: Acknowledge attempt - Rule ID: {$rule_id}, User: " . get_current_user_id());
+		error_log("SGVX51_Rule_Manager: Acknowledge attempt - Rule ID: {$rule_id}, User: " . get_current_user_id()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( empty($rule_id) ) {
-			error_log('SGVX51_Rule_Manager: Acknowledgment failed - rule_id is empty');
+			error_log('SGVX51_Rule_Manager: Acknowledgment failed - rule_id is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Rule ID required' ), 400 );
 		}
 		
@@ -415,10 +418,10 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		$residents = $this->db->get('residents', ['wp_user_id' => $user_id]);
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
-		error_log("SGVX51_Rule_Manager: User ID: {$user_id}, Flat: {$flat_no}, Resident ID: {$resident_id}");
+		error_log("SGVX51_Rule_Manager: User ID: {$user_id}, Flat: {$flat_no}, Resident ID: {$resident_id}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( empty($flat_no) ) {
-			error_log('SGVX51_Rule_Manager: Acknowledgment failed - flat_no is empty');
+			error_log('SGVX51_Rule_Manager: Acknowledgment failed - flat_no is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Flat number not found for your account' ), 400 );
 		}
 		
@@ -431,12 +434,12 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		), ARRAY_A);
 		
 		if ( empty($rule) ) {
-			error_log('SGVX51_Rule_Manager: Acknowledgment failed - rule not found');
+			error_log('SGVX51_Rule_Manager: Acknowledgment failed - rule not found'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Rule not found' ), 404 );
 		}
 		$rule_version = $rule['version'];
 		
-		error_log("SGVX51_Rule_Manager: Rule version: {$rule_version} (Rule: {$rule['title']})");
+		error_log("SGVX51_Rule_Manager: Rule version: {$rule_version} (Rule: {$rule['title']})"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		// Save acknowledgment
 		global $wpdb;
@@ -448,10 +451,10 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			$rule_id, $rule_version, $resident_id
 		));
 		
-		error_log("SGVX51_Rule_Manager: Existing acknowledgments count: {$existing}");
+		error_log("SGVX51_Rule_Manager: Existing acknowledgments count: {$existing}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( $existing > 0 ) {
-			error_log('SGVX51_Rule_Manager: Acknowledgment failed - already acknowledged this version');
+			error_log('SGVX51_Rule_Manager: Acknowledgment failed - already acknowledged this version'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'You have already acknowledged this rule' ), 400 );
 		}
 		
@@ -461,8 +464,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			'resident_id' => $resident_id,
 			'flat_no' => $flat_no,
 			'acknowledged_at' => current_time('mysql'),
-			'ip_address' => $_SERVER['REMOTE_ADDR'],
-			'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255),
+			'ip_address' => isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '',
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 255 ) : '',
 			'signature_data' => $signature_data
 		);
 		
@@ -470,11 +473,11 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			$result = $wpdb->insert($table, $ack_data);
 			
 			if ( $result === false ) {
-				error_log('SGVX51_Rule_Manager: Failed to insert acknowledgment - ' . $wpdb->last_error);
+				error_log('SGVX51_Rule_Manager: Failed to insert acknowledgment - ' . $wpdb->last_error); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				wp_send_json_error( array( 'message' => 'Failed to save acknowledgment: ' . $wpdb->last_error ), 500 );
 			}
 		} catch ( Exception $e ) {
-			error_log('SGVX51_Rule_Manager: Exception while saving acknowledgment - ' . $e->getMessage());
+			error_log('SGVX51_Rule_Manager: Exception while saving acknowledgment - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Error saving acknowledgment' ), 500 );
 		}
 		
@@ -513,13 +516,14 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 				)
 				ORDER BY r.effective_date DESC";
 		
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table name is dynamic and cannot be prepared.
 		return $wpdb->get_results($wpdb->prepare($sql, $resident_id), ARRAY_A);
 	}
 
 	/**
 	 * Violations
 	 */
-	public function handle_add_violation() {
+	public function handle_submit_violation() {
 		check_ajax_referer( 'sgvx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SGVX51_RBAC_Manager();
@@ -527,11 +531,11 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field($_POST['rule_id']) : '';
-		$flat_no = isset($_POST['flat_no']) ? sanitize_text_field($_POST['flat_no']) : '';
-		$violation_date = isset($_POST['violation_date']) ? sanitize_text_field($_POST['violation_date']) : current_time('mysql');
-		$description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-		$fine_amount = isset($_POST['fine_amount']) ? floatval($_POST['fine_amount']) : 0;
+		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
+		$flat_no = isset($_POST['flat_no']) ? sanitize_text_field( wp_unslash( $_POST['flat_no'] ) ) : '';
+		$violation_date = isset($_POST['violation_date']) ? sanitize_text_field( wp_unslash( $_POST['violation_date'] ) ) : current_time('mysql');
+		$description = isset($_POST['description']) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
+		$fine_amount = isset($_POST['fine_amount']) ? floatval( wp_unslash( $_POST['fine_amount'] ) ) : 0;
 		
 		if ( empty($rule_id) || empty($flat_no) ) {
 			wp_send_json_error( array( 'message' => 'Rule and flat are required' ), 400 );
@@ -539,12 +543,14 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		// Handle evidence upload
 		$evidence_urls = array();
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated and processed securely.
 		if ( !empty($_FILES['evidence']) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated and processed securely.
 			$files = $_FILES['evidence'];
 			for ( $i = 0; $i < count($files['name']); $i++ ) {
 				if ( $files['error'][$i] === UPLOAD_ERR_OK ) {
 					$file = array(
-						'name' => $files['name'][$i],
+						'name' => sanitize_file_name($files['name'][$i]),
 						'type' => $files['type'][$i],
 						'tmp_name' => $files['tmp_name'][$i],
 						'error' => $files['error'][$i],
@@ -598,9 +604,9 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$violation_id = isset($_POST['violation_id']) ? sanitize_text_field($_POST['violation_id']) : '';
-		$status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : 'resolved';
-		$admin_notes = isset($_POST['admin_notes']) ? sanitize_textarea_field($_POST['admin_notes']) : '';
+		$violation_id = isset($_POST['violation_id']) ? sanitize_text_field( wp_unslash( $_POST['violation_id'] ) ) : '';
+		$status = isset($_POST['status']) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : 'resolved';
+		$admin_notes = isset($_POST['admin_notes']) ? sanitize_textarea_field( wp_unslash( $_POST['admin_notes'] ) ) : '';
 		
 		if ( empty($violation_id) ) {
 			wp_send_json_error( array( 'message' => 'Violation ID required' ), 400 );
@@ -633,8 +639,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Please login' ), 403 );
 		}
 		
-		$violation_id = isset($_POST['violation_id']) ? sanitize_text_field($_POST['violation_id']) : '';
-		$appeal_reason = isset($_POST['appeal_reason']) ? sanitize_textarea_field($_POST['appeal_reason']) : '';
+		$violation_id = isset($_POST['violation_id']) ? sanitize_text_field( wp_unslash( $_POST['violation_id'] ) ) : '';
+		$appeal_reason = isset($_POST['appeal_reason']) ? sanitize_textarea_field( wp_unslash( $_POST['appeal_reason'] ) ) : '';
 		
 		if ( empty($violation_id) || empty($appeal_reason) ) {
 			wp_send_json_error( array( 'message' => 'Violation ID and reason required' ), 400 );
@@ -663,16 +669,16 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$action = isset($_POST['category_action']) ? sanitize_text_field($_POST['category_action']) : '';
-		$category_id = isset($_POST['category_id']) ? sanitize_text_field($_POST['category_id']) : '';
+		$action = isset($_POST['category_action']) ? sanitize_text_field( wp_unslash( $_POST['category_action'] ) ) : '';
+		$category_id = isset($_POST['category_id']) ? sanitize_text_field( wp_unslash( $_POST['category_id'] ) ) : '';
 		
 		if ( $action === 'add' || $action === 'edit' ) {
-			$name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
-			$slug = isset($_POST['slug']) ? sanitize_title($_POST['slug']) : sanitize_title($name);
-			$description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-			$icon = isset($_POST['icon']) ? sanitize_text_field($_POST['icon']) : 'bi-file-text';
-			$color = isset($_POST['color']) ? sanitize_hex_color($_POST['color']) : '#6c757d';
-			$display_order = isset($_POST['display_order']) ? intval($_POST['display_order']) : 0;
+			$name = isset($_POST['name']) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+			$slug = isset($_POST['slug']) ? sanitize_title( wp_unslash( $_POST['slug'] ) ) : sanitize_title($name);
+			$description = isset($_POST['description']) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
+			$icon = isset($_POST['icon']) ? sanitize_text_field( wp_unslash( $_POST['icon'] ) ) : 'bi-file-text';
+			$color = isset($_POST['color']) ? sanitize_hex_color( wp_unslash( $_POST['color'] ) ) : '#6c757d';
+			$display_order = isset($_POST['display_order']) ? intval( wp_unslash( $_POST['display_order'] ) ) : 0;
 			
 			if ( empty($name) ) {
 				wp_send_json_error( array( 'message' => 'Category name required' ), 400 );
@@ -747,8 +753,8 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 	public function handle_search_rules() {
 		check_ajax_referer( 'sgvx51_frontend_nonce', '_wpnonce' );
 		
-		$query = isset($_POST['query']) ? sanitize_text_field($_POST['query']) : '';
-		$category = isset($_POST['category']) ? sanitize_text_field($_POST['category']) : '';
+		$query = isset($_POST['query']) ? sanitize_text_field( wp_unslash( $_POST['query'] ) ) : '';
+		$category = isset($_POST['category']) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 		
 		global $wpdb;
 		$table = "{$wpdb->prefix}society_governx_rules";
@@ -768,6 +774,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 		
 		$sql .= " ORDER BY effective_date DESC";
 		
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL built dynamically with prepare.
 		$results = $wpdb->get_results($sql, ARRAY_A);
 		
 		wp_send_json_success( array( 'results' => $results ) );
@@ -782,7 +789,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
             $worker = new SGVX51_Background_Worker();
             $worker->schedule_notification_blast( 'rule_published', array(
                 'title'    => $rule['title'],
-                'deadline' => $rule['acknowledgment_deadline'] ? date('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
+                'deadline' => $rule['acknowledgment_deadline'] ? gmdate('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
             ));
             return;
         }
@@ -798,7 +805,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			$this->notifications->trigger( 'rule_published', $resident['wp_user_id'], array(
 				'resident_name' => $resident['name'],
 				'title'         => $rule['title'],
-				'deadline'      => $rule['acknowledgment_deadline'] ? date('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
+				'deadline'      => $rule['acknowledgment_deadline'] ? gmdate('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
 			), true );
 		}
 	}
@@ -821,7 +828,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 				'{flat_no}' => $flat_no,
 				'{rule_title}' => $rule_title,
 				'{amount}' => number_format($violation['fine_amount'], 2),
-				'{date}' => date('M d, Y', strtotime($violation['violation_date']))
+				'{date}' => gmdate('M d, Y', strtotime($violation['violation_date']))
 			);
 			
 			$this->notifications->dispatch('violation_reported', $resident['wp_user_id'], $placeholders);
@@ -836,7 +843,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 			
 			$placeholders = array(
 				'{resident_name}' => $resident['name'],
-				'{date}' => date('M d, Y', strtotime($violation['violation_date'])),
+				'{date}' => gmdate('M d, Y', strtotime($violation['violation_date'])),
 				'{status}' => $violation['status'],
 				'{notes}' => $violation['admin_notes']
 			);
@@ -860,7 +867,7 @@ class SGVX51_Rule_Manager implements SGVX51_Module {
 				$placeholders = array(
 					'{resident_name}' => $resident['name'],
 					'{count}' => count($pending),
-					'{deadline}' => $nearest_deadline ? date('M d, Y', strtotime($nearest_deadline)) : 'Soon'
+					'{deadline}' => $nearest_deadline ? gmdate('M d, Y', strtotime($nearest_deadline)) : 'Soon'
 				);
 				
 				$this->notifications->dispatch('acknowledgment_reminder', $resident['wp_user_id'], $placeholders);

@@ -2,7 +2,13 @@
 /**
  * View: Facilities (Bootstrap Migration)
  * Integrates with SGVX51_DB_Router.
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 $db = new SGVX51_DB_Router();
 $facilities = $db->get( 'facilities' );
@@ -245,8 +251,8 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                             <div class="text-secondary small" style="font-size: 11px;">Identity Verified</div>
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="text-dark small fw-bold"><?php echo date( 'D, d M, Y', strtotime( $b['start_time'] ) ); ?></div>
-                                            <div class="text-primary fw-medium" style="font-size: 11px;"><?php echo date( 'H:i', strtotime( $b['start_time'] ) ); ?> to <?php echo date( 'H:i', strtotime( $b['end_time'] ) ); ?></div>
+                                            <div class="text-dark small fw-bold"><?php echo wp_date( 'D, d M, Y', strtotime( $b['start_time'] ) ); ?></div>
+                                            <div class="text-primary fw-medium" style="font-size: 11px;"><?php echo wp_date( 'H:i', strtotime( $b['start_time'] ) ); ?> to <?php echo wp_date( 'H:i', strtotime( $b['end_time'] ) ); ?></div>
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex align-items-center justify-content-end gap-2">
@@ -534,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const nonceInput = document.createElement('input');
         nonceInput.type = 'hidden';
         nonceInput.name = '_wpnonce';
-        nonceInput.value = '<?php echo wp_create_nonce("sgvx51_facility_nonce"); ?>';
+        nonceInput.value = '<?php echo esc_js( wp_create_nonce("sgvx51_facility_nonce") ); ?>';
         
         form.appendChild(actionInput);
         form.appendChild(idInput);

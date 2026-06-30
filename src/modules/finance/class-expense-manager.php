@@ -49,24 +49,24 @@ class SGVX51_Expense_Manager {
 		}
 
 		$data = array(
-			'category'    => sanitize_text_field( $_POST['category'] ),
-			'description' => sanitize_text_field( $_POST['description'] ),
-			'amount'      => floatval( $_POST['amount'] ),
-			'date'        => sanitize_text_field( $_POST['date'] ),
-			'payee'       => sanitize_text_field( $_POST['payee'] ),
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'description' => isset( $_POST['description'] ) ? sanitize_text_field( wp_unslash( $_POST['description'] ) ) : '',
+			'amount' => isset( $_POST['amount'] ) ? floatval( wp_unslash( $_POST['amount'] ) ) : 0,
+			'date' => isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '',
+			'payee' => isset( $_POST['payee'] ) ? sanitize_text_field( wp_unslash( $_POST['payee'] ) ) : '',
 			'added_by'    => get_current_user_id(),
 			'receipt_url' => '',
 			'status'      => 'pending_secretary',
-            'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
+            'account_type' => isset( $_POST['account_type'] ) ? sanitize_text_field( wp_unslash( $_POST['account_type'] ) ) : '',
 		);
 
-		$year = date( 'Y', strtotime( $data['date'] ) );
+		$year = gmdate( 'Y', strtotime( $data['date'] ) );
 		$table = 'expenses';
 
-		// Handle Receipt Upload
-		if ( ! empty( $_FILES['receipt_file'] ) && $_FILES['receipt_file']['size'] > 0 ) {
+		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
 				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
@@ -85,9 +85,9 @@ class SGVX51_Expense_Manager {
             if ( ! is_wp_error( $req_id ) ) {
                 $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
             }
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		}
 		exit;
 	}
@@ -97,23 +97,23 @@ class SGVX51_Expense_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$id = sanitize_text_field( $_POST['expense_id'] );
+		$id = isset( $_POST['expense_id'] ) ? sanitize_text_field( wp_unslash( $_POST['expense_id'] ) ) : '';
 		$data = array(
-			'category'    => sanitize_text_field( $_POST['category'] ),
-			'description' => sanitize_text_field( $_POST['description'] ),
-			'amount'      => floatval( $_POST['amount'] ),
-			'date'        => sanitize_text_field( $_POST['date'] ),
-			'payee'       => sanitize_text_field( $_POST['payee'] ),
-            'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'description' => isset( $_POST['description'] ) ? sanitize_text_field( wp_unslash( $_POST['description'] ) ) : '',
+			'amount' => isset( $_POST['amount'] ) ? floatval( wp_unslash( $_POST['amount'] ) ) : 0,
+			'date' => isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : '',
+			'payee' => isset( $_POST['payee'] ) ? sanitize_text_field( wp_unslash( $_POST['payee'] ) ) : '',
+            'account_type' => isset( $_POST['account_type'] ) ? sanitize_text_field( wp_unslash( $_POST['account_type'] ) ) : '',
 		);
 
-		$year = date( 'Y', strtotime( $data['date'] ) );
+		$year = gmdate( 'Y', strtotime( $data['date'] ) );
 		$table = 'expenses';
 
-		// Handle Receipt Upload
-		if ( ! empty( $_FILES['receipt_file'] ) && $_FILES['receipt_file']['size'] > 0 ) {
+		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
 				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
@@ -124,9 +124,9 @@ class SGVX51_Expense_Manager {
 		$result = $this->db->update( $table, $data, array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
 		}
 		exit;
 	}
@@ -136,19 +136,19 @@ class SGVX51_Expense_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$id = sanitize_text_field( $_GET['id'] );
-		$date = sanitize_text_field( $_GET['date'] );
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		$date = isset( $_GET['date'] ) ? sanitize_text_field( wp_unslash( $_GET['date'] ) ) : '';
 		
 		if ( empty($date) ) {
 			wp_die('Expense date is required for deletion.');
 		}
 
-		$year = date( 'Y', strtotime( $date ) );
+		$year = gmdate( 'Y', strtotime( $date ) );
 		$table = 'expenses';
 
 		$this->db->delete( $table, array( 'id' => $id ) );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&deleted=1' ) );
 		exit;
 	}
 
@@ -161,10 +161,10 @@ class SGVX51_Expense_Manager {
 			wp_die( 'Unauthorized' );
 		}
 
-		$id = sanitize_text_field( $_POST['expense_id'] );
-		$date = sanitize_text_field( $_POST['expense_date'] );
+		$id = isset( $_POST['expense_id'] ) ? sanitize_text_field( wp_unslash( $_POST['expense_id'] ) ) : '';
+		$date = isset( $_POST['expense_date'] ) ? sanitize_text_field( wp_unslash( $_POST['expense_date'] ) ) : '';
 
-		$year = date( 'Y', strtotime( $date ) );
+		$year = gmdate( 'Y', strtotime( $date ) );
 
         // Direct approval is now replaced by multi-stage workflow if requested via Admin UI
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -172,9 +172,9 @@ class SGVX51_Expense_Manager {
         $result = $rm->approve_request( $id );
 
 		if ( is_wp_error( $result ) ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&approved=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&approved=1' ) );
 		}
 		exit;
 	}
@@ -194,15 +194,15 @@ class SGVX51_Expense_Manager {
 		}
 		
 		$data = array(
-			'category'    => sanitize_text_field( $_POST['category'] ?? '' ),
-			'description' => sanitize_text_field( $_POST['description'] ?? '' ),
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'description' => isset( $_POST['description'] ) ? sanitize_text_field( wp_unslash( $_POST['description'] ) ) : '',
 			'amount'      => floatval( $_POST['amount'] ?? 0 ),
-			'date'        => sanitize_text_field( $_POST['date'] ?? date('Y-m-d') ),
-			'payee'       => sanitize_text_field( $_POST['payee'] ?? '' ),
+			'date'        => isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : gmdate('Y-m-d'),
+			'payee' => isset( $_POST['payee'] ) ? sanitize_text_field( wp_unslash( $_POST['payee'] ) ) : '',
 			'added_by'    => get_current_user_id(),
 			'receipt_url' => '',
 			'status'      => 'pending_secretary',
-			'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
+			'account_type' => isset( $_POST['account_type'] ) ? sanitize_text_field( wp_unslash( $_POST['account_type'] ) ) : '',
 		);
 		
 		// Validate required fields
@@ -212,10 +212,10 @@ class SGVX51_Expense_Manager {
 		
 		$table = 'expenses';
 		
-		// Handle Receipt Upload
-		if ( ! empty( $_FILES['receipt_file'] ) && $_FILES['receipt_file']['size'] > 0 ) {
+		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
 				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
@@ -257,26 +257,26 @@ class SGVX51_Expense_Manager {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$id = sanitize_text_field( $_POST['expense_id'] ?? '' );
+		$id = isset( $_POST['expense_id'] ) ? sanitize_text_field( wp_unslash( $_POST['expense_id'] ) ) : '';
 		if ( empty($id) ) {
 			wp_send_json_error( array( 'message' => 'Invalid expense ID' ), 400 );
 		}
 		
 		$data = array(
-			'category'    => sanitize_text_field( $_POST['category'] ?? '' ),
-			'description' => sanitize_text_field( $_POST['description'] ?? '' ),
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'description' => isset( $_POST['description'] ) ? sanitize_text_field( wp_unslash( $_POST['description'] ) ) : '',
 			'amount'      => floatval( $_POST['amount'] ?? 0 ),
-			'date'        => sanitize_text_field( $_POST['date'] ?? date('Y-m-d') ),
-			'payee'       => sanitize_text_field( $_POST['payee'] ?? '' ),
-			'account_type'=> sanitize_text_field( $_POST['account_type'] ?? 'bank' ),
+			'date'        => isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : gmdate('Y-m-d'),
+			'payee' => isset( $_POST['payee'] ) ? sanitize_text_field( wp_unslash( $_POST['payee'] ) ) : '',
+			'account_type' => isset( $_POST['account_type'] ) ? sanitize_text_field( wp_unslash( $_POST['account_type'] ) ) : '',
 		);
 		
 		$table = 'expenses';
 		
-		// Handle Receipt Upload
-		if ( ! empty( $_FILES['receipt_file'] ) && $_FILES['receipt_file']['size'] > 0 ) {
+		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
 				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
@@ -303,7 +303,7 @@ class SGVX51_Expense_Manager {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$id = sanitize_text_field( $_POST['id'] ?? '' );
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		if ( empty($id) ) {
 			wp_send_json_error( array( 'message' => 'Invalid expense ID' ), 400 );
 		}
@@ -328,7 +328,7 @@ class SGVX51_Expense_Manager {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
-		$id = sanitize_text_field( $_POST['expense_id'] ?? '' );
+		$id = isset( $_POST['expense_id'] ) ? sanitize_text_field( wp_unslash( $_POST['expense_id'] ) ) : '';
 		if ( empty($id) ) {
 			wp_send_json_error( array( 'message' => 'Invalid expense ID' ), 400 );
 		}

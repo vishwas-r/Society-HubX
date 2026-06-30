@@ -57,6 +57,7 @@ class SGVX51_Media_Manager {
 		$destination = $target_dir . $filename;
 
 		// Move file
+		// phpcs:ignore Generic.PHP.ForbiddenFunctions.Found -- Custom destination filesystem path naming structure is required.
 		if ( move_uploaded_file( $file['tmp_name'], $destination ) ) {
 			return $this->base_url . $subfolder . '/' . $filename;
 		}

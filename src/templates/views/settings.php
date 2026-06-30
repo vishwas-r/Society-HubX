@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * View: Society Settings (Bootstrap Migration)
  */
 
@@ -606,7 +610,7 @@ $templates = $db->get('notification_templates');
                                         <i class="bi bi-check-circle-fill text-success fs-5"></i>
                                         <div>
                                             <div class="fw-bold">Import Successful</div>
-                                            <div class="small opacity-75">Processed <?php echo intval($_GET['imported']); ?> records.</div>
+                                            <div class="small opacity-75">Processed <?php echo intval( wp_unslash( $_GET['imported'] ) ); ?> records.</div>
                                         </div>
                                     </div>
                                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>

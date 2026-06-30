@@ -85,7 +85,7 @@ class SGVX51_REST_Residents_Controller extends WP_REST_Controller {
 		$resident = $db->get_row( 'residents', $id );
 
 		if ( ! $resident ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-governx' ), array( 'status' => 404 ) );
 		}
 
 		// Apply masking if not committee
@@ -120,7 +120,7 @@ class SGVX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function create_item_permissions_check( $request ) {
 		if ( ! Society_GoVernX::get_instance()->rbac->check_capability( get_current_user_id(), 'manage_residents' ) ) {
-			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to manage residents.' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to manage residents.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;
 	}

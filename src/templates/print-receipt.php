@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * Template: Payment Receipt (Print Friendly)
  * Variables: $inv (Invoice Array)
  */
@@ -82,7 +86,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
                     <span class="section-label">NO:</span> <span style="font-family:monospace; color:#4f46e5; font-weight:700;">#<?php echo substr($inv['id'], -6); ?></span>
                 </div>
                 <div style="margin-top: 4px;">
-                    <span class="section-label">Date:</span> <span class="section-val" style="font-size:12px;"><?php echo date('d M Y'); ?></span>
+                    <span class="section-label">Date:</span> <span class="section-val" style="font-size:12px;"><?php echo wp_date('d M Y'); ?></span>
                 </div>
             </div>
         </div>
@@ -96,7 +100,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
             <div style="text-align: right;">
                  <div class="section-label">Description</div>
                  <div class="section-val"><?php echo esc_html( $inv['description'] ); ?></div>
-                 <div class="section-val-sub"><?php echo date('F Y', strtotime($inv['month'])); ?></div>
+                 <div class="section-val-sub"><?php echo wp_date('F Y', strtotime($inv['month'])); ?></div>
             </div>
         </div>
 
@@ -111,7 +115,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
             <tbody>
                 <?php foreach($inv['payments'] as $p): ?>
                 <tr>
-                    <td><?php echo date('d M Y', strtotime($p['date'])); ?></td>
+                    <td><?php echo wp_date('d M Y', strtotime($p['date'])); ?></td>
                     <td>
                         <div style="font-weight: 600;"><?php echo esc_html($p['method']); ?></div>
                         <div style="font-size: 11px; color: #94a3b8;"><?php echo esc_html($p['reference']); ?></div>

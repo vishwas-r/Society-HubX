@@ -10,6 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Core database schema setup routines require direct DDL queries.
+
+
 class SGVX51_DB_Schema {
 
 	/**
@@ -784,7 +787,7 @@ class SGVX51_DB_Schema {
             if ( $files ) {
                 foreach ( $files as $file ) {
                     if ( is_file( $file ) ) {
-                        unlink( $file );
+                        wp_delete_file( $file );
                     }
                 }
             }

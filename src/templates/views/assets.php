@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Assets (Bootstrap Migration)
  * Integrates directly with SGVX51_DB_Router.
  */
@@ -99,13 +107,13 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
                                 </td>
                                 <td class="px-4 py-4">
                                          <?php if ( !empty($a['warranty_expiry']) ) : ?>
-                                        <?php if ( date( 'Y-m-d' ) > $a['warranty_expiry'] ) : ?>
+                                        <?php if ( wp_date( 'Y-m-d' ) > $a['warranty_expiry'] ) : ?>
                                             <span class="text-danger small fw-bold d-flex align-items-center gap-1">
-                                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 14px;"></i> EXPIRED (<?php echo date('M Y', strtotime($a['warranty_expiry'])); ?>)
+                                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 14px;"></i> EXPIRED (<?php echo wp_date('M Y', strtotime($a['warranty_expiry'])); ?>)
                                             </span>
                                         <?php else : ?>
                                             <span class="text-success small fw-bold d-flex align-items-center gap-1">
-                                                <i class="bi bi-check-circle-fill" style="font-size: 14px;"></i> VALID UNTIL <?php echo date('M Y', strtotime($a['warranty_expiry'])); ?>
+                                                <i class="bi bi-check-circle-fill" style="font-size: 14px;"></i> VALID UNTIL <?php echo wp_date('M Y', strtotime($a['warranty_expiry'])); ?>
                                             </span>
                                         <?php endif; ?>
                                     <?php else : ?>

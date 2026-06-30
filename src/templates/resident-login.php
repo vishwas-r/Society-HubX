@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * Template: Resident Login (SaaS Style)
  */
 if ( ! defined( 'ABSPATH' ) ) {

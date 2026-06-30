@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Rules Tab
  * View and acknowledge society rules, track violations
  * @var array $data Dashboard data
@@ -181,9 +189,9 @@ $violations = $db->get('rule_violations', ['flat_no' => $flat_no]);
                                     </div>
                                     <h5 class="fw-bold text-dark mb-2"><?php echo esc_html($rule['title']); ?></h5>
                                     <div class="small text-muted">
-                                        Effective: <?php echo $rule['effective_date'] ? date('M d, Y', strtotime($rule['effective_date'])) : 'Immediately'; ?>
+                                        Effective: <?php echo $rule['effective_date'] ? wp_date('M d, Y', strtotime($rule['effective_date'])) : 'Immediately'; ?>
                                         <?php if($rule['expiry_date']): ?>
-                                            • Expires: <?php echo date('M d, Y', strtotime($rule['expiry_date'])); ?>
+                                            • Expires: <?php echo wp_date('M d, Y', strtotime($rule['expiry_date'])); ?>
                                         <?php endif; ?>
                                         • Version <?php echo $rule['version']; ?>
                                     </div>
@@ -203,7 +211,7 @@ $violations = $db->get('rule_violations', ['flat_no' => $flat_no]);
                                     <i class="bi bi-info-circle me-2"></i>
                                     <strong>Acknowledgment Required</strong>
                                     <?php if($rule['acknowledgment_deadline']): ?>
-                                        • Deadline: <?php echo date('M d, Y', strtotime($rule['acknowledgment_deadline'])); ?>
+                                        • Deadline: <?php echo wp_date('M d, Y', strtotime($rule['acknowledgment_deadline'])); ?>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
@@ -239,7 +247,7 @@ $violations = $db->get('rule_violations', ['flat_no' => $flat_no]);
                                             <div class="fw-bold"><?php echo esc_html($v_rule_title); ?></div>
                                             <div class="small text-muted"><?php echo esc_html($v['description']); ?></div>
                                         </td>
-                                        <td class="small"><?php echo date('M d, Y', strtotime($v['violation_date'])); ?></td>
+                                        <td class="small"><?php echo wp_date('M d, Y', strtotime($v['violation_date'])); ?></td>
                                         <td class="fw-bold">₹<?php echo number_format($v['fine_amount'], 2); ?></td>
                                         <td>
                                             <span class="badge bg-<?php echo $v['status'] === 'resolved' ? 'success' : ($v['status'] === 'dismissed' ? 'secondary' : 'warning'); ?> text-white">

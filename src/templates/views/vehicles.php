@@ -2,7 +2,13 @@
 /**
  * View: Vehicles (Bootstrap Migration)
  * Integrates directly with SGVX51_DB_Router for data.
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 // Data is passed from SGVX51_Vehicle_Manager::render_page via context
 // $vehicles, $pending, $history, $flats, $residents are available.
@@ -362,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             await window.sgvxApiRequest('sgvx51_restore_vehicle', {
                 id: id,
-                _wpnonce: '<?php echo wp_create_nonce("sgvx51_add_vehicle_nonce"); ?>'
+                _wpnonce: '<?php echo esc_js( wp_create_nonce("sgvx51_add_vehicle_nonce") ); ?>'
             });
             window.location.reload();
         } catch(e) {}

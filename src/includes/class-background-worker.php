@@ -141,7 +141,7 @@ class SGVX51_Background_Worker {
             }
 		}
 		
-		error_log( "SGVX51 Background Worker: Processed batch at offset $offset. Generated $generated_count $type invoices for $month." );
+		error_log( "SGVX51 Background Worker: Processed batch at offset $offset. Generated $generated_count $type invoices for $month." ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	}
 
 	/**

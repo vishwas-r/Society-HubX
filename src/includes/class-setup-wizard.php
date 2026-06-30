@@ -35,7 +35,7 @@ class SGVX51_Setup_Wizard {
 	 * Run the Setup Process (Step-by-Step).
 	 */
 	public static function save_step( $step, $data ) {
-		error_log("SGVX51 Debug: Saving Setup Step: $step");
+		error_log("SGVX51 Debug: Saving Setup Step: $step"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		$log = array();
 		
 		switch ( $step ) {
@@ -164,7 +164,7 @@ class SGVX51_Setup_Wizard {
 		}
 
 		// 2. Create New Spreadsheet.
-		$sheet_title = 'Society_GovernX_Master_' . date( 'Y-m-d' );
+		$sheet_title = 'Society_GovernX_Master_' . gmdate( 'Y-m-d' );
 		$body = array(
 			'properties' => array( 'title' => $sheet_title ),
 		);

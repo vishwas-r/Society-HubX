@@ -64,7 +64,7 @@ class SGVX51_Flat_Manager {
             exit;
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1' ) );
 		exit;
 	}
 
@@ -78,7 +78,7 @@ class SGVX51_Flat_Manager {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 		}
 
-		$flat_id = sanitize_text_field( $_POST['flat_id'] );
+		$flat_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
 		$res = $this->db->delete( 'flats', array( 'id' => $flat_id ) );
 
 		if ( $res ) {
@@ -90,7 +90,7 @@ class SGVX51_Flat_Manager {
 
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
-            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce($_POST['_wpnonce'], 'sgvx51_add_flat_nonce') ) {
+            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_add_flat_nonce') ) {
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
@@ -99,18 +99,18 @@ class SGVX51_Flat_Manager {
         }
 
 		$data = array(
-			'block'        => sanitize_text_field( $_POST['block'] ),
-			'flat_number'  => sanitize_text_field( $_POST['flat_number'] ),
-			'floor'        => sanitize_text_field( $_POST['floor'] ),
-			'sq_foot'      => floatval( $_POST['sq_foot'] ),
-			'parking_slot' => sanitize_text_field( $_POST['parking_slot'] ),
-			'type'         => sanitize_text_field( $_POST['type'] ),
-			'status'       => sanitize_text_field( $_POST['status'] ),
-			'parking_status'=> sanitize_text_field( $_POST['parking_status'] ?? '' ),
+			'block' => isset( $_POST['block'] ) ? sanitize_text_field( wp_unslash( $_POST['block'] ) ) : '',
+			'flat_number' => isset( $_POST['flat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_number'] ) ) : '',
+			'floor' => isset( $_POST['floor'] ) ? sanitize_text_field( wp_unslash( $_POST['floor'] ) ) : '',
+			'sq_foot' => isset( $_POST['sq_foot'] ) ? floatval( wp_unslash( $_POST['sq_foot'] ) ) : 0,
+			'parking_slot' => isset( $_POST['parking_slot'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_slot'] ) ) : '',
+			'type' => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
+			'status' => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+			'parking_status' => isset( $_POST['parking_status'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_status'] ) ) : '',
 		);
 
 		// Determine the original ID (hidden field) and the new ID (based on edited values)
-		$original_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( $_POST['flat_id'] ) : '';
+		$original_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
 		$new_id = $data['block'] . '-' . $data['flat_number'];
 
 		// If the user changed block/flat_number, set the new id value in data so it updates the record
@@ -120,11 +120,11 @@ class SGVX51_Flat_Manager {
 
 		$where_id = ! empty( $original_id ) ? $original_id : $new_id;
 
-		error_log( 'SGVX51 handle_edit_flat: Attempting to update flat. original_id=' . $original_id . ', new_id=' . $new_id . ', where_id=' . $where_id . ', data=' . json_encode( $data ) );
+		error_log( 'SGVX51 handle_edit_flat: Attempting to update flat. original_id=' . $original_id . ', new_id=' . $new_id . ', where_id=' . $where_id . ', data=' . json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		$res = $this->db->update( 'flats', $data, array( 'id' => $where_id ) );
 
-		error_log( 'SGVX51 handle_edit_flat: Update result: ' . json_encode( $res ) );
+		error_log( 'SGVX51 handle_edit_flat: Update result: ' . json_encode( $res ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
         $rbac = new SGVX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
@@ -143,7 +143,7 @@ class SGVX51_Flat_Manager {
 	        exit;
 	    }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1&msg=Updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1&msg=Updated' ) );
 		exit;
 	}
 
@@ -157,7 +157,7 @@ class SGVX51_Flat_Manager {
         $rbac = new SGVX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
 
-		$id = sanitize_text_field( $_POST['flat_id'] );
+		$id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
 		$res = $this->db->update( 'flats', ['status' => 'archived'], array( 'id' => $id ) );
 
         if ( wp_doing_ajax() ) {
@@ -168,7 +168,7 @@ class SGVX51_Flat_Manager {
             exit;
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-flats&status=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-flats&status=deleted' ) );
 		exit;
 	}
 
@@ -179,7 +179,7 @@ class SGVX51_Flat_Manager {
 		    if ( ! check_admin_referer( 'sgvx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-		$id = isset($_POST['flat_id']) ? sanitize_text_field( $_POST['flat_id'] ) : '';
+		$id = isset($_POST['flat_id']) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
 		$res = $this->db->update( 'flats', array( 'status' => 'vacant' ), array( 'id' => $id ) );
 
         if ( wp_doing_ajax() ) {
@@ -190,7 +190,7 @@ class SGVX51_Flat_Manager {
             exit;
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-flats&success=1' ) );
 		exit;
 	}
 
@@ -202,7 +202,8 @@ class SGVX51_Flat_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$csv_data = trim( $_POST['csv_data'] );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- CSV text data parsed and columns sanitized individually.
+		$csv_data = isset( $_POST['csv_data'] ) ? trim( wp_unslash( $_POST['csv_data'] ) ) : '';
 		$rows = explode( "\n", $csv_data );
 		$count = 0;
 		$errors = 0;
@@ -229,7 +230,7 @@ class SGVX51_Flat_Manager {
 			}
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-flats&imported=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-flats&imported=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 

@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * Template Name: Society App (Full Width)
  * Description: A full-width, SaaS-style template for Society GoVernX pages.
  */
@@ -100,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Simple Footer -->
     <footer class="bg-white border-top border-slate-200 py-4 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. Powered by Society GoVernX.
+            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by Society GoVernX.
         </div>
     </footer>
 

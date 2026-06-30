@@ -25,18 +25,18 @@ class SGVX51_Ledger_Manager {
         if ( ! check_admin_referer( 'sgvx51_reconcile_nonce' ) ) wp_die( 'Security check failed' );
         if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
 
-        $year = sanitize_text_field( $_POST['year'] );
-        $bank = floatval( $_POST['actual_bank'] );
-        $cash = floatval( $_POST['actual_cash'] );
-        $opening_bank = floatval( $_POST['opening_bank'] );
-        $opening_cash = floatval( $_POST['opening_cash'] );
+        $year = isset( $_POST['year'] ) ? sanitize_text_field( wp_unslash( $_POST['year'] ) ) : '';
+        $bank = isset( $_POST['actual_bank'] ) ? floatval( wp_unslash( $_POST['actual_bank'] ) ) : 0;
+        $cash = isset( $_POST['actual_cash'] ) ? floatval( wp_unslash( $_POST['actual_cash'] ) ) : 0;
+        $opening_bank = isset( $_POST['opening_bank'] ) ? floatval( wp_unslash( $_POST['opening_bank'] ) ) : 0;
+        $opening_cash = isset( $_POST['opening_cash'] ) ? floatval( wp_unslash( $_POST['opening_cash'] ) ) : 0;
 
         update_option( 'sgvx51_actual_bank_' . $year, $bank );
         update_option( 'sgvx51_actual_cash_' . $year, $cash );
         update_option( 'sgvx51_opening_bank_' . $year, $opening_bank );
         update_option( 'sgvx51_opening_cash_' . $year, $opening_cash );
 
-        wp_redirect( admin_url( 'admin.php?page=sgvx51-accounts&tab=ledger&year=' . $year . '&success=reconciled' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&tab=ledger&year=' . $year . '&success=reconciled' ) );
         exit;
     }
 
@@ -63,7 +63,7 @@ class SGVX51_Ledger_Manager {
 		if ( ! empty( $all_expenses ) ) {
 			foreach ( $all_expenses as $ex ) {
 				// Filter by Year
-				if ( date( 'Y', strtotime( $ex['date'] ) ) == $year ) {
+				if ( gmdate( 'Y', strtotime( $ex['date'] ) ) == $year ) {
 					if ( isset( $ex['status'] ) && $ex['status'] === 'approved' ) {
 						$entries[] = array(
 							'date'        => $ex['date'],
@@ -94,7 +94,7 @@ class SGVX51_Ledger_Manager {
 						// We will count the request separately to keep the ledger consolidated.
 						if ( ! empty( $pay['request_id'] ) ) continue;
 
-						if ( date( 'Y', strtotime( $pay['date'] ) ) == $year ) {
+						if ( gmdate( 'Y', strtotime( $pay['date'] ) ) == $year ) {
 							$entries[] = array(
 								'date'        => $pay['date'],
 								'type'        => 'Credit',
@@ -115,11 +115,11 @@ class SGVX51_Ledger_Manager {
 				// If NO entries were added from JSON, but status is PAID, use the main row data.
 				if ( ! $entries_added && (strtolower($inv['status'] ?? '') === 'paid') ) {
 					$pay_date = !empty($inv['payment_date']) && $inv['payment_date'] !== '0000-00-00 00:00:00' 
-								? date('Y-m-d', strtotime($inv['payment_date'])) 
-								: ($inv['created_at'] ? date('Y-m-d', strtotime($inv['created_at'])) : date('Y-m-d'));
+								? gmdate('Y-m-d', strtotime($inv['payment_date'])) 
+								: ($inv['created_at'] ? gmdate('Y-m-d', strtotime($inv['created_at'])) : gmdate('Y-m-d'));
 					
 					// Filter by Year
-					if ( date( 'Y', strtotime( $pay_date ) ) == $year ) {
+					if ( gmdate( 'Y', strtotime( $pay_date ) ) == $year ) {
 						$entries[] = array(
 							'date'        => $pay_date,
 							'type'        => 'Credit',
@@ -147,9 +147,9 @@ class SGVX51_Ledger_Manager {
 
 				if ( ($module === 'accounts' || $module === 'finance') && ($is_pending || $is_approved) && ($req['request_type'] === 'record_payment') ) {
 					$p_payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode( $req['payload'], true );
-					if ( ! empty( $p_payload ) && date( 'Y', strtotime( $p_payload['date'] ?? '' ) ) == $year ) {
+					if ( ! empty( $p_payload ) && gmdate( 'Y', strtotime( $p_payload['date'] ?? '' ) ) == $year ) {
 						$entries[] = array(
-							'date'        => $p_payload['date'] ?? date('Y-m-d'),
+							'date'        => $p_payload['date'] ?? gmdate('Y-m-d'),
 							'type'        => 'Credit',
 							'description' => 'Payment for ' . ($p_payload['invoice_id'] ?? 'Maintenance') . ($is_pending ? ' (' . ucfirst(str_replace('pending_', '', $status)) . ' Verification)' : ''),
 							'amount'      => floatval( $p_payload['amount'] ?? 0 ),
@@ -218,7 +218,7 @@ class SGVX51_Ledger_Manager {
      * Get Current Overall Balance Breakdown
      */
     public function get_current_balance() {
-        $year = date('Y');
+        $year = gmdate('Y');
         $entries = $this->get_ledger_entries($year);
         if(empty($entries)) return ['bank' => 0, 'cash' => 0, 'total' => 0];
         
@@ -234,7 +234,7 @@ class SGVX51_Ledger_Manager {
      * Get Monthly Payment Summary for Transparency
      */
     public function get_monthly_summary($month = null) {
-        if(!$month) $month = date('Y-m');
+        if(!$month) $month = gmdate('Y-m');
         
         $all_flats = $this->db->get('flats');
         $invoices = $this->db->get('invoices', array( 'load_relations' => true ));
@@ -301,7 +301,7 @@ class SGVX51_Ledger_Manager {
                 }
 
                 if (!$is_fully_paid) {
-                    $unpaid_months[] = date('M Y', strtotime($inv_month));
+                    $unpaid_months[] = gmdate('M Y', strtotime($inv_month));
                     if ($inv_month < $month) {
                         $has_previous_unpaid = true;
                     }

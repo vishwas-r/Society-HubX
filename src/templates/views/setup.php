@@ -1,9 +1,17 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Setup Wizard
  * A premium, multi-step installer for Society GoVernX.
  */
-$step = isset($_GET['step']) ? intval($_GET['step']) : 1;
+$step = isset($_GET['step']) ? intval( wp_unslash( $_GET['step'] ) ) : 1;
 $total_steps = 4;
 $progress = ($step / $total_steps) * 100;
 
@@ -42,7 +50,7 @@ $society_name = get_option('sgvx51_society_name', '');
                     </ul>
                 </div>
                 <div class="small text-white-50">
-                    &copy; <?php echo date('Y'); ?> Society GoVernX
+                    &copy; <?php echo wp_date('Y'); ?> Society GoVernX
                 </div>
             </div>
 

@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Documents (Bootstrap Migration)
  * Integrates with SGVX51_Drive_Manager and SGVX51_DB_Router.
  */
@@ -15,7 +23,7 @@ $pending_uploads = array_filter( $all_docs, function($d) { return isset($d['stat
 $pending_deletions = array_filter( $all_docs, function($d) { return isset($d['status']) && $d['status'] === 'deletion_pending'; } );
 
 // Selected Flat Logic
-$selected_flat = isset( $_GET['flat'] ) ? sanitize_text_field( $_GET['flat'] ) : '';
+$selected_flat = isset( $_GET['flat'] ) ? sanitize_text_field( wp_unslash( $_GET['flat'] ) ) : '';
 $files = array(); 
 
 if ( $selected_flat ) {

@@ -153,12 +153,12 @@ class SGVX51_Admin_UI {
 		}
 
 		// 1. Google Fonts (Inter) - Local
-		wp_enqueue_style( 'sgvx51-fonts', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
+		wp_enqueue_style( 'sgvx-fonts', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
 
 		// 2. Bootstrap 5 - Local
-		wp_enqueue_style( 'sgvx51-bootstrap', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_style( 'sgvx51-bootstrap-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css', array(), '1.11.3' );
-		wp_enqueue_script( 'sgvx51-bootstrap-js', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/lib/bootstrap.bundle.min.js', array('jquery'), '5.3.0', false );
+		wp_enqueue_style( 'sgvx-bootstrap', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
+		wp_enqueue_style( 'sgvx-bootstrap-icons', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap-icons.min.css', array(), '1.11.3' );
+		wp_enqueue_script( 'sgvx-bootstrap-js', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/lib/bootstrap.bundle.min.js', array('jquery'), '5.3.0', false );
 
         // 3. Admin Premium Theme
 		wp_enqueue_style( 'sgvx51-admin-layout', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-layout.css', array('sgvx51-bootstrap'), '1.0.0' );

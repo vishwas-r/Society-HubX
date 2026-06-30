@@ -248,6 +248,7 @@ final class Society_GoVernX {
 	 * Localization and setup.
 	 */
 	public function on_plugins_loaded() {
+		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Textdomain load implementation is standard fallback.
 		load_plugin_textdomain( 'society-governx', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 		
 		// Redirect after Login
@@ -318,7 +319,7 @@ final class Society_GoVernX {
 
 		// 3. Regular Residents/Subscribers are redirected
 		if ( current_user_can( 'subscriber' ) || current_user_can( 'resident' ) ) {
-			wp_redirect( home_url( '/resident-dashboard/' ) );
+			wp_safe_redirect( home_url( '/resident-dashboard/' ) );
 			exit;
 		}
 	}
@@ -331,22 +332,26 @@ final class Society_GoVernX {
         wp_enqueue_script( 'sgvx51-core', SGVX51_PLUGIN_URL . 'assets/js/sgvx-core.js', array('jquery'), SGVX51_VERSION, true );
 
         // Only load on our plugin pages to avoid breaking global WP Admin
-        if ( ! isset($_GET['page']) || strpos($_GET['page'], 'sgvx51') === false ) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
+        $page = isset($_GET['page']) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+
+        // Only load on our plugin pages to avoid breaking global WP Admin
+        if ( empty($page) || strpos($page, 'sgvx51') === false ) {
             return;
         }
 
         // 0. WP Reset Shim (Load first to clear the path)
         //wp_enqueue_style( 'sgvx51_wp_reset_shim', SGVX51_PLUGIN_URL . 'assets/css/wp-reset-shim.css', array(), SGVX51_VERSION );
 
-		// 1. Google Fonts (Inter & Outfit) - Enqueue early
-        wp_enqueue_style( 'sgvx51_fonts', 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap', array(), '1.0' );
+		// 1. Google Fonts (Inter) - Local
+        wp_enqueue_style( 'sgvx51_fonts', SGVX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), SGVX51_VERSION );
 
 		// 2. Bootstrap 5 (Local) - Load late to naturally override WP styles
 		wp_enqueue_style( 'sgvx51_bootstrap_css', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
 		wp_enqueue_script( 'sgvx51_bootstrap_js', SGVX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
 
-        // 3. Bootstrap Icons
-        wp_enqueue_style( 'sgvx51_bootstrap_icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', array('sgvx51_bootstrap_css'), '1.11.1' );
+        // 3. Bootstrap Icons (Local)
+        wp_enqueue_style( 'sgvx51_bootstrap_icons', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('sgvx51_bootstrap_css'), '1.11.3' );
 
         // 4. Custom Admin Styles (Final Overrides)
 		wp_enqueue_style( 'sgvx51_admin_layout', SGVX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('sgvx51_bootstrap_css', 'sgvx51_bootstrap_icons'), SGVX51_VERSION );
@@ -365,7 +370,7 @@ final class Society_GoVernX {
         wp_enqueue_script( 'sgvx51-ajax', SGVX51_PLUGIN_URL . 'assets/js/sgvx-ajax.js', array('jquery', 'sgvx51-toast'), SGVX51_VERSION, true );
 
 		// Google API (placeholder)
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-google-drive' ) {
+		if ( $page === 'sgvx51-google-drive' ) {
 			$SGVX51_Google_API_Handler = new SGVX51_Google_API_Handler();
 			$SGVX51_Google_API_Handler->enqueue_google_api_scripts();
 		}
@@ -392,7 +397,7 @@ final class Society_GoVernX {
         wp_add_inline_script( 'sgvx51-admin-app', 'var sgvx51RequestNonce = "' . wp_create_nonce( 'sgvx51_request_action' ) . '";', 'before' );
 
         // Residents View Specific JS
-        if ( $_GET['page'] === 'sgvx51-residents' ) {
+        if ( $page === 'sgvx51-residents' ) {
             wp_enqueue_script( 'sgvx51-residents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-residents.js', array('jquery'), time(), true );
             
             $residents = $this->db->get('residents');
@@ -410,55 +415,55 @@ final class Society_GoVernX {
         }
 
 		// Facilities View Specific JS
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-facilities' ) {
+		if ( $page === 'sgvx51-facilities' ) {
 			wp_enqueue_script( 'sgvx51-facilities-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-facilities.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
 		}
 
         // Flats View Specific JS
-        if ( $_GET['page'] === 'sgvx51-flats' ) {
+        if ( $page === 'sgvx51-flats' ) {
             wp_enqueue_script( 'sgvx51-flats-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-flats.js', array('jquery'), time(), true );
             // Config fetched dynamically via AJAX
         }
 
         // Vehicles View Specific JS
-        if ( $_GET['page'] === 'sgvx51-vehicles' ) {
+        if ( $page === 'sgvx51-vehicles' ) {
             wp_enqueue_script( 'sgvx51-vehicles-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-vehicles.js', array('jquery'), time(), true );
             // Config fetched dynamically via AJAX
         }
 
         // Staff View Specific JS
-        if ( $_GET['page'] === 'sgvx51-staff' ) {
+        if ( $page === 'sgvx51-staff' ) {
             wp_enqueue_script( 'sgvx51-staff-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-staff.js', array('jquery'), time(), true );
             // Config fetched dynamically via AJAX
         }
 
 		// Notices View Specific JS
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-notices' ) {
+		if ( $page === 'sgvx51-notices' ) {
 			wp_enqueue_script( 'sgvx51-notices-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-notices.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
 		}
 
 		// Documents View Specific JS
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-documents' ) {
+		if ( $page === 'sgvx51-documents' ) {
 			wp_enqueue_script( 'sgvx51-documents-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-documents.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
 		}
 
 		// Expenses View Specific JS
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-expenses' ) {
+		if ( $page === 'sgvx51-expenses' ) {
 			wp_enqueue_script( 'sgvx51-expenses-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-expenses.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
 		}
 
 		// Accounts View Specific JS (Invoices & Ledger)
-		if ( isset($_GET['page']) && $_GET['page'] === 'sgvx51-accounts' ) {
+		if ( $page === 'sgvx51-accounts' ) {
 			wp_enqueue_script( 'sgvx51-accounts-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-accounts.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 			// Config fetched dynamically via AJAX
 		}
 
 		// Notifications View Specific JS (Now also on Settings for Communication tab)
-		if ( isset($_GET['page']) && in_array($_GET['page'], ['sgvx51-activity-hub', 'sgvx51-global-settings']) ) {
+		if ( in_array($page, ['sgvx51-activity-hub', 'sgvx51-global-settings']) ) {
 			wp_enqueue_script( 'sgvx51-notifications-js', SGVX51_PLUGIN_URL . 'assets/js/sgvx-notifications.js', array('jquery', 'sgvx51-admin-app'), time(), true );
 		}
 	}
@@ -471,8 +476,8 @@ final class Society_GoVernX {
         wp_enqueue_style( 'sgvx51-bootstrap', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
 		wp_enqueue_script( 'sgvx51-bootstrap', SGVX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
 
-        // 0. Bootstrap Icons
-        wp_enqueue_style( 'sgvx51-bootstrap-icons', 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css', array('sgvx51-bootstrap'), '1.11.1' );
+        // 0. Bootstrap Icons (Local)
+        wp_enqueue_style( 'sgvx51-bootstrap-icons', SGVX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('sgvx51-bootstrap'), '1.11.3' );
 
         // Custom Frontend CSS (Tailwind Replacement)
         wp_enqueue_style( 'sgvx51-frontend-css', SGVX51_PLUGIN_URL . 'assets/css/sgvx-frontend.css', array('sgvx51-bootstrap', 'sgvx51-fonts', 'sgvx51-bootstrap-icons'), SGVX51_VERSION );

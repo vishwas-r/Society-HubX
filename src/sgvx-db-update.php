@@ -1,4 +1,9 @@
 <?php
+// phpcs:disable Internal.LineEndings.Mixed
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * SGVX Database Update Utility
  * Run this file manually to ensure all tables are created and data is migrated.
@@ -6,17 +11,17 @@
  */
 
 // Load WordPress
-$wp_load = __DIR__ . '/../../wp-load.php';
-if (!file_exists($wp_load)) {
+$sgvx51_wp_load = __DIR__ . '/../../wp-load.php';
+if (!file_exists($sgvx51_wp_load)) {
     // Try root search if not in standard wp-content/plugins/x location
-    $wp_load = dirname(__FILE__, 4) . '/wp-load.php';
+    $sgvx51_wp_load = dirname(__FILE__, 4) . '/wp-load.php';
 }
 
-if (!file_exists($wp_load)) {
+if (!file_exists($sgvx51_wp_load)) {
     die("Error: Could not find wp-load.php. Please ensure this script is inside the 'society-governx/src/' directory on your WordPress installation.");
 }
 
-require_once $wp_load;
+require_once $sgvx51_wp_load;
 
 // Verify Admin or Command Line
 if (!is_admin() && php_sapi_name() !== 'cli') {
@@ -49,4 +54,4 @@ update_option('sgvx51_storage_migrated', '1.0.2');
 
 echo "<p style='color:green; font-weight:bold; font-size:1.2rem;'>Success: Database is now at version 1.0.2 and fully relational.</p>";
 echo "<p>You can now delete this file from your server for security.</p>";
-echo "<a href='" . admin_url('admin.php?page=sgvx51-settings') . "'>Return to Dashboard</a>";
+echo "<a href='" . esc_url( admin_url('admin.php?page=sgvx51-settings') ) . "'>Return to Dashboard</a>";

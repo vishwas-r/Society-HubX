@@ -45,8 +45,8 @@ class SGVX51_General_Request_Manager implements SGVX51_Module {
 	public function handle_submit_request() {
 		check_ajax_referer( 'sgvx51_frontend_nonce' ); // Standard frontend nonce for this plugin
 		
-		$category = sanitize_text_field( $_POST['category'] );
-		$comments = sanitize_textarea_field( $_POST['comments'] );
+		$category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
+		$comments = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';
 		
 		if ( empty( $category ) || empty( $comments ) ) {
 			wp_send_json_error( ['message' => 'Please select a category and provide details.'] );

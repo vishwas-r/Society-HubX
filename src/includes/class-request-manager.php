@@ -69,7 +69,7 @@ class SGVX51_Request_Manager {
         check_ajax_referer( 'sgvx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
-        $request_id = sanitize_text_field( $_POST['id'] );
+        $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $result = $this->approve_request( $request_id );
 
         if ( is_wp_error( $result ) ) {
@@ -86,8 +86,8 @@ class SGVX51_Request_Manager {
         check_ajax_referer( 'sgvx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
-        $request_id = sanitize_text_field( $_POST['id'] );
-        $note = sanitize_textarea_field( $_POST['admin_note'] ?? '' );
+        $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+        $note = isset( $_POST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['admin_note'] ) ) : '';
         
         $result = $this->reject_request( $request_id, $note );
 
@@ -105,9 +105,9 @@ class SGVX51_Request_Manager {
         check_ajax_referer( 'sgvx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
-        $ids = isset($_POST['ids']) ? array_map('sanitize_text_field', $_POST['ids']) : [];
-        $action = sanitize_key($_POST['bulk_action']); // 'approve' or 'reject'
-        $note = sanitize_textarea_field($_POST['note'] ?? '');
+        $ids = isset($_POST['ids']) ? array_map('sanitize_text_field', wp_unslash($_POST['ids'])) : [];
+        $action = isset( $_POST['bulk_action'] ) ? sanitize_key( wp_unslash( $_POST['bulk_action'] ) ) : ''; // 'approve' or 'reject'
+        $note = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['note'] ) ) : '';
 
         if(empty($ids)) wp_send_json_error(['message' => 'No items selected']);
 
@@ -185,7 +185,7 @@ class SGVX51_Request_Manager {
 	 * Process a request by its ID.
 	 */
 	public function approve_request( $request_id ) {
-		// error_log("SGVX51 Debug: approve_request called for ID: $request_id");
+		// error_log("SGVX51 Debug: approve_request called for ID: $request_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		$requests = $this->db->get( 'requests' );
 		$target_request = null;
 
@@ -391,7 +391,7 @@ class SGVX51_Request_Manager {
 
                     $admin_user = get_userdata( $update_data['processed_by'] );
                     $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
-                    $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
+                    $time_formatted = gmdate('d M Y, h:i A', strtotime($update_data['processed_at']));
 
                     // Enhancement: Extract category/type for better notification title
                     $request_desc = ucfirst(str_replace('_', ' ', $action));
@@ -501,7 +501,7 @@ class SGVX51_Request_Manager {
 
                     $admin_user = get_userdata( $update_data['processed_by'] );
                     $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
-                    $time_formatted = date('d M Y, h:i A', strtotime($update_data['processed_at']));
+                    $time_formatted = gmdate('d M Y, h:i A', strtotime($update_data['processed_at']));
 
                     // Enhancement: Extract category/type for better notification title
                     $request_desc = ucfirst(str_replace('_', ' ', $action));

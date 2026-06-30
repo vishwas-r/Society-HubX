@@ -79,7 +79,7 @@ class SGVX51_Receipt_Manager {
 	 */
 	public function get_or_generate_receipt_number( $invoice ) {
 		$invoice_id = $invoice['id'];
-		$month = $invoice['month'] ?? date( 'Y-m' );
+		$month = $invoice['month'] ?? gmdate( 'Y-m' );
 
 		return $this->get_receipt_number( $invoice_id, $month );
 	}
@@ -116,8 +116,8 @@ class SGVX51_Receipt_Manager {
 				$total_paid = floatval( $invoice['amount'] ?? 0 );
 				$payments[] = array(
 					'date'   => !empty($invoice['payment_date'] ?? '') && $invoice['payment_date'] !== '0000-00-00 00:00:00' 
-								? date('Y-m-d', strtotime($invoice['payment_date'])) 
-								: ($invoice['created_at'] ? date('Y-m-d', strtotime($invoice['created_at'])) : date('Y-m-d')),
+								? gmdate('Y-m-d', strtotime($invoice['payment_date'])) 
+								: ($invoice['created_at'] ? gmdate('Y-m-d', strtotime($invoice['created_at'])) : gmdate('Y-m-d')),
 					'amount' => $total_paid,
 					'method' => $invoice['payment_mode'] ?? 'Recorded',
 					'ref'    => $invoice['payment_ref'] ?? 'Legacy Record',
@@ -140,7 +140,7 @@ class SGVX51_Receipt_Manager {
 			'flat_no'          => $invoice['flat_no'] ?? 'N/A',
 			'resident_name'    => $invoice['resident_name'] ?? 'Resident',
 			'description'      => $invoice['description'] ?? 'Society Maintenance',
-			'invoice_month'    => $invoice['month'] ?? date( 'Y-m' ),
+			'invoice_month'    => $invoice['month'] ?? gmdate( 'Y-m' ),
 			'due_date'         => $invoice['due_date'] ?? '',
 			'invoice_amount'   => $invoice_amount,
 			'total_paid'       => $total_paid,

@@ -54,21 +54,21 @@ class SGVX51_Admin_Requests {
 		}
 		check_admin_referer( 'sgvx51_request_action' );
 
-		$request_id = sanitize_text_field( $_GET['id'] );
-		$redirect   = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : '';
+		$request_id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		$redirect   = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
 		
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		$rm = new SGVX51_Request_Manager();
 		$result = $rm->approve_request( $request_id );
 
 		if ( is_wp_error( $result ) ) {
-			wp_die( $result->get_error_message() );
+			wp_die( esc_html( $result->get_error_message() ) );
 		}
 
 		if ( $redirect ) {
-			wp_redirect( $redirect );
+			wp_safe_redirect( $redirect );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=approved' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=approved' ) );
 		}
 		exit;
 	}
@@ -82,18 +82,18 @@ class SGVX51_Admin_Requests {
 		}
 		check_admin_referer( 'sgvx51_request_action' );
 
-		$request_id = sanitize_text_field( $_POST['id'] );
-		$note = sanitize_textarea_field( $_POST['admin_note'] );
-		$redirect = isset($_POST['redirect_to']) ? esc_url_raw($_POST['redirect_to']) : '';
+		$request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+		$note       = isset( $_POST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['admin_note'] ) ) : '';
+		$redirect   = isset( $_POST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';
 
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		$rm = new SGVX51_Request_Manager();
 		$result = $rm->reject_request( $request_id, $note );
 
 		if ( $redirect ) {
-			wp_redirect( $redirect );
+			wp_safe_redirect( $redirect );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=rejected' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-requests&status=rejected' ) );
 		}
 		exit;
 	}

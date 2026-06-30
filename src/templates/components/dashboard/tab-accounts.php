@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Accounts Tab
  * @var array $data Dashboard data.
  */
@@ -117,7 +125,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                         if(!empty($data['invoices'])) {
                             foreach($data['invoices'] as $inv) {
                                 $desc = $inv['description'] ?? 'Maintenance';
-                                $month_label = !empty($inv['month']) ? date('M Y', strtotime($inv['month'])) : '';
+                                $month_label = !empty($inv['month']) ? wp_date('M Y', strtotime($inv['month'])) : '';
                                 if($month_label && strpos($desc, $month_label) === false) $desc = "$month_label - $desc";
 
                                  // A. Check explicit payments relation
@@ -125,7 +133,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                                  if ( is_array( $payments ) && !empty($payments) ) {
                                      foreach($payments as $p) {
                                         $all_payments[] = [
-                                            'date' => $p['date'] ?? date('Y-m-d'),
+                                            'date' => $p['date'] ?? wp_date('Y-m-d'),
                                             'amount' => $p['amount'],
                                             'method' => $p['method'] ?? 'Recorded',
                                             'ref' => $p['reference'] ?? $p['id'] ?? '-',
@@ -138,8 +146,8 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                                 // B. Fallback for legacy "Paid" status without explicit payment rows
                                 elseif (strtolower(trim($inv['status'] ?? '')) === 'paid') {
                                     $pay_date = !empty($inv['payment_date']) && $inv['payment_date'] !== '0000-00-00 00:00:00' 
-                                                ? date('Y-m-d', strtotime($inv['payment_date'])) 
-                                                : ($inv['created_at'] ? date('Y-m-d', strtotime($inv['created_at'])) : date('Y-m-d'));
+                                                ? wp_date('Y-m-d', strtotime($inv['payment_date'])) 
+                                                : ($inv['created_at'] ? wp_date('Y-m-d', strtotime($inv['created_at'])) : wp_date('Y-m-d'));
                                     
                                     $all_payments[] = [
                                         'date' => $pay_date,
@@ -164,7 +172,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                                 $is_approved = ($status === 'approved');
 
                                 $all_payments[] = [
-                                    'date'   => $p_payload['date'] ?? date('Y-m-d'),
+                                    'date'   => $p_payload['date'] ?? wp_date('Y-m-d'),
                                     'amount' => $p_payload['amount'] ?? 0,
                                     'method' => $p_payload['method'] ?? 'UPI',
                                     'ref'    => $p_payload['reference'] ?? '-',
@@ -193,7 +201,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                       <?php else: ?>
                           <?php foreach ( $all_payments as $pay ) : ?>
                             <tr>
-                                <td class="ps-4 fw-bold text-dark"><?php echo date('d M, Y', strtotime($pay['date'])); ?></td>
+                                <td class="ps-4 fw-bold text-dark"><?php echo wp_date('d M, Y', strtotime($pay['date'])); ?></td>
                                 <td>
                                     <div class="fw-medium text-dark <?php echo ($pay['status'] === 'pending') ? 'fst-italic text-opacity-75' : ''; ?>">
                                         <?php echo esc_html($pay['desc']); ?>

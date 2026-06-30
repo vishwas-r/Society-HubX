@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Residents (Bootstrap Migration)
  * Integrates directly with SGVX51_DB_Router for data.
  */

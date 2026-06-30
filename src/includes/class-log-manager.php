@@ -31,17 +31,19 @@ class SGVX51_Log_Manager {
 			return; // Unlimited retention
 		}
 
-		$cutoff_date = date( 'Y-m-d H:i:s', strtotime( "-$retention_days days" ) );
+		$cutoff_date = gmdate( 'Y-m-d H:i:s', strtotime( "-$retention_days days" ) );
         
         global $wpdb;
         
         // 1. Purge Audit Logs
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
             "DELETE FROM {$wpdb->prefix}society_governx_audit_logs WHERE created_at < %s",
             $cutoff_date
         ));
 
         // 2. Purge Notification Logs
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
             "DELETE FROM {$wpdb->prefix}society_governx_notification_logs WHERE created_at < %s",
             $cutoff_date

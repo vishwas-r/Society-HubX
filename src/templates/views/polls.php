@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * View: Digital Democracy (Polls) - Bootstrap Migration
  */
 
@@ -122,7 +126,7 @@ usort( $polls, function($a, $b) {
                         <div class="p-4 bg-light border-top border-light d-flex justify-content-between align-items-center">
                             <span class="small text-muted d-flex align-items-center gap-2">
                                 <i class="bi bi-calendar3"></i>
-                                <span>Launched: <?php echo date('M d, Y', strtotime($p['created_at'])); ?></span>
+                                <span>Launched: <?php echo wp_date('M d, Y', strtotime($p['created_at'])); ?></span>
                             </span>
                             <span class="small fw-bold text-dark d-flex align-items-center gap-2">
                                 <i class="bi bi-person-check-fill fs-6 text-primary"></i>

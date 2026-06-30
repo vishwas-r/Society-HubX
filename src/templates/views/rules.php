@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Rules & Regulations
  * Manages society rules, acknowledgments, and violations
  */
@@ -208,7 +216,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 small text-secondary">
-                                    <?php echo $rule['effective_date'] ? date('M d, Y', strtotime($rule['effective_date'])) : 'Not set'; ?>
+                                    <?php echo $rule['effective_date'] ? wp_date('M d, Y', strtotime($rule['effective_date'])) : 'Not set'; ?>
                                 </td>
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
@@ -327,7 +335,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     <div class="small text-muted"><?php echo esc_html($v['description']); ?></div>
                                 </td>
                                 <td class="px-4 py-4 small text-secondary">
-                                    <?php echo date('M d, Y', strtotime($v['violation_date'])); ?>
+                                    <?php echo wp_date('M d, Y', strtotime($v['violation_date'])); ?>
                                 </td>
                                 <td class="px-4 py-4 fw-bold">₹<?php echo number_format($v['fine_amount'], 2); ?></td>
                                 <td class="px-4 py-4">
@@ -414,7 +422,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                 <tr>
                                     <td class="ps-4 py-3 fw-bold"><?php echo esc_html($stat['title']); ?></td>
                                     <td class="px-4 py-3 small">
-                                        <?php echo $stat['acknowledgment_deadline'] ? date('M d, Y', strtotime($stat['acknowledgment_deadline'])) : 'No deadline'; ?>
+                                        <?php echo $stat['acknowledgment_deadline'] ? wp_date('M d, Y', strtotime($stat['acknowledgment_deadline'])) : 'No deadline'; ?>
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="d-flex align-items-center gap-3">
@@ -960,7 +968,7 @@ function viewViolation(violation) {
                 <strong>Flat Number:</strong><br>${violation.flat_no}
             </div>
             <div class="col-md-6">
-                <strong>Violation Date:</strong><br>${new Date(violation.violation_date).toLocaleDateString()}
+                <strong>Violation Date:</strong><br>${new wp_date(violation.violation_date).toLocaleDateString()}
             </div>
             <div class="col-12">
                 <strong>Description:</strong><br>${violation.description}

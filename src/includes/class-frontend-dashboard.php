@@ -78,9 +78,9 @@ class SGVX51_Frontend_Dashboard {
 		}
 
 		$user_id = get_current_user_id();
-		$phone = sanitize_text_field( $_POST['phone'] );
-		$email = sanitize_email( $_POST['email'] );
-		$blood_group = sanitize_text_field( $_POST['blood_group'] );
+		$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
+		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+		$blood_group = isset( $_POST['blood_group'] ) ? sanitize_text_field( wp_unslash( $_POST['blood_group'] ) ) : '';
 		
 		// 1. Find Resident
 		$residents = $this->db->get( 'residents' );
@@ -102,8 +102,10 @@ class SGVX51_Frontend_Dashboard {
 			);
 
 			// Handle Photo Upload
-			if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+			if ( isset( $_FILES['profile_photo']['size'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_profile_photo.
 				$photo_url = $this->media->upload_profile_photo( 
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_profile_photo.
 					$_FILES['profile_photo'], 
 					$target_resident['flat_no'], 
 					$target_resident['name'] 
@@ -118,7 +120,7 @@ class SGVX51_Frontend_Dashboard {
 		}
 
 		// 3. Redirect Back
-		wp_redirect( wp_get_referer() . '?profile_updated=1' );
+		wp_safe_redirect( wp_get_referer() . '?profile_updated=1' );
 		exit;
 	}
 
@@ -130,11 +132,11 @@ class SGVX51_Frontend_Dashboard {
 		if ( ! is_user_logged_in() ) wp_send_json_error( ['message' => 'Unauthorized'] );
 
 		$user_id = get_current_user_id();
-		$invoice_id = sanitize_text_field( $_POST['invoice_id'] ?? '' );
+		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 		$amount = floatval( $_POST['amount'] ?? 0 );
-		$reference = sanitize_text_field( $_POST['reference'] ?? '' );
-		$date = sanitize_text_field( $_POST['date'] ?? current_time('Y-m-d') );
-		$method = sanitize_text_field( $_POST['method'] ?? 'Bank Transfer' );
+		$reference = isset( $_POST['reference'] ) ? sanitize_text_field( wp_unslash( $_POST['reference'] ) ) : '';
+		$date = isset( $_POST['date'] ) ? sanitize_text_field( wp_unslash( $_POST['date'] ) ) : current_time('Y-m-d');
+		$method = isset( $_POST['method'] ) ? sanitize_text_field( wp_unslash( $_POST['method'] ) ) : '';
 
 		if ( empty($invoice_id) || $amount <= 0 || empty($reference) ) {
 			wp_send_json_error( ['message' => 'Missing valid payment details.'] );
@@ -269,7 +271,8 @@ class SGVX51_Frontend_Dashboard {
         $my_vehicles = $this->get_my_vehicles( $resident['flat_no'], $resident['block'] ?? '' );
 
 		$ledger_mgr = new SGVX51_Ledger_Manager();
-        $summary_month = isset($_GET['summary_month']) ? sanitize_text_field($_GET['summary_month']) : date('Y-m');
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+        $summary_month = isset($_GET['summary_month']) ? sanitize_text_field( wp_unslash( $_GET['summary_month'] ) ) : gmdate('Y-m');
        
 		// Fetch relevant payment requests for this resident (Pending + Approved)
 		$all_requests = $this->db->get('requests');
@@ -319,7 +322,7 @@ class SGVX51_Frontend_Dashboard {
 		$expense_chart_data = [];
 		if ( ! empty( $data['detailed_expenses'] ) ) {
 			foreach ( $data['detailed_expenses'] as $ex ) {
-				$month_key = date('M Y', strtotime($ex['date']));
+				$month_key = gmdate('M Y', strtotime($ex['date']));
 				if ( ! isset( $expense_chart_data[$month_key] ) ) $expense_chart_data[$month_key] = 0;
 				$expense_chart_data[$month_key] += (float) $ex['amount'];
 			}
@@ -340,7 +343,7 @@ class SGVX51_Frontend_Dashboard {
                }
                
                if ( ! $has_explicit_payments && ( strtolower( $inv['status'] ?? '' ) === 'paid' ) ) {
-                   $p_date = date( 'Y-m-d', strtotime( $inv['month'] . '-01' ) );
+                   $p_date = gmdate( 'Y-m-d', strtotime( $inv['month'] . '-01' ) );
                    if ( ! isset( $payment_history[ $p_date ] ) ) $payment_history[ $p_date ] = 0;
                    $payment_history[ $p_date ] += (float) $inv['amount'];
                }
@@ -354,7 +357,7 @@ class SGVX51_Frontend_Dashboard {
            $chart_payments[] = array(
                'x'     => strtotime( $date_str ) * 1000,
                'y'     => $amount,
-               'label' => date( 'd M Y', strtotime( $date_str ) )
+               'label' => gmdate( 'd M Y', strtotime( $date_str ) )
            );
        }
        $payment_history = array_slice( $chart_payments, -20 );
@@ -604,49 +607,52 @@ class SGVX51_Frontend_Dashboard {
 	// --- Form Handlers ---
 
 	public function handle_add_family() {
-        error_log("SGVX51 Debug: Entering handle_add_family. POST: " . print_r($_POST, true));
 
 		if ( wp_doing_ajax() ) {
             check_ajax_referer( 'sgvx51_add_family_nonce' );
         } else {
             // Robust Nonce Check
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( $_POST['_wpnonce_add_family'], 'sgvx51_add_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_family'] ) ), 'sgvx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_add_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
             } elseif ( check_admin_referer( 'sgvx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
 		    if ( ! $nonce_ok ) {
-                error_log("SGVX51 Debug: Nonce verification failed for add_family");
+                error_log("SGVX51 Debug: Nonce verification failed for add_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_die( 'Security check failed' );
             }
         }
 		
 		$flat_no = $this->get_my_flat_number();
-        error_log("SGVX51 Debug: Found Flat No: " . $flat_no);
+        error_log("SGVX51 Debug: Found Flat No: " . $flat_no); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		if(!$flat_no) {
             if(wp_doing_ajax()) wp_send_json_error('Flat not found');
             wp_die('Flat not found for user.');
         }
 
-		$name = sanitize_text_field( $_POST['name'] );
-		$relation = sanitize_text_field( $_POST['relation'] );
-		$dob = sanitize_text_field( $_POST['dob'] );
-		$blood_group = sanitize_text_field( $_POST['blood_group'] );
-		$phone = sanitize_text_field( $_POST['phone'] );
+		$name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+		$relation = isset( $_POST['relation'] ) ? sanitize_text_field( wp_unslash( $_POST['relation'] ) ) : '';
+		$dob = isset( $_POST['dob'] ) ? sanitize_text_field( wp_unslash( $_POST['dob'] ) ) : '';
+		$blood_group = isset( $_POST['blood_group'] ) ? sanitize_text_field( wp_unslash( $_POST['blood_group'] ) ) : '';
+		$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 
         // Handle Photo Upload
-       $photo_url = '';
-       if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
-           $url = $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name );
-           if ( ! is_wp_error( $url ) ) {
-               $photo_url = $url;
-           }
-       }
+        if ( isset( $_FILES['profile_photo']['size'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+            $url = $this->media->upload_profile_photo( 
+                // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_profile_photo.
+                $_FILES['profile_photo'], 
+                $flat_no, 
+                $name 
+            );
+            if ( ! is_wp_error( $url ) ) {
+                $photo_url = $url;
+            }
+        }
 
         $payload = array(
 			'name'    => $name,
@@ -673,32 +679,33 @@ class SGVX51_Frontend_Dashboard {
         $request_id = $rm->create_request( 'residents', 'add', $payload, $new_id, 'family', $flat_no );
 
          if ( is_wp_error( $request_id ) ) {
-            error_log("SGVX51 Error: Request creation failed: " . $request_id->get_error_message());
+            error_log("SGVX51 Error: Request creation failed: " . $request_id->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-            wp_die($request_id->get_error_message());
+            wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
         if (get_option('sgvx51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member added successfully']);
-            wp_redirect( wp_get_referer() . '?family_added=1' );
+            wp_safe_redirect( wp_get_referer() . '?family_added=1' );
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Request submitted for approval']);
-		    wp_redirect( wp_get_referer() . '?request_submitted=1' );
+		    wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
         }
 		exit;
 	}
 
 	public function handle_add_daily_help() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
             // JS sends _wpnonce from the form
-            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
             if ( ! wp_verify_nonce( $nonce, 'sgvx51_add_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( $_POST['_wpnonce_add_help'], 'sgvx51_add_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_help'] ) ), 'sgvx51_add_help_nonce' ) ) {
                 // Success
             } else if ( ! check_admin_referer( 'sgvx51_add_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
@@ -711,11 +718,11 @@ class SGVX51_Frontend_Dashboard {
             wp_die('Flat not found.');
         }
 
-        $name = sanitize_text_field( $_POST['name'] );
-        $role = sanitize_text_field( $_POST['role'] );
-        $phone = sanitize_text_field( $_POST['phone'] );
-        $sex = sanitize_text_field( $_POST['sex'] );
-        $category = sanitize_text_field( $_POST['category'] );
+        $name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+        $role = isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '';
+        $phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
+        $sex = isset( $_POST['sex'] ) ? sanitize_text_field( wp_unslash( $_POST['sex'] ) ) : '';
+        $category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
         $doc_url = '';
         if ( ! empty( $_FILES['doc_file']['name'] ) ) {
             // Handle file upload if present (usually requires FormData)
@@ -754,24 +761,24 @@ class SGVX51_Frontend_Dashboard {
 
          if ( is_wp_error( $request_id ) ) {
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-            wp_die($request_id->get_error_message());
+            wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
         if (get_option('sgvx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help added successfully']);
-            wp_redirect( wp_get_referer() . '?help_added=1' );
+            wp_safe_redirect( wp_get_referer() . '?help_added=1' );
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Request submitted for approval']);
-            wp_redirect( wp_get_referer() . '?request_submitted=1' );
+            wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
         }
         exit;
 	}
 
 	public function handle_add_vehicle_frontend() {
 		// Use request nonce or standard nonce
-		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_add_vehicle_frontend_nonce' ) ) {
+		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_add_vehicle_frontend_nonce' ) ) {
 			// OK
 		} else if ( ! check_admin_referer( 'sgvx51_add_vehicle_frontend_nonce' ) ) {
 			wp_send_json_error( 'Security check failed' );
@@ -782,10 +789,10 @@ class SGVX51_Frontend_Dashboard {
 			wp_send_json_error( 'Resident not found' );
 		}
 		
-		$number = sanitize_text_field( $_POST['number'] );
-		$type = sanitize_text_field( $_POST['type'] );
-		$brand = sanitize_text_field( $_POST['brand'] );
-		$model = sanitize_text_field( $_POST['model'] );
+		$number = isset( $_POST['number'] ) ? sanitize_text_field( wp_unslash( $_POST['number'] ) ) : '';
+		$type = isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '';
+		$brand = isset( $_POST['brand'] ) ? sanitize_text_field( wp_unslash( $_POST['brand'] ) ) : '';
+		$model = isset( $_POST['model'] ) ? sanitize_text_field( wp_unslash( $_POST['model'] ) ) : '';
 
         $payload = array(
 			'number'   => $number,
@@ -823,49 +830,52 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	public function handle_edit_family() {
-        error_log("SGVX51 Debug: Entering handle_edit_family. POST: " . print_r($_POST, true));
         
         if ( wp_doing_ajax() ) {
             check_ajax_referer( 'sgvx51_edit_family_nonce' );
         } else {
              // Verify nonce: accept either `_wpnonce` or `_wpnonce_edit_family`
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( $_POST['_wpnonce_edit_family'], 'sgvx51_edit_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_family'] ) ), 'sgvx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
             } elseif ( check_admin_referer( 'sgvx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
             if ( ! $nonce_ok ) {
-                error_log("SGVX51 Debug: Nonce verification failed for edit_family");
+                error_log("SGVX51 Debug: Nonce verification failed for edit_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_die( 'Security check failed' );
             }
         }
 		
         try {
             $flat_no = $this->get_my_flat_number();
-            $id = sanitize_text_field( $_POST['member_id'] ?? ($_POST['resident_id'] ?? '') );
+            $id = isset( $_POST['member_id'] ) ? sanitize_text_field( wp_unslash( $_POST['member_id'] ) ) : ( isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '' );
+            $name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
             
-            error_log("SGVX51 Debug: Entering handle_edit_family. Flat: $flat_no, ID: $id. POST: " . print_r($_POST, true));
-
             // Handle Photo Upload
            $photo_url = '';
-           if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
-               $url = $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, sanitize_text_field( $_POST['name'] ?? '' ) );
-               if ( ! is_wp_error( $url ) ) {
-                   $photo_url = $url;
-               }
-           }
+           if ( isset( $_FILES['profile_photo']['size'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+            $url = $this->media->upload_profile_photo( 
+                // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_profile_photo.
+                $_FILES['profile_photo'], 
+                $flat_no, 
+                $name 
+            );
+            if ( ! is_wp_error( $url ) ) {
+                $photo_url = $url;
+            }
+        }
 
             // Payload with proposed changes
             $update_payload = array(
-                'name'       => sanitize_text_field( $_POST['name'] ?? '' ),
-                'relation'   => sanitize_text_field( $_POST['relation'] ?? '' ),
-                'dob'        => sanitize_text_field( $_POST['dob'] ?? '' ),
-                'blood_group'=> sanitize_text_field( $_POST['blood_group'] ?? '' ),
-                'phone'      => sanitize_text_field( $_POST['phone'] ?? '' ),
+                'name'       => $name,
+                'relation' => isset( $_POST['relation'] ) ? sanitize_text_field( wp_unslash( $_POST['relation'] ) ) : '',
+                'dob' => isset( $_POST['dob'] ) ? sanitize_text_field( wp_unslash( $_POST['dob'] ) ) : '',
+                'blood_group' => isset( $_POST['blood_group'] ) ? sanitize_text_field( wp_unslash( $_POST['blood_group'] ) ) : '',
+                'phone' => isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '',
                 'flat_no'    => $flat_no
             );
 
@@ -883,7 +893,7 @@ class SGVX51_Frontend_Dashboard {
 
             if ( is_wp_error( $request_id ) ) {
                 if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-                wp_die( 'Request Creation Failed: ' . $request_id->get_error_message() );
+                wp_die( 'Request Creation Failed: ' . esc_html( $request_id->get_error_message() ) );
             }
 
             // Check for Auto-Approval
@@ -891,31 +901,32 @@ class SGVX51_Frontend_Dashboard {
                 $res = $rm->approve_request($request_id);
                 if ( is_wp_error( $res ) ) {
                      if(wp_doing_ajax()) wp_send_json_error( $res->get_error_message() );
-                    wp_die( 'Auto-Approval Failed: ' . $res->get_error_message() );
+                    wp_die( 'Auto-Approval Failed: ' . esc_html( $res->get_error_message() ) );
                 }
                 if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member updated successfully']);
-                wp_redirect( wp_get_referer() . '?family_updated=1' );
+                wp_safe_redirect( wp_get_referer() . '?family_updated=1' );
             } else {
                  if(wp_doing_ajax()) wp_send_json_success(['message' => 'Update request submitted']);
-                wp_redirect( wp_get_referer() . '?request_submitted=1' );
+                wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
             }
             exit;
         } catch ( Exception $e ) {
              if(wp_doing_ajax()) wp_send_json_error( $e->getMessage() );
-            wp_die( 'Fatal Error in handle_edit_family: ' . $e->getMessage() );
+            wp_die( 'Fatal Error in handle_edit_family: ' . esc_html( $e->getMessage() ) );
         }
     }
 
 	public function handle_edit_daily_help() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
-            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
             if ( ! wp_verify_nonce( $nonce, 'sgvx51_edit_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( $_POST['_wpnonce_edit_help'], 'sgvx51_edit_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_help'] ) ), 'sgvx51_edit_help_nonce' ) ) {
                 // Success
-            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_help_nonce' ) ) {
+            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_edit_help_nonce' ) ) {
                 // Success
             } else if ( ! check_admin_referer( 'sgvx51_edit_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
@@ -923,10 +934,10 @@ class SGVX51_Frontend_Dashboard {
         }
 		
 		$flat_no = $this->get_my_flat_number();
-		$id = sanitize_text_field( $_POST['help_id'] );
+		$id = isset( $_POST['help_id'] ) ? sanitize_text_field( wp_unslash( $_POST['help_id'] ) ) : '';
 		
-        $category = sanitize_text_field( $_POST['category'] );
-        $doc_url = sanitize_text_field( $_POST['document_url'] ?? '' ); // retain existing if no new upload
+        $category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
+        $doc_url = isset( $_POST['document_url'] ) ? sanitize_text_field( wp_unslash( $_POST['document_url'] ) ) : ''; // retain existing if no new upload
         
         if ( ! empty( $_FILES['doc_file']['name'] ) ) {
              require_once( ABSPATH . 'wp-admin/includes/file.php' );
@@ -939,12 +950,12 @@ class SGVX51_Frontend_Dashboard {
         }
 		
         $update_payload = array(
-            'name'           => sanitize_text_field( $_POST['name'] ),
-            'role'           => sanitize_text_field( $_POST['role'] ),
+            'name' => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+            'role' => isset( $_POST['role'] ) ? sanitize_text_field( wp_unslash( $_POST['role'] ) ) : '',
             'category'       => $category,
-            'phone'          => sanitize_text_field( $_POST['phone'] ),
-            'sex'            => sanitize_text_field( $_POST['sex'] ),
-            'visiting_hours' => sanitize_text_field( $_POST['visiting_hours'] ),
+            'phone' => isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '',
+            'sex' => isset( $_POST['sex'] ) ? sanitize_text_field( wp_unslash( $_POST['sex'] ) ) : '',
+            'visiting_hours' => isset( $_POST['visiting_hours'] ) ? sanitize_text_field( wp_unslash( $_POST['visiting_hours'] ) ) : '',
             'document_url'   => $doc_url,
             'flat_no'        => $flat_no // Important: include flat_no for administrative context
         );
@@ -959,35 +970,36 @@ class SGVX51_Frontend_Dashboard {
 
          if ( is_wp_error( $request_id ) ) {
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-            wp_die($request_id->get_error_message());
+            wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
         if (get_option('sgvx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help updated successfully']);
-            wp_redirect( wp_get_referer() . '?help_updated=1' );
+            wp_safe_redirect( wp_get_referer() . '?help_updated=1' );
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Update request submitted']);
-		    wp_redirect( wp_get_referer() . '?request_submitted=1' );
+		    wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
         }
 		exit;
 	}
 
 	public function handle_edit_vehicle() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
-            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
             if ( ! wp_verify_nonce( $nonce, 'sgvx51_edit_vehicle_action' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
             // Use explicit nonce verification to avoid conflict with other forms
             $nonce_ok = false;
-            if ( ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( $_POST['sgvx51_edit_vehicle_token'], 'sgvx51_edit_vehicle_action' ) ) {
+            if ( ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['sgvx51_edit_vehicle_token'] ) ), 'sgvx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             // Also accept canonical _wpnonce if JS did not set the custom token
-            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) {
@@ -1001,16 +1013,16 @@ class SGVX51_Frontend_Dashboard {
         }
 		
 		$flat_no = $this->get_my_flat_number();
-		$id = sanitize_text_field( $_POST['vehicle_id'] );
-        if(empty($id) && !empty($_POST['id'])) $id = sanitize_text_field($_POST['id']);
+		$id = isset( $_POST['vehicle_id'] ) ? sanitize_text_field( wp_unslash( $_POST['vehicle_id'] ) ) : '';
+        if(empty($id) && !empty($_POST['id'])) $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		
         $update_payload = array(
             'id'     => $id, // Critical: pass ID to ensure update
-            'number' => sanitize_text_field( $_POST['number'] ),
-            'plate_no' => sanitize_text_field( $_POST['number'] ), // Ensure plate_no is synced
-            'type'   => sanitize_text_field( $_POST['type'] ),
-            'brand'  => sanitize_text_field( $_POST['brand'] ),
-            'model'  => sanitize_text_field( $_POST['model'] ),
+            'number' => isset( $_POST['number'] ) ? sanitize_text_field( wp_unslash( $_POST['number'] ) ) : '',
+            'plate_no' => isset( $_POST['number'] ) ? sanitize_text_field( wp_unslash( $_POST['number'] ) ) : '', // Ensure plate_no is synced
+            'type' => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
+            'brand' => isset( $_POST['brand'] ) ? sanitize_text_field( wp_unslash( $_POST['brand'] ) ) : '',
+            'model' => isset( $_POST['model'] ) ? sanitize_text_field( wp_unslash( $_POST['model'] ) ) : '',
             'flat_no' => $flat_no
         );
 
@@ -1043,7 +1055,7 @@ class SGVX51_Frontend_Dashboard {
         }
 
 		$flat_no = $this->get_my_flat_number();
-		$id = sanitize_text_field( $_REQUEST['id'] );
+		$id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '';
 
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
@@ -1055,17 +1067,17 @@ class SGVX51_Frontend_Dashboard {
 
          if ( is_wp_error( $request_id ) ) {
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-            wp_die($request_id->get_error_message());
+            wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
         if (get_option('sgvx51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member removed successfully']);
-            wp_redirect( wp_get_referer() . '?deleted=1' );
+            wp_safe_redirect( wp_get_referer() . '?deleted=1' );
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Deletion request submitted']);
-		    wp_redirect( wp_get_referer() . '?request_submitted=1' );
+		    wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
         }
 		exit;
 	}
@@ -1074,11 +1086,11 @@ class SGVX51_Frontend_Dashboard {
         if ( wp_doing_ajax() ) {
             check_ajax_referer( 'sgvx51_delete_help_nonce' );
         } else {
-            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $flat_no = $this->get_my_flat_number();
-        $id = sanitize_text_field( $_REQUEST['id'] );
+        $id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '';
 
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
@@ -1090,28 +1102,28 @@ class SGVX51_Frontend_Dashboard {
 
          if ( is_wp_error( $request_id ) ) {
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
-            wp_die($request_id->get_error_message());
+            wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
         if (get_option('sgvx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help deleted successfully']);
-            wp_redirect( wp_get_referer() . '?help_deleted=1' );
+            wp_safe_redirect( wp_get_referer() . '?help_deleted=1' );
         } else {
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Deletion request submitted']);
-            wp_redirect( wp_get_referer() . '?request_submitted=1' );
+            wp_safe_redirect( wp_get_referer() . '?request_submitted=1' );
         }
         exit;
     }
 
     public function handle_delete_family_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_delete_family_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_delete_family_nonce' ) ) {
              wp_send_json_error( 'Security check failed' ); 
         }
 
         $flat_no = $this->get_my_flat_number();
-        $id = sanitize_text_field( $_POST['id'] );
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
@@ -1137,13 +1149,13 @@ class SGVX51_Frontend_Dashboard {
     }
 
     public function handle_delete_vehicle_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_delete_vehicle_frontend_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_delete_vehicle_frontend_nonce' ) ) {
              // For AJAX calls, sometimes it might come as distinct param or in header? Standard POST param is _wpnonce.
              wp_send_json_error( 'Security check failed' ); 
         }
 
         $flat_no = $this->get_my_flat_number();
-        $id = sanitize_text_field( $_POST['id'] );
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 
         $rm = new SGVX51_Request_Manager();
         
@@ -1169,7 +1181,7 @@ class SGVX51_Frontend_Dashboard {
 	public function handle_request_delete_doc() {
 		if ( ! check_admin_referer( 'sgvx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		
-		$doc_id = sanitize_text_field( $_GET['doc_id'] );
+		$doc_id = isset( $_GET['doc_id'] ) ? sanitize_text_field( wp_unslash( $_GET['doc_id'] ) ) : '';
 		$flat_no = $this->get_my_flat_number();
 
 		$all = $this->db->get('documents');
@@ -1194,7 +1206,7 @@ class SGVX51_Frontend_Dashboard {
 			}
 		}
 
-		wp_redirect( wp_get_referer() . '?doc_deletion_requested=1' );
+		wp_safe_redirect( wp_get_referer() . '?doc_deletion_requested=1' );
 		exit;
 	}
 
@@ -1225,8 +1237,10 @@ class SGVX51_Frontend_Dashboard {
 	}
 
 	private function get_expenses_filtered() {
-		$year = isset($_GET['ex_year']) ? sanitize_text_field($_GET['ex_year']) : date('Y');
-		$month = isset($_GET['ex_month']) ? sanitize_text_field($_GET['ex_month']) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+		$year = isset($_GET['ex_year']) ? sanitize_text_field( wp_unslash( $_GET['ex_year'] ) ) : gmdate('Y');
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+		$month = isset($_GET['ex_month']) ? sanitize_text_field( wp_unslash( $_GET['ex_month'] ) ) : '';
 		
 		// If filtering by custom range, we might need all years or specific logic.
 		// For now, simpler optimization: fetch selected year only.
@@ -1234,7 +1248,7 @@ class SGVX51_Frontend_Dashboard {
 		
 		// Debug: Log expenses
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( 'SGVX51 Frontend Expenses: Total=' . count($expenses) );
+			error_log( 'SGVX51 Frontend Expenses: Total=' . count($expenses) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		}
 		
 		if ( empty( $expenses ) ) return [];
@@ -1249,13 +1263,13 @@ class SGVX51_Frontend_Dashboard {
 			$e_time = strtotime($e['date']);
 			$match = true;
 
-			// Year Filter (only if explicitly set)
-			if ( isset($_GET['ex_year']) && date('Y', $e_time) !== $year ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+			if ( isset($_GET['ex_year']) && gmdate('Y', $e_time) !== $year ) {
 				$match = false;
 			}
 
 			// Month Filter
-			if ( $month !== '' && date('m', $e_time) !== $month ) {
+			if ( $month !== '' && gmdate('m', $e_time) !== $month ) {
 				$match = false;
 			}
 			// Custom Date logic could go here if parameters are passed
@@ -1322,7 +1336,7 @@ class SGVX51_Frontend_Dashboard {
 								</div>
 								<div class="col-md-6">
 									<label class="form-label small fw-bold text-secondary">Payment Date</label>
-									<input type="date" name="date" id="confirm-date" class="form-control shadow-none rounded-3" value="<?php echo date('Y-m-d'); ?>" required>
+									<input type="date" name="date" id="confirm-date" class="form-control shadow-none rounded-3" value="<?php echo esc_attr( gmdate('Y-m-d') ); ?>" required>
 								</div>
 								<div class="col-md-6">
 									<label class="form-label small fw-bold text-secondary">Method</label>
@@ -1352,7 +1366,8 @@ class SGVX51_Frontend_Dashboard {
 	 * Render Public Notices Board (Searchable).
 	 */
 	public function render_notices( $atts ) {
-		$search = isset( $_GET['q'] ) ? sanitize_text_field( $_GET['q'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+		$search = isset( $_GET['q'] ) ? sanitize_text_field( wp_unslash( $_GET['q'] ) ) : '';
 		
 		$all = $this->db->get( 'notices' );
 		// Filter by Search
@@ -1383,7 +1398,7 @@ class SGVX51_Frontend_Dashboard {
                             
 							<div class="d-flex justify-content-between align-items-start mb-2">
 								<h5 class="fw-bold text-dark m-0"><?php echo esc_html( $n['title'] ); ?></h5>
-								<span class="badge bg-light text-secondary border border-light fw-normal"><?php echo date( 'd M Y', strtotime( $n['created_at'] ) ); ?></span>
+								<span class="badge bg-light text-secondary border border-light fw-normal"><?php echo esc_html( gmdate( 'd M Y', strtotime( $n['created_at'] ) ) ); ?></span>
 							</div>
 							<p class="text-secondary mb-3 pb-3 border-bottom border-light"><?php echo esc_html( $n['content'] ); ?></p>
 							
@@ -1411,8 +1426,10 @@ class SGVX51_Frontend_Dashboard {
 			return '<div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-700 font-medium">Please log in to search the directory.</div>';
 		}
 
-		$search = isset( $_GET['dq'] ) ? sanitize_text_field( $_GET['dq'] ) : '';
-		$filter_type = isset( $_GET['dtype'] ) ? sanitize_text_field( $_GET['dtype'] ) : ''; // Owner, Tenant
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+		$search = isset( $_GET['dq'] ) ? sanitize_text_field( wp_unslash( $_GET['dq'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
+		$filter_type = isset( $_GET['dtype'] ) ? sanitize_text_field( wp_unslash( $_GET['dtype'] ) ) : ''; // Owner, Tenant
 		
 		$residents = $this->db->get( 'residents' );
 		$vehicles  = $this->db->get( 'vehicles' );
@@ -1765,7 +1782,7 @@ class SGVX51_Frontend_Dashboard {
 
         // 4. Index Invoices (Maintenance & Adhoc)
         $flat_invoices = [];
-        $current_month = date('Y-m'); // e.g. 2024-03
+        $current_month = gmdate('Y-m'); // e.g. 2024-03
         
         foreach($invoices as $inv) {
             $fno = $inv['flat_no'];
@@ -1917,8 +1934,9 @@ class SGVX51_Frontend_Dashboard {
 		check_ajax_referer( 'sgvx51_login_nonce', 'login_nonce' );
 
 		$creds = array(
-			'user_login'    => sanitize_text_field( $_POST['user_login'] ),
-			'user_password' => $_POST['user_pass'],
+			'user_login' => isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : '',
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password input should not be sanitized to prevent character loss.
+			'user_password' => isset( $_POST['user_pass'] ) ? wp_unslash( $_POST['user_pass'] ) : '',
 			'remember'      => isset( $_POST['remember'] )
 		);
 

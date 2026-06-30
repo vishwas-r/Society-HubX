@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Modals
  * @var array $data Dashboard data.
  */
@@ -443,7 +451,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
             <input type="hidden" name="invoice_id" id="confirm-invoice-id">
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Amount (₹) *</label><input type="number" name="amount" id="confirm-amount" class="form-control rounded-3" required></div>
-                <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Date *</label><input type="date" name="date" id="confirm-date" class="form-control rounded-3" value="<?php echo date('Y-m-d'); ?>" required></div>
+                <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Date *</label><input type="date" name="date" id="confirm-date" class="form-control rounded-3" value="<?php echo wp_date('Y-m-d'); ?>" required></div>
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Method</label><select name="method" class="form-select rounded-3"><option value="UPI">UPI</option><option value="Bank Transfer">Bank Transfer</option><option value="Cash">Cash</option></select></div>
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Ref / Txn ID *</label><input type="text" name="reference" class="form-control rounded-3" placeholder="UTR/Ref" required></div>
             </div>

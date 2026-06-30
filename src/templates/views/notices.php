@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Notices (World-Class Modernization)
  * Integrates with AJAX CRUD and Enhanced Metadata.
  */
@@ -154,7 +162,7 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                                     <h4 class="h5 fw-bold text-dark m-0" style="letter-spacing: -0.01em;"><?php echo esc_html( $n['title'] ); ?></h4>
                                     <div class="small text-secondary opacity-75 mt-1 d-flex align-items-center gap-2">
                                         <i class="bi bi-calendar3"></i>
-                                        <span><?php echo date( 'd M Y, H:i', strtotime( $n['created_at'] ) ); ?></span>
+                                        <span><?php echo wp_date( 'd M Y, H:i', strtotime( $n['created_at'] ) ); ?></span>
                                         <span class="mx-1">•</span>
                                         <span class="text-uppercase fw-bold" style="font-size: 10px;">For: <?php echo esc_html($n['audience']); ?></span>
                                     </div>

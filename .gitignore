@@ -11,3 +11,8 @@ wordpress-temp.zip
 .env.local
 .vscode/
 .idea/
+
+# Local testing and compliance tools/reports
+plugin-check/
+strip-bom.php
+society-governx-*.md

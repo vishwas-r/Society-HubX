@@ -55,7 +55,7 @@ class SGVX51_REST_Manager {
 	public static function check_permission( $request ) {
 		// API Key authentication can be added here
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.' ), array( 'status' => 401 ) );
+			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.', 'society-governx' ), array( 'status' => 401 ) );
 		}
 
 		return true;

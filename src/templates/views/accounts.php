@@ -1,14 +1,20 @@
 <?php
 /**
  * View: Accounts (Invoices & Income) - Bootstrap Migration
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 $db = new SGVX51_DB_Router();
 $invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
 $residents = $db->get( 'residents', array( 'load_relations' => true ) );
 
 $ledger_mgr = new SGVX51_Ledger_Manager();
-$selected_year = isset( $_GET['year'] ) ? sanitize_text_field( $_GET['year'] ) : date('Y');
+$selected_year = isset( $_GET['year'] ) ? sanitize_text_field( wp_unslash( $_GET['year'] ) ) : wp_date('Y');
 $ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
 // Fetch Relevant Payment Requests (Any Stage)
@@ -16,7 +22,7 @@ $relevant_reqs = array_filter($db->get('requests'), function($r) use ($selected_
     if ( ( ($r['module'] ?? '') !== 'accounts' && ($r['entity_type'] ?? '') !== 'accounts' ) ) return false;
     $status = $r['status'] ?? '';
     if ( in_array($status, ['pending', 'pending_secretary', 'pending_treasurer']) ) return true;
-    if ( $status === 'approved' && date('Y', strtotime($r['processed_at'] ?? $r['created_at'])) == $selected_year ) return true;
+    if ( $status === 'approved' && wp_date('Y', strtotime($r['processed_at'] ?? $r['created_at'])) == $selected_year ) return true;
     return false;
 });
 
@@ -43,7 +49,7 @@ foreach($relevant_reqs as $pr) {
             'block'         => $resident_block,
             'flat_no'       => $resident_flat,
             'resident_name' => $resident_name,
-            'month'         => date('Y-m-d', strtotime($pr['created_at'])),
+            'month'         => wp_date('Y-m-d', strtotime($pr['created_at'])),
             'description'   => 'Payment towards Total Outstanding',
             'amount'        => $p_payload['amount'] ?? 0,
             'status'        => 'pending_total',
@@ -105,7 +111,7 @@ foreach($invoices as $inv) {
     // Skip dummy invoices injected for pending UI representations
     if ( ($inv['status'] ?? '') === 'pending_total' ) continue;
 
-    if (date('Y', strtotime($inv['month'])) == $selected_year) {
+    if (wp_date('Y', strtotime($inv['month'])) == $selected_year) {
         $total_demand += $inv['amount'];
         
         $collected_this_inv = 0;
@@ -113,7 +119,7 @@ foreach($invoices as $inv) {
             $payments = $inv['payments'];
             if(is_array($payments) && !empty($payments)) {
                 foreach($payments as $p) {
-                   if(date('Y', strtotime($p['date'])) == $selected_year) $collected_this_inv += $p['amount'];
+                   if(wp_date('Y', strtotime($p['date'])) == $selected_year) $collected_this_inv += $p['amount'];
                 }
             }
         }
@@ -132,7 +138,7 @@ $collection_pct = ($total_demand > 0) ? round(($total_collected / $total_demand)
 // 1. Monthly Cash Flow Data
 $monthly_data = [];
 foreach($ledger_entries as $entry) {
-    $month = date('M Y', strtotime($entry['date']));
+    $month = wp_date('M Y', strtotime($entry['date']));
     if(!isset($monthly_data[$month])) {
         $monthly_data[$month] = ['income' => 0, 'expense' => 0, 'net' => 0];
     }
@@ -157,7 +163,7 @@ foreach($invoices as $inv) {
     // Skip dummy invoices injected for pending UI representations
     if ( ($inv['status'] ?? '') === 'pending_total' ) continue;
 
-    if (date('Y', strtotime($inv['month'])) == $selected_year) {
+    if (wp_date('Y', strtotime($inv['month'])) == $selected_year) {
         $inv_status = $inv['status'] ?? 'unpaid';
         if($inv_status === 'paid') $paid_count++;
         else if($inv_status === 'partial') $partial_count++;
@@ -175,7 +181,7 @@ foreach($ledger_entries as $e) {
     }
 }
 
-$active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'invoices';
+$active_tab = isset($_GET['tab']) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'invoices';
 $success_msg = '';
 if ( isset( $_GET['success'] ) ) {
     if ( $_GET['success'] === 'generated' ) $success_msg = 'Invoices generated successfully.';
@@ -230,8 +236,8 @@ if ( isset( $_GET['success'] ) ) {
                     <form method="get" class="m-0">
                         <input type="hidden" name="page" value="sgvx51-accounts">
                         <select name="year" onchange="this.form.submit()" class="form-select form-select-sm bg-light border-0 shadow-none fw-bold text-dark" style="min-width: 100px;">
-                            <?php for($y = date('Y'); $y >= date('Y')-2; $y--) {
-                                $sel = ($y == $selected_year) ? 'selected' : '';
+                             <?php for($y = (int)wp_date('Y'); $y >= (int)wp_date('Y')-2; $y--) {
+                                $sel = ($y == (int)sanitize_text_field($selected_year)) ? 'selected' : '';
                                 echo "<option value='$y' $sel>$y</option>";
                             } ?>
                         </select>
@@ -266,7 +272,7 @@ if ( isset( $_GET['success'] ) ) {
             ?>
                 <div class="mb-3 last-child-mb-0">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small fw-bold text-secondary">Generating <?php echo esc_html( ucfirst( $job['type'] ) ); ?> Invoices for <?php echo esc_html( date( 'F Y', strtotime( $job['month'] ) ) ); ?></span>
+                        <span class="small fw-bold text-secondary">Generating <?php echo esc_html( ucfirst( $job['type'] ) ); ?> Invoices for <?php echo esc_html( wp_date( 'F Y', strtotime( $job['month'] ) ) ); ?></span>
                         <span class="badge bg-info text-white fw-bold" style="font-size: 10px;"><?php echo $pct; ?>%</span>
                     </div>
                     <div class="progress" style="height: 10px;">
@@ -317,7 +323,7 @@ if ( isset( $_GET['success'] ) ) {
                 <!-- Overall Live Balance (Added) -->
                 <?php 
                     $live_bal = $ledger_mgr->get_current_balance(); 
-                    $is_current_year = ($selected_year == date('Y'));
+                    $is_current_year = ($selected_year == wp_date('Y'));
                 ?>
                 <?php if(!$is_current_year): ?>
                     <div class="mt-3 pt-3 border-top border-white-50">
@@ -465,7 +471,7 @@ if ( isset( $_GET['success'] ) ) {
                                             '#INV-' . substr($inv['id'], -6),
                                             $inv['flat_no'],
                                             $inv['resident_name'] ?? '',
-                                            date('M Y', strtotime($inv['month'])),
+                                            wp_date('M Y', strtotime($inv['month'])),
                                             $inv['description'] ?? ''
                                         ]));
                                     ?>
@@ -479,7 +485,7 @@ if ( isset( $_GET['success'] ) ) {
                                             <div class="small text-secondary fw-bold" style="font-size: 11px;"><?php echo esc_html($inv['resident_name'] ?? 'Unknown'); ?></div>
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="text-dark fw-medium"><?php echo esc_html(date('M Y', strtotime($inv['month']))); ?> Maintenance</div>
+                                            <div class="text-dark fw-medium"><?php echo esc_html(wp_date('M Y', strtotime($inv['month']))); ?> Maintenance</div>
                                             <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
@@ -585,7 +591,7 @@ if ( isset( $_GET['success'] ) ) {
                                 <?php foreach(array_reverse($ledger_entries) as $ln): ?>
                                     <?php 
                                         $search_text = strtolower(implode(' ', [
-                                            date('d M Y', strtotime($ln['date'])),
+                                            wp_date('d M Y', strtotime($ln['date'])),
                                             $ln['ref_id'] ?? '',
                                             $ln['description'] ?? '',
                                             $ln['entity'] ?? '',
@@ -594,7 +600,7 @@ if ( isset( $_GET['success'] ) ) {
                                     ?>
                                     <tr class="border-bottom border-light ledger-row" data-search="<?php echo esc_attr($search_text); ?>">
                                         <td class="ps-5 py-4">
-                                            <div class="text-dark fw-bold small"><?php echo esc_html(date('d M, Y', strtotime($ln['date']))); ?></div>
+                                            <div class="text-dark fw-bold small"><?php echo esc_html(wp_date('d M, Y', strtotime($ln['date']))); ?></div>
                                             <div class="text-muted font-monospace" style="font-size: 8px;"><?php echo esc_html($ln['ref_id']); ?></div>
                                         </td>
                                          <td class="px-4 py-4">
@@ -702,12 +708,12 @@ add_action('sgvx51_admin_modals', function() use ($selected_year, $actual_bank, 
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
-                        <input type="month" name="month" value="<?php echo date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="month" name="month" value="<?php echo wp_date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Description</label>
-                        <input type="text" name="description" value="Monthly Maintenance - <?php echo date('F Y'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="text" name="description" value="Monthly Maintenance - <?php echo wp_date('F Y'); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="row g-3 mb-3">
@@ -717,7 +723,7 @@ add_action('sgvx51_admin_modals', function() use ($selected_year, $actual_bank, 
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
-                            <input type="date" name="due_date" value="<?php echo date('Y-m-d', strtotime('+10 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="due_date" value="<?php echo wp_date('Y-m-d', strtotime('+10 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                     </div>
                     
@@ -755,7 +761,7 @@ add_action('sgvx51_admin_modals', function() use ($selected_year, $actual_bank, 
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
-                        <input type="month" name="month" value="<?php echo date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="month" name="month" value="<?php echo wp_date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="row g-3">
@@ -765,7 +771,7 @@ add_action('sgvx51_admin_modals', function() use ($selected_year, $actual_bank, 
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
-                            <input type="date" name="due_date" value="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="due_date" value="<?php echo wp_date('Y-m-d', strtotime('+7 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                     </div>
                 </div>
@@ -856,7 +862,7 @@ add_action('sgvx51_admin_modals', function() use ($selected_year, $actual_bank, 
                     <div class="row g-3 mb-3">
                          <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Date</label>
-                            <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="date" value="<?php echo wp_date('Y-m-d'); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Method</label>
@@ -1022,7 +1028,7 @@ function populateReceiptModal(receiptData) {
             </div>
             <div>
                 <span class="receipt-label">Billing Period</span>
-                <div class="receipt-value">${new Date(receiptData.invoice_month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</div>
+                <div class="receipt-value">${new wp_date(receiptData.invoice_month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</div>
             </div>
             <div>
                 <span class="receipt-label">Purpose</span>

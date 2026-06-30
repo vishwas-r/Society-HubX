@@ -31,7 +31,7 @@ class SGVX51_Data_Portability {
 		$upload_dir = wp_upload_dir();
 		$temp_dir   = $upload_dir['basedir'] . '/sgvx_temp_export_' . md5( uniqid() ) . '/';
 		if ( ! file_exists( $temp_dir ) ) {
-			mkdir( $temp_dir, 0755, true );
+			wp_mkdir_p( $temp_dir );
 		}
 
 		$db     = new SGVX51_DB_Router();
@@ -50,6 +50,7 @@ class SGVX51_Data_Portability {
 
 			// Generate CSV for this table
 			$csv_file = $temp_dir . $table . '.csv';
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Custom temporary CSV file generation.
 			$fp = fopen( $csv_file, 'w' );
 
 			// Headers from first row keys
@@ -68,6 +69,7 @@ class SGVX51_Data_Portability {
 				}
 				fputcsv( $fp, $row_data );
 			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Custom temporary CSV file generation.
 			fclose( $fp );
 		}
 
@@ -75,7 +77,7 @@ class SGVX51_Data_Portability {
 		file_put_contents( $temp_dir . 'search_index_dump.json', json_encode( $full_dump, JSON_PRETTY_PRINT ) );
 
 		// 4. Create ZIP
-		$zip_filename = 'society_governx_export_' . date( 'Y-m-d_H-i-s' ) . '.zip';
+		$zip_filename = 'society_governx_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
 		$zip_path     = $temp_dir . $zip_filename;
 
 		if ( class_exists( 'ZipArchive' ) ) {
@@ -112,7 +114,7 @@ class SGVX51_Data_Portability {
 				// Create zip, removing the temp path structure
 				$v_list = $archive->create( $files_to_zip, PCLZIP_OPT_REMOVE_PATH, $temp_dir );
 				if ( $v_list == 0 ) {
-					wp_die( 'Failed to create ZIP archive (PclZip Error): ' . $archive->errorInfo(true) );
+					wp_die( 'Failed to create ZIP archive (PclZip Error): ' . esc_html( $archive->errorInfo(true) ) );
 				}
 			} else {
 				wp_die( 'Critical Error: No ZIP library available (ZipArchive or PclZip).' );
@@ -125,6 +127,7 @@ class SGVX51_Data_Portability {
 			header( 'Content-Disposition: attachment; filename="' . $zip_filename . '"' );
 			header( 'Content-Length: ' . filesize( $zip_path ) );
 			header( 'Pragma: no-cache' );
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Direct file download streaming.
 			readfile( $zip_path );
 
 			// 6. Cleanup
@@ -145,18 +148,20 @@ class SGVX51_Data_Portability {
 		check_admin_referer( 'sgvx51_import_nonce' );
 
 		if ( empty( $_FILES['import_file']['tmp_name'] ) ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&error=no_file' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&error=no_file' ) );
 			exit;
 		}
 
-		$target_table = sanitize_text_field( $_POST['target_table'] );
+		$target_table = isset( $_POST['target_table'] ) ? sanitize_text_field( wp_unslash( $_POST['target_table'] ) ) : '';
 		$valid_tables = SGVX51_DB_Router::TABLES;
 
 		if ( ! in_array( $target_table, $valid_tables ) ) {
 			wp_die( 'Invalid Target Table' );
 		}
 
-		$file = $_FILES['import_file']['tmp_name'];
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Temporary file path from $_FILES, handled safely.
+		$file = isset( $_FILES['import_file']['tmp_name'] ) ? wp_unslash( $_FILES['import_file']['tmp_name'] ) : '';
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Custom temporary CSV file reading.
 		$handle = fopen( $file, 'r' );
 
 		if ( ! $handle ) {
@@ -209,9 +214,10 @@ class SGVX51_Data_Portability {
 			}
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Custom temporary CSV file reading.
 		fclose( $handle );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&imported=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&imported=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -226,10 +232,11 @@ class SGVX51_Data_Portability {
 					if ( is_dir( $dir . '/' . $object ) ) {
 						$this->recursive_rmdir( $dir . '/' . $object );
 					} else {
-						unlink( $dir . '/' . $object );
+						wp_delete_file( $dir . '/' . $object );
 					}
 				}
 			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- Custom temp directory cleanup.
 			rmdir( $dir );
 		}
 	}

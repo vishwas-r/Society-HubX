@@ -1,7 +1,13 @@
 <?php
 /**
  * View: Roles & Permissions (RBAC)
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 $rbac = new SGVX51_RBAC_Manager();
 $roles = $rbac->get_all_roles();
@@ -47,7 +53,7 @@ $available_caps = SGVX51_RBAC_Manager::get_available_capabilities();
                         </div>
                         
                         <h5 class="fw-bold text-dark mb-1"><?php echo esc_html( $role['name'] ); ?></h5>
-                        <p class="small text-secondary mb-4"><?php echo $cap_count; ?> Permissions Assigned</p>
+                        <p class="small text-secondary mb-4"><?php echo absint( $cap_count ); ?> Permissions Assigned</p>
                         
                         <div class="d-flex flex-wrap gap-1 mb-4">
                             <?php 
@@ -57,7 +63,7 @@ $available_caps = SGVX51_RBAC_Manager::get_available_capabilities();
                                 <span class="badge bg-light text-dark fw-medium" style="font-size: 10px;"><?php echo esc_html( $available_caps[$cap] ?? $cap ); ?></span>
                             <?php endforeach; ?>
                             <?php if ( $cap_count > 3 ) : ?>
-                                <span class="badge bg-light text-muted fw-medium" style="font-size: 10px;">+<?php echo $cap_count - 3; ?> more</span>
+                                <span class="badge bg-light text-muted fw-medium" style="font-size: 10px;">+<?php echo absint( $cap_count - 3 ); ?> more</span>
                             <?php endif; ?>
                         </div>
 
@@ -160,7 +166,7 @@ function deleteRole(roleId) {
     const fields = {
         action: 'sgvx51_delete_role',
         role_id: roleId,
-        _wpnonce: '<?php echo wp_create_nonce('sgvx51_role_nonce'); ?>'
+        _wpnonce: '<?php echo esc_js( wp_create_nonce('sgvx51_role_nonce') ); ?>'
     };
     
     for(const key in fields) {

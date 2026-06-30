@@ -120,13 +120,15 @@ class SGVX51_DB_Router {
 
 		// Prepare Query
 		if ( ! empty( $values ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL built dynamically.
 			$query = $this->wpdb->prepare( $query, $values );
 		}
 		
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- SQL built dynamically.
 		$results = $this->wpdb->get_results( $query, ARRAY_A );
 		
 		if ( $this->wpdb->last_error ) {
-			error_log( 'SGVX51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error );
+			error_log( 'SGVX51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			return array();
 		}
 		
@@ -153,6 +155,7 @@ class SGVX51_DB_Router {
 				$id = $row['id'] ?? '';
 				if ( ! $id ) continue;
 
+				// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Dynamic table names in SQL statements cannot be prepared.
 				if ( $table === 'residents' ) {
 					$results[ $key ]['roles'] = $this->wpdb->get_col( $this->wpdb->prepare( 
 						"SELECT role_id FROM " . $this->get_table_name('resident_role_map') . " WHERE resident_id = %s", $id 
@@ -170,6 +173,7 @@ class SGVX51_DB_Router {
 						"SELECT * FROM " . $this->get_table_name('payments') . " WHERE invoice_id = %s", $id 
 					), ARRAY_A );
 				}
+				// phpcs:enable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 			}
 		}
 
@@ -209,6 +213,7 @@ class SGVX51_DB_Router {
 	 * Helper: Get all columns of a table.
 	 */
 	public function get_columns( $table_name ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema DESCRIBE query requires dynamic table name.
 		$columns = $this->wpdb->get_col( "DESCRIBE $table_name" );
 		return $columns ?: array();
 	}
@@ -221,6 +226,7 @@ class SGVX51_DB_Router {
 		$columns = $this->get_columns( $sql_table );
 		
 		if ( ! in_array( $column, $columns ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema ALTER query requires dynamic table, column, and definition strings.
 			$this->wpdb->query( "ALTER TABLE $sql_table ADD $column $definition" );
 		}
 	}

@@ -39,20 +39,20 @@ class SGVX51_Asset_Manager {
 		}
 
 		$data = array(
-			'name'            => sanitize_text_field( $_POST['name'] ),
-			'purchase_date'   => sanitize_text_field( $_POST['purchase_date'] ),
-			'warranty_expiry' => sanitize_text_field( $_POST['warranty_expiry'] ),
-			'amc_provider'    => sanitize_text_field( $_POST['amc_provider'] ),
-			'amc_phone'       => sanitize_text_field( $_POST['amc_phone'] ),
-			'status'          => sanitize_text_field( $_POST['status'] ),
-			'category'        => sanitize_text_field( $_POST['category'] ),
-			'value'           => floatval( $_POST['value'] ),
-			'description'     => sanitize_textarea_field( $_POST['description'] ),
+			'name' => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+			'purchase_date' => isset( $_POST['purchase_date'] ) ? sanitize_text_field( wp_unslash( $_POST['purchase_date'] ) ) : '',
+			'warranty_expiry' => isset( $_POST['warranty_expiry'] ) ? sanitize_text_field( wp_unslash( $_POST['warranty_expiry'] ) ) : '',
+			'amc_provider' => isset( $_POST['amc_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['amc_provider'] ) ) : '',
+			'amc_phone' => isset( $_POST['amc_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['amc_phone'] ) ) : '',
+			'status' => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'value' => isset( $_POST['value'] ) ? floatval( wp_unslash( $_POST['value'] ) ) : 0,
+			'description' => isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '',
 			'id'              => uniqid('ast_'), // Ensure ID
 		);
 
 		$this->db->insert( 'assets', $data );
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
 		exit;
 	}
 
@@ -61,21 +61,21 @@ class SGVX51_Asset_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$id = sanitize_text_field( $_POST['asset_id'] );
+		$id = isset( $_POST['asset_id'] ) ? sanitize_text_field( wp_unslash( $_POST['asset_id'] ) ) : '';
 		$data = array(
-			'name'            => sanitize_text_field( $_POST['name'] ),
-			'purchase_date'   => sanitize_text_field( $_POST['purchase_date'] ),
-			'warranty_expiry' => sanitize_text_field( $_POST['warranty_expiry'] ),
-			'amc_provider'    => sanitize_text_field( $_POST['amc_provider'] ),
-			'amc_phone'       => sanitize_text_field( $_POST['amc_phone'] ),
-			'status'          => sanitize_text_field( $_POST['status'] ),
-			'category'        => sanitize_text_field( $_POST['category'] ),
-			'value'           => floatval( $_POST['value'] ),
-			'description'     => sanitize_textarea_field( $_POST['description'] ),
+			'name' => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+			'purchase_date' => isset( $_POST['purchase_date'] ) ? sanitize_text_field( wp_unslash( $_POST['purchase_date'] ) ) : '',
+			'warranty_expiry' => isset( $_POST['warranty_expiry'] ) ? sanitize_text_field( wp_unslash( $_POST['warranty_expiry'] ) ) : '',
+			'amc_provider' => isset( $_POST['amc_provider'] ) ? sanitize_text_field( wp_unslash( $_POST['amc_provider'] ) ) : '',
+			'amc_phone' => isset( $_POST['amc_phone'] ) ? sanitize_text_field( wp_unslash( $_POST['amc_phone'] ) ) : '',
+			'status' => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+			'category' => isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '',
+			'value' => isset( $_POST['value'] ) ? floatval( wp_unslash( $_POST['value'] ) ) : 0,
+			'description' => isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '',
 		);
 
 		$this->db->update( 'assets', $data, array( 'id' => $id ) );
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
 		exit;
 	}
 
@@ -84,10 +84,10 @@ class SGVX51_Asset_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$id = sanitize_text_field( $_GET['id'] );
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$this->db->update( 'assets', array( 'status' => 'Archived' ), array( 'id' => $id ) );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-assets&status=archived' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-assets&status=archived' ) );
 		exit;
 	}
 
@@ -96,10 +96,10 @@ class SGVX51_Asset_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		$id = sanitize_text_field( $_GET['id'] );
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$this->db->update( 'assets', array( 'status' => 'Active' ), array( 'id' => $id ) );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-assets&success=1' ) );
 		exit;
 	}
 

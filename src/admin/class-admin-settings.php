@@ -31,10 +31,11 @@ class SGVX51_Admin_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
 		$is_setup = get_option( 'sgvx51_is_setup_complete' );
-		$page = $_GET['page'] ?? '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
 		if ( ! $is_setup && $page !== 'sgvx51-setup' ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
 			exit;
 		}
 	}
@@ -128,41 +129,41 @@ class SGVX51_Admin_Settings {
 
 	public function register_settings() {
 		// General Options
-		register_setting( 'sgvx51_options_group', 'sgvx51_google_client_id' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_google_client_secret' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_sync_frequency' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_maintenance_amount' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_opening_bank' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_opening_cash' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_google_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_google_client_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_sync_frequency', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_maintenance_amount', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_opening_bank', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_opening_cash', array( 'sanitize_callback' => 'floatval' ) );
 
 		// Society Details
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_name' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_address_line1' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_address_line2' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_city' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_pincode' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_society_contact' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_address_line1', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_address_line2', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_city', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_pincode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_society_contact', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Bank Details
-		register_setting( 'sgvx51_options_group', 'sgvx51_bank_name' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_bank_account' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_bank_ifsc' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_bank_upi' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_bank_qr' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_bank_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_bank_account', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_bank_ifsc', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_bank_upi', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_bank_qr', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
         // Approval Settings (manual/auto)
-		register_setting( 'sgvx51_options_group', 'sgvx51_approval_family' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_approval_help' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_approval_vehicle' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_approval_facility' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_approval_family', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_approval_help', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_approval_vehicle', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_approval_facility', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Log Governance
-		register_setting( 'sgvx51_options_group', 'sgvx51_enable_audit' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_log_retention' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_enable_audit', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_log_retention', array( 'sanitize_callback' => 'intval' ) );
 		
 		// Privacy & DPDP
-		register_setting( 'sgvx51_options_group', 'sgvx51_privacy_masking' );
-		register_setting( 'sgvx51_options_group', 'sgvx51_privacy_export_notice' );
+		register_setting( 'sgvx51_options_group', 'sgvx51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'sgvx51_options_group', 'sgvx51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 	}
 
 	public function handle_setup_actions() {
@@ -171,18 +172,18 @@ class SGVX51_Admin_Settings {
 		// 1. Setup Wizard Steps
 		if ( isset( $_POST['sgvx51_setup_step'] ) && check_admin_referer( 'sgvx51_setup_nonce' ) ) {
 			require_once SGVX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
-			$step = sanitize_text_field( $_POST['sgvx51_setup_step'] );
-			$results = SGVX51_Setup_Wizard::save_step( $step, $_POST );
+			$step = sanitize_text_field( wp_unslash( $_POST['sgvx51_setup_step'] ) );
+			$results = SGVX51_Setup_Wizard::save_step( $step, wp_unslash( $_POST ) );
 			
 			if ( $step === 'finalize' ) {
-				wp_redirect( admin_url( 'admin.php?page=sgvx51-settings&setup_complete=1' ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-settings&setup_complete=1' ) );
 			} else {
 				$next_step = 1;
 				if ( $step === 'identity' ) $next_step = 2;
 				elseif ( $step === 'property' ) $next_step = 3;
 				elseif ( $step === 'financials' ) $next_step = 4;
 				
-				wp_redirect( admin_url( 'admin.php?page=sgvx51-setup&step=' . $next_step ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-setup&step=' . $next_step ) );
 			}
 			exit;
 		}
@@ -210,7 +211,7 @@ class SGVX51_Admin_Settings {
 		SGVX51_DB_Schema::reset_mysql();
 		$msg = 'reset_mysql_done';
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=database&' . $msg . '=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=database&' . $msg . '=1' ) );
 		exit;
 	}
 
@@ -219,7 +220,7 @@ class SGVX51_Admin_Settings {
 		check_admin_referer( 'sgvx51_relaunch_nonce' );
 
 		update_option( 'sgvx51_is_setup_complete', false );
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-setup' ) );
 		exit;
 	}
 
@@ -228,9 +229,9 @@ class SGVX51_Admin_Settings {
 		check_admin_referer( 'sgvx51_role_nonce' );
 
 		$rbac = new SGVX51_RBAC_Manager();
-		$role_id = sanitize_text_field( $_POST['role_id'] );
-		$name = sanitize_text_field( $_POST['name'] );
-		$capabilities = isset( $_POST['capabilities'] ) ? array_map( 'sanitize_text_field', $_POST['capabilities'] ) : array();
+		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
+		$name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+		$capabilities = isset( $_POST['capabilities'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['capabilities'] ) ) : array();
 
 		// For new roles, generate a slug-like ID
 		if ( empty( $role_id ) ) {
@@ -239,7 +240,7 @@ class SGVX51_Admin_Settings {
 
 		$rbac->save_role( $role_id, $name, $capabilities );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-roles&success=role_saved' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-roles&success=role_saved' ) );
 		exit;
 	}
 
@@ -247,11 +248,11 @@ class SGVX51_Admin_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
 		check_admin_referer( 'sgvx51_role_nonce' );
 
-		$role_id = sanitize_text_field( $_POST['role_id'] );
+		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
 		$rbac = new SGVX51_RBAC_Manager();
 		$rbac->delete_role( $role_id );
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-roles&success=role_deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-roles&success=role_deleted' ) );
 		exit;
 	}
 
@@ -259,10 +260,13 @@ class SGVX51_Admin_Settings {
 		global $wpdb;
 		$sql_table = $wpdb->prefix . 'society_governx_' . $table;
 		
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema check query requires dynamic table name.
 		// 1. Check by ID if available (and if the table uses this ID type)
 		if ( $original_id ) {
 			$exists = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $sql_table WHERE id = %s", $original_id ) );
-			if ( $exists ) return true;
+			if ( $exists ) {
+				return true;
+			}
 		}
 
 		// 2. Check by unique combinations if ID is stripped/missing
@@ -281,6 +285,7 @@ class SGVX51_Admin_Settings {
 		if ( $table === 'votes' && isset($row['poll_id'], $row['flat_no'], $row['user_id']) ) {
 			return (bool) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $sql_table WHERE poll_id = %s AND flat_no = %s AND user_id = %d", $row['poll_id'], $row['flat_no'], $row['user_id'] ) );
 		}
+		// phpcs:enable
 
 		return false;
 	}
@@ -289,13 +294,15 @@ class SGVX51_Admin_Settings {
 	 * Handle the return from Google OAuth.
 	 */
 	public function handle_oauth_callback() {
-		if ( isset( $_GET['page'] ) && 'sgvx51-settings' === $_GET['page'] && isset( $_GET['code'] ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- External Google OAuth callback check.
+		if ( isset( $_GET['page'] ) && 'sgvx51-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) && isset( $_GET['code'] ) ) {
 			// Verify nonce or capability here if possible, but Google callbacks are standard.
 			if ( ! current_user_can( 'manage_options' ) ) {
 				return;
 			}
 
-			$code = sanitize_text_field( $_GET['code'] );
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- External Google OAuth callback.
+			$code = sanitize_text_field( wp_unslash( $_GET['code'] ) );
 			$result = SGVX51_Google_API_Handler::exchange_code_for_token( $code );
 
 			if ( is_wp_error( $result ) ) {
@@ -303,7 +310,7 @@ class SGVX51_Admin_Settings {
 			} else {
 				add_settings_error( 'sgvx51_messages', 'sgvx51_auth_success', 'Successfully connected to Google!', 'success' );
 				// Redirect to remove 'code' from URL.
-				wp_redirect( admin_url( 'admin.php?page=sgvx51-settings&success=1' ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-settings&success=1' ) );
 				exit;
 			}
 		}

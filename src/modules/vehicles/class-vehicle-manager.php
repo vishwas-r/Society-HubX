@@ -199,7 +199,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             $res = $this->perform_save_vehicle( $payload, false );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean(); // Capture any premature output
-                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Output: ' . $debug_output );
+                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 
                 // Aggressive Clean: Wipe all buffers
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -218,7 +218,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
            $res = $rm->create_request( 'vehicles', 'add', $payload, $payload['id'] );
            if ( wp_doing_ajax() ) {
                $debug_output = ob_get_clean();
-               if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Request Output: ' . $debug_output );
+               if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Add Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                // Aggressive Clean
                while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -231,7 +231,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
            }
        }
 		
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Added' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Added' ) );
 		exit;
 	}
 
@@ -243,17 +243,17 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             // Accept either the admin/add nonce or the frontend edit token
             $nonce_ok = false;
             if ( ! empty( $_POST['_wpnonce'] ) ) {
-                if ( wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_add_vehicle_nonce' ) || wp_verify_nonce( $_POST['_wpnonce'], 'sgvx51_edit_vehicle_action' ) ) {
+                if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_add_vehicle_nonce' ) || wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'sgvx51_edit_vehicle_action' ) ) {
                     $nonce_ok = true;
                 }
             }
-            if ( ! $nonce_ok && ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( $_POST['sgvx51_edit_vehicle_token'], 'sgvx51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['sgvx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['sgvx51_edit_vehicle_token'] ) ), 'sgvx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) wp_die( 'Security check failed' );
         }
 
-		$id = isset($_POST['vehicle_id']) ? sanitize_text_field( $_POST['vehicle_id'] ) : '';
+		$id = isset($_POST['vehicle_id']) ? sanitize_text_field( wp_unslash( $_POST['vehicle_id'] ) ) : '';
         
         $rbac = new SGVX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
@@ -272,7 +272,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
                     while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Vehicle updated and request synchronized']);
                 } else {
-                    wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
                 }
                 exit;
             }
@@ -294,7 +294,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             $res = $rm->create_request( 'vehicles', 'edit', $_POST, $id );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean();
-                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Edit Request Output: ' . $debug_output );
+                if ( ! empty( $debug_output ) ) error_log( 'SGVX Vehicle Edit Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -307,7 +307,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             }
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&success=Updated' ) );
 		exit;
 	}
 
@@ -320,7 +320,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 		    if ( ! check_admin_referer( 'sgvx51_delete_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
-		$id = isset($_POST['id']) ? sanitize_text_field( $_POST['id'] ) : (isset($_GET['id']) ? sanitize_text_field($_GET['id']) : '');
+		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
         
         $rbac = new SGVX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
@@ -336,7 +336,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
                 if ( wp_doing_ajax() ) {
                     wp_send_json_success(['message' => 'Vehicle archived and request synchronized']);
                 } else {
-                    wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&deleted=1' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&deleted=1' ) );
                 }
                 exit;
             }
@@ -355,7 +355,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
             }
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&deleted=1' ) );
 		exit;
 	}
 
@@ -366,7 +366,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
 		    if ( ! check_admin_referer( 'sgvx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
-		$id = isset($_POST['id']) ? sanitize_text_field( $_POST['id'] ) : (isset($_GET['id']) ? sanitize_text_field($_GET['id']) : '');
+		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
         
         $rbac = new SGVX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
@@ -384,7 +384,7 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
              }
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&restored=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&restored=1' ) );
 		exit;
 	}
 
@@ -394,9 +394,10 @@ class SGVX51_Vehicle_Manager implements SGVX51_Module {
         $rbac = new SGVX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'vehicles_manage' ) ) wp_die('Unauthorized');
 		
-		$id = sanitize_text_field( $_GET['id'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin action link redirect verification.
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$this->db->update( 'vehicles', array( 'status' => 'approved' ), array( 'id' => $id ) );
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&approved=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-vehicles&approved=1' ) );
 		exit;
 	}
 

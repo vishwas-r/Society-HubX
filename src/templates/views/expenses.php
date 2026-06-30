@@ -1,28 +1,36 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Expenses (Bootstrap Migration)
  * Integrates with SGVX51_DB_Router.
  */
 
 $db = new SGVX51_DB_Router();
-$current_year = date( 'Y' );
-$selected_year = isset( $_GET['year'] ) ? sanitize_text_field( $_GET['year'] ) : $current_year;
+$current_year = wp_date( 'Y' );
+$selected_year = isset( $_GET['year'] ) ? sanitize_text_field( wp_unslash( $_GET['year'] ) ) : $current_year;
 
 $all_expenses = $db->get( 'expenses' );
 
 // Debug: Log the raw expenses returned
 if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-	error_log( 'SGVX51 Expenses Admin: Count=' . count( $all_expenses ) );
+	error_log( 'SGVX51 Expenses Admin: Count=' . count( $all_expenses ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	if ( count( $all_expenses ) > 0 ) {
-		error_log( 'SGVX51 First Expense Sample: ' . wp_json_encode( array_slice( $all_expenses[0], 0, 3 ) ) );
+		error_log( 'SGVX51 First Expense Sample: ' . wp_json_encode( array_slice( $all_expenses[0], 0, 3 ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	} else {
-		error_log( 'SGVX51 No expenses found. Check table existence or file permissions.' );
+		error_log( 'SGVX51 No expenses found. Check table existence or file permissions.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	}
 }
 
 $expenses = [];
 foreach($all_expenses as $e) {
-    if( date('Y', strtotime($e['date'] ?? '')) == $selected_year ) {
+    if( wp_date('Y', strtotime($e['date'] ?? '')) == $selected_year ) {
         $expenses[] = $e;
     }
 }
@@ -79,7 +87,7 @@ if(!empty($expenses)) {
                         <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page']); ?>">
                         <select name="year" class="form-select form-select-sm bg-light border-0 shadow-none fw-bold text-dark" style="min-width: 100px;" onchange="document.getElementById('year-filter-form').submit()">
                             <?php 
-                            for( $y = date('Y'); $y >= date('Y')-2; $y--) {
+                            for( $y = wp_date('Y'); $y >= wp_date('Y')-2; $y--) {
                                 $sel = ($y == $selected_year) ? 'selected' : '';
                                 echo "<option value='$y' $sel>$y</option>";
                             }
@@ -220,7 +228,7 @@ if(!empty($expenses)) {
                                 <?php else : ?>
                                     <?php foreach ( array_reverse( $verified_expenses ) as $ex ) : ?>
                                         <tr class="expense-row border-bottom border-light" data-search="<?php echo esc_attr(strtolower(($ex['description']??'') . ' ' . ($ex['payee']??'') . ' ' . ($ex['category']??''))); ?>">
-                                            <td class="ps-5 py-4 small text-secondary fw-medium"><?php echo esc_html( date( 'd M, Y', strtotime( $ex['date'] ) ) ); ?></td>
+                                            <td class="ps-5 py-4 small text-secondary fw-medium"><?php echo esc_html( wp_date( 'd M, Y', strtotime( $ex['date'] ) ) ); ?></td>
                                             <td class="px-4 py-4">
                                                 <div class="fw-bold text-dark"><?php echo esc_html( $ex['description'] ); ?></div>
                                                 <div class="small text-primary font-monospace" style="font-size: 11px;"><?php echo esc_html( $ex['payee'] ?? '-' ); ?></div>
@@ -272,7 +280,7 @@ if(!empty($expenses)) {
                                 <?php else : ?>
                                     <?php foreach ( array_reverse( $pending_expenses ) as $ex ) : ?>
                                         <tr class="expense-row border-bottom border-warning border-opacity-25" style="background-color: rgba(255, 193, 7, 0.05);" data-search="<?php echo esc_attr(strtolower(($ex['description']??'') . ' ' . ($ex['category']??''))); ?>">
-                                            <td class="ps-5 py-4 small text-secondary fw-medium"><?php echo esc_html( date( 'd M, Y', strtotime( $ex['date'] ) ) ); ?></td>
+                                            <td class="ps-5 py-4 small text-secondary fw-medium"><?php echo esc_html( wp_date( 'd M, Y', strtotime( $ex['date'] ) ) ); ?></td>
                                             <td class="px-4 py-4">
                                                 <div class="fw-bold text-dark"><?php echo esc_html( $ex['description'] ); ?></div>
                                                 <div class="small fw-bold font-monospace" style="font-size: 11px; color: #856404;">
@@ -332,7 +340,7 @@ add_action('sgvx51_admin_modals', function() {
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                              <label class="form-label small fw-bold text-secondary">Date <span class="text-danger">*</span></label>
-                             <input type="date" name="date" class="form-control shadow-none rounded-3 border-light" value="<?php echo date('Y-m-d'); ?>" required>
+                             <input type="date" name="date" class="form-control shadow-none rounded-3 border-light" value="<?php echo wp_date('Y-m-d'); ?>" required>
                         </div>
                          <div class="col-6">
                              <label class="form-label small fw-bold text-secondary">Category <span class="text-danger">*</span></label>

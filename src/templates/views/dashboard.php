@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * View: Dashboard (Bootstrap Migration)
  * Integrates with SGVX51_DB_Router for real statistics.
  */
@@ -26,12 +34,12 @@ $total_vehicles  = count( $vehicles );
 // Financial Metrics
 $total_income  = 0;
 $total_arrears = 0;
-$current_year  = date('Y');
+$current_year  = wp_date('Y');
 
 // 1. Calculate Income from Payments table (Relational)
 $payments = $db->get( 'payments' );
 foreach ( $payments as $p ) {
-    if ( isset( $p['date'] ) && date('Y', strtotime($p['date'])) === $current_year ) {
+    if ( isset( $p['date'] ) && wp_date('Y', strtotime($p['date'])) === $current_year ) {
         $total_income += floatval($p['amount']);
     }
 }
@@ -49,7 +57,7 @@ foreach ( $invoices as $inv ) {
 // 3. Calculate Expenses (FY)
 $total_expense = 0;
 foreach($expenses as $e) { 
-    if(isset($e['amount'], $e['date']) && date('Y', strtotime($e['date'])) === $current_year) {
+    if(isset($e['amount'], $e['date']) && wp_date('Y', strtotime($e['date'])) === $current_year) {
         $total_expense += floatval($e['amount']); 
     }
 }

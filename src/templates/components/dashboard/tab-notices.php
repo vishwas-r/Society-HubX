@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Notices Tab
  * @var array $data Dashboard data.
  */
@@ -21,7 +29,7 @@
                             
                             <div class="d-flex justify-content-between align-items-start mb-2 ps-2">
                                 <h3 class="fs-5 fw-bold text-dark m-0"><?php echo esc_html( $n['title'] ); ?></h3>
-                                <span class="badge bg-light text-muted fw-normal border border-light"><?php echo date( 'd M Y', strtotime( $n['created_at'] ) ); ?></span>
+                                <span class="badge bg-light text-muted fw-normal border border-light"><?php echo wp_date( 'd M Y', strtotime( $n['created_at'] ) ); ?></span>
                             </div>
                             <div class="notice-content-body text-secondary mb-3 ps-2" style="font-size: 0.9rem;">
                                 <?php echo wp_kses_post( $n['content'] ); ?>

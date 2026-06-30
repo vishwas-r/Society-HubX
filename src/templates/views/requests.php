@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * View: Approval Requests
  * Consolidated view for all pending module requests.
  */
@@ -50,7 +54,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                 <div>
                     <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 10px;">Processed Today</div>
                     <div class="h3 fw-bold m-0"><?php 
-                        $today = date('Y-m-d');
+                        $today = wp_date('Y-m-d');
                         $processed_today = array_filter($history, function($r) use ($today) {
                             return strpos($r['processed_at'] ?? '', $today) === 0;
                         });
@@ -167,7 +171,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                     </div>
                                     <span class="small fw-medium text-dark"><?php echo esc_html($name); ?></span>
                                 </div>
-                                <div class="text-muted small" style="font-size: 10px;"><?php echo date('d M, h:i A', strtotime($req['created_at'])); ?></div>
+                                <div class="text-muted small" style="font-size: 10px;"><?php echo wp_date('d M, h:i A', strtotime($req['created_at'])); ?></div>
                             </td>
                             <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 align-items-center">
@@ -179,7 +183,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                             data-payload='<?php echo esc_attr($req['payload']); ?>'
                                             data-original='<?php echo esc_attr(isset($req['original_data']) ? json_encode($req['original_data']) : "{}"); ?>'
                                             data-requester="<?php echo esc_attr($name); ?>"
-                                            data-date="<?php echo esc_attr(date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
+                                            data-date="<?php echo esc_attr(wp_date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
                                         <i class="bi bi-eye me-1"></i> VIEW
                                     </button>
                                     <?php echo SGVX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
@@ -237,7 +241,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                             <div class="text-muted small" style="font-size: 10px;">
                                 <?php echo $user ? $user->display_name : 'System'; ?>
                                 <span class="mx-1">•</span>
-                                <?php echo date('d M', strtotime($req['processed_at'])); ?>
+                                <?php echo wp_date('d M', strtotime($req['processed_at'])); ?>
                             </div>
                         </td>
                         <td class="pe-5 py-3 text-end">

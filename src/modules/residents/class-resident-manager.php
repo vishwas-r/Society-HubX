@@ -134,11 +134,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
        $rm = new SGVX51_Request_Manager();
-       $res = $rm->create_request( 'residents', 'add', $_POST, $_POST['id'], 'residents', $_POST['flat_no'] ?? '' );
+       $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+       $res = $rm->create_request( 'residents', 'add', $sanitized_post, $sanitized_post['id'], 'residents', $sanitized_post['flat_no'] );
        
         if ( wp_doing_ajax() ) {
            $debug = ob_get_clean();
-           if(!empty($debug)) error_log('SGVX Resident Add Debug: ' . $debug);
+           if(!empty($debug)) error_log('SGVX Resident Add Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
            
            // Aggressive Clean
            while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -148,19 +149,20 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
        }
    }
 
-	wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=added' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=added' ) );
 	exit;
 }
 
 	public function handle_edit_resident() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
 		if ( wp_doing_ajax() ) {
             ob_start();
-            $nonce = isset($_POST['_wpnonce']) ? $_POST['_wpnonce'] : '';
+            $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
             if ( ! wp_verify_nonce($nonce, 'sgvx51_resident_nonce') && ! wp_verify_nonce($nonce, 'sgvx51_frontend_nonce') ) {
                 ob_get_clean(); // Clean before error
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                error_log("SGVX51 Error: Nonce verification failed for edit_resident");
+                error_log("SGVX51 Error: Nonce verification failed for edit_resident"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
@@ -168,9 +170,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		    if ( ! check_admin_referer( 'sgvx51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
     
-    $id = isset($_POST['resident_id']) ? sanitize_text_field($_POST['resident_id']) : '';
-    $flat_no = isset($_POST['flat_no']) ? sanitize_text_field($_POST['flat_no']) : '';
-    $name = isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '';
+    $id = isset($_POST['resident_id']) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
+    $flat_no = isset($_POST['flat_no']) ? sanitize_text_field( wp_unslash( $_POST['flat_no'] ) ) : '';
+    $name = isset($_POST['name']) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 
     // Track the WP User ID for the profile being edited (usually the current user)
     if ( ! isset( $_POST['wp_user_id'] ) ) {
@@ -178,12 +180,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     }
 
     // Handle Photo Upload (for both Admin and Resident requests)
-    error_log("SGVX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing'));
+    error_log("SGVX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
     
     if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
         $photo_url = $this->handle_photo_upload($flat_no, $name);
         if ( is_wp_error( $photo_url ) ) {
-            error_log("SGVX51 Error: Photo upload failed: " . $photo_url->get_error_message());
+            error_log("SGVX51 Error: Photo upload failed: " . $photo_url->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
             if ( wp_doing_ajax() ) {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error(['message' => 'Photo upload failed: ' . $photo_url->get_error_message()]);
@@ -191,7 +193,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             }
         } else {
             $_POST['profile_photo'] = $photo_url;
-            error_log("SGVX51 Debug: Photo uploaded successfully to: " . $photo_url);
+            error_log("SGVX51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         }
     }
     
@@ -230,7 +232,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Profile updated and request synchronized']);
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx-profile&status=updated' ) ); // Contextual redirect might be needed
+                wp_safe_redirect( admin_url( 'admin.php?page=sgvx-profile&status=updated' ) ); // Contextual redirect might be needed
             }
             exit;
         }
@@ -250,11 +252,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     } else {
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SGVX51_Request_Manager();
-        $res = $rm->create_request( 'residents', 'edit', $_POST, $id, 'residents', $_POST['flat_no'] ?? '' );
+        $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+        $res = $rm->create_request( 'residents', 'edit', $sanitized_post, $id, 'residents', $sanitized_post['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
             $debug = ob_get_clean();
-            if(!empty($debug)) error_log('SGVX Resident Edit Debug: ' . $debug);
+            if(!empty($debug)) error_log('SGVX Resident Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
             // Aggressive Clean
             while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -268,12 +271,10 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         }
     }
 
-	wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
 	exit;
 }
-
     private function perform_edit_resident( $data ) {
-        error_log("SGVX51 Debug: perform_edit_resident called with data: " . print_r($data, true));
 		$original_flat_no = isset($data['original_flat_no']) ? sanitize_text_field( $data['original_flat_no'] ) : '';
 		$flat_no = isset($data['flat_no']) ? sanitize_text_field( $data['flat_no'] ) : '';
         $original_name = isset( $data['original_name'] ) ? sanitize_text_field( $data['original_name'] ) : '';
@@ -352,6 +353,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         } else {
             // Priority 2: Upload now (e.g. direct admin edit where handle_edit_resident didn't run or failed)
             // Only try if a file is actually present
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_resident caller method.
             if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
                 $photo_url = $this->handle_photo_upload($update_data['flat_no'], $update_data['name']);
                 if ( $photo_url && ! is_wp_error( $photo_url ) ) {
@@ -425,7 +427,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		    if ( ! check_admin_referer( 'sgvx51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-		$resident_id = sanitize_text_field( $_POST['resident_id'] );
+		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
         
         $rbac = Society_GoVernX::get_instance()->rbac;
         if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
@@ -442,7 +444,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             wp_send_json_success(['message' => 'Resident archived successfully']);
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=archived' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=archived' ) );
 		exit;
 	}
 
@@ -459,7 +461,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         $rbac = Society_GoVernX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die('Unauthorized');
 
-        $resident_id = sanitize_text_field( $_POST['resident_id'] );
+        $resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
         $residents = $this->db->get( 'residents' );
         $to_archive = null;
 
@@ -480,7 +482,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             }
         }
 
-        wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=permanently_deleted' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=permanently_deleted' ) );
         exit;
     }
 
@@ -497,7 +499,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			if ( ! check_admin_referer( 'sgvx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
 		}
 
-		$resident_id = sanitize_text_field( $_POST['resident_id'] );
+		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
 		$to_restore = null;
 		$source = '';
 
@@ -551,7 +553,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			}
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=restored' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=restored' ) );
 		exit;
 	}
 
@@ -598,7 +600,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	    if ( ! check_admin_referer( 'sgvx51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
     }
 
-	$history_id = sanitize_text_field( $_POST['history_id'] );
+	$history_id = isset( $_POST['history_id'] ) ? sanitize_text_field( wp_unslash( $_POST['history_id'] ) ) : '';
 		$history = $this->db->get( 'resident_history' );
 		$updated = false;
 		
@@ -611,7 +613,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             wp_send_json_error(['message' => 'Delete failed']);
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=history_deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=history_deleted' ) );
 		exit;
 	}
 
@@ -626,7 +628,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			wp_die( 'Security check failed' );
 		}
 
-		$csv_data = trim( $_POST['csv_data'] );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- CSV text data parsed and columns sanitized individually.
+		$csv_data = isset( $_POST['csv_data'] ) ? trim( wp_unslash( $_POST['csv_data'] ) ) : '';
 		$rows = explode( "\n", $csv_data );
 		$count = 0;
 		$errors = 0;
@@ -653,7 +656,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			}
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -815,7 +818,9 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Helper to handle photo upload.
 	 */
 	private function handle_photo_upload( $flat_no = '', $name = '' ) {
-		if ( ! empty( $_FILES['profile_photo'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in caller handlers.
+		if ( isset( $_FILES['profile_photo']['size'] ) && $_FILES['profile_photo']['size'] > 0 ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- $_FILES is validated inside upload_profile_photo.
 			return $this->media->upload_profile_photo( $_FILES['profile_photo'], $flat_no, $name, 'residents' );
 		}
 		return null;

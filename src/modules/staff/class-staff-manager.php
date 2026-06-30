@@ -107,7 +107,9 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         );
 
         // Handle ID Proof Upload (Document)
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
             $uploaded = $this->drive->upload_file('staff_docs', $_FILES['id_proof']);
             if (!is_wp_error($uploaded)) {
                 $db_data['id_proof'] = $uploaded;
@@ -115,8 +117,10 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         }
 
         // Handle Profile Photo Upload (Avatar)
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SGVX51_Media_Manager();
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $db_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $db_data['profile_photo'] = $photo_url;
@@ -176,7 +180,9 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         );
 
         // Handle ID Proof Upload (Document)
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
             $uploaded = $this->drive->upload_file('staff_docs', $_FILES['id_proof']);
             if (!is_wp_error($uploaded)) {
                 $update_data['id_proof'] = $uploaded;
@@ -184,8 +190,10 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         }
 
         // Handle Profile Photo Upload (Avatar)
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SGVX51_Media_Manager();
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $update_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $update_data['profile_photo'] = $photo_url;
@@ -217,7 +225,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
                 wp_die('Security check failed');
         }
 
-        $id = isset($_POST['staff_id']) ? sanitize_text_field($_POST['staff_id']) : (isset($_GET['staff_id']) ? sanitize_text_field($_GET['staff_id']) : '');
+        $id = isset($_POST['staff_id']) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : (isset($_GET['staff_id']) ? sanitize_text_field( wp_unslash( $_GET['staff_id'] ) ) : '');
 
         $rbac = new SGVX51_RBAC_Manager();
         if ($rbac->has_capability( get_current_user_id(), 'staff_manage' )) {
@@ -237,7 +245,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
             }
         }
 
-        wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
         exit;
     }
 
@@ -312,11 +320,12 @@ class SGVX51_Staff_Manager implements SGVX51_Module
 
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
-            $res = $rm->create_request('daily_help', 'add', $_POST, $_POST['id'], 'daily_help', $_POST['flat_no'] ?? '');
+            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+            $res = $rm->create_request('daily_help', 'add', $sanitized_post, $sanitized_post['id'], 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SGVX Staff Add Request Debug: ' . $debug);
+                    error_log('SGVX Staff Add Request Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -331,7 +340,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
             }
         }
 
-        wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=added'));
+        wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=added'));
         exit;
     }
 
@@ -346,7 +355,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
                 wp_die('Security check failed');
         }
 
-        $id = sanitize_text_field($_POST['staff_id']);
+        $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
 
         $rbac = new SGVX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
@@ -368,7 +377,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
                     wp_send_json_success(['message' => 'Staff updated and request synchronized']);
                 }
                 else {
-                    wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
+                    wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
                 }
                 exit;
             }
@@ -390,11 +399,12 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         }
         else {
             $rm = new SGVX51_Request_Manager();
-            $res = $rm->create_request('daily_help', 'edit', $_POST, $id, 'daily_help', $_POST['flat_no'] ?? '');
+            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+            $res = $rm->create_request('daily_help', 'edit', $sanitized_post, $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SGVX Staff Edit Debug: ' . $debug);
+                    error_log('SGVX Staff Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -409,7 +419,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
             }
         }
 
-        wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=updated'));
         exit;
     }
 
@@ -423,7 +433,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
                 wp_die('Security check failed');
         }
 
-        $id = sanitize_text_field($_POST['staff_id']);
+        $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
 
         $rbac = new SGVX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
@@ -444,7 +454,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
                     wp_send_json_success(['message' => 'Staff record archived and request synchronized']);
                 }
                 else {
-                    wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=deleted'));
+                    wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=deleted'));
                 }
                 exit;
             }
@@ -454,7 +464,8 @@ class SGVX51_Staff_Manager implements SGVX51_Module
         else {
             require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SGVX51_Request_Manager();
-            $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $_POST['flat_no'] ?? '');
+            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+            $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -466,7 +477,7 @@ class SGVX51_Staff_Manager implements SGVX51_Module
             }
         }
 
-        wp_redirect(admin_url('admin.php?page=sgvx51-staff&status=deleted'));
+        wp_safe_redirect(admin_url('admin.php?page=sgvx51-staff&status=deleted'));
         exit;
     }
 }

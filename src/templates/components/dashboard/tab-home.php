@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Home Tab
  * @var array $data Dashboard data.
  */
@@ -45,7 +53,7 @@
                                             <div class="small text-secondary d-flex align-items-center gap-1 mt-1" style="font-size: 0.75rem;">
                                                 <span class="fw-medium text-dark"><?php echo esc_html($fam['relation']); ?></span>
                                                 <?php if(!empty($fam['dob'])): ?>
-                                                    <span class="text-muted">• <?php echo date('M d, Y', strtotime($fam['dob'])); ?></span>
+                                                    <span class="text-muted">• <?php echo wp_date('M d, Y', strtotime($fam['dob'])); ?></span>
                                                 <?php endif; ?>
                                                 
                                                 <?php if(isset($fam['status']) && $fam['status'] === 'pending'): ?>

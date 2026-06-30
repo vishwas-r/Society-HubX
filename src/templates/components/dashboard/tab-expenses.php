@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Expenses Tab
  * @var array $data Dashboard data.
  */
@@ -197,7 +205,7 @@
                           <?php else: ?>
                               <?php foreach ( ($data['detailed_expenses'] ?? []) as $ex ): ?>
                                   <tr>
-                                      <td class="ps-4 text-secondary small"><?php echo date('d M, Y', strtotime($ex['date'] ?? 'now')); ?></td>
+                                      <td class="ps-4 text-secondary small"><?php echo wp_date('d M, Y', strtotime($ex['date'] ?? 'now')); ?></td>
                                       <td>
                                           <div class="fw-bold text-dark"><?php echo esc_html($ex['description'] ?? 'N/A'); ?></div>
                                           <div class="small text-muted" style="font-size: 10px;"><?php echo esc_html($ex['payee'] ?? 'General Vendor'); ?></div>

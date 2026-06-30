@@ -54,7 +54,7 @@ class SGVX51_Notice_Board {
     public function ajax_get_notice() {
         check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
         
-        $id = sanitize_text_field($_POST['id']);
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $notices = $this->db->get('notices');
         
         foreach($notices as $n) {
@@ -77,18 +77,18 @@ class SGVX51_Notice_Board {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
 
-        $id = !empty($_POST['id']) ? sanitize_text_field($_POST['id']) : uniqid('ntc_');
+        $id = !empty($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : uniqid('ntc_');
         $is_update = !empty($_POST['id']);
-        $new_status = sanitize_text_field($_POST['status'] ?? 'published');
+        $new_status = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '';
 
         $data = array(
-			'title'          => sanitize_text_field( $_POST['title'] ),
-			'content'        => wp_kses_post( $_POST['content'] ), 
-			'audience'       => sanitize_text_field( $_POST['audience'] ?? 'All' ),
-			'urgency'        => sanitize_text_field( $_POST['urgency'] ?? 'info' ),
+			'title' => isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '',
+			'content' => isset( $_POST['content'] ) ? wp_kses_post( wp_unslash( $_POST['content'] ) ) : '', 
+			'audience' => isset( $_POST['audience'] ) ? sanitize_text_field( wp_unslash( $_POST['audience'] ) ) : '',
+			'urgency' => isset( $_POST['urgency'] ) ? sanitize_text_field( wp_unslash( $_POST['urgency'] ) ) : '',
             'status'         => $new_status,
             'is_pinned'      => !empty($_POST['is_pinned']) ? 1 : 0,
-			'expiry_date'    => !empty($_POST['expiry_date']) ? sanitize_text_field( $_POST['expiry_date'] ) : null,
+			'expiry_date'    => !empty($_POST['expiry_date']) ? sanitize_text_field( wp_unslash( $_POST['expiry_date'] ) ) : null,
 		);
 
         if (!$is_update) {
@@ -97,9 +97,10 @@ class SGVX51_Notice_Board {
         }
 
 		// Handle Attachment
-		if ( ! empty( $_FILES['attachment'] ) && $_FILES['attachment']['size'] > 0 ) {
+		if ( isset( $_FILES['attachment']['size'] ) && $_FILES['attachment']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Notices' );
 			if ( ! is_wp_error( $folder ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated and processed securely.
 				$url = $this->drive->upload_to_folder( $folder, $_FILES['attachment'] );
 				if ( ! is_wp_error( $url ) ) {
 					$data['attachment_url'] = is_string( $url ) ? $url : 'Uploaded';
@@ -134,7 +135,7 @@ class SGVX51_Notice_Board {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
 
-        $id = sanitize_text_field($_POST['id']);
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $this->db->delete('notices', ['id' => $id]);
         
         wp_send_json_success(['message' => 'Notice deleted permanently.']);
@@ -151,7 +152,7 @@ class SGVX51_Notice_Board {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
 
-        $id = sanitize_text_field($_POST['id']);
+        $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $pinned = !empty($_POST['pinned']) ? 1 : 0;
 
         $this->db->update('notices', ['is_pinned' => $pinned], ['id' => $id]);
@@ -179,7 +180,7 @@ class SGVX51_Notice_Board {
 
             $dispatcher->trigger('notice_published', $r['wp_user_id'], [
                 'title'   => $notice['title'],
-                'content' => wp_trim_words(strip_tags($notice['content']), 20),
+                'content' => wp_trim_words(wp_strip_all_tags($notice['content']), 20),
                 'urgency' => ucfirst($notice['urgency']),
                 'time'    => current_time('mysql')
             ]);

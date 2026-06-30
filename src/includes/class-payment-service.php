@@ -101,7 +101,7 @@ class SGVX51_Payment_Service {
 		self::update_state_hash();
 
 		// Fire Action for webhooks/notifications
-		do_action( 'sgvx_payment_processed', $invoice_id, $new_payment['id'], $amount );
+		do_action( 'sgvx51_payment_processed', $invoice_id, $new_payment['id'], $amount );
 
 		return $new_payment;
 	}
@@ -120,14 +120,14 @@ class SGVX51_Payment_Service {
 
 	public static function update_state_hash() {
 		// Store a precise microtime hash in a transient
-		set_transient( 'sgvx_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
+		set_transient( 'sgvx51_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
 	}
 
 	public static function get_state_hash() {
-		$hash = get_transient( 'sgvx_payment_state_hash' );
+		$hash = get_transient( 'sgvx51_payment_state_hash' );
 		if ( ! $hash ) {
 			$hash = microtime(true);
-			set_transient( 'sgvx_payment_state_hash', $hash, WEEK_IN_SECONDS );
+			set_transient( 'sgvx51_payment_state_hash', $hash, WEEK_IN_SECONDS );
 		}
 		return $hash;
 	}

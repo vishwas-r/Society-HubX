@@ -1,6 +1,8 @@
 <?php
 /**
  * View: Staff & Help Management (Bootstrap Migration)
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -459,7 +461,7 @@ add_action('sgvx51_admin_modals', function() use ($all_flats) {
 
 <script>
     // Expose request nonce for admin-app.js global handlers
-    window.sgvx51RequestNonce = '<?php echo wp_create_nonce("sgvx51_request_action"); ?>';
+    window.sgvx51RequestNonce = '<?php echo esc_js( wp_create_nonce("sgvx51_request_action") ); ?>';
 </script>
 <?php 
 /* Redundant inline script removed in favor of sgvx-staff.js */

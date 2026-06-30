@@ -30,9 +30,10 @@ class SGVX51_AJAX_Handler {
 
 	/**
 	 * Handle AJAX request to get module configuration (nonces, etc.)
-	 * No nonce verification needed since this only serves public nonce data
+	 * serving public nonce data bootstrapping for authenticated user.
 	 */
 	public function handle_get_module_config() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Serving configuration bootstrapping data for authenticated session.
 		// Verify user is logged in
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Not authenticated' ), 401 );
@@ -44,7 +45,8 @@ class SGVX51_AJAX_Handler {
 			wp_send_json_error( array( 'message' => 'Insufficient permissions' ), 403 );
 		}
 
-		$module = isset( $_POST['module'] ) ? sanitize_key( $_POST['module'] ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Serving configuration bootstrapping data for authenticated session.
+		$module = isset( $_POST['module'] ) ? sanitize_key( wp_unslash( $_POST['module'] ) ) : '';
 
 		if ( empty( $module ) ) {
 			wp_send_json_error( array( 'message' => 'Module parameter missing' ), 400 );
@@ -150,9 +152,10 @@ class SGVX51_AJAX_Handler {
 		// Verify nonce (Check both Frontend and Admin nonces)
 		$verified = false;
 		if ( isset( $_POST['nonce'] ) ) {
-			if ( wp_verify_nonce( $_POST['nonce'], 'sgvx51_frontend_nonce' ) ) {
+			$nonce = sanitize_key( wp_unslash( $_POST['nonce'] ) );
+			if ( wp_verify_nonce( $nonce, 'sgvx51_frontend_nonce' ) ) {
 				$verified = true;
-			} elseif ( wp_verify_nonce( $_POST['nonce'], 'sgvx51_nonce' ) ) { // Admin Context
+			} elseif ( wp_verify_nonce( $nonce, 'sgvx51_nonce' ) ) { // Admin Context
 				$verified = true;
 			}
 		}
@@ -166,7 +169,7 @@ class SGVX51_AJAX_Handler {
 			wp_send_json_error( array( 'message' => 'Not authenticated' ), 401 );
 		}
 
-		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( $_POST['invoice_id'] ) : '';
+		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 
 		if ( empty( $invoice_id ) ) {
 			wp_send_json_error( array( 'message' => 'Invoice ID missing' ), 400 );
@@ -213,13 +216,15 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Approve Request
 	 */
 	public function handle_approve_request() {
+		check_ajax_referer( 'sgvx51_request_action' );
+
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SGVX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
 		
-		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		if (!$id) wp_send_json_error(['message' => 'Missing ID'], 400);
 
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -234,14 +239,16 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Reject Request
 	 */
 	public function handle_reject_request() {
+		check_ajax_referer( 'sgvx51_request_action' );
+
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SGVX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
 
-		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
-		$note = isset($_POST['admin_note']) ? sanitize_textarea_field($_POST['admin_note']) : '';
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+		$note = isset( $_POST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['admin_note'] ) ) : '';
 		if (!$id) wp_send_json_error(['message' => 'Missing ID'], 400);
 
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -256,15 +263,17 @@ class SGVX51_AJAX_Handler {
 	 * AJAX: Bulk Process Requests
 	 */
 	public function handle_bulk_process_requests() {
+		check_ajax_referer( 'sgvx51_request_action' );
+
 		require_once SGVX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SGVX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
 
-		$ids = isset($_POST['ids'] ) ? (array)$_POST['ids'] : [];
-		$action = isset($_POST['bulk_action']) ? sanitize_text_field($_POST['bulk_action']) : '';
-		$note = isset($_POST['note']) ? sanitize_textarea_field($_POST['note']) : '';
+		$ids = isset( $_POST['ids'] ) ? map_deep( wp_unslash( $_POST['ids'] ), 'sanitize_text_field' ) : [];
+		$action = isset( $_POST['bulk_action'] ) ? sanitize_text_field( wp_unslash( $_POST['bulk_action'] ) ) : '';
+		$note = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['note'] ) ) : '';
 
 		if ( empty($ids) ) wp_send_json_error(['message' => 'No items selected'], 400);
 
@@ -295,7 +304,7 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
+		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
 		$db = Society_GoVernX::get_instance()->db;
 		$channels = $db->get('notification_channels');
 
@@ -318,8 +327,8 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$slug = isset($_POST['channel_slug']) ? sanitize_key($_POST['channel_slug']) : '';
-		$config = isset($_POST['config']) ? $_POST['config'] : []; // Recursive sanitization would be better
+		$slug = isset( $_POST['channel_slug'] ) ? sanitize_key( wp_unslash( $_POST['channel_slug'] ) ) : '';
+		$config = isset( $_POST['config'] ) ? map_deep( wp_unslash( $_POST['config'] ), 'sanitize_text_field' ) : [];
 		
 		$db = Society_GoVernX::get_instance()->db;
 		$updated = $db->update('notification_channels', ['config' => json_encode($config)], ['channel_slug' => $slug]);
@@ -339,8 +348,8 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$slug = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
-		$active = isset($_POST['active']) ? (int)$_POST['active'] : 0;
+		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
+		$active = isset( $_POST['active'] ) ? intval( wp_unslash( $_POST['active'] ) ) : 0;
 
 		$db = Society_GoVernX::get_instance()->db;
 		$db->update('notification_channels', ['is_active' => $active], ['channel_slug' => $slug]);
@@ -358,9 +367,9 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$slug = isset($_POST['event']) ? sanitize_key($_POST['event']) : '';
-		$channel = isset($_POST['channel']) ? sanitize_key($_POST['channel']) : '';
-		$enabled = isset($_POST['enabled']) ? (int)$_POST['enabled'] : 0;
+		$slug = isset( $_POST['event'] ) ? sanitize_key( wp_unslash( $_POST['event'] ) ) : '';
+		$channel = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
+		$enabled = isset( $_POST['enabled'] ) ? intval( wp_unslash( $_POST['enabled'] ) ) : 0;
 
 		$db = Society_GoVernX::get_instance()->db;
 		$events = $db->get('notification_events');
@@ -392,7 +401,7 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$db = Society_GoVernX::get_instance()->db;
 		$templates = $db->get('notification_templates');
 
@@ -415,9 +424,9 @@ class SGVX51_AJAX_Handler {
 		}
 		check_ajax_referer( 'sgvx51_request_action' );
 
-		$id = isset($_POST['id']) ? sanitize_text_field($_POST['id']) : '';
-		$subject = isset($_POST['subject']) ? sanitize_text_field($_POST['subject']) : '';
-		$content = isset($_POST['content']) ? sanitize_textarea_field($_POST['content']) : '';
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+		$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '';
+		$content = isset( $_POST['content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['content'] ) ) : '';
 		
 		$db = Society_GoVernX::get_instance()->db;
 		

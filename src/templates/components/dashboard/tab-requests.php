@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard My Requests Tab
  * @var array $data Dashboard data.
  */
@@ -55,7 +63,7 @@
                                     <small class="text-muted font-monospace">ID: #<?php echo esc_html(substr($req['id'], -8)); ?></small>
                                 </div>
                                 <div class="text-end">
-                                    <span class="badge bg-light text-muted fw-normal border border-light d-block mb-2"><?php echo date( 'd M Y, h:i A', strtotime( $req['created_at'] ) ); ?></span>
+                                    <span class="badge bg-light text-muted fw-normal border border-light d-block mb-2"><?php echo wp_date( 'd M Y, h:i A', strtotime( $req['created_at'] ) ); ?></span>
                                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="viewResidentRequestDetail('<?php echo esc_attr($req['id']); ?>')">View Details</button>
                                 </div>
                             </div>

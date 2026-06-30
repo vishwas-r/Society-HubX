@@ -1,5 +1,13 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
  * Component: Dashboard Facilities & Assets Tab (Premium Sidebar Layout)
  * @var array $data Dashboard data.
  */
@@ -210,8 +218,8 @@ $my_bookings = $data['my_bookings'] ?? [];
                                             <tr>
                                                 <td class="ps-4 fw-bold text-dark"><?php echo esc_html($fac_name); ?></td>
                                                 <td class="text-secondary small">
-                                                    <div><?php echo date('D, M j, Y', strtotime($b['start_time'])); ?></div>
-                                                    <div class="text-primary"><?php echo date('h:i A', strtotime($b['start_time'])); ?> - <?php echo date('h:i A', strtotime($b['end_time'])); ?></div>
+                                                    <div><?php echo wp_date('D, M j, Y', strtotime($b['start_time'])); ?></div>
+                                                    <div class="text-primary"><?php echo wp_date('h:i A', strtotime($b['start_time'])); ?> - <?php echo wp_date('h:i A', strtotime($b['end_time'])); ?></div>
                                                 </td>
                                                 <td class="pe-4 text-end">
                                                     <span class="badge <?php echo $s_class; ?> bg-opacity-10 border border-current border-opacity-10 rounded-pill px-2 small fw-normal"><?php echo esc_html($b['status']); ?></span>
@@ -425,12 +433,12 @@ async function fetchFacilitySchedule(facId) {
             }
             
             // Sort by start time
-            events.sort((a,b) => new Date(a.start) - new Date(b.start));
+            events.sort((a,b) => new wp_date(a.start) - new wp_date(b.start));
             
             let html = '';
             events.forEach(e => {
-                const startDate = new Date(e.start);
-                const endDate = new Date(e.end);
+                const startDate = new wp_date(e.start);
+                const endDate = new wp_date(e.end);
                 
                 // Format: Mon, 12 Feb | 10:00 AM - 12:00 PM
                 const day = startDate.toLocaleDateString('en-US', {weekday:'short', day:'numeric', month:'short'});

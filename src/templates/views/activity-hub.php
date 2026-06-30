@@ -1,5 +1,9 @@
 <?php
 /**
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
+ */
+
+/**
  * View: Activity Hub (Repurposed from Notifications Center)
  * Central ledger for auditing system events and communication history.
  */
@@ -96,7 +100,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                                     </span>
                                     <span class="text-slate-400 small">#<?php echo $log['entity_id']; ?></span>
                                 </div>
-                                <div class="small text-slate-400 ms-1"><?php echo date('M d, H:i:s', strtotime($log['created_at'])); ?></div>
+                                <div class="small text-slate-400 ms-1"><?php echo wp_date('M d, H:i:s', strtotime($log['created_at'])); ?></div>
                             </td>
                             <td>
                                 <div class="fw-bold text-slate-800 small"><?php echo esc_html($log['action']); ?></div>
@@ -155,7 +159,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                                         <?php echo esc_html(wp_trim_words(strip_tags($body), 12)); ?>
                                     </div>
                                 <?php endif; ?>
-                                <div class="small text-slate-400"><?php echo date('M d, H:i', strtotime($log['created_at'])); ?></div>
+                                <div class="small text-slate-400"><?php echo wp_date('M d, H:i', strtotime($log['created_at'])); ?></div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">

@@ -85,12 +85,12 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 		}
 
 		$data = array(
-			'name'          => sanitize_text_field( $_POST['name'] ),
-			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : floatval( $_POST['rate'] ),
-			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ),
-			'max_hours'     => intval( $_POST['max_hours'] ),
+			'name' => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : ( isset( $_POST['rate'] ) ? floatval( wp_unslash( $_POST['rate'] ) ) : 0 ),
+			'rate_unit' => isset( $_POST['rate_unit'] ) ? sanitize_text_field( wp_unslash( $_POST['rate_unit'] ) ) : '',
+			'max_hours' => isset( $_POST['max_hours'] ) ? intval( wp_unslash( $_POST['max_hours'] ) ) : 0,
             'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
-			'rules'         => sanitize_textarea_field( $_POST['rules'] ),
+			'rules' => isset( $_POST['rules'] ) ? sanitize_textarea_field( wp_unslash( $_POST['rules'] ) ) : '',
 			'status'        => 'active',
 			'id'            => uniqid('fac_'), // Unique ID for referencing
 		);
@@ -110,9 +110,9 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         }
 
 		if ( is_wp_error( $result ) ) {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1' ) );
 		}
 		exit;
 	}
@@ -129,14 +129,14 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			}
 		}
 
-		$id = sanitize_text_field( $_POST['facility_id'] );
+		$id = isset( $_POST['facility_id'] ) ? sanitize_text_field( wp_unslash( $_POST['facility_id'] ) ) : '';
 		$data = array(
-			'name'          => sanitize_text_field( $_POST['name'] ),
-			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : floatval( $_POST['rate'] ),
-			'rate_unit'     => sanitize_text_field( $_POST['rate_unit'] ),
-			'max_hours'     => intval( $_POST['max_hours'] ),
+			'name' => isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '',
+			'rate'          => (isset($_POST['is_free']) && $_POST['is_free'] == '1') ? 0 : ( isset( $_POST['rate'] ) ? floatval( wp_unslash( $_POST['rate'] ) ) : 0 ),
+			'rate_unit' => isset( $_POST['rate_unit'] ) ? sanitize_text_field( wp_unslash( $_POST['rate_unit'] ) ) : '',
+			'max_hours' => isset( $_POST['max_hours'] ) ? intval( wp_unslash( $_POST['max_hours'] ) ) : 0,
             'booking_required' => isset($_POST['booking_required']) ? 1 : 0,
-			'rules'         => sanitize_textarea_field( $_POST['rules'] ),
+			'rules' => isset( $_POST['rules'] ) ? sanitize_textarea_field( wp_unslash( $_POST['rules'] ) ) : '',
 		);
 
 		$facilities = $this->db->get( 'facilities' );
@@ -158,7 +158,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 wp_send_json_success( array( 'message' => 'Facility updated successfully' ) );
                 exit;
             }
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=Updated' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=Updated' ) );
 		} else {
             if ( wp_doing_ajax() ) {
                 // Aggressive Clean
@@ -166,7 +166,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 wp_send_json_error( array( 'message' => 'Facility not found' ) );
                 exit;
             }
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&error=Facility not found' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&error=Facility not found' ) );
 		}
 		exit;
 	}
@@ -183,7 +183,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
             }
         }
 
-		$id = isset($_POST['id']) ? sanitize_text_field( $_POST['id'] ) : (isset($_GET['id']) ? sanitize_text_field( $_GET['id'] ) : '');
+		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
 		$this->db->delete( 'facilities', array( 'id' => $id ) );
 
         if ( wp_doing_ajax() ) {
@@ -193,7 +193,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
             exit;
         }
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
 		exit;
 	}
 
@@ -208,10 +208,10 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			}
 		}
 
-		$facility_id = sanitize_text_field( $_POST['facility_id'] );
-		$start_time  = sanitize_text_field( $_POST['start_time'] ); // datetime-local format
-		$end_time    = sanitize_text_field( $_POST['end_time'] );
-		$resident_id = sanitize_text_field( $_POST['resident_id'] );
+		$facility_id = isset( $_POST['facility_id'] ) ? sanitize_text_field( wp_unslash( $_POST['facility_id'] ) ) : '';
+		$start_time = isset( $_POST['start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['start_time'] ) ) : ''; // datetime-local format
+		$end_time = isset( $_POST['end_time'] ) ? sanitize_text_field( wp_unslash( $_POST['end_time'] ) ) : '';
+		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
 
 		// 1. Validation: Overlap Check
 		if ( $this->check_overlap( $facility_id, $start_time, $end_time ) ) {
@@ -221,7 +221,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 wp_send_json_error( array( 'message' => 'Slot already booked!' ) );
                 exit;
             }
-			wp_redirect( wp_get_referer() . '&error=' . urlencode( 'Slot already booked!' ) );
+			wp_safe_redirect( wp_get_referer() . '&error=' . urlencode( 'Slot already booked!' ) );
 			exit;
 		}
 
@@ -258,7 +258,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
                 exit;
             }
-            wp_redirect( wp_get_referer() . '&error=' . urlencode( $result->get_error_message() ) );
+            wp_safe_redirect( wp_get_referer() . '&error=' . urlencode( $result->get_error_message() ) );
             exit;
         }
 
@@ -295,7 +295,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
             $msg = ( $approval_mode === 'auto' || $is_admin_booking ) ? 'booking_success' : 'request_submitted';
 			$redirect_url = add_query_arg( $msg, '1', $referer );
 		}
-		wp_redirect( $redirect_url );
+		wp_safe_redirect( $redirect_url );
 		exit;
 	}
 
@@ -311,7 +311,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			}
 		}
 
-		$id          = sanitize_text_field( $_POST['booking_id'] );
+		$id = isset( $_POST['booking_id'] ) ? sanitize_text_field( wp_unslash( $_POST['booking_id'] ) ) : '';
 
         // 1. Synchronize with Request Manager if a pending request exists
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -324,16 +324,16 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking updated and request synchronized']);
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
             }
             exit;
         }
 
-		$facility_id = sanitize_text_field( $_POST['facility_id'] );
-		$start_time  = sanitize_text_field( $_POST['start_time'] );
-		$end_time    = sanitize_text_field( $_POST['end_time'] );
-		$resident_id = sanitize_text_field( $_POST['resident_id'] );
-		$status      = sanitize_text_field( $_POST['status'] ?? 'confirmed' );
+		$facility_id = isset( $_POST['facility_id'] ) ? sanitize_text_field( wp_unslash( $_POST['facility_id'] ) ) : '';
+		$start_time = isset( $_POST['start_time'] ) ? sanitize_text_field( wp_unslash( $_POST['start_time'] ) ) : '';
+		$end_time = isset( $_POST['end_time'] ) ? sanitize_text_field( wp_unslash( $_POST['end_time'] ) ) : '';
+		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
+		$status = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '';
 
 		// Overlap Check (Exclude self)
 		if ( $this->check_overlap( $facility_id, $start_time, $end_time, $id ) ) {
@@ -343,7 +343,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 				wp_send_json_error( array( 'message' => 'Slot already booked!' ) );
 				exit;
 			}
-			wp_redirect( wp_get_referer() . '&error=' . urlencode( 'Slot already booked!' ) );
+			wp_safe_redirect( wp_get_referer() . '&error=' . urlencode( 'Slot already booked!' ) );
 			exit;
 		}
 
@@ -378,7 +378,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			exit;
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&success=1&msg=updated' ) );
 		exit;
 	}
 
@@ -394,7 +394,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			}
 		}
 
-		$id = sanitize_text_field( $_POST['id'] );
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 
         // 1. Synchronize with Request Manager if a pending request exists
         require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
@@ -407,7 +407,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking deleted and request synchronized']);
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
             }
             exit;
         }
@@ -421,7 +421,7 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
 			exit;
 		}
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-facilities&deleted=1' ) );
 		exit;
 	}
 
@@ -452,7 +452,8 @@ class SGVX51_Facility_Manager implements SGVX51_Module {
         // Better to have one, but resident dashboard might be generic.
         // Let's rely on is_user_logged_in() for read-only schedule.
 
-		$facility_id = sanitize_text_field( $_GET['facility_id'] );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only AJAX calendar events schedule filter.
+		$facility_id = isset( $_GET['facility_id'] ) ? sanitize_text_field( wp_unslash( $_GET['facility_id'] ) ) : '';
         if(empty($facility_id)) wp_send_json_error(['message' => 'Missing ID']);
 
 		$all_bookings = $this->db->get( 'bookings' );

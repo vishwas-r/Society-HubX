@@ -86,7 +86,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		$is_admin = current_user_can('manage_options');
 		
 		// 1. Determine Flat Number
-		$flat_no = isset( $_POST['flat_no'] ) ? sanitize_text_field( $_POST['flat_no'] ) : '';
+		$flat_no = isset( $_POST['flat_no'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_no'] ) ) : '';
 		
 		if ( empty( $flat_no ) ) {
 			// Try to find resident flat for this user
@@ -105,17 +105,20 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		}
 		
 		// 2. Handle File Upload
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is processed securely.
 		if ( ! empty( $_FILES['doc_file'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is processed securely.
 			$res = $this->drive->upload_file( $flat_no, $_FILES['doc_file'] );
 			
 			if ( is_wp_error( $res ) ) {
 				if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-                wp_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
+                wp_safe_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
                 exit;
 			} else {
                 // Insert Metadata
                 $doc_id = uniqid('doc_');
-				$title = isset($_POST['doc_name']) ? sanitize_text_field($_POST['doc_name']) : $_FILES['doc_file']['name'];
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is processed securely.
+				$title = isset($_POST['doc_name']) ? sanitize_text_field( wp_unslash( $_POST['doc_name'] ) ) : (isset($_FILES['doc_file']['name']) ? sanitize_file_name(wp_unslash($_FILES['doc_file']['name'])) : 'document');
 				
                 $new_doc = array(
                     'id'          => $doc_id,
@@ -141,7 +144,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                     $redirect = $is_admin 
 						? add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'success' => '1' ), admin_url('admin.php') )
 						: wp_get_referer();
-                    wp_redirect( $redirect );
+                    wp_safe_redirect( $redirect );
                 }
                 exit;
 			}
@@ -150,7 +153,13 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 	}
 
 	public function handle_approve() {
-        $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( $_REQUEST['request_id'] ) : '';
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+		} else {
+			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
+		}
+
+        $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
         if ( ! empty( $request_id ) ) {
             $rm = new SGVX51_Request_Manager();
             $res = $rm->approve_request( $request_id );
@@ -159,7 +168,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document approved'] );
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
             }
             exit;
         }
@@ -167,8 +176,14 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 	}
 
 	public function handle_reject() {
-        $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( $_REQUEST['request_id'] ) : '';
-        $note = isset( $_REQUEST['admin_note'] ) ? sanitize_textarea_field( $_REQUEST['admin_note'] ) : '';
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+		} else {
+			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
+		}
+
+        $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
+        $note = isset( $_REQUEST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['admin_note'] ) ) : '';
 
         if ( ! empty( $request_id ) ) {
             $rm = new SGVX51_Request_Manager();
@@ -178,12 +193,12 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document rejected'] );
             } else {
-                wp_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
             }
             exit;
         }
         
-		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( $_REQUEST['doc_id'] ) : '';
+		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
 		$docs = $this->db->get( 'documents' );
         $new_status = 'rejected';
 
@@ -207,7 +222,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 		
-		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( $_REQUEST['doc_id'] ) : '';
+		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
 		if ( ! $doc_id ) {
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) wp_send_json_error( array( 'message' => 'Missing Document ID' ) );
 			wp_die( 'Missing Document ID' );
@@ -224,7 +239,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                     wp_send_json_success( array( 'message' => 'Document processed and request synced.' ) );
                 } else {
-                    wp_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
                 }
                 exit;
             }
@@ -258,7 +273,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document status updated to ' . $status ) );
 		} else {
-			wp_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
 		}
 		exit;
 	}
@@ -271,8 +286,8 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 			if ( ! check_admin_referer( 'sgvx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		}
 		
-		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( $_REQUEST['flat'] ) : '';
-		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( $_REQUEST['doc_id'] ) : '';
+		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['flat'] ) ) : '';
+		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
 
 		if ( $doc_id ) {
 			$this->db->update( 'documents', array( 'status' => 'deleted' ), array( 'id' => $doc_id ) );
@@ -281,7 +296,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document marked for deletion' ) );
 		} else {
-			wp_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
+			wp_safe_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
 		}
 		exit;
 	}

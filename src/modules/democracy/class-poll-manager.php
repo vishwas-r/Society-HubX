@@ -68,10 +68,10 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
 			wp_die( 'Unauthorized' );
 		}
 
-		$title   = sanitize_text_field( $_POST['title'] );
-		$desc    = sanitize_textarea_field( $_POST['description'] );
-		$options = array_filter( array_map( 'sanitize_text_field', $_POST['options'] ) );
-		$expiry  = sanitize_text_field( $_POST['expiry_date'] );
+		$title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
+		$desc = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
+		$options = isset( $_POST['options'] ) ? array_filter( array_map( 'sanitize_text_field', wp_unslash( $_POST['options'] ) ) ) : array();
+		$expiry = isset( $_POST['expiry_date'] ) ? sanitize_text_field( wp_unslash( $_POST['expiry_date'] ) ) : '';
 
 		if ( count( $options ) < 2 ) {
 			wp_die( 'At least 2 options are required.' );
@@ -92,7 +92,7 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
 
         $this->db->insert('polls', $new_poll);
 
-		wp_redirect( admin_url( 'admin.php?page=sgvx51-polls&created=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-polls&created=1' ) );
 		exit;
 	}
 
@@ -105,7 +105,7 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
 			wp_die( 'Unauthorized' );
 		}
 
-        $id = sanitize_text_field( $_GET['id'] );
+        $id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
         $this->db->delete('polls', ['id' => $id]);
 
         // Also clean up votes for this poll
@@ -125,7 +125,7 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
             }
         }
 
-        wp_redirect( admin_url( 'admin.php?page=sgvx51-polls&deleted=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-polls&deleted=1' ) );
         exit;
     }
 
@@ -138,11 +138,11 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
 			wp_die( 'Unauthorized' );
 		}
 
-        $id = sanitize_text_field( $_GET['id'] );
+        $id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
         // Update Poll Status
         $this->db->update('polls', ['status' => 'closed'], ['id' => $id]);
 
-        wp_redirect( admin_url( 'admin.php?page=sgvx51-polls&closed=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-polls&closed=1' ) );
         exit;
     }
 
@@ -158,8 +158,8 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
             }
         }
 
-		$poll_id = sanitize_text_field( $_POST['poll_id'] );
-		$option  = sanitize_text_field( $_POST['vote_option'] );
+		$poll_id = isset( $_POST['poll_id'] ) ? sanitize_text_field( wp_unslash( $_POST['poll_id'] ) ) : '';
+		$option = isset( $_POST['vote_option'] ) ? sanitize_text_field( wp_unslash( $_POST['vote_option'] ) ) : '';
         $user_id = get_current_user_id();
 
         // 1. Get Resident/Flat ID
@@ -206,7 +206,7 @@ class SGVX51_Poll_Manager implements SGVX51_Module {
             exit;
         }
 
-        wp_redirect( wp_get_referer() . '#tab-polls' ); 
+        wp_safe_redirect( wp_get_referer() . '#tab-polls' ); 
         exit;
 	}
 

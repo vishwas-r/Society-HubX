@@ -208,6 +208,7 @@ class SGVX51_Drive_Manager {
 
 		} else {
 			$destination = $folder . '/' . $file_array['name'];
+			// phpcs:ignore Generic.PHP.ForbiddenFunctions.Found -- Custom destination filesystem path naming structure is required.
 			move_uploaded_file( $file_array['tmp_name'], $destination );
 			
 			$upload_url = wp_upload_dir();
@@ -237,7 +238,7 @@ class SGVX51_Drive_Manager {
 		} else {
 			$path = $this->local_root . $flat_no . '/' . $file_name;
 			if ( file_exists( $path ) ) {
-				unlink( $path );
+				wp_delete_file( $path );
 				return true;
 			}
 			return new WP_Error( 'not_found', 'File not found.' );
