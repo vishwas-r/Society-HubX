@@ -20,7 +20,7 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_items' ),
-				'permission_callback' => array( 'SHUBX51_REST_Manager', 'check_permission' ),
+				'permission_callback' => array( $this, 'get_items_permissions_check' ),
 			),
 		) );
 	}
@@ -34,5 +34,12 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 		}
 
 		return rest_ensure_response( $logs );
+	}
+
+	public function get_items_permissions_check( $request ) {
+		if ( ! Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view activity logs.', 'society-hubx' ), array( 'status' => 403 ) );
+		}
+		return true;
 	}
 }

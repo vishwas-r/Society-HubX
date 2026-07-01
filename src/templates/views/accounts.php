@@ -198,13 +198,13 @@ if ( isset( $_GET['success'] ) ) {
     
     // Chart Data
     var SHUBXAccountsChartData = {
-        monthlyData: <?php echo json_encode($monthly_data); ?>,
+        monthlyData: <?php echo wp_json_encode($monthly_data); ?>,
         collectionData: {
             paid: <?php echo $paid_count; ?>,
             unpaid: <?php echo $unpaid_count; ?>,
             partial: <?php echo $partial_count; ?>
         },
-        categoryData: <?php echo json_encode($category_data); ?>
+        categoryData: <?php echo wp_json_encode($category_data); ?>
     };
 </script>
 

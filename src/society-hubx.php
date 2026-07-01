@@ -250,9 +250,6 @@ final class Society_HubX {
 	 * Localization and setup.
 	 */
 	public function on_plugins_loaded() {
-		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Textdomain load implementation is standard fallback.
-		load_plugin_textdomain( 'society-hubx', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-		
 		// Redirect after Login
 		add_filter( 'login_redirect', array( $this, 'custom_login_redirect' ), 10, 3 );
 	}

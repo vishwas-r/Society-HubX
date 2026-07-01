@@ -174,6 +174,16 @@ class SHUBX51_Drive_Manager {
 	 * Generic Upload to Folder ID/Path.
 	 */
 	public function upload_to_folder( $folder, $file_array ) {
+		if ( ! empty( $file_array ) && is_array( $file_array ) ) {
+			$file_array = array(
+				'name'     => sanitize_file_name( wp_unslash( $file_array['name'] ) ),
+				'type'     => sanitize_text_field( $file_array['type'] ),
+				'tmp_name' => sanitize_text_field( $file_array['tmp_name'] ),
+				'error'    => isset( $file_array['error'] ) ? intval( $file_array['error'] ) : 0,
+				'size'     => isset( $file_array['size'] ) ? intval( $file_array['size'] ) : 0,
+			);
+		}
+
 		if ( $this->is_connected ) {
 			$boundary = 'foo_bar_baz';
 			$metadata = json_encode( array(

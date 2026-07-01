@@ -196,8 +196,8 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                         • Version <?php echo $rule['version']; ?>
                                     </div>
                                 </div>
-                                <button onclick="viewRuleModal(<?php echo esc_attr(json_encode($rule)); ?>, <?php echo $is_acked ? 'true' : 'false'; ?>)" 
-                                        class="btn btn-primary px-4 fw-bold rounded-pill">
+                                 <button onclick="viewRuleModal(<?php echo esc_attr(wp_json_encode($rule)); ?>, <?php echo $is_acked ? 'true' : 'false'; ?>)" 
+                                         class="btn btn-primary px-4 fw-bold rounded-pill">
                                     View Rule
                                 </button>
                             </div>
@@ -251,7 +251,7 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                         <td class="fw-bold">₹<?php echo number_format($v['fine_amount'], 2); ?></td>
                                         <td>
                                             <span class="badge bg-<?php echo $v['status'] === 'resolved' ? 'success' : ($v['status'] === 'dismissed' ? 'secondary' : 'warning'); ?> text-white">
-                                                <?php echo ucfirst($v['status']); ?>
+                                                <?php echo esc_html( ucfirst($v['status']) ); ?>
                                             </span>
                                         </td>
                                         <td>

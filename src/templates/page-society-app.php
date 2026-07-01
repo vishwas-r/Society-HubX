@@ -104,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Simple Footer -->
     <footer class="bg-white border-top border-slate-200 py-4 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by Society HubX.
+            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>.
         </div>
     </footer>
 

@@ -15,21 +15,21 @@ class SHUBX51_REST_Payments_Controller {
 
 	public function register_routes() {
 		// 1. State Hash Endpoint (Polling)
-		register_rest_route( 'SHUBX/v1', '/state-hash', array(
+		register_rest_route( 'society-hubx/v1', '/state-hash', array(
 			'methods'  => WP_REST_Server::READABLE,
 			'callback' => array( $this, 'get_state_hash' ),
 			'permission_callback' => array( $this, 'check_frontend_auth' )
 		) );
 		
 		// 2. Dashboard Partial Data Endpoint (For JS re-render)
-		register_rest_route( 'SHUBX/v1', '/dashboard-data', array(
+		register_rest_route( 'society-hubx/v1', '/dashboard-data', array(
 			'methods'  => WP_REST_Server::READABLE,
 			'callback' => array( $this, 'get_dashboard_data' ),
 			'permission_callback' => array( $this, 'check_frontend_auth' )
 		) );
 
 		// 3. Webhook Ingress (Gateway Integration)
-		register_rest_route( 'SHUBX/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
+		register_rest_route( 'society-hubx/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'handle_webhook' ),
 			'permission_callback' => array( $this, 'webhook_permissions_check' )

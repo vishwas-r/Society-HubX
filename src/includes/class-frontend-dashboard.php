@@ -207,7 +207,7 @@ class SHUBX51_Frontend_Dashboard {
 					return '<div class="shubx51-alert alert alert-info">
 								<h4>Welcome Admin!</h4>
 								<p>Your account is not linked to a specific Resident Profile (Flat), so you cannot view the Resident Dashboard.</p>
-								<a href="' . admin_url( 'admin.php?page=shubx51-settings' ) . '" class="btn btn-primary">Go to Admin Settings</a>
+								<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-settings' ) ) . '" class="btn btn-primary">Go to Admin Settings</a>
 							</div>';
 				}
 				return '<div class="shubx51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
@@ -234,7 +234,7 @@ class SHUBX51_Frontend_Dashboard {
             'resident'         => $resident, // Pass resident data
             'my_requests'      => array_values($my_requests), // Pass resident requests
             'nonce'            => wp_create_nonce('shubx51_frontend_nonce'),
-            'rest_url'         => esc_url_raw( rest_url( 'SHUBX/v1/' ) ),
+            'rest_url'         => esc_url_raw( rest_url( 'society-hubx/v1/' ) ),
             'rest_nonce'       => wp_create_nonce( 'wp_rest' )
          ));
         

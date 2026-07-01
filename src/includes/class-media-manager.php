@@ -35,6 +35,16 @@ class SHUBX51_Media_Manager {
 	 * @return string|WP_Error Public URL of the uploaded photo.
 	 */
 	public function upload_profile_photo( $file, $flat_no, $name, $subfolder = 'residents' ) {
+		if ( ! empty( $file ) && is_array( $file ) ) {
+			$file = array(
+				'name'     => sanitize_file_name( wp_unslash( $file['name'] ) ),
+				'type'     => sanitize_text_field( $file['type'] ),
+				'tmp_name' => sanitize_text_field( $file['tmp_name'] ),
+				'error'    => isset( $file['error'] ) ? intval( $file['error'] ) : 0,
+				'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
+			);
+		}
+
 		if ( empty( $file ) || empty( $file['tmp_name'] ) ) {
 			return new WP_Error( 'no_file', 'No file provided.' );
 		}

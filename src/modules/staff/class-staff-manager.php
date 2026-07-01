@@ -109,8 +109,9 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // Handle ID Proof Upload (Document)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            $clean_file = $this->sanitize_file_array( $_FILES['id_proof'] );
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
-            $uploaded = $this->drive->upload_file('staff_docs', $_FILES['id_proof']);
+            $uploaded = $this->drive->upload_file('staff_docs', $clean_file);
             if (!is_wp_error($uploaded)) {
                 $db_data['id_proof'] = $uploaded;
             }
@@ -120,16 +121,18 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SHUBX51_Media_Manager();
+            $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
-            $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $db_data['name'], 'staffs');
+            $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $db_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $db_data['profile_photo'] = $photo_url;
             }
         }
 
         $res = $this->db->insert('daily_help', $db_data);
-        if (!is_wp_error($res) && isset($data['flats_served'])) {
-            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $data['flats_served']);
+        if (!is_wp_error($res) && isset($data['flats_served']) && is_array($data['flats_served'])) {
+            $sanitized_flats = array_map('sanitize_text_field', $data['flats_served']);
+            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $sanitized_flats);
         }
         return $res;
     }
@@ -182,8 +185,9 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // Handle ID Proof Upload (Document)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            $clean_file = $this->sanitize_file_array( $_FILES['id_proof'] );
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
-            $uploaded = $this->drive->upload_file('staff_docs', $_FILES['id_proof']);
+            $uploaded = $this->drive->upload_file('staff_docs', $clean_file);
             if (!is_wp_error($uploaded)) {
                 $update_data['id_proof'] = $uploaded;
             }
@@ -193,16 +197,18 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SHUBX51_Media_Manager();
+            $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
-            $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $update_data['name'], 'staffs');
+            $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $update_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $update_data['profile_photo'] = $photo_url;
             }
         }
 
         $res = $this->db->update('daily_help', $update_data, ['id' => $id]);
-        if (!is_wp_error($res) && isset($data['flats_served'])) {
-            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $data['flats_served']);
+        if (!is_wp_error($res) && isset($data['flats_served']) && is_array($data['flats_served'])) {
+            $sanitized_flats = array_map('sanitize_text_field', $data['flats_served']);
+            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $sanitized_flats);
         }
         return $res;
     }
@@ -479,5 +485,18 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
 
         wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=deleted'));
         exit;
+    }
+
+    private function sanitize_file_array( $file ) {
+        if ( empty( $file ) || ! is_array( $file ) || empty( $file['name'] ) ) {
+            return $file;
+        }
+        return array(
+            'name'     => sanitize_file_name( wp_unslash( $file['name'] ) ),
+            'type'     => sanitize_text_field( $file['type'] ),
+            'tmp_name' => sanitize_text_field( $file['tmp_name'] ),
+            'error'    => isset( $file['error'] ) ? intval( $file['error'] ) : 0,
+            'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
+        );
     }
 }

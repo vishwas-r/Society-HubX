@@ -66,8 +66,9 @@ class SHUBX51_Expense_Manager {
 		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				$clean_file = $this->sanitize_file_array( $_FILES['receipt_file'] );
 				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
-				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
+				$url = $this->drive->upload_to_folder( $folder, $clean_file );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
 				}
@@ -113,8 +114,9 @@ class SHUBX51_Expense_Manager {
 		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				$clean_file = $this->sanitize_file_array( $_FILES['receipt_file'] );
 				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
-				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
+				$url = $this->drive->upload_to_folder( $folder, $clean_file );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
 				}
@@ -215,8 +217,9 @@ class SHUBX51_Expense_Manager {
 		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				$clean_file = $this->sanitize_file_array( $_FILES['receipt_file'] );
 				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
-				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
+				$url = $this->drive->upload_to_folder( $folder, $clean_file );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
 				}
@@ -276,8 +279,9 @@ class SHUBX51_Expense_Manager {
 		if ( isset( $_FILES['receipt_file']['size'] ) && $_FILES['receipt_file']['size'] > 0 ) {
 			$folder = $this->drive->get_system_folder( 'Receipts' );
 			if ( ! is_wp_error( $folder ) ) {
+				$clean_file = $this->sanitize_file_array( $_FILES['receipt_file'] );
 				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_to_folder.
-				$url = $this->drive->upload_to_folder( $folder, $_FILES['receipt_file'] );
+				$url = $this->drive->upload_to_folder( $folder, $clean_file );
 				if ( ! is_wp_error( $url ) ) {
 					$data['receipt_url'] = is_string( $url ) ? $url : 'Uploaded';
 				}
@@ -341,5 +345,18 @@ class SHUBX51_Expense_Manager {
 		} else {
 			wp_send_json_success( array( 'message' => 'Expense approved successfully' ) );
 		}
+	}
+
+	private function sanitize_file_array( $file ) {
+		if ( empty( $file ) || ! is_array( $file ) || empty( $file['name'] ) ) {
+			return $file;
+		}
+		return array(
+			'name'     => sanitize_file_name( wp_unslash( $file['name'] ) ),
+			'type'     => sanitize_text_field( $file['type'] ),
+			'tmp_name' => sanitize_text_field( $file['tmp_name'] ),
+			'error'    => isset( $file['error'] ) ? intval( $file['error'] ) : 0,
+			'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
+		);
 	}
 }

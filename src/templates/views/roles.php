@@ -68,7 +68,7 @@ $available_caps = SHUBX51_RBAC_Manager::get_available_capabilities();
                         </div>
 
                         <div class="mt-auto d-flex gap-2 pt-3 border-top border-light">
-                            <button onclick='editRole(<?php echo json_encode($role); ?>)' class="btn btn-sm btn-light border-light flex-grow-1 fw-bold text-primary py-2 rounded-3">
+                            <button onclick='editRole(<?php echo esc_attr( wp_json_encode($role) ); ?>)' class="btn btn-sm btn-light border-light flex-grow-1 fw-bold text-primary py-2 rounded-3">
                                 <i class="bi bi-pencil me-1"></i> Edit
                             </button>
                             <?php if ( empty( $role['is_system'] ) ) : ?>

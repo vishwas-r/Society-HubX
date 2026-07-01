@@ -212,7 +212,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     ?>
                                     <span class="badge <?php echo $s['class']; ?> text-white px-3 py-1 rounded-pill">
                                         <i class="<?php echo $s['icon']; ?> me-1"></i>
-                                        <?php echo ucfirst($rule['status']); ?>
+                                        <?php echo esc_html( ucfirst( $rule['status'] ) ); ?>
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 small text-secondary">
@@ -220,7 +220,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                 </td>
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button onclick="editRule(<?php echo esc_attr(json_encode($rule)); ?>)" class="btn btn-sm btn-light border px-3 py-2 rounded-3" title="Edit">
+                                        <button onclick="editRule(<?php echo esc_attr(wp_json_encode($rule)); ?>)" class="btn btn-sm btn-light border px-3 py-2 rounded-3" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <button onclick="viewVersionHistory('<?php echo esc_attr($rule['id']); ?>')" class="btn btn-sm btn-light border px-3 py-2 rounded-3" title="Version History">
@@ -268,7 +268,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                             <i class="bi bi-three-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#" onclick="editCategory(<?php echo esc_attr(json_encode($cat)); ?>); return false;">
+                                            <li><a class="dropdown-item" href="#" onclick="editCategory(<?php echo esc_attr(wp_json_encode($cat)); ?>); return false;">
                                                 <i class="bi bi-pencil me-2"></i>Edit
                                             </a></li>
                                             <li><a class="dropdown-item text-danger" href="#" onclick="deleteCategory('<?php echo esc_attr($cat['id']); ?>'); return false;">
@@ -353,7 +353,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                 </td>
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button onclick="viewViolation(<?php echo esc_attr(json_encode($v)); ?>)" class="btn btn-sm btn-light border px-3 py-2 rounded-3">
+                                        <button onclick="viewViolation(<?php echo esc_attr(wp_json_encode($v)); ?>)" class="btn btn-sm btn-light border px-3 py-2 rounded-3">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         <?php if($v['status'] === 'pending' || $v['status'] === 'appealed'): ?>

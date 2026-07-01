@@ -140,7 +140,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
                                         <?php if (strtolower($status) !== 'archived'): ?>
-                                            <button onclick='openEditAssetModal(<?php echo json_encode($a); ?>)' class="btn btn-sm btn-light border border-light p-2 rounded-3 shadow-none">
+                                            <button onclick='openEditAssetModal(<?php echo esc_attr( wp_json_encode($a) ); ?>)' class="btn btn-sm btn-light border border-light p-2 rounded-3 shadow-none">
                                                 <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                             </button>
                                             <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=shubx51_delete_asset&id=' . $a['id']), 'shubx51_delete_asset_nonce' ); ?>" 
