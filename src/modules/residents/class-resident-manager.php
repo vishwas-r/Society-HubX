@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Resident Manager
  * Handles the "Residents" table and WP User Sync.
@@ -79,7 +79,27 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
         }
 
         if($exists) {
-            return $this->db->update('residents', ['status' => 'approved'], ['id' => $id]);
+            $res = $this->db->update('residents', ['status' => 'approved'], ['id' => $id]);
+            
+            // Relink or create WP User upon approval
+            $updated_resident = $this->db->get_row('residents', $id);
+            if ( $updated_resident && ! empty( $updated_resident['email'] ) && empty( $updated_resident['wp_user_id'] ) ) {
+                $user = get_user_by( 'email', $updated_resident['email'] );
+                if ( ! $user ) {
+                    $password = wp_generate_password();
+                    $user_id = wp_create_user( $updated_resident['email'], $password, $updated_resident['email'] );
+                    if ( ! is_wp_error( $user_id ) ) {
+                        $user = get_user_by( 'id', $user_id );
+                        $user->set_role( 'subscriber' );
+                    }
+                }
+                if ( $user && ! is_wp_error( $user ) ) {
+                    $this->db->update('residents', ['wp_user_id' => $user->ID], ['id' => $id]);
+                    update_user_meta( $user->ID, 'SNESTX51_flat_no', $updated_resident['flat_no'] );
+                    $this->sync_wp_user_roles( $user->ID, $id );
+                }
+            }
+            return $res;
         } else {
             return $this->process_add_resident( $payload );
         }
@@ -731,8 +751,8 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 			}
 		}
 
-		// 1. Create WP User (if email provided).
-		if ( $data['email'] ) {
+		// 1. Create WP User (if email provided and status is approved).
+		if ( $data['email'] && $data['status'] === 'approved' ) {
 			$user = get_user_by( 'email', $data['email'] );
 			if ( ! $user ) {
 				$password = wp_generate_password();

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * REST API Controller for Payments (State Hash & Webhooks)
  */
@@ -18,7 +18,7 @@ class SNESTX51_REST_Payments_Controller {
 		register_rest_route( 'SNESTX/v1', '/state-hash', array(
 			'methods'  => WP_REST_Server::READABLE,
 			'callback' => array( $this, 'get_state_hash' ),
-			'permission_callback' => '__return_true' // Lightweight, readable by anyone
+			'permission_callback' => array( $this, 'check_frontend_auth' )
 		) );
 		
 		// 2. Dashboard Partial Data Endpoint (For JS re-render)
@@ -32,12 +32,18 @@ class SNESTX51_REST_Payments_Controller {
 		register_rest_route( 'SNESTX/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'handle_webhook' ),
-			'permission_callback' => '__return_true'
+			'permission_callback' => array( $this, 'webhook_permissions_check' )
 		) );
 	}
 	
 	public function check_frontend_auth() {
 		return is_user_logged_in();
+	}
+
+	public function webhook_permissions_check() {
+		// Webhook requests are received from external payment gateways (Stripe/Razorpay) 
+		// without a WordPress user session, so they must be publicly accessible.
+		return true;
 	}
 
 	public function get_state_hash( $request ) {
