@@ -1,14 +1,14 @@
-# SocietyNestX — Single-Shot Webapp
+# Society HubX — Single-Shot Webapp
 
-SocietyNestX is a premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vaults, community polls, and resident community engagement.
+Society HubX is a premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vaults, community polls, and resident community engagement.
 
-This repository packages the **SocietyNestX WordPress Plugin** alongside a dedicated, self-deleting setup wizard (`setup.php`) to create a "Single-Shot Webapp" bundle. Developers and administrators can deploy this bundle on any standard hosting environment to get a fully configured society management system up and running instantly.
+This repository packages the **Society HubX WordPress Plugin** alongside a dedicated, self-deleting setup wizard (`setup.php`) to create a "Single-Shot Webapp" bundle. Developers and administrators can deploy this bundle on any standard hosting environment to get a fully configured society management system up and running instantly.
 
 ---
 
 ## Links & Support
-* **GitHub Repository**: [https://github.com/vishwas-r/Society-GovernX](https://github.com/vishwas-r/Society-GovernX)
-* **Bug Tracker & Issues**: [https://github.com/vishwas-r/Society-GovernX/issues](https://github.com/vishwas-r/Society-GovernX/issues)
+* **GitHub Repository**: [https://github.com/vishwas-r/Society-HubX](https://github.com/vishwas-r/Society-HubX)
+* **Bug Tracker & Issues**: [https://github.com/vishwas-r/Society-HubX/issues](https://github.com/vishwas-r/Society-HubX/issues)
 
 ---
 
@@ -16,12 +16,12 @@ This repository packages the **SocietyNestX WordPress Plugin** alongside a dedic
 
 ```mermaid
 graph TD
-    A[society-nestx-webapp.zip] -->|Extract to Web Root| B(Web Server)
+    A[society-hubx-webapp.zip] -->|Extract to Web Root| B(Web Server)
     B -->|Access /setup.php| C(Premium Setup Wizard)
     C -->|Input DB & Admin Credentials| D{Run Setup}
     D -->|1. Generate wp-config.php| E[WordPress Core]
     D -->|2. Run wp_install migrations| F[WordPress Database]
-    D -->|3. Activate Plugin & Enable Permalinks| G[SocietyNestX Plugin]
+    D -->|3. Activate Plugin & Enable Permalinks| G[Society HubX Plugin]
     G -->|Initialize Custom Tables| F
     D -->|4. Self-Delete setup.php| H(Secure Site)
     H -->|Redirect| I[Society Settings Wizard]
@@ -29,13 +29,13 @@ graph TD
 
 1. **WordPress Core**: Automatically bundled from the latest official WordPress release.
 2. **Setup Wizard (`setup.php`)**: A standalone Obsidian Nebula dark-themed installer that automates database creation, salt generation, `wp-config.php` creation, WordPress setup, plugin activation, and pretty permalinks configuration.
-3. **SocietyNestX Plugin**: Pre-installed and auto-activated inside the `wp-content/plugins/society-nestx/` folder.
+3. **Society HubX Plugin**: Pre-installed and auto-activated inside the `wp-content/plugins/society-hubx/` folder.
 
 ---
 
 ## Plugin Features & Core Modules
 
-The **SocietyNestX** plugin delivers a full suite of administrative and community engagement tools:
+The **Society HubX** plugin delivers a full suite of administrative and community engagement tools:
 
 * **Flat Management:** Track flat details, block structure, occupancy types (Owner/Tenant), and allocation.
 * **Resident & Member Directory:** Register residents, manage member approvals, and search resident directory.
@@ -52,7 +52,7 @@ The **SocietyNestX** plugin delivers a full suite of administrative and communit
 
 ## Required Configurations & Settings
 
-After setup, navigate to **GovernX > Settings** in the WordPress Admin Dashboard to configure your society:
+After setup, navigate to **Society HubX > Settings** in the WordPress Admin Dashboard to configure your society:
 
 1. **Society Profile:** Manage basic details (Society Name, Registration Number, Address, and Contact Info) and upload the society logo.
 2. **Bank Settings:** Enter banking details (Account Name, Account Number, Bank Name, IFSC, UPI ID) used to generate dynamic payment links and receipts.
@@ -65,9 +65,9 @@ After setup, navigate to **GovernX > Settings** in the WordPress Admin Dashboard
 ## Frontend Shortcodes
 
 Render portal components on any frontend WordPress page using the following shortcodes:
-* `[society_nestx_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
-* `[society_nestx_notices]` - Renders a standalone public notice board.
-* `[society_nestx_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
+* `[society_hubx_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
+* `[society_hubx_notices]` - Renders a standalone public notice board.
+* `[society_hubx_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
 
 ---
 
@@ -89,13 +89,13 @@ chmod +x build-bundle.sh
 ./build-bundle.sh
 ```
 
-**Output**: A clean `society-nestx-webapp.zip` file will be generated in the root directory.
+**Output**: A clean `society-hubx-webapp.zip` file will be generated in the root directory.
 
 ---
 
 ## Deployment & Installation
 
-1. **Extract**: Upload and unzip the generated `society-nestx-webapp.zip` into your web server's public document root (e.g. Apache, Nginx, LocalWP, Laragon, or XAMPP).
+1. **Extract**: Upload and unzip the generated `society-hubx-webapp.zip` into your web server's public document root (e.g. Apache, Nginx, LocalWP, Laragon, or XAMPP).
 2. **Launch Wizard**: Navigate to `http://your-site-url/setup.php` in a web browser.
 3. **Database Configuration**:
    - Provide your Database Host, Database Name, Database Username, Password, and Table Prefix.
@@ -105,10 +105,10 @@ chmod +x build-bundle.sh
 5. **Run Setup**: Click **Install & Run Setup**.
    - The installer creates `wp-config.php`.
    - Runs WordPress core migrations.
-   - Activates the `SocietyNestX` plugin.
+   - Activates the `Society HubX` plugin.
    - Flushes permalink rules for clean URLs.
    - Attempts to self-delete the `setup.php` file for security.
-6. **Finalize**: The page will redirect you to the admin panel setup screen (`wp-admin/admin.php?page=snestx51-setup`) to configure your society identity, property structure (blocks, floors, flats), and financial details.
+6. **Finalize**: The page will redirect you to the admin panel setup screen (`wp-admin/admin.php?page=shubx51-setup`) to configure your society identity, property structure (blocks, floors, flats), and financial details.
 
 ---
 
