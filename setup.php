@@ -56,7 +56,7 @@ if (file_exists($config_path)) {
 }
 
 // Helper: Standalone salt generator
-function sgvx_generate_salt() {
+function snestx_generate_salt() {
     $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
     $salt = '';
     $len = strlen($chars);
@@ -90,9 +90,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'reset_reinstall') {
                 }
 
                 // Drop SocietyNestX custom tables matching Prefix + 'society_nestx_'
-                $sgvx_tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}society_nestx_%'");
-                if (is_array($sgvx_tables)) {
-                    foreach ($sgvx_tables as $table) {
+                $snestx_tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}society_nestx_%'");
+                if (is_array($snestx_tables)) {
+                    foreach ($snestx_tables as $table) {
                         $wpdb->query("DROP TABLE IF EXISTS `$table`");
                     }
                 }
@@ -166,14 +166,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'run_install') {
                     $config_content = str_replace("\$table_prefix = 'wp_';", "\$table_prefix = '$db_prefix';", $config_content);
                     
                     // Replace security keys and salts
-                    $config_content = preg_replace("/define\(\s*'AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_KEY', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_KEY', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_KEY', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'NONCE_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_KEY', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_SALT', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_SALT', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_SALT', '" . sgvx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'NONCE_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_SALT', '" . sgvx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_KEY', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_KEY', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_KEY', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'NONCE_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_KEY', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_SALT', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_SALT', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_SALT', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'NONCE_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_SALT', '" . snestx_generate_salt() . "' );", $config_content);
                     
                     // Write the config file
                     $written = @file_put_contents($config_path, $config_content);
