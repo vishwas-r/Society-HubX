@@ -86,7 +86,7 @@ This plugin utilizes the following third-party / external services to facilitate
 == Changelog ==
 
 = 1.0.4 =
-* Migrated from CanvasJS to responsive Chart.js v4.4.3.
+* Integrated responsive Chart.js v4.4.3 library for interactive dashboard charts.
 * Updated Bootstrap to v5.3.3 and Fuse.js to v7.1.0 assets.
 * Secured REST API controllers with explicit permission callbacks.
 * Gated WordPress user registration to approved residents/admin actions.
