@@ -1851,4 +1851,412 @@
         });
     });
 
+    // Handle Raise a General Request Form Submission
+    document.addEventListener('DOMContentLoaded', function() {
+        const requestForm = document.getElementById('SHUBX51GeneralRequestForm');
+        if (requestForm) {
+            requestForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                if (!btn) return;
+                const originalText = btn.innerText;
+                btn.disabled = true;
+                btn.innerText = 'Submitting...';
+
+                const formData = new FormData(this);
+                formData.append('action', 'shubx51_submit_general_request');
+                const nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+                formData.append('_wpnonce', nonce);
+
+                SHUBX.ajax({
+                    action: 'shubx51_submit_general_request',
+                    data: formData,
+                    loadingButton: btn,
+                    reload: true
+                });
+            });
+        }
+    });
+
+    // Save Profile Changes
+    window.saveProfileChanges = function(btn) {
+        const form = document.getElementById('editProfileForm');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        formData.append('action', 'shubx51_edit_resident');
+        const residentId = form.dataset.residentId || '';
+        formData.append('resident_id', residentId);
+        const nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+        formData.append('_wpnonce', nonce);
+
+        SHUBX.ajax({
+            action: 'shubx51_edit_resident',
+            data: formData,
+            loadingButton: jQuery(btn),
+            successMessage: 'Profile updated successfully!',
+            reload: true
+        });
+    };
+
+    // ====== RULES TAB FUNCTIONS ======
+    let ruleViewModal = null;
+    let acknowledgeModal = null;
+    let appealModal = null;
+
+    window.initRulesTab = function() {
+        const rvm = document.getElementById('ruleViewModal');
+        const akm = document.getElementById('acknowledgeModal');
+        const apm = document.getElementById('appealModal');
+        if (rvm) ruleViewModal = new bootstrap.Modal(rvm);
+        if (akm) acknowledgeModal = new bootstrap.Modal(akm);
+        if (apm) appealModal = new bootstrap.Modal(apm);
+
+        // Search filter
+        document.getElementById('ruleSearchResident')?.addEventListener('input', filterRulesResident);
+        document.getElementById('categoryFilterResident')?.addEventListener('change', filterRulesResident);
+
+        // Acknowledge form
+        document.getElementById('acknowledgeForm')?.addEventListener('submit', handleAcknowledge);
+        
+        // Appeal form
+        document.getElementById('appealForm')?.addEventListener('submit', handleAppeal);
+    };
+
+    // Auto-run if elements are present on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('ruleViewModal')) {
+            window.initRulesTab();
+        }
+    });
+
+    function filterRulesResident() {
+        const search = document.getElementById('ruleSearchResident').value.toLowerCase();
+        const category = document.getElementById('categoryFilterResident').value;
+
+        document.querySelectorAll('.rule-item').forEach(item => {
+            const searchText = item.dataset.search || '';
+            const itemCategory = item.dataset.category || '';
+            
+            const matchesSearch = !search || searchText.includes(search);
+            const matchesCategory = !category || itemCategory === category;
+
+            item.style.display = (matchesSearch && matchesCategory) ? '' : 'none';
+        });
+    }
+
+    window.filterByCategory = function(category) {
+        const catFilter = document.getElementById('categoryFilterResident');
+        if (catFilter) {
+            catFilter.value = category;
+            filterRulesResident();
+        }
+        // Scroll to rules list
+        document.getElementById('rulesListContainer')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.viewRuleModal = function(rule, isAcknowledged) {
+        document.getElementById('ruleViewTitle').textContent = rule.title;
+        
+        let content = '<div class="mb-4">' + rule.content + '</div>';
+        content += '<div class="border-top pt-3 small text-muted">';
+        content += 'Effective Date: ' + (rule.effective_date || 'Immediately') + '<br>';
+        content += 'Version: ' + rule.version;
+        if(rule.fine_amount > 0) {
+            content += '<br>Violation Fine: ₹' + parseFloat(rule.fine_amount).toFixed(2);
+        }
+        content += '</div>';
+        
+        document.getElementById('ruleViewContent').innerHTML = content;
+        
+        let footer = '<button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Close</button>';
+        if(rule.requires_acknowledgment && !isAcknowledged) {
+            footer += '<button type="button" class="btn btn-primary px-4 fw-bold" onclick="openAcknowledgeModal(\'' + rule.id + '\')"><i class="bi bi-check-circle me-2"></i> Acknowledge Now</button>';
+        }
+        
+        document.getElementById('ruleViewFooter').innerHTML = footer;
+        
+        if (ruleViewModal) ruleViewModal.show();
+    };
+
+    window.openAcknowledgeModal = function(ruleId) {
+        if (ruleViewModal) ruleViewModal.hide();
+        document.getElementById('ack_rule_id').value = ruleId;
+        document.getElementById('ackConfirm').checked = false;
+        if (acknowledgeModal) acknowledgeModal.show();
+    };
+
+    function handleAcknowledge(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
+        const activeNonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+
+        jQuery.ajax({
+            url: activeAjaxurl,
+            type: 'POST',
+            data: {
+                action: 'shubx51_acknowledge_rule',
+                rule_id: formData.get('rule_id'),
+                _wpnonce: activeNonce
+            },
+            success: function(response) {
+                if(response.success) {
+                    if (acknowledgeModal) acknowledgeModal.hide();
+                    if (window.SHUBXShowToast) {
+                        SHUBXShowToast('Rule acknowledged successfully!', 'success');
+                    } else if (window.SHUBX && window.SHUBX.toast) {
+                        SHUBX.toast.success('Rule acknowledged successfully!');
+                    } else {
+                        alert('Rule acknowledged successfully!');
+                    }
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    const errMsg = response.data?.message || 'Error acknowledging rule';
+                    if (window.SHUBXShowToast) {
+                        SHUBXShowToast(errMsg, 'error');
+                    } else if (window.SHUBX && window.SHUBX.toast) {
+                        SHUBX.toast.error(errMsg);
+                    } else {
+                        alert(errMsg);
+                    }
+                }
+            },
+            error: function() {
+                if (window.SHUBXShowToast) {
+                    SHUBXShowToast('Error communicating with server', 'error');
+                } else {
+                    alert('Error communicating with server');
+                }
+            }
+        });
+    }
+
+    window.showPendingAcknowledgments = function() {
+        // Filter to show only rules requiring acknowledgment
+        document.querySelectorAll('.rule-item').forEach(item => {
+            const hasAckBadge = item.querySelector('.badge.bg-success') || item.innerHTML.includes('Acknowledged');
+            item.style.display = hasAckBadge ? 'none' : '';
+        });
+        document.getElementById('rulesListContainer')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.showMyViolations = function() {
+        const section = document.getElementById('myViolationsSection');
+        if(section) {
+            section.classList.remove('d-none');
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    window.appealViolation = function(violationId) {
+        document.getElementById('appeal_violation_id').value = violationId;
+        document.getElementById('appealForm').reset();
+        if (appealModal) appealModal.show();
+    };
+
+    function handleAppeal(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
+        const activeNonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+
+        jQuery.ajax({
+            url: activeAjaxurl,
+            type: 'POST',
+            data: {
+                action: 'shubx51_appeal_violation',
+                violation_id: formData.get('violation_id'),
+                appeal_reason: formData.get('appeal_reason'),
+                _wpnonce: activeNonce
+            },
+            success: function(response) {
+                if(response.success) {
+                    if (appealModal) appealModal.hide();
+                    if (window.SHUBXShowToast) {
+                        SHUBXShowToast('Appeal submitted successfully!', 'success');
+                    } else if (window.SHUBX && window.SHUBX.toast) {
+                        SHUBX.toast.success('Appeal submitted successfully!');
+                    } else {
+                        alert('Appeal submitted successfully!');
+                    }
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert(response.data.message || 'Error submitting appeal');
+                }
+            }
+        });
+    }
+
+    // ====== FACILITIES TAB FUNCTIONS ======
+    let facilityModal = null;
+    
+    window.initFacilitiesTab = function() {
+        // 1. Filter Logic
+        const filters = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.facility-item');
+        
+        if(filters.length > 0 && items.length > 0) {
+            filters.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filters.forEach(b => {
+                        b.classList.remove('btn-dark', 'active');
+                        b.classList.add('btn-light');
+                    });
+                    btn.classList.remove('btn-light');
+                    btn.classList.add('btn-dark', 'active');
+                    
+                    const filter = btn.dataset.filter;
+                    items.forEach(item => {
+                        if (filter === 'all' || item.dataset.type === filter) {
+                            item.classList.remove('d-none');
+                        } else {
+                            item.classList.add('d-none');
+                        }
+                    });
+                });
+            });
+        }
+
+        // 2. Asset Search
+        const assetSearch = document.getElementById('asset-search');
+        if(assetSearch) {
+            assetSearch.addEventListener('keyup', function() {
+                const val = this.value.toLowerCase();
+                document.querySelectorAll('.asset-row').forEach(row => {
+                    row.style.display = row.dataset.search.includes(val) ? '' : 'none';
+                });
+            });
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('asset-search') || document.querySelector('.filter-btn')) {
+            window.initFacilitiesTab();
+        }
+    });
+
+    window.openResidentFacilityModal = function(jsonStr) {
+        const modalEl = document.getElementById('residentFacilityModal');
+        if(!modalEl) return;
+        if(!facilityModal) facilityModal = new bootstrap.Modal(modalEl);
+        
+        // Parse
+        let f;
+        try {
+            f = JSON.parse(jsonStr);
+        } catch(e) { console.error('JSON Parse Error', e); return; }
+        
+        // Populate Info
+        document.getElementById('modalFacName').textContent = f.name;
+        document.getElementById('modalFacRules').textContent = f.rules || 'No specific guidelines provided.';
+        
+        // Meta
+        const rate = parseFloat(f.rate || 0);
+        const costText = (rate === 0) ? 'Free Access' : `₹${rate}/${f.rate_unit||'hr'}`;
+        document.getElementById('modalFacMeta').innerHTML = `
+            <span class="fw-bold text-dark">${costText}</span> • Max ${f.max_hours}hrs • ${f.booking_required == 1 ? 'Booking Required' : 'Open Access'}
+        `;
+
+        // Booking Logic
+        const formContainer = document.getElementById('modalBookingFormContainer');
+        const noBookingMsg = document.getElementById('modalNoBookingMsg');
+        const bookingFacId = document.getElementById('bookingFacId');
+        
+        bookingFacId.value = f.id;
+        
+        if(f.booking_required != 0) { 
+            formContainer.classList.remove('d-none');
+            noBookingMsg.classList.add('d-none');
+        } else {
+            formContainer.classList.add('d-none');
+            noBookingMsg.classList.remove('d-none');
+        }
+
+        // Clear Previous Schedule & Fetch New
+        const scheduleList = document.getElementById('modalScheduleList');
+        scheduleList.innerHTML = '<div class="text-center py-5 text-muted small"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Loading availability...</div>';
+        
+        facilityModal.show();
+        
+        fetchFacilitySchedule(f.id);
+    };
+
+    // Fetch Schedule
+    async function fetchFacilitySchedule(facId) {
+        const list = document.getElementById('modalScheduleList');
+        if (!list) return;
+        const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
+        try {
+            const response = await fetch(`${activeAjaxurl}?action=shubx51_get_facility_bookings&facility_id=${facId}`);
+            const res = await response.json();
+            
+            if(res.success) {
+                const events = res.data;
+                if(events.length === 0) {
+                    list.innerHTML = '<div class="list-group-item text-center py-4 text-muted small">No upcoming bookings. Entire schedule available.</div>';
+                    return;
+                }
+                
+                // Sort by start time
+                events.sort((a,b) => new Date(a.start) - new Date(b.start));
+                
+                let html = '';
+                events.forEach(e => {
+                    const startDate = new Date(e.start);
+                    const endDate = new Date(e.end);
+                    
+                    const day = startDate.toLocaleDateString('en-US', {weekday:'short', day:'numeric', month:'short'});
+                    const timeStr = `${startDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})} - ${endDate.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+                    
+                    html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold text-dark small">${day}</div>
+                                <div class="text-secondary" style="font-size: 11px;">${timeStr}</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-dark border border-light rounded-pill px-2 border-opacity-10 small fw-normal">Reserved</span>
+                                <div class="small text-muted" style="font-size: 10px;">${e.title}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+            } else {
+                list.innerHTML = `<div class="p-3 text-danger small">Failed to load schedule.</div>`;
+            }
+        } catch(e) {
+            console.error(e);
+            list.innerHTML = `<div class="p-3 text-danger small">Error loading schedule.</div>`;
+        }
+    }
+
+    // Handle Booking
+    window.handleResidentBooking = async function(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        if (!btn) return;
+        const originalText = btn.textContent;
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+
+        const fd = new FormData(e.target);
+        
+        try {
+            const res = await window.SHUBXApiRequest('shubx51_book_facility', fd);
+            btn.textContent = 'Success!';
+            setTimeout(() => {
+                if (facilityModal) facilityModal.hide();
+                e.target.reset();
+                btn.textContent = originalText;
+                btn.disabled = false;
+                window.location.reload(); 
+            }, 1000);
+        } catch(err) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    };
+
 })(jQuery);

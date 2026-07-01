@@ -573,7 +573,7 @@ $qr_url    = get_option('shubx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-        <form id="editProfileForm" enctype="multipart/form-data">
+        <form id="editProfileForm" enctype="multipart/form-data" data-resident-id="<?php echo esc_attr($profile_resident['id'] ?? ''); ?>">
           <?php 
           $args = [
               'context'  => 'frontend_profile',
@@ -586,36 +586,12 @@ $qr_url    = get_option('shubx51_bank_qr');
         </form>
       </div>
       <div class="modal-footer border-0 pt-3">
-        <button type="button" class="btn btn-primary rounded-3" onclick="saveProfileChanges()"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
+        <button type="button" class="btn btn-primary rounded-3" onclick="saveProfileChanges(this)"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-    // Data is localized via wp_localize_script in class-frontend-dashboard.php
-    // Redundant window.SHUBXDashboardData assignment removed to avoid overwriting localized nonce.
-
-    function saveProfileChanges() {
-      const btn = event.target.closest('button');
-      const form = document.getElementById('editProfileForm');
-      if (!form) return;
-
-      const formData = new FormData(form);
-      formData.append('action', 'shubx51_edit_resident');
-      formData.append('resident_id', '<?php echo esc_js($profile_resident['id'] ?? ''); ?>');
-      formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('shubx51_frontend_nonce')); ?>');
-
-      SHUBX.ajax({
-          action: 'shubx51_edit_resident',
-          data: formData,
-          loadingButton: jQuery(btn),
-          successMessage: 'Profile updated successfully!',
-          reload: true
-      });
-    }
-
-</script>
 
 <!-- General Request Modal -->
 <div class="modal fade" id="SHUBX51GeneralRequestModal" tabindex="-1" aria-hidden="true">

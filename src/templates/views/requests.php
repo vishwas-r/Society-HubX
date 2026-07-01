@@ -255,30 +255,6 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
         </table>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const search = document.getElementById('req-search');
-    const moduleFilter = document.getElementById('req-filter-module');
-    const rows = document.querySelectorAll('.request-row');
-
-    const filter = () => {
-        const query = search.value.toLowerCase();
-        const mod = moduleFilter.value;
-
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            const moduleMatch = mod === 'all' || row.dataset.module === mod;
-            const textMatch = text.includes(query);
-            row.style.display = (moduleMatch && textMatch) ? '' : 'none';
-        });
-    };
-
-    search.addEventListener('keyup', filter);
-    moduleFilter.addEventListener('change', filter);
-});
-</script>
-
 <!-- Centralized Request Detail Modal -->
 <div class="modal fade" id="requestDetailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -316,7 +292,3 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
-<?php
-// Ensure this nonce is available for SHUBX.ajax
-echo '<script>var shubx51RequestNonce = "' . wp_create_nonce('shubx51_request_action') . '";</script>';
-?>

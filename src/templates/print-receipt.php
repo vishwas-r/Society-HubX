@@ -18,6 +18,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
 <head>
     <meta charset="UTF-8">
     <title>Receipt #<?php echo esc_html( $inv['id'] ); ?></title>
+    <?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone print template with its own <head>. Cannot use wp_enqueue_style. ?>
     <style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; color: #1e293b; background: #f8fafc; line-height: 1.5; }
         .receipt-box { background: white; border: 1px solid #e2e8f0; padding: 40px; max-width: 750px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }

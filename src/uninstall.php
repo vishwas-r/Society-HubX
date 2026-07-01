@@ -14,7 +14,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 // Delete options.
-$options = array(
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Local variables in uninstall context.
+$shubx51_options = array(
 	'shubx51_society_name',
 	'shubx51_society_address_line1',
 	'shubx51_society_address_line2',
@@ -27,14 +28,15 @@ $options = array(
 	'shubx51_drive_root_id',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $shubx51_options as $shubx51_option ) {
+	delete_option( $shubx51_option );
 }
 
 // Drop custom database tables.
 global $wpdb;
 
-$tables = array(
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Local uninstall variables.
+$shubx51_tables = array(
 	'society_hubx_flats',
 	'society_hubx_residents',
 	'society_hubx_resident_history',
@@ -58,8 +60,8 @@ $tables = array(
 	'society_hubx_activity_logs',
 );
 
-foreach ( $tables as $table ) {
-	$table_name = $wpdb->prefix . $table;
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is safe and hardcoded.
-	$wpdb->query( "DROP TABLE IF EXISTS {$table_name}" );
+foreach ( $shubx51_tables as $shubx51_table ) {
+	$shubx51_table_name = $wpdb->prefix . $shubx51_table;
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- Intentional DROP TABLE on uninstall; no caching needed.
+	$wpdb->query( "DROP TABLE IF EXISTS {$shubx51_table_name}" );
 }

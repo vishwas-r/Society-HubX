@@ -246,6 +246,10 @@ class SHUBX51_Frontend_Dashboard {
 				'city'     => get_option( 'shubx51_society_city', '' ),
 				'contact'  => get_option( 'shubx51_society_contact', '' )
 			);
+			wp_enqueue_style( 'shubx51-login-css', SHUBX51_PLUGIN_URL . 'assets/css/shubx-login.css', array( 'shubx51-bootstrap' ), SHUBX51_VERSION );
+			wp_enqueue_script( 'shubx51-login-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-login.js', array( 'jquery' ), SHUBX51_VERSION, true );
+			wp_add_inline_script( 'shubx51-login-js', 'var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";', 'before' );
+			
 			ob_start();
 			include SHUBX51_PLUGIN_DIR . 'templates/resident-login.php';
 			return ob_get_clean();
@@ -1345,7 +1349,7 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_ids = $this->db->get_resident_flats( $target_resident['id'] );
 
 		// Determine which flat is active
-		$active_flat_id = isset( $_SESSION['shubx51_active_flat_id'] ) ? $_SESSION['shubx51_active_flat_id'] : '';
+		$active_flat_id = isset( $_SESSION['shubx51_active_flat_id'] ) ? sanitize_text_field( wp_unslash( $_SESSION['shubx51_active_flat_id'] ) ) : '';
 
 		// Validate active flat belongs to the user
 		if ( empty( $active_flat_id ) || ! in_array( $active_flat_id, $flat_ids, true ) ) {

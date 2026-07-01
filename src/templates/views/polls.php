@@ -193,34 +193,4 @@ add_action('shubx51_admin_modals', function() {
 </div>
 <?php }); ?>
 
-<script>
-function addOptionField() {
-    const container = document.getElementById('optionsContainer');
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.name = 'options[]';
-    input.placeholder = 'Next Option';
-    input.className = 'form-control shadow-none rounded-lg mt-1';
-    container.appendChild(input);
-}
-
-let pollModal = null;
-function openPollModal() {
-    if(!pollModal) pollModal = new bootstrap.Modal(document.getElementById('createPollModal'));
-    pollModal.show();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const search = document.getElementById('shubx-poll-search');
-    if(search) {
-        search.addEventListener('keyup', (e) => {
-            const val = e.target.value.toLowerCase();
-            document.querySelectorAll('.shubx-poll-card').forEach(el => {
-                const text = el.dataset.search || '';
-                el.style.display = text.includes(val) ? '' : 'none';
-            });
-        });
-    }
-});
-</script>
 

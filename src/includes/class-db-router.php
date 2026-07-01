@@ -377,11 +377,12 @@ class SHUBX51_DB_Router {
 	 */
 	public function get_resident_flats( $resident_id ) {
 		$map_table = $this->get_table_name( 'resident_flat_map' );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Dynamic table name via get_table_name.
+		// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); value is prepared via %s.
 		$flat_ids = $this->wpdb->get_col( $this->wpdb->prepare(
 			"SELECT flat_id FROM {$map_table} WHERE resident_id = %s ORDER BY is_primary DESC",
 			$resident_id
 		) );
+		// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		return $flat_ids ?: array();
 	}
 
@@ -436,32 +437,35 @@ class SHUBX51_DB_Router {
 		$ids = array( $flat_id );
 
 		// 1. Try to find the flat by ID
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+		// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); value is prepared.
 		$flat = $this->wpdb->get_row( $this->wpdb->prepare(
 			"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE id = %s",
 			$flat_id
 		), ARRAY_A );
+		// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
 		// 2. If not found by ID, try parsing hyphenated name e.g. "A-101"
 		if ( ! $flat && strpos( $flat_id, '-' ) !== false ) {
 			$parts = explode( '-', $flat_id, 2 );
 			$block = trim( $parts[0] );
 			$num = trim( $parts[1] );
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+			// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); values prepared.
 			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
 				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE block = %s AND flat_number = %s",
 				$block,
 				$num
 			), ARRAY_A );
+			// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
 
 		// 3. If still not found, try searching by flat_number = $flat_id
 		if ( ! $flat ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+			// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); value prepared.
 			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
 				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE flat_number = %s",
 				$flat_id
 			), ARRAY_A );
+			// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
 
 		if ( $flat ) {

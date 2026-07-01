@@ -278,25 +278,4 @@ add_action('shubx51_admin_modals', function() use ($selected_flat) {
 </div>
 <?php }); ?>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const search = document.getElementById('residentSearch');
-    if(search) {
-        search.addEventListener('keyup', (e) => {
-            const val = e.target.value.toLowerCase();
-            document.querySelectorAll('#residentList .resident-item').forEach(el => {
-                const flat = el.querySelector('.resident-flat').textContent.toLowerCase();
-                const name = el.querySelector('.resident-name').textContent.toLowerCase();
-                el.style.display = (flat.includes(val) || name.includes(val)) ? '' : 'none';
-            });
-        });
-    }
-});
-
-let uploadModal = null;
-function openUploadModal() {
-    if(!uploadModal) uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
-    uploadModal.show();
-}
-</script>
 

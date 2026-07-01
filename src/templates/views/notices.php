@@ -326,19 +326,4 @@ add_action('shubx51_admin_modals', function() {
         </div>
     </div>
 </div>
-
-<style>
-.shadow-danger-soft { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15); }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.notice-tab-btn { transition: all 0.25s ease; position: relative; }
-.notice-tab-btn::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: var(--bs-primary); transition: width 0.25s ease; }
-.notice-tab-btn.active::after { width: 100%; }
-.notice-pane { animation: fadeIn 0.3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-/* TinyMCE Modal Fixes */
-#wp-notice_editor-wrap { border: 0 !important; background: transparent !important; }
-.mce-toolbar-grp, .mce-edit-area { border: 0 !important; }
-.mce-statusbar { border: 0 !important; display: none !important; }
-</style>
 <?php }); ?>

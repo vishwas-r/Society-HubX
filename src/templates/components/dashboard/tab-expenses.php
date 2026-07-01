@@ -122,66 +122,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
       </div>
 
-      <style>
-        /* Smooth fade for tooltips */
-        .tooltip.fade {
-            transition: opacity 0.2s ease-in-out;
-        }
 
-        .tooltip-inner {
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 10px;
-            letter-spacing: 0.3px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-        }
-
-        .tooltip .tooltip-arrow::before {
-            display: none;
-        }
-
-        .tooltip .tooltip-arrow {
-            width: 14px;
-            height: 7px;
-        }
-
-        .tooltip .tooltip-arrow::after {
-            content: "";
-            position: absolute;
-            width: 14px;
-            height: 7px;
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-        }
-
-        /* Placement fixes */
-        .bs-tooltip-top .tooltip-arrow { bottom: -7px; }
-        .bs-tooltip-bottom .tooltip-arrow { top: -7px; }
-        .bs-tooltip-bottom .tooltip-arrow::after { transform: rotate(180deg); }
-        .bs-tooltip-start .tooltip-arrow { right: -7px; width: 7px; height: 14px; }
-        .bs-tooltip-start .tooltip-arrow::after { width: 7px; height: 14px; clip-path: polygon(100% 50%, 0 0, 0 100%); }
-        .bs-tooltip-end .tooltip-arrow { left: -7px; width: 7px; height: 14px; }
-        .bs-tooltip-end .tooltip-arrow::after { width: 7px; height: 14px; clip-path: polygon(0 50%, 100% 0, 100% 100%); }
-
-        /* Tooltip variants */
-        .tooltip-success .tooltip-inner { background: linear-gradient(135deg, #198754, #157347); color: #fff; }
-        .tooltip-success .tooltip-arrow::after { background: linear-gradient(135deg, #198754, #157347); }
-
-        .tooltip-warning .tooltip-inner { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
-        .tooltip-warning .tooltip-arrow::after { background: linear-gradient(135deg, #ffc107, #e0a800); }
-
-        .tooltip-danger .tooltip-inner { background: linear-gradient(135deg, #dc3545, #b02a37); color: #fff; }
-        .tooltip-danger .tooltip-arrow::after { background: linear-gradient(135deg, #dc3545, #b02a37); }
-
-        .tooltip-chronic .tooltip-inner { background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fff; }
-        .tooltip-chronic .tooltip-arrow::after { background: linear-gradient(135deg, #7f1d1d, #450a0a); }
-
-        /* Div gradient variants */
-        .div-success { background: linear-gradient(135deg, #198754, #157347); color: #fff; }
-        .div-warning { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
-        .div-danger { background: linear-gradient(135deg, #dc3545, #b02a37); color: #fff; }
-        .div-chronic { background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fff; }
-      </style>
 
 
 

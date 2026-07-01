@@ -195,12 +195,3 @@ $society_name = get_option('shubx51_society_name', '');
     </div>
 </div>
 
-<style>
-.setup-wizard-wrapper { background: #f8fafc; font-family: 'Inter', sans-serif; }
-.setup-card { border: none; }
-.form-control:focus { background-color: #fff !important; border: 1px solid #0d6efd !important; }
-.btn-primary { background: #0d6efd; border: none; }
-.btn-primary:hover { background: #0b5ed7; }
-.setup-steps span { font-weight: 500; font-size: 14px; }
-.step-num { transition: all 0.3s ease; }
-</style>

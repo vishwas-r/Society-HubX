@@ -73,11 +73,6 @@ if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
 }
 ?>
 
-<!-- Nonce for AJAX Requests -->
-<script>
-    var shubx51_nonce = '<?php echo wp_create_nonce( 'shubx51_frontend_nonce' ); ?>';
-    var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
-</script>
 
     <?php include 'components/dashboard/welcome.php'; ?>
     <?php include 'components/dashboard/stats.php'; ?>
@@ -116,30 +111,6 @@ if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const requestForm = document.getElementById('SHUBX51GeneralRequestForm');
-    if (requestForm) {
-        requestForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-            btn.disabled = true;
-            btn.innerText = 'Submitting...';
 
-            const formData = new FormData(this);
-            formData.append('action', 'shubx51_submit_general_request');
-            formData.append('_wpnonce', '<?php echo wp_create_nonce("shubx51_frontend_nonce"); ?>');
-
-            SHUBX.ajax({
-                action: 'shubx51_submit_general_request',
-                data: formData,
-                loadingButton: btn,
-                reload: true
-            });
-        });
-    }
-});
-</script>
 
 <?php // End of Resident Dashboard ?>

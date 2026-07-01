@@ -187,16 +187,3 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
     </div>
 </div>
 
-<script>
-// Logic to handle tab switching aesthetics
-document.querySelectorAll('#activityTabs .nav-link').forEach(tab => {
-    tab.addEventListener('shown.bs.tab', (e) => {
-        document.querySelectorAll('#activityTabs .nav-link').forEach(t => {
-            t.classList.remove('fw-bold', 'text-primary', 'border-primary');
-            t.classList.add('fw-semibold', 'text-muted', 'border-transparent');
-        });
-        e.target.classList.remove('fw-semibold', 'text-muted', 'border-transparent');
-        e.target.classList.add('fw-bold', 'text-primary', 'border-primary');
-    });
-});
-</script>

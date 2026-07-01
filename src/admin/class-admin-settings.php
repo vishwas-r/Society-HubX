@@ -51,7 +51,7 @@ class SHUBX51_Admin_Settings {
 			'shubx51-settings',
 			array( $this, 'render_settings_page' ),
 			'dashicons-building',
-			25.5
+			80
 		);
 
 		// Rename first subcommand to "Dashboard" to better reflect the new UI
@@ -371,11 +371,13 @@ class SHUBX51_Admin_Settings {
 		if ( get_option( 'shubx51_is_setup_complete' ) ) return;
 
 		// Don't show notice on the setup page itself
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading page slug only, no data processing.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( $page === 'shubx51-setup' ) return;
 
 		echo '<div class="notice notice-warning is-dismissible">';
 		echo '<p>' . sprintf(
+			// translators: %1$s is an opening <a> tag, %2$s is the closing </a> tag.
 			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-hubx' ),
 			'<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-setup' ) ) . '"><strong>',
 			'</strong></a>'

@@ -106,11 +106,10 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             'id_proof' => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ''
         );
 
-        // Handle ID Proof Upload (Document)
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_add_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_file = $this->sanitize_file_array( $_FILES['id_proof'] );
-            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
             $uploaded = $this->drive->upload_file('staff_docs', $clean_file);
             if (!is_wp_error($uploaded)) {
                 $db_data['id_proof'] = $uploaded;
@@ -118,11 +117,11 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         }
 
         // Handle Profile Photo Upload (Avatar)
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_add_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SHUBX51_Media_Manager();
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
-            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $db_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $db_data['profile_photo'] = $photo_url;
@@ -182,11 +181,10 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             'id_proof' => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ($existing['id_proof'] ?? '')
         );
 
-        // Handle ID Proof Upload (Document)
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_edit_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_file = $this->sanitize_file_array( $_FILES['id_proof'] );
-            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_file.
             $uploaded = $this->drive->upload_file('staff_docs', $clean_file);
             if (!is_wp_error($uploaded)) {
                 $update_data['id_proof'] = $uploaded;
@@ -194,11 +192,11 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         }
 
         // Handle Profile Photo Upload (Avatar)
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_edit_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
             $media = new SHUBX51_Media_Manager();
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
-            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $update_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
                 $update_data['profile_photo'] = $photo_url;

@@ -83,60 +83,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
 ?>
 <!-- Admin App Wrapper Output -->
 <div id="shubx51-app-root" class="d-flex w-100 overflow-hidden">
-    <!-- CSS Overrides -->
-    <style>
-        /* Isolate from WP Admin Styles */
-        #shubx51-app-root * { box-sizing: border-box; }
-        
-        /* Hide Default WP Elements if leaks */
-        #wpadminbar, #adminmenumain, #wpfooter { display: none !important; }
-        #wpcontent, #wpfooter { margin-left: 0 !important; }
-        html.wp-toolbar { padding-top: 0 !important; }
-        
-        /* Typography - Import Outfit & Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-        
-        #shubx51-app-root { 
-            font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif; 
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        /* Helper for centered layout */
-        .shubx-content-scroll > .container {
-            max-width: 1200px;
-        }
-
-        .dropdown-toggle-no-caret::after {
-            display: none !important;
-        }
-
-        @media (min-width: 992px) {
-            .shubx-sidebar {
-                width: 280px !important;
-                min-width: 280px !important;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-        }
-        .shubx-sidebar.collapsed {
-            width: 80px !important;
-            min-width: 80px !important;
-        }
-        .shubx-sidebar.collapsed .fw-bold, 
-        .shubx-sidebar.collapsed .text-nowrap,
-        .shubx-sidebar.collapsed hr,
-        .shubx-sidebar.collapsed .shubx-sidebar-footer-text {
-            display: none !important;
-        }
-        .shubx-sidebar.collapsed .nav-link {
-            justify-content: center;
-            padding-left: 0;
-            padding-right: 0;
-        }
-        .shubx-sidebar.collapsed .nav-link i {
-            margin: 0 !important;
-        }
-    </style>
+    <!-- Styles: See assets/css/admin-layout.css -->
 
     <!-- Sidebar Backdrop for Mobile -->
     <div id="shubx-sidebar-backdrop" class="position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50 d-lg-none d-none" style="z-index: 1040;"></div>
@@ -280,9 +227,4 @@ if ( function_exists( 'wp_print_media_templates' ) ) {
 do_action( 'admin_print_footer_scripts' );
 ?>
 
-<style>
-    /* Reset some WP Default Styles that might bleed in if not fully isolated via iframe */
-    html { margin-top: 0 !important; }
-    /* Hide default WP Footer elements just in case they were printed */
-    #wpadminbar, #adminmenumain, #wpfooter { display: none !important; }
-</style>
+<?php /* Styles: admin-layout.css handles WP reset overrides. */ ?>

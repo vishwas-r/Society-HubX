@@ -18,6 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php wp_head(); ?>
     
+    <?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Full-page template with standalone <head>. Cannot use wp_enqueue_style post wp_head(). ?>
     <style>
         body { font-family: 'Inter', sans-serif; }
         /* Custom Scrollbar */

@@ -480,6 +480,20 @@ final class Society_HubX {
 		if ( in_array($page, ['shubx51-activity-hub', 'shubx51-global-settings']) ) {
 			wp_enqueue_script( 'shubx51-notifications-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-notifications.js', array('jquery', 'shubx51-admin-app'), time(), true );
 		}
+
+		// Views JS for roles, requests, polls, activity-hub, expenses, documents, assets
+		if ( in_array( $page, array( 'shubx51-roles', 'shubx51-requests', 'shubx51-polls', 'shubx51-activity-hub', 'shubx51-expenses', 'shubx51-documents', 'shubx51-assets' ) ) ) {
+			wp_enqueue_script( 'shubx-views', SHUBX51_PLUGIN_URL . 'assets/js/shubx-views.js', array( 'jquery', 'shubx51-admin-app' ), SHUBX51_VERSION, true );
+			wp_localize_script( 'shubx-views', 'shubxViewsConfig', array(
+				'adminPostUrl' => admin_url( 'admin-post.php' ),
+				'roleNonce'    => wp_create_nonce( 'shubx51_role_nonce' ),
+			) );
+		}
+
+		// Resident Form JS (image preview, multi-flat selector, type toggle)
+		if ( $page === 'shubx51-residents' ) {
+			wp_enqueue_script( 'shubx51-resident-form-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-resident-form.js', array( 'jquery', 'shubx51-admin-app' ), SHUBX51_VERSION, true );
+		}
 	}
 
 	/**
@@ -527,6 +541,8 @@ final class Society_HubX {
         // Only load module-specific scripts if user is logged in
         if ( is_user_logged_in() ) {
             wp_enqueue_script( 'shubx51-documents-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-documents.js', array('jquery', 'shubx51-core', 'shubx51-toast', 'shubx51-ajax', 'shubx51-bootstrap'), SHUBX51_VERSION, true );
+            // Resident form interactive logic (profile edit modal in dashboard)
+            wp_enqueue_script( 'shubx51-resident-form-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-resident-form.js', array( 'jquery', 'shubx51-dashboard-js' ), SHUBX51_VERSION, true );
         }
 
 		// Localize AJAX URL for frontend (needed for resident login)
@@ -534,8 +550,11 @@ final class Society_HubX {
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 			'version' => SHUBX51_VERSION
 		) );
-		// Ensure global ajaxurl fallback for legacy fetch in resident-login.php
-		wp_add_inline_script( 'shubx51-bootstrap', 'var ajaxurl = "' . admin_url( 'admin-ajax.php' ) . '";', 'before' );
+		// Ensure global ajaxurl and shubx51_nonce fallbacks for legacy/inline scripts
+		wp_add_inline_script( 'shubx51-bootstrap', '
+			var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";
+			var shubx51_nonce = "' . esc_js( wp_create_nonce( 'shubx51_frontend_nonce' ) ) . '";
+		', 'before' );
 	}
 
 	/**
@@ -594,12 +613,12 @@ final class Society_HubX {
 				continue;
 			}
 
-			// Check if already mapped
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is fully controlled and sanitized.
+			// phpcs:disable WordPress.DB.PreparedSQL -- Table name is fully controlled via get_table_name(); value is prepared via %s placeholder.
 			$exists = $this->db->wpdb->get_var( $this->db->wpdb->prepare(
 				"SELECT COUNT(*) FROM {$table_name} WHERE resident_id = %s",
 				$resident_id
 			) );
+			// phpcs:enable WordPress.DB.PreparedSQL
 
 			if ( ! $exists ) {
 				// Map it as primary
