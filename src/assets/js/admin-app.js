@@ -1,4 +1,4 @@
-﻿
+
 /**
  * Admin App JS
  * Handles interactions for the Society Govern X Admin App.
@@ -111,11 +111,11 @@
             sidebarBackdrop.addEventListener('click', closeSidebar);
         }
 
-        // 5. Global Chart Responsiveness (CanvasJS)
+        // 5. Global Chart Responsiveness (Chart.js)
         window.addEventListener('resize', debounce(() => {
             if (window.SNESTXCharts && Array.isArray(window.SNESTXCharts)) {
                 window.SNESTXCharts.forEach(chart => {
-                    if (typeof chart.render === 'function') chart.render();
+                    if (typeof chart.resize === 'function') chart.resize();
                 });
             }
         }, 200));

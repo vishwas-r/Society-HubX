@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * View: Accounts (Invoices & Income) - Bootstrap Migration
  *
@@ -1223,8 +1223,8 @@ let collectionChart = null;
 let currentChartView = 'monthly';
 
 function initCharts() {
-    if (!window.CanvasJS || !window.SNESTXAccountsChartData) {
-        console.log('CanvasJS or chart data not available');
+    if (!window.Chart || !window.SNESTXAccountsChartData) {
+        console.log('Chart.js or chart data not available');
         return;
     }
 
@@ -1240,78 +1240,70 @@ function renderCashFlowChart() {
     const chartData = window.SNESTXAccountsChartData.monthlyData;
     if (!chartData) return;
 
-    const dataPoints = [];
+    const labels = [];
+    const incomeData = [];
+    const expenseData = [];
 
     // Process each month - show both income and expense as separate entries
     for (const [month, data] of Object.entries(chartData)) {
-        // Add income as positive
-        if (data.income > 0) {
-            dataPoints.push({
-                label: `${month} Income`,
-                y: data.income,
-                color: "#10b981"
-            });
-        }
-
-        // Add expense as negative
-        if (data.expense > 0) {
-            dataPoints.push({
-                label: `${month} Expense`,
-                y: -data.expense,
-                color: "#ef4444"
-            });
-        }
+        labels.push(month);
+        incomeData.push(data.income || 0);
+        expenseData.push(data.expense || 0);
     }
-
-    // Add cumulative total at the end
-    dataPoints.push({
-        label: "Net Balance",
-        isCumulativeSum: true,
-        color: "#3b82f6"
-    });
 
     if (cashFlowChart) {
         cashFlowChart.destroy();
     }
 
-    cashFlowChart = new CanvasJS.Chart("cashFlowChart", {
-        animationEnabled: true,
-        theme: "light2",
-        title: {
-            text: "Society Cash Flow (Waterfall)",
-            fontSize: 16,
-            fontFamily: "Inter, sans-serif",
-            fontWeight: "normal",
-            padding: 5
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+
+    cashFlowChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Income (₹)',
+                    data: incomeData,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Expense (₹)',
+                    data: expenseData,
+                    backgroundColor: '#ef4444',
+                    borderRadius: 4
+                }
+            ]
         },
-        axisY: {
-            title: "Amount (₹)",
-            prefix: "₹",
-            valueFormatString: "#,##,##0",
-            gridThickness: 1,
-            gridColor: "#f3f4f6"
-        },
-        axisX: {
-            //labelAngle: -45,
-            //labelFontSize: 10,
-            //interval: 1
-        },
-        toolTip: {
-            shared: false,
-            content: "{label}: ₹{y}"
-        },
-        data: [{
-            type: "waterfall",
-            // indexLabel: "₹{y}",
-            // indexLabelFontSize: 11,
-            // indexLabelFontColor: "#333",
-            dataPoints: dataPoints
-        }]
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Society Cash Flow (Income vs Expense)',
+                    font: {
+                        size: 16,
+                        family: 'Inter, sans-serif'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
     });
-
-    cashFlowChart.render();
 }
-
 
 function renderCollectionChart() {
     const container = document.getElementById("collectionChart");
@@ -1327,26 +1319,39 @@ function renderCollectionChart() {
         collectionChart.destroy();
     }
 
-    collectionChart = new CanvasJS.Chart("collectionChart", {
-        animationEnabled: true,
-        theme: "light2",
-        data: [{
-            type: "doughnut",
-            startAngle: 60,
-            innerRadius: "60%",
-            indexLabelFontSize: 14,
-            name: "{name}: {y}",
-            showInLegend: true,
-            toolTipContent: "<b>{name}</b>: {y} ({percentage}%)",
-            dataPoints: [
-                { y: data.paid, name: "Paid", color: "#10b981", percentage: Math.round((data.paid / total) * 100) },
-                { y: data.partial, name: "Partial", color: "#f59e0b", percentage: Math.round((data.partial / total) * 100) },
-                { y: data.unpaid, name: "Unpaid", color: "#ef4444", percentage: Math.round((data.unpaid / total) * 100) }
-            ]
-        }]
-    });
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
 
-    collectionChart.render();
+    collectionChart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Paid', 'Partial', 'Unpaid'],
+            datasets: [{
+                data: [data.paid, data.partial, data.unpaid],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.raw || 0;
+                            const pct = Math.round((val / total) * 100);
+                            return context.label + ': ' + val + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function renderCategoryChart() {
@@ -1356,35 +1361,57 @@ function renderCategoryChart() {
     const data = window.SNESTXAccountsChartData.categoryData;
     if (!data || Object.keys(data).length === 0) return;
 
-    const dataPoints = [];
+    const labels = [];
+    const values = [];
+
     for (const [cat, val] of Object.entries(data)) {
-        dataPoints.push({ y: val, name: cat });
+        labels.push(cat);
+        values.push(val);
     }
 
     if (categoryChart) {
         categoryChart.destroy();
     }
 
-    categoryChart = new CanvasJS.Chart("expenseCategoryChart", {
-        animationEnabled: true,
-        theme: "light2",
-        data: [{
-            type: "pie",
-            startAngle: 240,
-            yValueFormatString: "₹#,##,##0",
-            indexLabel: "{name}: {y}",
-            toolTipContent: "<b>{name}</b>: ₹{y}",
-            dataPoints: dataPoints
-        }]
-    });
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
 
-    categoryChart.render();
+    categoryChart = new Chart(canvas, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    '#6366f1', '#10b981', '#f59e0b', '#ef4444', 
+                    '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ₹' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function switchChartView(view) {
     currentChartView = view;
 
-    // Update button states
     const btnMonthly = document.getElementById('btn-chart-view-monthly');
     const btnYearly = document.getElementById('btn-chart-view-yearly');
 
@@ -1401,10 +1428,10 @@ function switchChartView(view) {
 
 // Initialize charts on page load
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.CanvasJS) {
+    if (window.Chart) {
         initCharts();
     } else {
-        console.error('CanvasJS not loaded');
+        console.error('Chart.js not loaded');
     }
     
     // --- Real-time Admin Sync (Optimistic UI) ---
@@ -1422,7 +1449,7 @@ function initAdminPaymentSync() {
         try {
             const formData = new URLSearchParams();
             formData.append('action', 'SNESTX51_poll_state_hash');
-            formData.append('_wpnonce', window.SNESTX51AdminNonce);
+            formData.append('_wpnonce', window.snestx51_admin_nonce);
             
             const req = await fetch(window.ajaxurl, {
                 method: 'POST',
@@ -1458,27 +1485,13 @@ function initAdminPaymentSync() {
             const newContent = doc.querySelector('.mb-5.px-1')?.parentNode;
             
             if (currentContent && newContent) {
-                // Save charts to avoid CanvasJS breaking
-                const chartsToSave = ['cashFlowChart', 'collectionChart', 'expenseCategoryChart'];
-                const savedNodes = {};
-                chartsToSave.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        savedNodes[id] = el;
-                        document.body.appendChild(el); 
-                    }
-                });
+                // Destroy old charts to prevent memory leak before replacing content
+                if (cashFlowChart) cashFlowChart.destroy();
+                if (categoryChart) categoryChart.destroy();
+                if (collectionChart) collectionChart.destroy();
                 
                 // Replace HTML
                 currentContent.innerHTML = newContent.innerHTML;
-                
-                // Restore charts into new containers
-                chartsToSave.forEach(id => {
-                    const newEl = document.getElementById(id);
-                    if (newEl && savedNodes[id]) {
-                        newEl.parentNode.replaceChild(savedNodes[id], newEl);
-                    }
-                });
                 
                 // Update chart data from the new script block
                 const scripts = doc.querySelectorAll('script');

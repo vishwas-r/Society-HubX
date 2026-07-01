@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Frontend Dashboard
  * Handles the Resident Dashboard Shortcode.
@@ -225,7 +225,7 @@ class SNESTX51_Frontend_Dashboard {
 
 		// 4. Render Template.
          
-         wp_enqueue_script( 'snestx51-dashboard-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-dashboard.js', array('jquery', 'snestx51-canvasjs', 'snestx51-html2canvas'), current_time('U'), true );
+         wp_enqueue_script( 'snestx51-dashboard-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-dashboard.js', array('jquery', 'snestx51-chartjs', 'snestx51-html2canvas'), current_time('U'), true );
          
          // Localize Data for Dashboard
          wp_localize_script( 'snestx51-dashboard-js', 'SNESTXDashboardData', array(

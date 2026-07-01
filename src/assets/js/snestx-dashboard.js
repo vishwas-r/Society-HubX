@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
 
     // State
@@ -11,8 +11,8 @@
 
     // --- Chart Logic ---
     function initCharts() {
-        if (!window.CanvasJS || !window.SNESTXDashboardData) {
-            console.warn('SNESTX Dashboard: CanvasJS or SNESTXDashboardData missing. Some features may not work.');
+        if (!window.Chart || !window.SNESTXDashboardData) {
+            console.warn('SNESTX Dashboard: Chart.js or SNESTXDashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -62,10 +62,10 @@
 
             // Trigger Chart Re-renders if needed
             if (tabName === 'expenses' && expensesChart) {
-                setTimeout(() => expensesChart.render(), 100);
+                setTimeout(() => expensesChart.update(), 100);
             }
             if ((tabName === 'home' || tabName === 'accounts') && paymentChart) {
-                setTimeout(() => paymentChart.render(), 100);
+                setTimeout(() => paymentChart.update(), 100);
             }
         }
 
@@ -127,41 +127,60 @@
         const expenseContainer = document.getElementById('expensesChart');
         if (expenseContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.expenseChartData) {
             const expenseData = window.SNESTXDashboardData.expenseChartData;
-            const dps = [];
+            const labels = [];
+            const dataValues = [];
 
             for (const [label, y] of Object.entries(expenseData)) {
-                dps.push({ label: label, y: y });
+                labels.push(label);
+                dataValues.push(y);
             }
 
-            if (dps.length > 0) {
-                expensesChart = new CanvasJS.Chart("expensesChart", {
-                    animationEnabled: true,
-                    theme: "light2",
-                    title: {
-                        text: "Monthly Society Expense Trend",
-                        fontSize: 16,
-                        fontFamily: "Inter, sans-serif"
-                    },
-                    axisY: {
-                        title: "Amount (₹)",
-                        includeZero: true,
-                        prefix: "₹",
-                        valueFormatString: "#,##,##0"
-                    },
-                    data: [{
-                        type: "column",
-                        color: "#6366f1",
-                        indexLabel: "{y}",
-                        yValueFormatString: "₹#,##,##0",
-                        dataPoints: dps
-                    }]
-                });
+            if (labels.length > 0) {
+                expenseContainer.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                expenseContainer.appendChild(canvas);
 
-                // Only render if tab is visible
-                const expensesTab = document.getElementById('tab-expenses');
-                if (expensesTab && !expensesTab.classList.contains('d-none')) {
-                    expensesChart.render();
-                }
+                expensesChart = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Amount (₹)',
+                            data: dataValues,
+                            backgroundColor: '#6366f1',
+                            borderColor: '#4f46e5',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Monthly Society Expense Trend',
+                                font: {
+                                    size: 16,
+                                    family: 'Inter, sans-serif'
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             }
         }
 
@@ -169,45 +188,69 @@
         const paymentContainer = document.getElementById('paymentHistoryChart');
         if (paymentContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.paymentHistory) {
             const paymentData = window.SNESTXDashboardData.paymentHistory;
-            const dps = [];
+            const labels = [];
+            const dataValues = [];
+
             if (Array.isArray(paymentData)) {
                 paymentData.forEach(p => {
-                    dps.push({ x: new Date(p.x), y: p.y });
+                    labels.push(p.x);
+                    dataValues.push(p.y);
                 });
             } else {
                 for (const [label, y] of Object.entries(paymentData)) {
-                    dps.push({ label: label, y: y });
+                    labels.push(label);
+                    dataValues.push(y);
                 }
             }
 
-            if (dps.length > 0) {
-                paymentChart = new CanvasJS.Chart("paymentHistoryChart", {
-                    animationEnabled: true,
-                    theme: "light2",
-                    title: {
-                        text: "My Payment History",
-                        fontSize: 16,
-                        fontFamily: "Inter, sans-serif"
-                    },
-                    axisX: {
-                        valueFormatString: "MMM YYYY",
-                    },
-                    axisY: {
-                        title: "Amount (₹)",
-                        includeZero: true,
-                        prefix: "₹",
-                        valueFormatString: "#,##,##0"
-                    },
-                    data: [{
-                        type: "spline",
-                        color: "#10b981",
-                        markerSize: 8,
-                        yValueFormatString: "₹#,##,##0",
-                        dataPoints: dps
-                    }]
-                });
+            if (labels.length > 0) {
+                paymentContainer.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                paymentContainer.appendChild(canvas);
 
-                paymentChart.render();
+                paymentChart = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Amount (₹)',
+                            data: dataValues,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'My Payment History',
+                                font: {
+                                    size: 16,
+                                    family: 'Inter, sans-serif'
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             }
         }
     }

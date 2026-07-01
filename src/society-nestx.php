@@ -384,10 +384,10 @@ final class Society_NestX {
             var snestx51_admin_nonce = '" . esc_js( wp_create_nonce( 'snestx51_admin_nonce' ) ) . "';
         " );
 
-		// Libraries (CanvasJS for charts, html2canvas for screenshots)
+		// Libraries (Chart.js for charts, html2canvas for screenshots)
         wp_enqueue_script( 'snestx51-html2canvas', SNESTX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
         wp_enqueue_script( 'snestx51-fuse', SNESTX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
-		wp_enqueue_script( 'snestx51-canvasjs', SNESTX51_PLUGIN_URL . 'assets/js/lib/canvasjs.min.js', array(), '2.0.8', true );
+		wp_enqueue_script( 'snestx51-chartjs', SNESTX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.4.3', true );
         wp_enqueue_script( 'snestx51-search-init', SNESTX51_PLUGIN_URL . 'assets/js/snestx-search-init.js', array('snestx51-fuse'), SNESTX51_VERSION, true );
         wp_enqueue_script( 'snestx51-admin-app', SNESTX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'snestx51-core', 'snestx51-toast', 'snestx51-ajax', 'snestx51-html2canvas', 'snestx51-search-init'), SNESTX51_VERSION, true );
 
@@ -475,8 +475,8 @@ final class Society_NestX {
 	 */
 	public function enqueue_frontend_assets() {
 		// Bootstrap 5 & jQuery (if needed, but we use Tailwind mostly - NOW MIGRATED TO BOOTSTRAP)
-        wp_enqueue_style( 'snestx51-bootstrap', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_script( 'snestx51-bootstrap', SNESTX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
+        wp_enqueue_style( 'snestx51-bootstrap', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.3' );
+		wp_enqueue_script( 'snestx51-bootstrap', SNESTX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.3', true );
 
         // 0. Bootstrap Icons (Local)
         wp_enqueue_style( 'snestx51-bootstrap-icons', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('snestx51-bootstrap'), '1.11.3' );
@@ -490,8 +490,8 @@ final class Society_NestX {
         // Fonts
         wp_enqueue_style( 'snestx51-fonts', SNESTX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
 
-		// 1. CanvasJS for Charts (Local)
-		wp_enqueue_script( 'snestx51-canvasjs', SNESTX51_PLUGIN_URL . 'assets/js/lib/canvasjs.min.js', array(), '1.0.0', true );
+		// 1. Chart.js for Charts (Local)
+		wp_enqueue_script( 'snestx51-chartjs', SNESTX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.4.3', true );
 
 		// HTML2Canvas for receipt screenshots
 		wp_enqueue_script( 'snestx51-html2canvas', SNESTX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
@@ -510,7 +510,7 @@ final class Society_NestX {
         wp_enqueue_script( 'snestx51-ajax', SNESTX51_PLUGIN_URL . 'assets/js/snestx-ajax.js', array('jquery', 'snestx51-toast'), SNESTX51_VERSION, true );
 
         // Main dashboard script (depends on core, toast, ajax)
-        wp_enqueue_script( 'snestx51-dashboard-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-dashboard.js', array('jquery', 'snestx51-core', 'snestx51-toast', 'snestx51-ajax', 'snestx51-bootstrap', 'snestx51-canvasjs', 'snestx51-search-init'), SNESTX51_VERSION, true );
+        wp_enqueue_script( 'snestx51-dashboard-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-dashboard.js', array('jquery', 'snestx51-core', 'snestx51-toast', 'snestx51-ajax', 'snestx51-bootstrap', 'snestx51-chartjs', 'snestx51-search-init'), SNESTX51_VERSION, true );
         
         // Only load module-specific scripts if user is logged in
         if ( is_user_logged_in() ) {
