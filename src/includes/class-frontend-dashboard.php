@@ -1232,6 +1232,11 @@ class SHUBX51_Frontend_Dashboard {
 		return null;
 	}
 
+	public function get_my_flat_number() {
+		$info = $this->get_my_flat_info();
+		return $info ? $info['flat_no'] : null;
+	}
+
 	public function get_my_invoices( $flat_no, $block = '' ) {
         $where = array( 'flat_no' => $flat_no );
         if ( $block ) $where['block'] = $block;
