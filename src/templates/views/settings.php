@@ -139,7 +139,7 @@ $templates = $db->get('notification_templates');
                     <i class="bi bi-check-circle-fill text-success fs-4"></i>
                     <div>
                         <div class="fw-bold">Sync Complete (JSON ➔ MySQL)</div>
-                        <div class="small opacity-75"><?php echo esc_html(urldecode($_GET['stats'] ?? '')); ?></div>
+                        <div class="small opacity-75"><?php echo esc_html( sanitize_text_field( urldecode( $_GET['stats'] ?? '' ) ) ); ?></div>
                     </div>
                 </div>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>
@@ -152,7 +152,7 @@ $templates = $db->get('notification_templates');
                     <i class="bi bi-cloud-arrow-up-fill text-primary fs-4"></i>
                     <div>
                         <div class="fw-bold">Sync Complete (MySQL ➔ JSON)</div>
-                        <div class="small opacity-75"><?php echo esc_html(urldecode($_GET['stats'] ?? '')); ?></div>
+                        <div class="small opacity-75"><?php echo esc_html( sanitize_text_field( urldecode( $_GET['stats'] ?? '' ) ) ); ?></div>
                     </div>
                 </div>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert"></button>

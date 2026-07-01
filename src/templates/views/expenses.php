@@ -84,7 +84,7 @@ if(!empty($expenses)) {
                 <div class="bg-white px-3 py-2 rounded-3 d-flex align-items-center gap-3 border border-light shadow-sm">
                     <span class="small fw-bold text-secondary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Fiscal Period</span>
                     <form method="get" id="year-filter-form" class="m-0">
-                        <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page']); ?>">
+                        <input type="hidden" name="page" value="<?php echo esc_attr( sanitize_text_field( $_GET['page'] ?? '' ) ); ?>">
                         <select name="year" class="form-select form-select-sm bg-light border-0 shadow-none fw-bold text-dark" style="min-width: 100px;" onchange="document.getElementById('year-filter-form').submit()">
                             <?php 
                             for( $y = wp_date('Y'); $y >= wp_date('Y')-2; $y--) {

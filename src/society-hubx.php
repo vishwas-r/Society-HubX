@@ -376,7 +376,7 @@ final class Society_HubX {
 
 		// Inline setup for ajaxurl
 		wp_add_inline_script( 'shubx51-core', "
-            var ajaxurl = '" . esc_url_raw( admin_url( 'admin-ajax.php' ) ) . "';
+            var ajaxurl = '" . esc_url( admin_url( 'admin-ajax.php' ) ) . "';
             var shubx51_nonce = '" . esc_js( wp_create_nonce( 'shubx51_admin_nonce' ) ) . "';
             var shubx51_admin_nonce = '" . esc_js( wp_create_nonce( 'shubx51_admin_nonce' ) ) . "';
         " );

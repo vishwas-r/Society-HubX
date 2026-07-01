@@ -233,7 +233,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
     if ( $is_admin || $is_self_edit ) {
         // Security: If not admin, strip sensitive fields from the direct update
         if ( ! $is_admin ) {
-            $sensitive_fields = array( 'flat_no', 'type', 'role', 'roles', 'status', 'maintenance_balance' );
+            $sensitive_fields = array( 'flat_no', 'type', 'role', 'roles', 'status', 'maintenance_balance', 'wp_user_id' );
             foreach ( $sensitive_fields as $field ) {
                 unset( $_POST[$field] );
             }
@@ -403,35 +403,67 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		}
 
 		// FIX: Ensure WP User Linkage
-        // If email changed or link missing, re-link
-        if ( !empty($update_data['email']) ) {
-             $user = get_user_by( 'email', $update_data['email'] );
-             if ( ! $user ) {
-                 // Create User if not exists
-                $password = wp_generate_password();
-                $user_id = wp_create_user( $update_data['email'], $password, $update_data['email'] );
-                if ( ! is_wp_error( $user_id ) ) {
-                    $user = get_user_by( 'id', $user_id );
-                    $user->set_role( 'subscriber' );
+        $current_user_id = get_current_user_id();
+        $rbac = Society_HubX::get_instance()->rbac;
+        $is_admin = $rbac && $rbac->has_capability( $current_user_id, 'residents_manage' );
+        $wp_user_id = ! empty( $existing_resident['wp_user_id'] ) ? intval( $existing_resident['wp_user_id'] ) : 0;
+
+        if ( ! $is_admin ) {
+            // Non-admin self-edit logic:
+            // 1. Force the WP User ID to remain unchanged
+            $update_data['wp_user_id'] = $wp_user_id;
+
+            if ( ! empty( $update_data['email'] ) ) {
+                $existing_user_by_email = get_user_by( 'email', $update_data['email'] );
+                // If the email is registered to someone else, reject it
+                if ( $existing_user_by_email && $existing_user_by_email->ID !== $wp_user_id ) {
+                    return new WP_Error( 'email_exists', 'This email address is already in use by another account.' );
                 }
-             }
-             
-             if ( $user && ! is_wp_error( $user ) ) {
-                 $update_data['wp_user_id'] = $user->ID;
-                 update_user_meta( $user->ID, 'shubx51_flat_no', $update_data['flat_no'] );
+                
+                // If it's the resident's own WP user, sync display name and email
+                if ( $wp_user_id > 0 ) {
+                    $wp_user_data = [
+                        'ID'           => $wp_user_id,
+                        'display_name' => $update_data['name'],
+                        'user_email'   => $update_data['email'],
+                        'first_name'   => $update_data['name'],
+                    ];
+                    wp_update_user( $wp_user_data );
+                    update_user_meta( $wp_user_id, 'shubx51_flat_no', $update_data['flat_no'] );
+                    $this->sync_wp_user_roles( $wp_user_id, $resident_id );
+                }
+            }
+        } else {
+            // Admin logic: can link/create user
+            if ( ! empty( $update_data['email'] ) ) {
+                 $user = get_user_by( 'email', $update_data['email'] );
+                 if ( ! $user ) {
+                     // Create User if not exists
+                     $password = wp_generate_password();
+                     $user_id = wp_create_user( $update_data['email'], $password, $update_data['email'] );
+                     if ( ! is_wp_error( $user_id ) ) {
+                         $user = get_user_by( 'id', $user_id );
+                         $user->set_role( 'subscriber' );
+                     }
+                 }
+                 
+                 if ( $user && ! is_wp_error( $user ) ) {
+                     $update_data['wp_user_id'] = $user->ID;
+                     update_user_meta( $user->ID, 'shubx51_flat_no', $update_data['flat_no'] );
 
-                 // Sync Profile Changes to WP User
-                 $wp_user_data = [
-                     'ID'           => $user->ID,
-                     'display_name' => $update_data['name'],
-                     'user_email'   => $update_data['email'],
-                     'first_name'   => $update_data['name'], // Simplified, or split by space
-                 ];
-                 wp_update_user($wp_user_data);
+                     // Sync Profile Changes to WP User
+                     $wp_user_data = [
+                         'ID'           => $user->ID,
+                         'display_name' => $update_data['name'],
+                         'user_email'   => $update_data['email'],
+                         'first_name'   => $update_data['name'],
+                     ];
+                     wp_update_user($wp_user_data);
 
-                 // Sync Society Roles to WP Roles
-                 $this->sync_wp_user_roles( $user->ID, $resident_id );
-             }
+                     // Sync Society Roles to WP Roles
+                     $this->sync_wp_user_roles( $user->ID, $resident_id );
+                 }
+            }
         }
 
 		return $this->db->update('residents', $update_data, ['id' => $resident_id]);
@@ -751,8 +783,10 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 			}
 		}
 
-		// 1. Create WP User (if email provided and status is approved).
-		if ( $data['email'] && $data['status'] === 'approved' ) {
+		// 1. Create WP User (if email provided, status is approved, and current user can manage residents).
+		$rbac = Society_HubX::get_instance()->rbac;
+		$is_admin = $rbac && $rbac->has_capability( get_current_user_id(), 'residents_manage' );
+		if ( $data['email'] && $data['status'] === 'approved' && $is_admin ) {
 			$user = get_user_by( 'email', $data['email'] );
 			if ( ! $user ) {
 				$password = wp_generate_password();
