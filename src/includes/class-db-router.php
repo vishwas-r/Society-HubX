@@ -109,6 +109,14 @@ class SHUBX51_DB_Router {
 	}
 
 	/**
+	 * Get a single row by ID
+	 */
+	public function get_row( $table, $id ) {
+		$results = $this->get( $table, array( 'where' => array( 'id' => $id ) ) );
+		return ! empty( $results ) ? $results[0] : false;
+	}
+
+	/**
 	 * GET Rows from MySQL
 	 */
 	public function get_mysql( $table, $args = array() ) {

@@ -642,6 +642,7 @@ class SHUBX51_Frontend_Dashboard {
 		$phone = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 
         // Handle Photo Upload
+        $photo_url = '';
         if ( isset( $_FILES['profile_photo']['size'] ) && $_FILES['profile_photo']['size'] > 0 ) {
             $url = $this->media->upload_profile_photo( 
                 // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated within upload_profile_photo.
@@ -778,10 +779,17 @@ class SHUBX51_Frontend_Dashboard {
 
 	public function handle_add_vehicle_frontend() {
 		// Use request nonce or standard nonce
-		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_vehicle_frontend_nonce' ) ) {
-			// OK
-		} else if ( ! check_admin_referer( 'shubx51_add_vehicle_frontend_nonce' ) ) {
-			wp_send_json_error( 'Security check failed' );
+		if ( wp_doing_ajax() ) {
+			$nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'shubx51_add_vehicle_frontend_nonce' ) ) {
+				wp_send_json_error( 'Security check failed' );
+			}
+		} else {
+			if ( ! empty( $_POST['_wpnonce_add_vehicle_frontend'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_vehicle_frontend'] ) ), 'shubx51_add_vehicle_frontend_nonce' ) ) {
+				// OK
+			} else if ( ! check_admin_referer( 'shubx51_add_vehicle_frontend_nonce' ) ) {
+				wp_die( 'Security check failed' );
+			}
 		}
 		
 		$flat_no = $this->get_my_flat_number();
