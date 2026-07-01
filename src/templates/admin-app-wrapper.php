@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -73,7 +73,11 @@ foreach ($nav_items_raw as $key => $nav) {
 
 // Security: If current view is not allowed, redirect or show error
 if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
-    $current_view = 'unauthorized';
+    if ($current_view === 'setup' && current_user_can('manage_options')) {
+        // Exempt setup page for administrators
+    } else {
+        $current_view = 'unauthorized';
+    }
 }
 
 ?>
