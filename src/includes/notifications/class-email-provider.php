@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Email Provider
  * Handles email delivery via WP Mail or Gmail API.

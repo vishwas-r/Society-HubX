@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Expense Manager
  * Handles Expenses and Receipts.

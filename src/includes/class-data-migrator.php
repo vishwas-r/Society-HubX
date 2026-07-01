@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Data Migrator
  * Handles migration from JSON blobs to relational MySQL tables.

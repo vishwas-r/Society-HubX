@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Poll Manager
  * Handles Digital Democracy (Polling & Voting).

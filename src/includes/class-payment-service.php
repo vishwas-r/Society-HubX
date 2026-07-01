@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Payment Service acting as the Single Source of Truth for all payment/invoice mutations.
  */

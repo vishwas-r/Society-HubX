@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Privacy Manager
  * Handles DPDP/GDPR Compliance (Data Export & Erasure).

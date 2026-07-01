@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: In-App Provider
  * Handles storage of notifications to be displayed within the user dashboard.

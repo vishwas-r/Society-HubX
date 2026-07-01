@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Asset Manager
  * Handles Society Assets (Inventory, Generators, Gym Equipment).

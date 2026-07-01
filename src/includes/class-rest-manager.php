@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: REST API Manager
  * Handles registration of REST routes and authentication.

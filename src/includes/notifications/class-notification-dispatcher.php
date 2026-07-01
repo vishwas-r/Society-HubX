@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Notification Dispatcher
  * The central hub for triggering and routing notifications.

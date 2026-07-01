@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Notice Board
  * Handles Public/Private Notices with modern AJAX Support.

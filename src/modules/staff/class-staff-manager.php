@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Staff Manager
  * Handles Maintenance Staff & Daily Help.

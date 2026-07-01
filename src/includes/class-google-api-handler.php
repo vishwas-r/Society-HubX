@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Google API Handler
  * Handles OAuth2 Authentication and API Requests via REST.

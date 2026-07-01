@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Admin Requests
  * Handles the "Requests" admin page and generalized approval logic.

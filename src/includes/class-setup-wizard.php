@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Setup Wizard
  * Handles the "Installation" of the society data structure.

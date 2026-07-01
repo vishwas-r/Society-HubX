@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: REST Residents Controller
  * Endpoints for managing society residents.

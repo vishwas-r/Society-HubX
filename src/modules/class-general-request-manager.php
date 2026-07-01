@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: General Request Manager
  * Handles generic resident requests (CCTV, Swimming Pool, Play-time, etc.).

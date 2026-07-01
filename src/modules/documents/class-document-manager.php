@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Document Manager
  * Handles the "Document Vault".

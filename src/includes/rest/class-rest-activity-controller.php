@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: REST Activity Controller
  * Endpoints for society activity logs.

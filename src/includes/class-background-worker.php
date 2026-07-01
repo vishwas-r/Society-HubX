@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Background Worker
  * Interfaces with Action Scheduler for asynchronous task processing.

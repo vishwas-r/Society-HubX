@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Vehicle Registry
  * Handles Society Vehicles.

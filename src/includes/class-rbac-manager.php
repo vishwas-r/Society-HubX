@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: RBAC Manager
  * Handles Granular Role-Based Access Control.

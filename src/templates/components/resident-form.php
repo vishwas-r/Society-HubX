@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */

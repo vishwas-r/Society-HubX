@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Request Manager
  * Processes resident requests (Add, Edit, Delete).

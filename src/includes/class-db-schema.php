@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: DB Schema
  * Defines the SQL table structures and handles creation/updates via dbDelta.

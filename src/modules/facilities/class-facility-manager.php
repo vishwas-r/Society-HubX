@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Facility Manager
  * Handles Facilities (Clubhouse, etc.) and Bookings.

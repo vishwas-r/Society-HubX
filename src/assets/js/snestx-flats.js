@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SNESTX Flats Management JS
  */
 (function ($) {
@@ -250,7 +250,7 @@
             }).on('focus', function () {
                 if (window.SNESTXCreateFuse) fuse = window.SNESTXCreateFuse('.flat-row');
             });
-
+            const $form = $('#add-flat-form');
             if ($form.length) {
                 $form.on('submit', function (e) {
                     e.preventDefault();

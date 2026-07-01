@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: REST Staff Controller
  * Endpoints for managing society staff and daily help.

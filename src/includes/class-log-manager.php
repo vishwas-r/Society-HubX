@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Log Manager
  * Handles log governance, purging, and automated maintenance.

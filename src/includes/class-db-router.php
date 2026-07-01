@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: DB Router
  * Handles data operations (CRUD) for the Society Management System.

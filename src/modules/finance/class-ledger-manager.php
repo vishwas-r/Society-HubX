@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Ledger Manager
  * Aggregates Financial Data (Invoices & Expenses) for Audit.

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Account Manager
  * Handles Resident Invoices, Payments, and Maintenance Dues.

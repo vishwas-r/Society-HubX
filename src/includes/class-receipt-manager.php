@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Receipt Manager
  * Handles receipt generation and numbering for payments.

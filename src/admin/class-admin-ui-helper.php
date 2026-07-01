@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Admin UI Helper
  * Enqueues Bootstrap and custom styles for Admin Backend.

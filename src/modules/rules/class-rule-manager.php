@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Rule Manager
  * Handles Society Rules & Regulations, Acknowledgments, and Violations.

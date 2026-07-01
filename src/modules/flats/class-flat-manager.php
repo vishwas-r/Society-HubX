@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Module: Flat Manager
  * Handles Flats/Units Master Data (Block, Number, Parking).

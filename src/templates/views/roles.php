@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * View: Roles & Permissions (RBAC)
  *

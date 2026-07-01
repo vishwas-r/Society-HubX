@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: WhatsApp Provider
  * Handles delivery via Twilio WhatsApp API.

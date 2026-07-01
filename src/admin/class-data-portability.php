@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Data Portability
  * Handles Import/Export of Society Data (CSV/JSON/ZIP).

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // phpcs:disable Internal.LineEndings.Mixed
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
