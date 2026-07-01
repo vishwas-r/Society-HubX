@@ -206,6 +206,7 @@ $templates = $db->get('notification_templates');
                         <i class="bi bi-shield-lock me-2"></i>Privacy & DPDP
                     </button>
                 </li>
+                <?php do_action( 'shubx51_settings_tabs' ); ?>
             </ul>
         </div>
         
@@ -809,7 +810,7 @@ $templates = $db->get('notification_templates');
                         </div>
                     </form>
                 </div>
-
+                <?php do_action( 'shubx51_settings_tab_content' ); ?>
             </div>
         </div>
     </div>
