@@ -1,5 +1,5 @@
-/**
- * SGVX Flats Management JS
+﻿/**
+ * SNESTX Flats Management JS
  */
 (function ($) {
     'use strict';
@@ -20,8 +20,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'flats' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -71,11 +71,11 @@
         const searchInput = document.getElementById('filter-search');
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-        if (!fuse && window.sgvxCreateFuse) {
-            fuse = window.sgvxCreateFuse('.flat-row');
+        if (!fuse && window.SNESTXCreateFuse) {
+            fuse = window.SNESTXCreateFuse('.flat-row');
         }
 
-        const fuzzyMatches = searchVal && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(fuse, searchVal) : null;
 
         $('.flat-row').each(function () {
             const $row = $(this);
@@ -111,7 +111,7 @@
         $form.find('[name="parking_slot"]').val(flat.parking_slot || '');
         $form.find('[name="status"]').val(flat.status || 'vacant');
         $form.find('[name="parking_status"]').val(flat.parking_status || 'available');
-        $form.find('[name="action"]').val('sgvx51_edit_flat');
+        $form.find('[name="action"]').val('SNESTX51_edit_flat');
         $form.find('[name="flat_id"]').val(flat.id || '');
 
         $('#flatModalTitle').text('Edit Unit: ' + flat.id);
@@ -121,7 +121,7 @@
     function resetFlatForm() {
         const $form = $('#add-flat-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('sgvx51_add_flat');
+        $form.find('[name="action"]').val('SNESTX51_add_flat');
         $('#flatModalTitle').text('Add New Unit');
     }
 
@@ -147,8 +147,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SGVX.ajax({
-                action: 'sgvx51_delete_flat',
+            SNESTX.ajax({
+                action: 'SNESTX51_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.deleteNonce
@@ -185,8 +185,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SGVX.ajax({
-                action: 'sgvx51_hard_delete_flat',
+            SNESTX.ajax({
+                action: 'SNESTX51_hard_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.hardDeleteNonce
@@ -202,8 +202,8 @@
     };
 
     window.restoreFlat = function (id) {
-        SGVX.ajax({
-            action: 'sgvx51_restore_flat',
+        SNESTX.ajax({
+            action: 'SNESTX51_restore_flat',
             data: {
                 flat_id: id,
                 _wpnonce: Config.nonce
@@ -248,7 +248,7 @@
             $('#filter-search').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.sgvxCreateFuse) fuse = window.sgvxCreateFuse('.flat-row');
+                if (window.SNESTXCreateFuse) fuse = window.SNESTXCreateFuse('.flat-row');
             });
 
             if ($form.length) {
@@ -257,15 +257,15 @@
                     const formData = new FormData($form[0]);
                     const action = formData.get('action');
 
-                    SGVX.ajax({
+                    SNESTX.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),
                         onSuccess: function (resp) {
                             const rows = resp && (typeof resp.rows_affected !== 'undefined') ? resp.rows_affected : null;
 
-                            if (action === 'sgvx51_edit_flat' && rows === 0) {
-                                SGVX.toast.info('Save completed: No changes detected.');
+                            if (action === 'SNESTX51_edit_flat' && rows === 0) {
+                                SNESTX.toast.info('Save completed: No changes detected.');
                             } else {
                                 closeFlatModal();
                                 window.location.reload();

@@ -1,4 +1,4 @@
-(function ($) {
+﻿(function ($) {
     'use strict';
 
     // State
@@ -11,8 +11,8 @@
 
     // --- Chart Logic ---
     function initCharts() {
-        if (!window.CanvasJS || !window.sgvxDashboardData) {
-            console.warn('SGVX Dashboard: CanvasJS or sgvxDashboardData missing. Some features may not work.');
+        if (!window.CanvasJS || !window.SNESTXDashboardData) {
+            console.warn('SNESTX Dashboard: CanvasJS or SNESTXDashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -23,7 +23,7 @@
             const btnId = 'btn-tab-' + tabName;
             const btn = document.getElementById(btnId);
             if (!btn) {
-                console.error('SGVX Dashboard: Tab button not found:', btnId);
+                console.error('SNESTX Dashboard: Tab button not found:', btnId);
                 return;
             }
 
@@ -125,8 +125,8 @@
 
         // 1. Society Expense Trend
         const expenseContainer = document.getElementById('expensesChart');
-        if (expenseContainer && window.sgvxDashboardData && window.sgvxDashboardData.expenseChartData) {
-            const expenseData = window.sgvxDashboardData.expenseChartData;
+        if (expenseContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.expenseChartData) {
+            const expenseData = window.SNESTXDashboardData.expenseChartData;
             const dps = [];
 
             for (const [label, y] of Object.entries(expenseData)) {
@@ -167,8 +167,8 @@
 
         // 2. Resident Payment History
         const paymentContainer = document.getElementById('paymentHistoryChart');
-        if (paymentContainer && window.sgvxDashboardData && window.sgvxDashboardData.paymentHistory) {
-            const paymentData = window.sgvxDashboardData.paymentHistory;
+        if (paymentContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.paymentHistory) {
+            const paymentData = window.SNESTXDashboardData.paymentHistory;
             const dps = [];
             if (Array.isArray(paymentData)) {
                 paymentData.forEach(p => {
@@ -235,7 +235,7 @@
 
     // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('SGVX Dashboard: DOMContentLoaded fired. Initializing...');
+        console.log('SNESTX Dashboard: DOMContentLoaded fired. Initializing...');
         // Init Charts
         initCharts();
         
@@ -339,7 +339,7 @@
                 if (window.filterDirectory) window.filterDirectory();
             });
             dirSearch.addEventListener('focus', function () {
-                if (window.sgvxCreateFuse) dirFuse = window.sgvxCreateFuse('.dir-card');
+                if (window.SNESTXCreateFuse) dirFuse = window.SNESTXCreateFuse('.dir-card');
             });
         }
 
@@ -348,11 +348,11 @@
         if (facilitySearch) {
             facilitySearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!facFuse && window.sgvxCreateFuse) {
-                    facFuse = window.sgvxCreateFuse('.facility-card');
+                if (!facFuse && window.SNESTXCreateFuse) {
+                    facFuse = window.SNESTXCreateFuse('.facility-card');
                 }
 
-                const matches = val && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(facFuse, val) : null;
+                const matches = val && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(facFuse, val) : null;
 
                 document.querySelectorAll('.facility-card').forEach(card => {
                     const isMatch = !val || (matches && matches.has(card));
@@ -366,7 +366,7 @@
                 });
             });
             facilitySearch.addEventListener('focus', function () {
-                if (window.sgvxCreateFuse) facFuse = window.sgvxCreateFuse('.facility-card');
+                if (window.SNESTXCreateFuse) facFuse = window.SNESTXCreateFuse('.facility-card');
             });
         }
 
@@ -375,11 +375,11 @@
         if (bookingSearch) {
             bookingSearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!bookingFuse && window.sgvxCreateFuse) {
-                    bookingFuse = window.sgvxCreateFuse('.booking-dash-row');
+                if (!bookingFuse && window.SNESTXCreateFuse) {
+                    bookingFuse = window.SNESTXCreateFuse('.booking-dash-row');
                 }
 
-                const matches = val && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(bookingFuse, val) : null;
+                const matches = val && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(bookingFuse, val) : null;
 
                 document.querySelectorAll('.booking-dash-row').forEach(row => {
                     const isMatch = !val || (matches && matches.has(row));
@@ -391,7 +391,7 @@
                 });
             });
             bookingSearch.addEventListener('focus', function () {
-                if (window.sgvxCreateFuse) bookingFuse = window.sgvxCreateFuse('.booking-dash-row');
+                if (window.SNESTXCreateFuse) bookingFuse = window.SNESTXCreateFuse('.booking-dash-row');
             });
         }
 
@@ -448,9 +448,9 @@
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(familyForm);
-                if (!formData.get('action')) formData.append('action', 'sgvx51_add_family');
+                if (!formData.get('action')) formData.append('action', 'SNESTX51_add_family');
 
-                SGVX.ajax({
+                SNESTX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(familyForm).find('button[type="submit"]'),
@@ -467,7 +467,7 @@
                 e.preventDefault();
                 const formData = new FormData(helpForm);
 
-                SGVX.ajax({
+                SNESTX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(helpForm).find('button[type="submit"]'),
@@ -484,7 +484,7 @@
                 e.preventDefault();
                 const formData = new FormData(vehicleForm);
 
-                SGVX.ajax({
+                SNESTX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(vehicleForm).find('button[type="submit"]'),
@@ -523,8 +523,8 @@
                     const form = e.target;
                     const formData = new FormData(form);
 
-                    SGVX.ajax({
-                        action: 'sgvx51_cast_vote',
+                    SNESTX.ajax({
+                        action: 'SNESTX51_cast_vote',
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
                         successMessage: 'Vote cast successfully!',
@@ -572,7 +572,7 @@
 
             // Reset action to add
             const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'sgvx51_add_family';
+            if (actionInput) actionInput.value = 'SNESTX51_add_family';
 
             // Reset Relation Wrapper
             const relWrapper = document.getElementById('relation-wrapper-frontend_family');
@@ -621,7 +621,7 @@
             }
 
             // Set action and IDs for edit
-            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'sgvx51_edit_family';
+            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'SNESTX51_edit_family';
             if (form.querySelector('[name="member_id"]')) form.querySelector('[name="member_id"]').value = d.id || d.memberId || '';
             if (form.querySelector('[name="resident_id"]')) form.querySelector('[name="resident_id"]').value = d.id || '';
 
@@ -682,7 +682,7 @@
                 }
 
                 // Set Action
-                form.querySelector('[name="action"]').value = 'sgvx51_edit_help_frontend';
+                form.querySelector('[name="action"]').value = 'SNESTX51_edit_help_frontend';
 
                 // Set ID
                 let idInput = form.querySelector('[name="help_id"]');
@@ -752,7 +752,7 @@
         window.resetHelpModal = function () {
             const form = document.querySelector('#helpModal form');
             form.reset();
-            form.querySelector('[name="action"]').value = 'sgvx51_add_daily_help';
+            form.querySelector('[name="action"]').value = 'SNESTX51_add_daily_help';
             const idInput = form.querySelector('[name="help_id"]');
             if (idInput) idInput.value = '';
             const docUrlInput = form.querySelector('[name="document_url"]');
@@ -788,13 +788,13 @@
             setVal('model', payload.model);
 
             const actionField = form.querySelector('[name="action"]');
-            if (actionField) actionField.value = 'sgvx51_edit_vehicle_frontend';
+            if (actionField) actionField.value = 'SNESTX51_edit_vehicle_frontend';
 
             const idField = form.querySelector('[name="vehicle_id"]');
             if (idField) idField.value = payload.id;
 
             // Swap Nonce
-            const editNonce = form.querySelector('[name="sgvx51_edit_vehicle_token"]');
+            const editNonce = form.querySelector('[name="SNESTX51_edit_vehicle_token"]');
             const mainNonce = form.querySelector('[name="_wpnonce"]');
             if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
@@ -851,10 +851,10 @@
             if (btn) { e.preventDefault(); handleDeleteFamily(btn); return; }
 
             btn = e.target.closest('.js-delete-help-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'sgvx51_delete_daily_help_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'SNESTX51_delete_daily_help_frontend'); return; }
 
             btn = e.target.closest('.js-delete-vehicle-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'sgvx51_delete_vehicle_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'SNESTX51_delete_vehicle_frontend'); return; }
         });
 
         // --- Generic Delete Handler ---
@@ -864,7 +864,7 @@
             const id = btn.dataset.id;
             const nonce = btn.dataset.nonce;
 
-            SGVX.ajax({
+            SNESTX.ajax({
                 action: action,
                 data: { id: id, _wpnonce: nonce },
                 loadingButton: btn,
@@ -875,7 +875,7 @@
 
         // --- Specific Delete Handlers (can wrap generic if needed) ---
         function handleDeleteFamily(btn) {
-            handleDeleteGeneric(btn, 'sgvx51_delete_family_frontend');
+            handleDeleteGeneric(btn, 'SNESTX51_delete_family_frontend');
         }
 
         // Optional: Hook into global window.switchTab if it exists (legacy support)
@@ -1025,19 +1025,19 @@
             const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
             const dirCards = document.querySelectorAll('.dir-card');
 
-            if (!dirFuse && window.sgvxCreateFuse) {
+            if (!dirFuse && window.SNESTXCreateFuse) {
                 if (typeof Fuse === 'undefined') {
                     console.error('Fuse.js is not loaded! Search will fail.');
                     return;
                 }
                 // Use stricter threshold (0.2) and only search metadata to avoid noise from labels
-                dirFuse = window.sgvxCreateFuse('.dir-card', {
+                dirFuse = window.SNESTXCreateFuse('.dir-card', {
                     threshold: 0.3,
                     searchOnlyMeta: true
                 });
             }
 
-            const fuzzyMatches = searchTerm && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(dirFuse, searchTerm) : null;
+            const fuzzyMatches = searchTerm && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(dirFuse, searchTerm) : null;
 
             dirCards.forEach(function (card) {
                 // 1. Check Search Match
@@ -1123,7 +1123,7 @@
         window.downloadReceipt = function () {
             const receiptElement = document.getElementById('receipt-content');
             if (!receiptElement) {
-                SGVX.toast.error('Receipt not found!');
+                SNESTX.toast.error('Receipt not found!');
                 return;
             }
 
@@ -1133,7 +1133,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
 
             if (typeof html2canvas === 'undefined') {
-                SGVX.toast.error('Library not loaded. Please try again.');
+                SNESTX.toast.error('Library not loaded. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 return;
@@ -1155,7 +1155,7 @@
                 btn.innerHTML = originalText;
             }).catch(error => {
                 console.error('Download error:', error);
-                SGVX.toast.error('Error generating receipt image. Please try again.');
+                SNESTX.toast.error('Error generating receipt image. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             });
@@ -1176,15 +1176,15 @@
                 return;
             }
 
-            const nonce = (window.sgvxDashboardData && window.sgvxDashboardData.nonce) ? window.sgvxDashboardData.nonce : (typeof sgvx51_nonce !== 'undefined' ? sgvx51_nonce : '');
+            const nonce = (window.SNESTXDashboardData && window.SNESTXDashboardData.nonce) ? window.SNESTXDashboardData.nonce : (typeof snestx51_nonce !== 'undefined' ? snestx51_nonce : '');
 
-            SGVX.ajax({
-                action: 'sgvx51_get_receipt',
+            SNESTX.ajax({
+                action: 'SNESTX51_get_receipt',
                 data: { invoice_id: invoiceId, nonce: nonce },
                 onSuccess: function (data) {
                     populateReceiptModal(data);
                     let modalEl = document.getElementById('receiptModal');
-                    if (!modalEl) modalEl = document.getElementById('sgvx-resident-receipt-modal');
+                    if (!modalEl) modalEl = document.getElementById('snestx-resident-receipt-modal');
 
                     if (modalEl) {
                         const modal = new bootstrap.Modal(modalEl);
@@ -1288,7 +1288,7 @@
                 <!-- Footer -->
                 <div class="receipt-footer-standard">
                     <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-                    <p class="mb-0">Society GoVernX - Empowering Communities</p>
+                    <p class="mb-0">SocietyNestX - Empowering Communities</p>
                 </div>
             `;
         }
@@ -1319,22 +1319,22 @@
             const amount = form.querySelector('[name="amount"]').value;
             const ref = form.querySelector('[name="reference"]').value;
             if (!amount || !ref) {
-                SGVX.toast.warning('Please fill in the Amount and Reference Number.');
+                SNESTX.toast.warning('Please fill in the Amount and Reference Number.');
                 return;
             }
 
             const formData = new FormData(form);
-            const nonce = (window.sgvxDashboardData && window.sgvxDashboardData.nonce) ? window.sgvxDashboardData.nonce : '';
+            const nonce = (window.SNESTXDashboardData && window.SNESTXDashboardData.nonce) ? window.SNESTXDashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
-            SGVX.ajax({
-                action: 'sgvx51_submit_payment_request',
+            SNESTX.ajax({
+                action: 'SNESTX51_submit_payment_request',
                 data: formData,
                 loadingButton: btn,
                 successMessage: 'Payment confirmation sent successfully!',
                 reload: true,
                 onSuccess: function () {
-                    const modalEl = document.getElementById('sgvx51PaymentModal');
+                    const modalEl = document.getElementById('SNESTX51PaymentModal');
                     if (modalEl) {
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
@@ -1362,16 +1362,16 @@
 
         // Fix: Auto-populate Resident Profile Modal
         var profileModal = document.getElementById('editProfileModal');
-        // console.log("SGVX Debug: Profile Modal Reset Script Loaded", profileModal); 
+        // console.log("SNESTX Debug: Profile Modal Reset Script Loaded", profileModal); 
 
-        if (profileModal && typeof sgvxDashboardData !== 'undefined' && sgvxDashboardData.resident) {
+        if (profileModal && typeof SNESTXDashboardData !== 'undefined' && SNESTXDashboardData.resident) {
             profileModal.addEventListener('show.bs.modal', function () {
-                var r = sgvxDashboardData.resident;
-                // console.log("SGVX Debug: Populating Profile Modal", r);
+                var r = SNESTXDashboardData.resident;
+                // console.log("SNESTX Debug: Populating Profile Modal", r);
 
                 var form = profileModal.querySelector('form');
                 if (!form) {
-                    // console.error("SGVX Debug: Profile Form not found in modal");
+                    // console.error("SNESTX Debug: Profile Form not found in modal");
                     return;
                 }
 
@@ -1380,9 +1380,9 @@
                     var el = form.querySelector('[name="' + name + '"]');
                     if (el) {
                         el.value = val || '';
-                        // console.log("SGVX Debug: Set " + name + " to " + val);
+                        // console.log("SNESTX Debug: Set " + name + " to " + val);
                     } else {
-                        // console.warn("SGVX Debug: Input not found for " + name);
+                        // console.warn("SNESTX Debug: Input not found for " + name);
                     }
                 };
 
@@ -1406,10 +1406,10 @@
             });
         } else {
             /*
-            console.warn("SGVX Debug: Missing Data or Modal", {
+            console.warn("SNESTX Debug: Missing Data or Modal", {
                modal: !!profileModal,
-               data: typeof sgvxDashboardData,
-               resident: (sgvxDashboardData || {}).resident
+               data: typeof SNESTXDashboardData,
+               resident: (SNESTXDashboardData || {}).resident
             });
             */
         }
@@ -1548,9 +1548,9 @@
 
     // --- Resident Request View Detail ---
     window.viewResidentRequestDetail = function(requestId) {
-        if (!window.sgvxDashboardData || !window.sgvxDashboardData.my_requests) return;
+        if (!window.SNESTXDashboardData || !window.SNESTXDashboardData.my_requests) return;
         
-        const req = window.sgvxDashboardData.my_requests.find(r => r.id === requestId);
+        const req = window.SNESTXDashboardData.my_requests.find(r => r.id === requestId);
         if (!req) return;
 
         const modalEl = document.getElementById('residentRequestDetailModal');
@@ -1612,15 +1612,15 @@
 
     // --- Real-time Payment Sync (Optimistic UI) ---
     function initPaymentSync() {
-        if (!window.sgvxDashboardData || !window.sgvxDashboardData.rest_url || !window.sgvxDashboardData.rest_nonce) {
+        if (!window.SNESTXDashboardData || !window.SNESTXDashboardData.rest_url || !window.SNESTXDashboardData.rest_nonce) {
             return;
         }
 
         let currentHash = null;
         let isPolling = false;
         const POLL_INTERVAL = 4000; // 4 seconds
-        const API_BASE = window.sgvxDashboardData.rest_url;
-        const NONCE = window.sgvxDashboardData.rest_nonce;
+        const API_BASE = window.SNESTXDashboardData.rest_url;
+        const NONCE = window.SNESTXDashboardData.rest_nonce;
 
         async function pollStateHash() {
             if (isPolling) return;
@@ -1638,14 +1638,14 @@
                         if (currentHash === null) {
                             currentHash = data.hash; // Initial load
                         } else if (currentHash !== data.hash) {
-                            console.log('SGVX: State Hash change detected. Refreshing data...');
+                            console.log('SNESTX: State Hash change detected. Refreshing data...');
                             currentHash = data.hash;
                             await refreshDashboard();
                         }
                     }
                 }
             } catch (err) {
-                console.error('SGVX Sync Error:', err);
+                console.error('SNESTX Sync Error:', err);
             } finally {
                 isPolling = false;
                 setTimeout(pollStateHash, POLL_INTERVAL);
@@ -1663,8 +1663,8 @@
                 if (resJson.ok) {
                     const data = await resJson.json();
                     if (data.success && data.data) {
-                        window.sgvxDashboardData.paymentHistory = data.data.paymentHistory;
-                        window.sgvxDashboardData.expenseChartData = data.data.expenseChartData;
+                        window.SNESTXDashboardData.paymentHistory = data.data.paymentHistory;
+                        window.SNESTXDashboardData.expenseChartData = data.data.expenseChartData;
 
                         // Update Charts seamlessly
                         if (paymentChart && data.data.paymentHistory) {
@@ -1751,13 +1751,13 @@
                         }
                     }
                     
-                    if (window.SGVX && window.SGVX.toast) {
-                        window.SGVX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
+                    if (window.SNESTX && window.SNESTX.toast) {
+                        window.SNESTX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
                     }
                 }
 
             } catch (err) {
-                console.error('SGVX Dashboard Refresh Error:', err);
+                console.error('SNESTX Dashboard Refresh Error:', err);
             }
         }
 

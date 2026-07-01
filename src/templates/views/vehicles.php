@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 /**
  * View: Vehicles (Bootstrap Migration)
- * Integrates directly with SGVX51_DB_Router for data.
+ * Integrates directly with SNESTX51_DB_Router for data.
  *
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-// Data is passed from SGVX51_Vehicle_Manager::render_page via context
+// Data is passed from SNESTX51_Vehicle_Manager::render_page via context
 // $vehicles, $pending, $history, $flats, $residents are available.
 
 if (!isset($vehicles)) $vehicles = array();
@@ -51,13 +51,13 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <div class="dropdown sgvx-bulk-actions d-none">
+                    <div class="dropdown snestx-bulk-actions d-none">
                         <button class="btn btn-outline-secondary dropdown-toggle px-3 rounded-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 48px;">
                             Bulk Actions (<span id="selected-count">0</span>)
                         </button>
                         <ul class="dropdown-menu shadow-sm border-0 mt-1">
-                            <li><a class="dropdown-item fw-bold text-success" href="#" onclick="sgvxBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
-                            <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="sgvxBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
+                            <li><a class="dropdown-item fw-bold text-success" href="#" onclick="SNESTXBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
+                            <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SNESTXBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
                     <button id="addVehicle" class="js-open-vehicle-modal btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
@@ -178,7 +178,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??''))); ?>">
                             <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input sgvx-bulk-checkbox bg-light border-slate-200 shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input snestx-bulk-checkbox bg-light border-slate-200 shadow-none">
                             </td>
                             <td class="ps-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
@@ -196,7 +196,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                     if ($status === 'deletion_pending') {
                                         echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
                                     } else {
-                                        echo SGVX51_Admin_UI::render_status_badge( $status ); 
+                                        echo SNESTX51_Admin_UI::render_status_badge( $status ); 
                                     }
                                     ?>
                                 </td>
@@ -210,7 +210,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                 <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 text-nowrap">
                                     <?php if ($is_request && !empty($v['request_id'])): ?>
-                                        <?php echo SGVX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
+                                        <?php echo SNESTX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
                                     <?php elseif ($status === 'rejected'): ?>
                                         <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(json_encode($v)); ?>">
                                             <i class="bi bi-pencil-square"></i>
@@ -242,7 +242,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('sgvx51_admin_modals', function() use ($flats) {
+add_action('SNESTX51_admin_modals', function() use ($flats) {
 ?>
 <!-- Vehicle Modal -->
 <div class="modal fade" id="vehicleModal" tabindex="-1" aria-hidden="true">
@@ -254,9 +254,9 @@ add_action('sgvx51_admin_modals', function() use ($flats) {
             </div>
             <form id="add-vehicle-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="sgvx51_add_vehicle" id="v-action">
+                    <input type="hidden" name="action" value="SNESTX51_add_vehicle" id="v-action">
                     <input type="hidden" name="vehicle_id" id="v-id">
-                    <?php wp_nonce_field( 'sgvx51_add_vehicle_nonce' ); ?>
+                    <?php wp_nonce_field( 'SNESTX51_add_vehicle_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Number Plate <span class="text-danger">*</span></label>
@@ -366,9 +366,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.restoreVehicle = async function(id) {
         if(!confirm('Are you sure you want to restore this vehicle?')) return;
         try {
-            await window.sgvxApiRequest('sgvx51_restore_vehicle', {
+            await window.SNESTXApiRequest('SNESTX51_restore_vehicle', {
                 id: id,
-                _wpnonce: '<?php echo esc_js( wp_create_nonce("sgvx51_add_vehicle_nonce") ); ?>'
+                _wpnonce: '<?php echo esc_js( wp_create_nonce("SNESTX51_add_vehicle_nonce") ); ?>'
             });
             window.location.reload();
         } catch(e) {}

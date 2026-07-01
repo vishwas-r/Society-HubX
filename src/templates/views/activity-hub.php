@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -12,14 +12,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = Society_GoVernX::get_instance()->db;
+$db = Society_NestX::get_instance()->db;
 $audit_logs = $db->get('audit_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 
 // No need for usort or array_slice here anymore as DB handles it
 ?>
 
-<div class="sgvx-view-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+<div class="snestx-view-header d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
     <div>
         <h2 class="h4 fw-bold text-slate-900 m-0">Activity Hub</h2>
         <p class="text-slate-500 small m-0">Audit system-wide administrative actions and resident communications.</p>
@@ -28,7 +28,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
         <button class="btn btn-white border-slate-200 text-slate-700 fw-bold small rounded-3 shadow-sm" onclick="location.reload();">
             <i class="bi bi-arrow-clockwise me-1"></i> Refresh Feed
         </button>
-        <a href="<?php echo admin_url('admin.php?page=sgvx51-global-settings&tab=communication'); ?>" class="btn btn-primary fw-bold small rounded-3 shadow-sm px-3">
+        <a href="<?php echo admin_url('admin.php?page=snestx51-global-settings&tab=communication'); ?>" class="btn btn-primary fw-bold small rounded-3 shadow-sm px-3">
             <i class="bi bi-gear-fill me-1"></i> Config
         </a>
     </div>

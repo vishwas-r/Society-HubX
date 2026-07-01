@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * View: Flats & Units (Bootstrap Migration)
  */
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 $flats = $db->get( 'flats' );
 $residents = $db->get( 'residents' );
 
@@ -203,7 +203,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('sgvx51_admin_modals', function() {
+add_action('SNESTX51_admin_modals', function() {
 ?>
 <!-- Add/Edit Flat Modal (Bootstrap) -->
 <div class="modal fade" id="flatModal" tabindex="-1" aria-hidden="true">
@@ -215,9 +215,9 @@ add_action('sgvx51_admin_modals', function() {
             </div>
             <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="add-flat-form">
                     <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="sgvx51_add_flat">
+                    <input type="hidden" name="action" value="SNESTX51_add_flat">
                     <input type="hidden" name="flat_id" value="">
-                    <?php wp_nonce_field( 'sgvx51_add_flat_nonce' ); ?>
+                    <?php wp_nonce_field( 'SNESTX51_add_flat_nonce' ); ?>
                     
                     <div class="row g-3 mb-3">
                         <div class="col-6">

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -11,8 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Component: Dashboard Polls Tab
  * @var array $data Dashboard data.
  */
-$poll_mgr = new SGVX51_Poll_Manager();
-$all_polls = (new SGVX51_DB_Router())->get('polls');
+$poll_mgr = new SNESTX51_Poll_Manager();
+$all_polls = (new SNESTX51_DB_Router())->get('polls');
 $r = $data['resident'] ?? [];
 ?>
 <!-- 6. POLLS TAB -->
@@ -76,9 +76,9 @@ $r = $data['resident'] ?? [];
                             <!-- VOTE FORM -->
                             <div class="js-poll-form <?php echo $has_voted ? 'd-none' : ''; ?>">
                                 <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST" class="js-poll-vote-form" data-poll-id="<?php echo esc_attr($p['id']); ?>">
-                                    <input type="hidden" name="action" value="sgvx51_cast_vote">
+                                    <input type="hidden" name="action" value="SNESTX51_cast_vote">
                                     <input type="hidden" name="poll_id" value="<?php echo esc_attr($p['id']); ?>">
-                                    <?php wp_nonce_field('sgvx51_vote_nonce'); ?>
+                                    <?php wp_nonce_field('SNESTX51_vote_nonce'); ?>
                                     <div class="d-flex flex-column gap-2 mb-3">
                                         <?php 
                                         foreach(($options ?? []) as $opt): $opt_id = uniqid('opt_'); 

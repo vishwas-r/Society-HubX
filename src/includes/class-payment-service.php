@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Payment Service acting as the Single Source of Truth for all payment/invoice mutations.
  */
@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Payment_Service {
+class SNESTX51_Payment_Service {
 	
 	public static function process_payment( $invoice_id, $amount, $method, $reference = '', $date = '', $notes = '' ) {
-		$db = new SGVX51_DB_Router();
+		$db = new SNESTX51_DB_Router();
 		$invoice = $db->get_invoice( $invoice_id );
 		
 		if ( ! $invoice ) {
@@ -101,7 +101,7 @@ class SGVX51_Payment_Service {
 		self::update_state_hash();
 
 		// Fire Action for webhooks/notifications
-		do_action( 'sgvx51_payment_processed', $invoice_id, $new_payment['id'], $amount );
+		do_action( 'SNESTX51_payment_processed', $invoice_id, $new_payment['id'], $amount );
 
 		return $new_payment;
 	}
@@ -111,7 +111,7 @@ class SGVX51_Payment_Service {
 		// add_action( 'stripe_payment_success', array( __CLASS__, 'process_payment' ), 10, 4 );
         
         // Register AJAX endpoint for Admin polling
-        add_action('wp_ajax_sgvx51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ));
+        add_action('wp_ajax_SNESTX51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ));
 	}
 
     public static function ajax_poll_state_hash() {
@@ -120,17 +120,17 @@ class SGVX51_Payment_Service {
 
 	public static function update_state_hash() {
 		// Store a precise microtime hash in a transient
-		set_transient( 'sgvx51_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
+		set_transient( 'SNESTX51_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
 	}
 
 	public static function get_state_hash() {
-		$hash = get_transient( 'sgvx51_payment_state_hash' );
+		$hash = get_transient( 'SNESTX51_payment_state_hash' );
 		if ( ! $hash ) {
 			$hash = microtime(true);
-			set_transient( 'sgvx51_payment_state_hash', $hash, WEEK_IN_SECONDS );
+			set_transient( 'SNESTX51_payment_state_hash', $hash, WEEK_IN_SECONDS );
 		}
 		return $hash;
 	}
 }
 
-SGVX51_Payment_Service::init();
+SNESTX51_Payment_Service::init();

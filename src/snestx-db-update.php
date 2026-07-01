@@ -1,27 +1,27 @@
-<?php
+﻿<?php
 // phpcs:disable Internal.LineEndings.Mixed
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * SGVX Database Update Utility
+ * SNESTX Database Update Utility
  * Run this file manually to ensure all tables are created and data is migrated.
  * Usage: Place in plugin folder and visit via browser, or run via WP-CLI/Command line.
  */
 
 // Load WordPress
-$sgvx51_wp_load = __DIR__ . '/../../wp-load.php';
-if (!file_exists($sgvx51_wp_load)) {
+$SNESTX51_wp_load = __DIR__ . '/../../wp-load.php';
+if (!file_exists($SNESTX51_wp_load)) {
     // Try root search if not in standard wp-content/plugins/x location
-    $sgvx51_wp_load = dirname(__FILE__, 4) . '/wp-load.php';
+    $SNESTX51_wp_load = dirname(__FILE__, 4) . '/wp-load.php';
 }
 
-if (!file_exists($sgvx51_wp_load)) {
-    die("Error: Could not find wp-load.php. Please ensure this script is inside the 'society-governx/src/' directory on your WordPress installation.");
+if (!file_exists($SNESTX51_wp_load)) {
+    die("Error: Could not find wp-load.php. Please ensure this script is inside the 'society-nestx/src/' directory on your WordPress installation.");
 }
 
-require_once $sgvx51_wp_load;
+require_once $SNESTX51_wp_load;
 
 // Verify Admin or Command Line
 if (!is_admin() && php_sapi_name() !== 'cli') {
@@ -30,7 +30,7 @@ if (!is_admin() && php_sapi_name() !== 'cli') {
     }
 }
 
-echo "<h1>Society GoVernX - Database Update Utility</h1>";
+echo "<h1>SocietyNestX - Database Update Utility</h1>";
 echo "<p>Starting database update and migration...</p>";
 
 // 1. Force Include Plugin Classes
@@ -40,18 +40,18 @@ require_once dirname(__FILE__) . '/includes/class-rbac-manager.php';
 
 // 2. Trigger Table Creation
 echo "<li>Updating Table Schemas (dbDelta)... ";
-SGVX51_DB_Schema::create_tables();
+SNESTX51_DB_Schema::create_tables();
 echo "<span style='color:green'>Done.</span></li>";
 
 // 3. Trigger Data Migration
 echo "<li>Migrating Data from JSON to Relational... ";
-SGVX51_Data_Migrator::run_all();
+SNESTX51_Data_Migrator::run_all();
 echo "<span style='color:green'>Done.</span></li>";
 
 // 4. Update Version Option
-update_option('sgvx51_version', '1.0.2');
-update_option('sgvx51_storage_migrated', '1.0.2');
+update_option('SNESTX51_version', '1.0.2');
+update_option('SNESTX51_storage_migrated', '1.0.2');
 
 echo "<p style='color:green; font-weight:bold; font-size:1.2rem;'>Success: Database is now at version 1.0.2 and fully relational.</p>";
 echo "<p>You can now delete this file from your server for security.</p>";
-echo "<a href='" . esc_url( admin_url('admin.php?page=sgvx51-settings') ) . "'>Return to Dashboard</a>";
+echo "<a href='" . esc_url( admin_url('admin.php?page=snestx51-settings') ) . "'>Return to Dashboard</a>";

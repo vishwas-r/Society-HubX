@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Accounts Page JS - Invoice & Ledger interactions
  */
 (function () {
@@ -12,8 +12,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'accounts' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -53,11 +53,11 @@
 
             if (!confirm(`Are you sure you want to ${actionLabel} this payment notification?`)) return;
 
-            SGVX.ajax({
-                action: isApprove ? 'sgvx51_approve_request' : 'sgvx51_reject_request',
+            SNESTX.ajax({
+                action: isApprove ? 'SNESTX51_approve_request' : 'SNESTX51_reject_request',
                 data: {
                     id: requestId,
-                    _ajax_nonce: window.sgvx51RequestNonce
+                    _ajax_nonce: window.snestx51RequestNonce
                 },
                 loadingButton: btn,
                 successMessage: 'Payment ' + actionLabel + 'd successfully',
@@ -77,13 +77,13 @@
     else init();
 
     function getModal(id) {
-        if (!window._sgvx_modals) window._sgvx_modals = {};
-        if (!window._sgvx_modals[id]) {
+        if (!window._SNESTX_modals) window._SNESTX_modals = {};
+        if (!window._SNESTX_modals[id]) {
             const el = document.getElementById(id);
             if (!el) return null;
-            window._sgvx_modals[id] = new bootstrap.Modal(el);
+            window._SNESTX_modals[id] = new bootstrap.Modal(el);
         }
-        return window._sgvx_modals[id];
+        return window._SNESTX_modals[id];
     }
 
 
@@ -223,11 +223,11 @@
         if (!confirm('Permanently delete this invoice?')) return;
         const id = btn.getAttribute('data-id');
 
-        SGVX.ajax({
-            action: 'sgvx51_delete_invoice',
+        SNESTX.ajax({
+            action: 'SNESTX51_delete_invoice',
             data: {
                 id: id,
-                _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.deleteInvoiceNonce) ? window.sgvxAccountsData.deleteInvoiceNonce : undefined
+                _wpnonce: (window.SNESTXAccountsData && window.SNESTXAccountsData.deleteInvoiceNonce) ? window.SNESTXAccountsData.deleteInvoiceNonce : undefined
             },
             successMessage: 'Invoice deleted',
             onSuccess: function () {
@@ -242,12 +242,12 @@
         const invoiceId = btn.getAttribute('data-invoice-id');
         const txnId = btn.getAttribute('data-txn-id');
 
-        SGVX.ajax({
-            action: 'sgvx51_delete_payment',
+        SNESTX.ajax({
+            action: 'SNESTX51_delete_payment',
             data: {
                 invoice_id: invoiceId,
                 txn_id: txnId,
-                _wpnonce: (window.sgvxAccountsData && window.sgvxAccountsData.nonce) ? window.sgvxAccountsData.nonce : undefined
+                _wpnonce: (window.SNESTXAccountsData && window.SNESTXAccountsData.nonce) ? window.SNESTXAccountsData.nonce : undefined
             },
             successMessage: 'Payment deleted',
             onSuccess: function () {
@@ -262,8 +262,8 @@
         const form = e.target;
         const formData = new FormData(form);
 
-        SGVX.ajax({
-            action: 'sgvx51_edit_invoice',
+        SNESTX.ajax({
+            action: 'SNESTX51_edit_invoice',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Invoice updated successfully',
@@ -277,12 +277,12 @@
         const formData = new FormData(form);
 
         if (!formData.get('amount') || !formData.get('method')) {
-            SGVX.toast.warning('Please fill in all required fields');
+            SNESTX.toast.warning('Please fill in all required fields');
             return;
         }
 
-        SGVX.ajax({
-            action: 'sgvx51_record_payment',
+        SNESTX.ajax({
+            action: 'SNESTX51_record_payment',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Payment recorded successfully!',

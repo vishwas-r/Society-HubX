@@ -1,4 +1,4 @@
-=== Society GoVernX ===
+﻿=== SocietyNestX ===
 Contributors: vishwas-r
 Tags: society, management, portal, billing, ledger, notices, polls, resident-directory, staff-management, facility-booking, rules-regulations, flat-management
 Requires at least: 6.0
@@ -11,7 +11,7 @@ A comprehensive, state-of-the-art society management portal for managing flat re
 
 == Description ==
 
-Society GoVernX is a feature-rich, premium WordPress plugin designed to streamline the administration of housing societies, gated communities, and residential complexes. With dedicated modules for administrators and residents, it brings transparency, efficiency, and automated workflows to community management.
+SocietyNestX is a feature-rich, premium WordPress plugin designed to streamline the administration of housing societies, gated communities, and residential complexes. With dedicated modules for administrators and residents, it brings transparency, efficiency, and automated workflows to community management.
 
 ### Key Features:
 * **Flat Management:** Track flat details, block structure, occupancy types (Owner/Tenant), and allocation.
@@ -26,16 +26,16 @@ Society GoVernX is a feature-rich, premium WordPress plugin designed to streamli
 * **Finance, Billing & Ledger:** Generate maintenance bills, record payments, and track society financial ledgers with customizable billing cycles.
 
 ### GitHub & Support:
-* **GitHub Repository:** [github.com/vishwas-r/Society-GovernX](https://github.com/vishwas-r/Society-GovernX)
-* **Issue Tracker:** [github.com/vishwas-r/Society-GovernX/issues](https://github.com/vishwas-r/Society-GovernX/issues)
+* **GitHub Repository:** [github.com/vishwas-r/society-nestx](https://github.com/vishwas-r/society-nestx)
+* **Issue Tracker:** [github.com/vishwas-r/society-nestx/issues](https://github.com/vishwas-r/society-nestx/issues)
 
 == Installation ==
 
-1. Upload the entire `society-governx` folder to the `/wp-content/plugins/` directory, or install it directly via the WordPress Admin panel under Plugins > Add New.
+1. Upload the entire `society-nestx` folder to the `/wp-content/plugins/` directory, or install it directly via the WordPress Admin panel under Plugins > Add New.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Upon activation, access the **Setup Wizard** from the WordPress admin sidebar under **GovernX** to initialize your database tables and seed default settings.
 4. To set up the frontend resident dashboard, create a new WordPress Page (e.g., "Resident Portal") and add the following shortcode:
-   `[Society_GoVernX_dashboard]`
+   `[Society_NestX_dashboard]`
 5. Publish the page. Residents will now be able to log in and access their dashboard from this page.
 
 == Settings & Configurations ==
@@ -65,9 +65,9 @@ To configure the plugin, navigate to the **GovernX > Settings** menu in the Word
 
 The plugin provides the following shortcodes to render portal elements on frontend pages:
 
-* `[Society_GoVernX_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
-* `[Society_GoVernX_notices]` - Renders a standalone public notice board feed.
-* `[Society_GoVernX_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
+* `[Society_NestX_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
+* `[Society_NestX_notices]` - Renders a standalone public notice board feed.
+* `[Society_NestX_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == Changelog ==
 

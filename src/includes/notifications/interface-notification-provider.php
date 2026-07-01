@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Defines the structure for all notification delivery channels.
  */
 
-interface SGVX51_Notification_Provider_Interface {
+interface SNESTX51_Notification_Provider_Interface {
     /**
      * Send a notification.
      * 

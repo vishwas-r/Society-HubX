@@ -1,27 +1,27 @@
-<?php
+﻿<?php
 /**
  * Class: Request Manager
  * Processes resident requests (Add, Edit, Delete).
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Request_Manager {
+class SNESTX51_Request_Manager {
 
 	private $db;
     private $modules = array();
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
+		$this->db = new SNESTX51_DB_Router();
         
         // Register AJAX Actions for Approvals
-        add_action( 'wp_ajax_sgvx51_approve_request', array( $this, 'handle_ajax_approve' ) );
-        add_action( 'wp_ajax_sgvx51_reject_request', array( $this, 'handle_ajax_reject' ) );
-        add_action( 'wp_ajax_sgvx51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
+        add_action( 'wp_ajax_SNESTX51_approve_request', array( $this, 'handle_ajax_approve' ) );
+        add_action( 'wp_ajax_SNESTX51_reject_request', array( $this, 'handle_ajax_reject' ) );
+        add_action( 'wp_ajax_SNESTX51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -66,7 +66,7 @@ class SGVX51_Request_Manager {
      * AJAX: Approve Request
      */
     public function handle_ajax_approve() {
-        check_ajax_referer( 'sgvx51_request_action' );
+        check_ajax_referer( 'SNESTX51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -83,7 +83,7 @@ class SGVX51_Request_Manager {
      * AJAX: Reject Request
      */
     public function handle_ajax_reject() {
-        check_ajax_referer( 'sgvx51_request_action' );
+        check_ajax_referer( 'SNESTX51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -102,7 +102,7 @@ class SGVX51_Request_Manager {
      * AJAX: Bulk Process
      */
     public function handle_bulk_process() {
-        check_ajax_referer( 'sgvx51_request_action' );
+        check_ajax_referer( 'SNESTX51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $ids = isset($_POST['ids']) ? array_map('sanitize_text_field', wp_unslash($_POST['ids'])) : [];
@@ -185,7 +185,7 @@ class SGVX51_Request_Manager {
 	 * Process a request by its ID.
 	 */
 	public function approve_request( $request_id ) {
-		// error_log("SGVX51 Debug: approve_request called for ID: $request_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		// error_log("SNESTX51 Debug: approve_request called for ID: $request_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		$requests = $this->db->get( 'requests' );
 		$target_request = null;
 
@@ -218,13 +218,13 @@ class SGVX51_Request_Manager {
 		$action      = $target_request['request_type']; 
 		$payload     = is_array($target_request['payload'] ?? null) ? $target_request['payload'] : json_decode( $target_request['payload'], true );
 		
-        $module_instance = apply_filters( 'sgvx51_get_module_' . $module_slug, null );
+        $module_instance = apply_filters( 'SNESTX51_get_module_' . $module_slug, null );
 
         if ( ! empty( $target_request['entity_id'] ) ) {
             $payload['id'] = $target_request['entity_id'];
         }
 
-        if ( ! $module_instance || ! ( $module_instance instanceof SGVX51_Module ) ) {
+        if ( ! $module_instance || ! ( $module_instance instanceof SNESTX51_Module ) ) {
              return new WP_Error( 'no_module', "Module handler for '$module_slug' not found." );
         }
 
@@ -314,8 +314,8 @@ class SGVX51_Request_Manager {
                 $payment_result = $module_instance->perform_record_payment( $payment_data );
             } else {
                 // Fallback direct instantiation if filter failed
-                require_once SGVX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
-                $am = new SGVX51_Account_Manager();
+                require_once SNESTX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+                $am = new SNESTX51_Account_Manager();
                 $payment_result = $am->perform_record_payment( $payment_data );
             }
             
@@ -377,9 +377,9 @@ class SGVX51_Request_Manager {
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_GoVernX') && !empty($target_request['created_by']) ) {
-                $sgvx = Society_GoVernX::get_instance();
-                if ( isset($sgvx->notifications) ) {
+            if ( class_exists('Society_NestX') && !empty($target_request['created_by']) ) {
+                $SNESTX = Society_NestX::get_instance();
+                if ( isset($snestx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
                     foreach($residents as $res_obj) {
@@ -401,7 +401,7 @@ class SGVX51_Request_Manager {
                         $request_desc = 'General Request';
                     }
 
-                    $sgvx->notifications->trigger('request_approved', $target_request['created_by'], [
+                    $snestx->notifications->trigger('request_approved', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,
@@ -487,9 +487,9 @@ class SGVX51_Request_Manager {
 			$this->log_audit('request_rejected', $module_slug, $actual_request_id, "Action: $action, Target: $entity_id, Note: $note, Rejected by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_GoVernX') && !empty($target_request['created_by']) ) {
-                $sgvx = Society_GoVernX::get_instance();
-                if ( isset($sgvx->notifications) ) {
+            if ( class_exists('Society_NestX') && !empty($target_request['created_by']) ) {
+                $SNESTX = Society_NestX::get_instance();
+                if ( isset($snestx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
                     foreach($residents as $res_obj) {
@@ -511,7 +511,7 @@ class SGVX51_Request_Manager {
                         $request_desc = 'General Request';
                     }
 
-                    $sgvx->notifications->trigger('request_rejected', $target_request['created_by'], [
+                    $snestx->notifications->trigger('request_rejected', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,

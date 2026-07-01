@@ -1,24 +1,24 @@
-<?php
+﻿<?php
 /**
  * Class: RBAC Manager
  * Handles Granular Role-Based Access Control.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_RBAC_Manager {
+class SNESTX51_RBAC_Manager {
 
 	private $db;
 	private $roles_table;
 
 	public function __construct() {
 		global $wpdb;
-		$this->db = new SGVX51_DB_Router();
-		$this->roles_table = "{$wpdb->prefix}society_governx_roles";
+		$this->db = new SNESTX51_DB_Router();
+		$this->roles_table = "{$wpdb->prefix}Society_NestX_roles";
 	}
 
 	/**
@@ -102,9 +102,9 @@ class SGVX51_RBAC_Manager {
 		);
 
 		// Sync with WordPress Roles
-		$wp_role_id = 'sgvx_' . sanitize_title( $role_id );
+		$wp_role_id = 'SNESTX_' . sanitize_title( $role_id );
 		if ( ! get_role( $wp_role_id ) ) {
-			add_role( $wp_role_id, 'SGVX: ' . $name, array( 'read' => true ) );
+			add_role( $wp_role_id, 'SNESTX: ' . $name, array( 'read' => true ) );
 		}
 
 		$existing = $this->get_role( $role_id );

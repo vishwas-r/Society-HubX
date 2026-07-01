@@ -1,16 +1,16 @@
-<?php
+﻿<?php
 /**
  * Class: Admin App
  * Handles the full-screen "App Mode" rendering for the admin panel.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Admin_App {
+class SNESTX51_Admin_App {
 
 	/**
 	 * Render a specific view in the App Wrapper.
@@ -28,7 +28,7 @@ class SGVX51_Admin_App {
 
         // Include the wrapper. 
         // The wrapper will handle including templates/views/$view_name.php
-		include SGVX51_PLUGIN_DIR . 'templates/admin-app-wrapper.php';
+		include SNESTX51_PLUGIN_DIR . 'templates/admin-app-wrapper.php';
 		
         // Exit to prevent WP Footer/Admin Bar from rendering after our full-screen overlay
         exit;

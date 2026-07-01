@@ -1,39 +1,39 @@
-<?php
+﻿<?php
 /**
  * Module: Document Manager
  * Handles the "Document Vault".
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Document_Manager implements SGVX51_Module {
+class SNESTX51_Document_Manager implements SNESTX51_Module {
 
 	private $drive;
 	private $db;
 
 	public function __construct() {
-		$this->drive = new SGVX51_Drive_Manager();
-		$this->db    = new SGVX51_DB_Router();
+		$this->drive = new SNESTX51_Drive_Manager();
+		$this->db    = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_sgvx51_upload_doc', array( $this, 'handle_upload' ) );
-		add_action( 'wp_ajax_sgvx51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'admin_post_SNESTX51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'wp_ajax_SNESTX51_upload_doc', array( $this, 'handle_upload' ) );
 		
-		add_action( 'admin_post_sgvx51_approve_doc', array( $this, 'handle_approve' ) );
-		add_action( 'wp_ajax_sgvx51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'admin_post_SNESTX51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'wp_ajax_SNESTX51_approve_doc', array( $this, 'handle_approve' ) );
 
-		add_action( 'admin_post_sgvx51_reject_doc', array( $this, 'handle_reject' ) );
-		add_action( 'wp_ajax_sgvx51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'admin_post_SNESTX51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'wp_ajax_SNESTX51_reject_doc', array( $this, 'handle_reject' ) );
 
-		add_action( 'admin_post_sgvx51_delete_doc', array( $this, 'handle_delete' ) );
-		add_action( 'wp_ajax_sgvx51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'admin_post_SNESTX51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'wp_ajax_SNESTX51_delete_doc', array( $this, 'handle_delete' ) );
 
         // Module Registration
-        add_filter( 'sgvx51_get_module_documents', array( $this, 'get_instance' ) );
+        add_filter( 'SNESTX51_get_module_documents', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -64,11 +64,11 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'sgvx51-settings',
+			'snestx51-settings',
 			'Document Vault',
 			'Documents',
 			'manage_options',
-			'sgvx51-documents',
+			'snestx51-documents',
 			array( $this, 'render_page' )
 		);
 	}
@@ -80,7 +80,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		if ( ! is_user_logged_in() ) wp_die('Authentication required');
 		
 		// Use check_ajax_referer for both Admin & Frontend AJAX
-		check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+		check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
 
 		$user_id = get_current_user_id();
 		$is_admin = current_user_can('manage_options');
@@ -112,7 +112,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 			
 			if ( is_wp_error( $res ) ) {
 				if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-                wp_safe_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
+                wp_safe_redirect( add_query_arg( array( 'page' => 'snestx51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
                 exit;
 			} else {
                 // Insert Metadata
@@ -134,7 +134,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 
                 // 3. Create Approval Request if Resident
                 if ( ! $is_admin ) {
-                    $rm = new SGVX51_Request_Manager();
+                    $rm = new SNESTX51_Request_Manager();
                     $rm->create_request( 'documents', 'upload', $new_doc, $doc_id, 'documents', $flat_no );
                 }
 
@@ -142,7 +142,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                     wp_send_json_success( array( 'message' => 'Upload successful' ) );
                 } else {
                     $redirect = $is_admin 
-						? add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'success' => '1' ), admin_url('admin.php') )
+						? add_query_arg( array( 'page' => 'snestx51-documents', 'flat' => $flat_no, 'success' => '1' ), admin_url('admin.php') )
 						: wp_get_referer();
                     wp_safe_redirect( $redirect );
                 }
@@ -154,21 +154,21 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 
 	public function handle_approve() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
         if ( ! empty( $request_id ) ) {
-            $rm = new SGVX51_Request_Manager();
+            $rm = new SNESTX51_Request_Manager();
             $res = $rm->approve_request( $request_id );
             
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document approved'] );
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=snestx51-documents&updated=1' ) );
             }
             exit;
         }
@@ -177,23 +177,23 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 
 	public function handle_reject() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
         $note = isset( $_REQUEST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['admin_note'] ) ) : '';
 
         if ( ! empty( $request_id ) ) {
-            $rm = new SGVX51_Request_Manager();
+            $rm = new SNESTX51_Request_Manager();
             $res = $rm->reject_request( $request_id, $note );
 
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document rejected'] );
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=snestx51-documents&updated=1' ) );
             }
             exit;
         }
@@ -217,9 +217,9 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 	private function update_status( $status ) {
 		// Use check_ajax_referer if AJAX, else check_admin_referer
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'sgvx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
@@ -230,7 +230,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 
         // 1. Synchronize with Request Manager if a pending request exists
         if ( in_array( $status, array( 'approved', 'rejected' ) ) ) {
-            $rm = new SGVX51_Request_Manager();
+            $rm = new SNESTX51_Request_Manager();
             // Passing doc_id here works because RM has a fallback to search by entity_id
             $res = ( $status === 'approved' ) ? $rm->approve_request( $doc_id ) : $rm->reject_request( $doc_id );
             
@@ -239,7 +239,7 @@ class SGVX51_Document_Manager implements SGVX51_Module {
                 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                     wp_send_json_success( array( 'message' => 'Document processed and request synced.' ) );
                 } else {
-                    wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=snestx51-documents&updated=1' ) );
                 }
                 exit;
             }
@@ -248,19 +248,19 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		$this->db->update( 'documents', array( 'status' => $status ), array( 'id' => $doc_id ) );
 
         // Manual Notification Trigger (Backup for direct admin actions)
-        if ( class_exists('Society_GoVernX') ) {
+        if ( class_exists('Society_NestX') ) {
             $docs = $this->db->get('documents');
             $doc = null;
             foreach($docs as $d) { if($d['id'] === $doc_id) { $doc = $d; break; } }
             
             if ( $doc && !empty($doc['uploaded_by']) && in_array($status, ['approved', 'rejected']) ) {
-                $sgvx = Society_GoVernX::get_instance();
+                $SNESTX = Society_NestX::get_instance();
                 $event = ($status === 'approved') ? 'request_approved' : 'request_rejected';
                 
                 $admin_user = wp_get_current_user();
                 $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
 
-                $sgvx->notifications->trigger($event, $doc['uploaded_by'], [
+                $snestx->notifications->trigger($event, $doc['uploaded_by'], [
                     'resident_name' => 'Resident', // Logic to fetch name if needed
                     'request_type'  => 'Document',
                     'admin_name'    => $admin_name,
@@ -273,17 +273,17 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document status updated to ' . $status ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-documents&updated=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-documents&updated=1' ) );
 		}
 		exit;
 	}
 
 	public function handle_delete() {
-		// Nonce check: JS uses Config.nonce (sgvx51_document_nonce)
+		// Nonce check: JS uses Config.nonce (SNESTX51_document_nonce)
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'sgvx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'sgvx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'SNESTX51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['flat'] ) ) : '';
@@ -296,12 +296,12 @@ class SGVX51_Document_Manager implements SGVX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document marked for deletion' ) );
 		} else {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'sgvx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
+			wp_safe_redirect( add_query_arg( array( 'page' => 'snestx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
 		}
 		exit;
 	}
 
 	public function render_page() {
-		SGVX51_Admin_App::render_view('documents');
+		SNESTX51_Admin_App::render_view('documents');
 	}
 }

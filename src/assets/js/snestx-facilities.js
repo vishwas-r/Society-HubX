@@ -1,8 +1,8 @@
-/**
- * SGVX Facilities Management JS
+﻿/**
+ * SNESTX Facilities Management JS
  * Brings Facilities view in line with Residents UI patterns:
  * - Delegated event handling
- * - AJAX form submit via sgvxApiRequest
+ * - AJAX form submit via SNESTXApiRequest
  * - Centralized delete/confirm modal usage
  * - Real-time search for facility list
  */
@@ -24,8 +24,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'facilities' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -59,7 +59,7 @@
         const form = document.getElementById('facility-form');
         if (!form) return;
         form.reset();
-        form.querySelector('[name="action"]').value = 'sgvx51_add_facility';
+        form.querySelector('[name="action"]').value = 'SNESTX51_add_facility';
         form.querySelector('[name="facility_id"]').value = '';
         const title = document.getElementById('form-title');
         if (title) title.textContent = 'Define New Amenity';
@@ -74,7 +74,7 @@
     function populateFacilityForm(data) {
         const form = document.getElementById('facility-form');
         if (!form) return;
-        form.querySelector('[name="action"]').value = 'sgvx51_edit_facility';
+        form.querySelector('[name="action"]').value = 'SNESTX51_edit_facility';
         form.querySelector('[name="facility_id"]').value = data.id || '';
         form.querySelector('[name="name"]').value = data.name || '';
         form.querySelector('[name="rate"]').value = data.rate || 0;
@@ -108,8 +108,8 @@
             confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
             newConfirmBtn.addEventListener('click', function () {
-                SGVX.ajax({
-                    action: 'sgvx51_delete_facility',
+                SNESTX.ajax({
+                    action: 'SNESTX51_delete_facility',
                     data: { id: id, _wpnonce: Config.deleteNonce },
                     successMessage: 'Facility deleted successfully',
                     onSuccess: function () {
@@ -128,8 +128,8 @@
         } else {
             // Fallback
             if (!confirm('Delete facility?')) return;
-            SGVX.ajax({
-                action: 'sgvx51_delete_facility',
+            SNESTX.ajax({
+                action: 'SNESTX51_delete_facility',
                 data: { id: id, _wpnonce: Config.deleteNonce },
                 reload: true
             });
@@ -170,7 +170,7 @@
                     const action = form.querySelector('[name="action"]').value;
                     const formData = new FormData(form);
 
-                    SGVX.ajax({
+                    SNESTX.ajax({
                         action: action,
                         data: formData,
                         loadingButton: form.querySelector('button[type="submit"]'),

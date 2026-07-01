@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -9,11 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Documents (Bootstrap Migration)
- * Integrates with SGVX51_Drive_Manager and SGVX51_DB_Router.
+ * Integrates with SNESTX51_Drive_Manager and SNESTX51_DB_Router.
  */
 
-$db = new SGVX51_DB_Router();
-$drive = new SGVX51_Drive_Manager();
+$db = new SNESTX51_DB_Router();
+$drive = new SNESTX51_Drive_Manager();
 $residents = $db->get( 'residents' );
 $all_docs = $db->get( 'documents' );
 
@@ -138,7 +138,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                     foreach ( $unique_flats as $flat_no => $res ) : 
                         $is_active = $selected_flat === $flat_no;
                     ?>
-                         <a href="?page=sgvx51-documents&flat=<?php echo urlencode( $flat_no ); ?>" 
+                         <a href="?page=snestx51-documents&flat=<?php echo urlencode( $flat_no ); ?>" 
                             class="resident-item d-block px-4 py-3 border-bottom border-light text-decoration-none transition-all <?php echo $is_active ? 'bg-primary bg-opacity-10 border-start border-4 border-primary' : 'text-dark hover-bg-light'; ?>">
                              <div class="d-flex justify-content-between align-items-center">
                                  <span class="fw-bold small resident-flat <?php echo $is_active ? 'text-primary' : 'text-dark'; ?>"><?php echo esc_html( $flat_no ); ?></span>
@@ -241,7 +241,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('sgvx51_admin_modals', function() use ($selected_flat) {
+add_action('SNESTX51_admin_modals', function() use ($selected_flat) {
 ?>
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
@@ -253,9 +253,9 @@ add_action('sgvx51_admin_modals', function() use ($selected_flat) {
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" id="upload-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="sgvx51_upload_doc">
+                    <input type="hidden" name="action" value="SNESTX51_upload_doc">
                     <input type="hidden" name="flat_no" value="<?php echo esc_attr( $selected_flat ); ?>">
-                    <?php wp_nonce_field( 'sgvx51_upload_doc_nonce' ); ?>
+                    <?php wp_nonce_field( 'SNESTX51_upload_doc_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Target Folder</label>

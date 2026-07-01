@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -55,16 +55,16 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                       <div class="d-flex justify-content-between align-items-start">
                           <div>
                               <p class="opacity-75 small fw-bold text-uppercase mb-1">Your Pending Dues</p>
-                              <h2 class="display-6 fw-bold m-0">₹<?php echo sgvx_in_fmt($display_dues, 0); ?></h2>
+                              <h2 class="display-6 fw-bold m-0">₹<?php echo SNESTX_in_fmt($display_dues, 0); ?></h2>
                           </div>
                           <div class="p-2 bg-white bg-opacity-25 rounded-3">
                            <i class="bi bi-exclamation-triangle-fill fs-3 text-white"></i>
                        </div>
                    </div>
                    <?php if($has_pending_total_payment || $pending_payment_total > 0): ?>
-                      <div class="text-white-50 small text-center mt-3">₹<?php echo sgvx_in_fmt($pending_payment_total, 0); ?> Awaiting Admin Verification</div>
+                      <div class="text-white-50 small text-center mt-3">₹<?php echo SNESTX_in_fmt($pending_payment_total, 0); ?> Awaiting Admin Verification</div>
                    <?php elseif($total_dues > 0): ?>
-                       <button data-bs-toggle="modal" data-bs-target="#sgvx51PaymentModal" 
+                       <button data-bs-toggle="modal" data-bs-target="#SNESTX51PaymentModal" 
                                data-amount="<?php echo esc_attr($total_dues); ?>"
                                data-invoice-id="Total Outstanding"
                                class="js-btn-pay btn btn-light w-100 fw-bold text-primary shadow-sm rounded-3 mt-3">Pay Now</button>
@@ -82,15 +82,15 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                   <ul class="list-unstyled m-0 d-flex flex-column gap-3">
                        <li class="d-flex justify-content-between border-bottom border-light pb-2">
                            <span class="text-secondary small">Total Unpaid Invoices</span>
-                           <span class="fw-bold text-dark small">₹<?php echo sgvx_in_fmt($total_dues, 0); ?></span>
+                           <span class="fw-bold text-dark small">₹<?php echo SNESTX_in_fmt($total_dues, 0); ?></span>
                        </li>
                        <li class="d-flex justify-content-between border-bottom border-light pb-2">
                            <span class="text-secondary small">Pending Verification</span>
-                           <span class="fw-bold text-info small">- ₹<?php echo sgvx_in_fmt($pending_payment_total, 0); ?></span>
+                           <span class="fw-bold text-info small">- ₹<?php echo SNESTX_in_fmt($pending_payment_total, 0); ?></span>
                        </li>
                        <li class="d-flex justify-content-between">
                            <span class="text-dark small fw-bold">Current Outstanding</span>
-                           <span class="fw-bold text-primary small">₹<?php echo sgvx_in_fmt($display_dues, 0); ?></span>
+                           <span class="fw-bold text-primary small">₹<?php echo SNESTX_in_fmt($display_dues, 0); ?></span>
                        </li>
                    </ul>
               </div>
@@ -211,7 +211,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                                     </div>
                                     <div class="small text-muted font-monospace">Ref: #<?php echo ($pay['inv_id'] !== '-') ? substr($pay['inv_id'], -6) : 'VERIFY'; ?></div>
                                 </td>
-                                <td class="font-monospace <?php echo ($pay['status'] === 'pending') ? 'text-secondary' : 'text-success'; ?> fw-bold">₹<?php echo sgvx_in_fmt($pay['amount'], 0); ?></td>
+                                <td class="font-monospace <?php echo ($pay['status'] === 'pending') ? 'text-secondary' : 'text-success'; ?> fw-bold">₹<?php echo SNESTX_in_fmt($pay['amount'], 0); ?></td>
                                 <td>
                                     <div class="small text-dark"><?php echo esc_html($pay['method']); ?></div>
                                     <div class="text-muted font-monospace small" style="font-size: 10px;"><?php echo esc_html($pay['ref']); ?></div>

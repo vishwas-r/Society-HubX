@@ -1,16 +1,16 @@
-<?php
+﻿<?php
 /**
  * Class: Background Worker
  * Interfaces with Action Scheduler for asynchronous task processing.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Background_Worker {
+class SNESTX51_Background_Worker {
 
 	/**
 	 * Constructor.
@@ -18,9 +18,9 @@ class SGVX51_Background_Worker {
 	public function __construct() {
 		// Hook into Action Scheduler events
         if ( $this->is_available() ) {
-            add_action( 'sgvx51_process_bulk_invoices', array( $this, 'process_bulk_invoices' ), 10, 4 );
-            add_action( 'sgvx51_process_notification_blast', array( $this, 'process_notification_blast' ), 10, 2 );
-            add_action( 'sgvx51_process_data_purge', array( $this, 'process_data_purge' ) );
+            add_action( 'SNESTX51_process_bulk_invoices', array( $this, 'process_bulk_invoices' ), 10, 4 );
+            add_action( 'SNESTX51_process_notification_blast', array( $this, 'process_notification_blast' ), 10, 2 );
+            add_action( 'SNESTX51_process_data_purge', array( $this, 'process_data_purge' ) );
         }
 	}
 
@@ -39,11 +39,11 @@ class SGVX51_Background_Worker {
 	 * @param string $type Invoice type.
 	 */
 	public function schedule_bulk_invoices( $month, $amount, $type = 'maintenance' ) {
-		$db = new SGVX51_DB_Router();
+		$db = new SNESTX51_DB_Router();
 		$residents = $db->get( 'residents' );
 		$total = count( $residents );
 		
-		$job_key = "sgvx51_job_bulk_invoice_{$month}_{$type}";
+		$job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
 		$status = array(
 			'total'      => $total,
 			'processed'  => 0,
@@ -56,14 +56,14 @@ class SGVX51_Background_Worker {
 
 		if ( ! $this->is_available() ) return false;
 
-		as_enqueue_async_action( 'sgvx51_process_bulk_invoices', array( 'month' => $month, 'amount' => $amount, 'type' => $type, 'offset' => 0 ) );
+		as_enqueue_async_action( 'SNESTX51_process_bulk_invoices', array( 'month' => $month, 'amount' => $amount, 'type' => $type, 'offset' => 0 ) );
 	}
 
 	/**
 	 * Worker: Process Bulk Invoices (Batched).
 	 */
 	public function process_bulk_invoices( $month, $amount, $type = 'maintenance', $offset = 0 ) {
-		$db = new SGVX51_DB_Router();
+		$db = new SNESTX51_DB_Router();
 		$limit = 50;
 		$residents = $db->get( 'residents', array( 'limit' => $limit, 'offset' => $offset ) );
 		$invoices = $db->get( 'invoices', array( 'where' => array( 'month' => $month, 'type' => $type ) ) );
@@ -115,7 +115,7 @@ class SGVX51_Background_Worker {
 		}
 
 		// Update Job Status
-		$job_key = "sgvx51_job_bulk_invoice_{$month}_{$type}";
+		$job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
 		$status_opt = get_option( $job_key );
 		if ( $status_opt ) {
 			$status_opt['processed'] += count( $residents );
@@ -129,7 +129,7 @@ class SGVX51_Background_Worker {
 		// Schedule next batch or Recursively process if in synchronous mode
 		if ( count( $residents ) === $limit ) {
             if ( $this->is_available() ) {
-                as_enqueue_async_action( 'sgvx51_process_bulk_invoices', array( 
+                as_enqueue_async_action( 'SNESTX51_process_bulk_invoices', array( 
                     'month'  => $month, 
                     'amount' => $amount, 
                     'type'   => $type, 
@@ -141,24 +141,24 @@ class SGVX51_Background_Worker {
             }
 		}
 		
-		error_log( "SGVX51 Background Worker: Processed batch at offset $offset. Generated $generated_count $type invoices for $month." ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log( "SNESTX51 Background Worker: Processed batch at offset $offset. Generated $generated_count $type invoices for $month." ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	}
 
 	/**
 	 * Worker: Process Notification Blast.
 	 */
 	public function process_notification_blast( $event_slug, $data ) {
-		if ( ! class_exists( 'Society_GoVernX' ) ) return;
+		if ( ! class_exists( 'Society_NestX' ) ) return;
 		
-		$sgvx = Society_GoVernX::get_instance();
-		if ( isset( $sgvx->notifications ) ) {
+		$SNESTX = Society_NestX::get_instance();
+		if ( isset( $snestx->notifications ) ) {
 			// Trigger for all relevant users (e.g., all residents)
-			$db = new SGVX51_DB_Router();
+			$db = new SNESTX51_DB_Router();
 			$residents = $db->get( 'residents' );
 			
 			foreach ( $residents as $r ) {
 				if ( ! empty( $r['wp_user_id'] ) ) {
-					$sgvx->notifications->trigger( $event_slug, $r['wp_user_id'], $data, true );
+					$snestx->notifications->trigger( $event_slug, $r['wp_user_id'], $data, true );
 				}
 			}
 		}
@@ -168,8 +168,8 @@ class SGVX51_Background_Worker {
 	 * Worker: Data Purge (DPDP Compliance).
 	 */
 	public function process_data_purge() {
-		require_once SGVX51_PLUGIN_DIR . 'includes/class-privacy-manager.php';
-		$privacy = new SGVX51_Privacy_Manager();
+		require_once SNESTX51_PLUGIN_DIR . 'includes/class-privacy-manager.php';
+		$privacy = new SNESTX51_Privacy_Manager();
 		$privacy->perform_scheduled_purge();
 	}
 }

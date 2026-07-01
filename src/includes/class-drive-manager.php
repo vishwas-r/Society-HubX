@@ -1,26 +1,26 @@
-<?php
+﻿<?php
 /**
  * Class: Drive Manager
  * Handles File Operations: Folders, Uploads, List.
  * Switches between Google Drive (Connected) and Local Uploads (Offline).
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Drive_Manager {
+class SNESTX51_Drive_Manager {
 
 	private $is_connected;
 	private $local_root;
 
 	public function __construct() {
-		$this->is_connected = (bool) get_option( 'sgvx51_google_refresh_token' );
+		$this->is_connected = (bool) get_option( 'SNESTX51_google_refresh_token' );
 		
 		$upload_dir = wp_upload_dir();
-		$this->local_root = $upload_dir['basedir'] . '/society-governx/docs/';
+		$this->local_root = $upload_dir['basedir'] . '/society-nestx/docs/';
 		
 		if ( ! $this->is_connected && ! file_exists( $this->local_root ) ) {
 			wp_mkdir_p( $this->local_root );
@@ -32,12 +32,12 @@ class SGVX51_Drive_Manager {
 	 */
 	public function get_system_folder( $name ) {
 		if ( $this->is_connected ) {
-			$root_id = get_option( 'sgvx51_drive_root_id' );
+			$root_id = get_option( 'SNESTX51_drive_root_id' );
 			if ( ! $root_id ) return new WP_Error( 'no_root', 'System Root not found.' );
 
 			// Search for folder in Root
 			$q = "name = '{$name}' and '{$root_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
+			$res = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
 			
 			if ( ! is_wp_error( $res ) && ! empty( $res['files'] ) ) {
 				return $res['files'][0]['id'];
@@ -49,7 +49,7 @@ class SGVX51_Drive_Manager {
 				'mimeType' => 'application/vnd.google-apps.folder',
 				'parents' => array( $root_id ),
 			);
-			$new = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
+			$new = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
 			return $new['id'] ?? new WP_Error( 'create_fail', 'Failed to create system folder.' );
 
 		} else {
@@ -74,14 +74,14 @@ class SGVX51_Drive_Manager {
 
 		if ( $this->is_connected ) {
 			// Remote Drive Logic.
-			$root_id = get_option( 'sgvx51_drive_root_id' );
+			$root_id = get_option( 'SNESTX51_drive_root_id' );
 			if ( ! $root_id ) {
 				return new WP_Error( 'no_root', 'System Root Folder not found. Run Setup.' );
 			}
 			
 			// Find 'Resident_Docs' folder first.
 			$q = "name = 'Resident_Docs' and '{$root_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
+			$res = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
 			
 			if ( is_wp_error( $res ) ) return $res;
 			
@@ -94,7 +94,7 @@ class SGVX51_Drive_Manager {
 			
 			// Now search for Flat Folder inside Resident_Docs.
 			$q_flat = "name = '{$flat_no}' and '{$parent_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res_flat = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q_flat ) );
+			$res_flat = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q_flat ) );
 			
 			if ( ! empty( $res_flat['files'] ) ) {
 				return $res_flat['files'][0]['id'];
@@ -106,7 +106,7 @@ class SGVX51_Drive_Manager {
 				'mimeType' => 'application/vnd.google-apps.folder',
 				'parents' => array( $parent_id ),
 			);
-			$new = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
+			$new = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
 			
 			return isset( $new['id'] ) ? $new['id'] : new WP_Error( 'create_failed', 'Could not create drive folder.' );
 
@@ -133,7 +133,7 @@ class SGVX51_Drive_Manager {
 
 		if ( $this->is_connected ) {
 			$q = "'{$folder_id}' in parents and trashed = false";
-			$res = SGVX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) . '&fields=files(id,name,webViewLink,thumbnailLink,mimeType)' );
+			$res = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) . '&fields=files(id,name,webViewLink,thumbnailLink,mimeType)' );
 			
 			if ( ! is_wp_error( $res ) && ! empty( $res['files'] ) ) {
 				foreach ( $res['files'] as $f ) {
@@ -152,7 +152,7 @@ class SGVX51_Drive_Manager {
 				$upload_url = wp_upload_dir();
 				// This assumes folder_id follows local_root pattern
 				$rel = str_replace( $this->local_root, '', $folder_id );
-				$base_url = $upload_url['baseurl'] . '/society-governx/docs/' . $rel . '/';
+				$base_url = $upload_url['baseurl'] . '/society-nestx/docs/' . $rel . '/';
 				
 				foreach ( $items as $item ) {
 					if ( '.' !== $item && '..' !== $item ) {
@@ -192,7 +192,7 @@ class SGVX51_Drive_Manager {
 
 			$args = array(
 				'headers' => array(
-					'Authorization' => 'Bearer ' . SGVX51_Google_API_Handler::get_valid_token(),
+					'Authorization' => 'Bearer ' . SNESTX51_Google_API_Handler::get_valid_token(),
 					'Content-Type'  => 'multipart/related; boundary=' . $boundary,
 				),
 				'body'    => $payload,
@@ -215,7 +215,7 @@ class SGVX51_Drive_Manager {
 			$rel = str_replace( $this->local_root, '', $folder );
 			// Fix slashes
 			$rel = trim( str_replace( '\\', '/', $rel ), '/' );
-			return $upload_url['baseurl'] . '/society-governx/docs/' . $rel . '/' . $file_array['name'];
+			return $upload_url['baseurl'] . '/society-nestx/docs/' . $rel . '/' . $file_array['name'];
 		}
 	}
 

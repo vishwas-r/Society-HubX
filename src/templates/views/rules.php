@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Manages society rules, acknowledgments, and violations
  */
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 
 // Get data
 $rules = isset($rules) ? $rules : $db->get('rules');
@@ -26,7 +26,7 @@ $total_violations = count($violations);
 $pending_violations = count(array_filter($violations, fn($v) => $v['status'] === 'pending'));
 
 global $wpdb;
-$acks_table = "{$wpdb->prefix}society_governx_rule_acknowledgments";
+$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
 $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 ?>
 
@@ -383,8 +383,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
             <?php
             // Get acknowledgment stats per rule
-            $rules_table = "{$wpdb->prefix}society_governx_rules";
-            $residents_table = "{$wpdb->prefix}society_governx_residents";
+            $rules_table = "{$wpdb->prefix}Society_NestX_rules";
+            $residents_table = "{$wpdb->prefix}Society_NestX_residents";
             $ack_stats = $wpdb->get_results("
                 SELECT r.id, r.title, r.requires_acknowledgment, r.acknowledgment_deadline,
                        COUNT(DISTINCT a.resident_id) as ack_count,
@@ -543,8 +543,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
 <?php
 // Modals
-add_action('sgvx51_admin_modals', function() use ($categories) {
-    $nonce = wp_create_nonce('sgvx51_rule_nonce');
+add_action('SNESTX51_admin_modals', function() use ($categories) {
+    $nonce = wp_create_nonce('SNESTX51_rule_nonce');
 ?>
 
 <!-- Add/Edit Rule Modal -->
@@ -730,7 +730,7 @@ add_action('sgvx51_admin_modals', function() use ($categories) {
 
 <script>
 // Global nonce for AJAX requests
-const rulesNonce = '<?php echo wp_create_nonce('sgvx51_rule_nonce'); ?>';
+const rulesNonce = '<?php echo wp_create_nonce('SNESTX51_rule_nonce'); ?>';
 
 let ruleModal, categoryModal, violationModal, versionHistoryModal;
 
@@ -837,8 +837,8 @@ function handleRuleSubmit(e) {
     const formData = new FormData(e.target);
     const isEdit = formData.get('rule_id') !== '';
 
-    SGVX.ajax({
-        action: isEdit ? 'sgvx51_edit_rule' : 'sgvx51_add_rule',
+    SNESTX.ajax({
+        action: isEdit ? 'SNESTX51_edit_rule' : 'SNESTX51_add_rule',
         data: Object.fromEntries(formData),
         loadingButton: jQuery(e.target).find('button[type="submit"]'),
         successMessage: 'Rule saved successfully!',
@@ -852,8 +852,8 @@ function handleRuleSubmit(e) {
 function publishRule(ruleId) {
     if(!confirm('Publish this rule? Residents will be notified.')) return;
 
-    SGVX.ajax({
-        action: 'sgvx51_publish_rule',
+    SNESTX.ajax({
+        action: 'SNESTX51_publish_rule',
         data: {
             rule_id: ruleId,
             _wpnonce: rulesNonce
@@ -866,8 +866,8 @@ function publishRule(ruleId) {
 function deleteRule(ruleId) {
     if(!confirm('Archive this rule? It will be hidden from residents.')) return;
 
-    SGVX.ajax({
-        action: 'sgvx51_delete_rule',
+    SNESTX.ajax({
+        action: 'SNESTX51_delete_rule',
         data: {
             rule_id: ruleId,
             _wpnonce: rulesNonce
@@ -881,8 +881,8 @@ function viewVersionHistory(ruleId) {
     document.getElementById('versionHistoryContent').innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
     versionHistoryModal.show();
 
-    SGVX.ajax({
-        action: 'sgvx51_get_version_history',
+    SNESTX.ajax({
+        action: 'SNESTX51_get_version_history',
         data: {
             rule_id: ruleId,
             _wpnonce: rulesNonce
@@ -934,8 +934,8 @@ function handleCategorySubmit(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    SGVX.ajax({
-        action: 'sgvx51_manage_category',
+    SNESTX.ajax({
+        action: 'SNESTX51_manage_category',
         data: Object.fromEntries(formData),
         loadingButton: jQuery(e.target).find('button[type="submit"]'),
         successMessage: 'Category saved successfully!',
@@ -949,8 +949,8 @@ function handleCategorySubmit(e) {
 function deleteCategory(catId) {
     if(!confirm('Are you sure you want to delete this category? This cannot be undone.')) return;
     
-    SGVX.ajax({
-        action: 'sgvx51_manage_category',
+    SNESTX.ajax({
+        action: 'SNESTX51_manage_category',
         data: {
             category_action: 'delete',
             category_id: catId,
@@ -992,8 +992,8 @@ function resolveViolation(violationId) {
     const notes = prompt('Enter resolution notes (optional):');
     if(notes === null) return;
 
-    SGVX.ajax({
-        action: 'sgvx51_resolve_violation',
+    SNESTX.ajax({
+        action: 'SNESTX51_resolve_violation',
         data: {
             violation_id: violationId,
             status: 'resolved',
@@ -1008,8 +1008,8 @@ function resolveViolation(violationId) {
 function sendReminders() {
     if(!confirm('Send acknowledgment reminders to all residents with pending acknowledgments?')) return;
 
-    SGVX.ajax({
-        action: 'sgvx51_send_acknowledgment_reminders',
+    SNESTX.ajax({
+        action: 'SNESTX51_send_acknowledgment_reminders',
         data: {
             _wpnonce: rulesNonce
         },

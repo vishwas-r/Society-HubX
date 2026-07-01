@@ -1,21 +1,21 @@
-<?php
+﻿<?php
 /**
  * Class: Data Portability
  * Handles Import/Export of Society Data (CSV/JSON/ZIP).
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Data_Portability {
+class SNESTX51_Data_Portability {
 
 	public function __construct() {
 		// Admin POST actions for Export/Import
-		add_action( 'admin_post_sgvx51_export_data', array( $this, 'handle_export_request' ) );
-		add_action( 'admin_post_sgvx51_import_data', array( $this, 'handle_import_request' ) );
+		add_action( 'admin_post_SNESTX51_export_data', array( $this, 'handle_export_request' ) );
+		add_action( 'admin_post_SNESTX51_import_data', array( $this, 'handle_import_request' ) );
 	}
 
 	/**
@@ -25,17 +25,17 @@ class SGVX51_Data_Portability {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized Access' );
 		}
-		check_admin_referer( 'sgvx51_export_nonce' );
+		check_admin_referer( 'SNESTX51_export_nonce' );
 
 		// 1. Prepare Environment
 		$upload_dir = wp_upload_dir();
-		$temp_dir   = $upload_dir['basedir'] . '/sgvx_temp_export_' . md5( uniqid() ) . '/';
+		$temp_dir   = $upload_dir['basedir'] . '/SNESTX_temp_export_' . md5( uniqid() ) . '/';
 		if ( ! file_exists( $temp_dir ) ) {
 			wp_mkdir_p( $temp_dir );
 		}
 
-		$db     = new SGVX51_DB_Router();
-		$tables = SGVX51_DB_Router::TABLES;
+		$db     = new SNESTX51_DB_Router();
+		$tables = SNESTX51_DB_Router::TABLES;
 		$full_dump = array();
 
 		// 2. Process Tables
@@ -77,7 +77,7 @@ class SGVX51_Data_Portability {
 		file_put_contents( $temp_dir . 'search_index_dump.json', json_encode( $full_dump, JSON_PRETTY_PRINT ) );
 
 		// 4. Create ZIP
-		$zip_filename = 'society_governx_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
+		$zip_filename = 'Society_NestX_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
 		$zip_path     = $temp_dir . $zip_filename;
 
 		if ( class_exists( 'ZipArchive' ) ) {
@@ -145,15 +145,15 @@ class SGVX51_Data_Portability {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized Access' );
 		}
-		check_admin_referer( 'sgvx51_import_nonce' );
+		check_admin_referer( 'SNESTX51_import_nonce' );
 
 		if ( empty( $_FILES['import_file']['tmp_name'] ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&error=no_file' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-global-settings&tab=portability&error=no_file' ) );
 			exit;
 		}
 
 		$target_table = isset( $_POST['target_table'] ) ? sanitize_text_field( wp_unslash( $_POST['target_table'] ) ) : '';
-		$valid_tables = SGVX51_DB_Router::TABLES;
+		$valid_tables = SNESTX51_DB_Router::TABLES;
 
 		if ( ! in_array( $target_table, $valid_tables ) ) {
 			wp_die( 'Invalid Target Table' );
@@ -177,7 +177,7 @@ class SGVX51_Data_Portability {
 		// Normalize headers (trim, lowercase if needed, but keeping exact for now)
 		$headers = array_map( 'trim', $headers );
 
-		$db = new SGVX51_DB_Router();
+		$db = new SNESTX51_DB_Router();
 		$count = 0;
 		$errors = 0;
 
@@ -217,7 +217,7 @@ class SGVX51_Data_Portability {
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Custom temporary CSV file reading.
 		fclose( $handle );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-global-settings&tab=portability&imported=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-global-settings&tab=portability&imported=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 

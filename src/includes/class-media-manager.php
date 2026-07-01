@@ -1,24 +1,24 @@
-<?php
+﻿<?php
 /**
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Media_Manager {
+class SNESTX51_Media_Manager {
 
 	private $base_dir;
 	private $base_url;
 
 	public function __construct() {
 		$upload_dir = wp_upload_dir();
-		$this->base_dir = $upload_dir['basedir'] . '/society-governx/profile-pics/';
-		$this->base_url = $upload_dir['baseurl'] . '/society-governx/profile-pics/';
+		$this->base_dir = $upload_dir['basedir'] . '/society-nestx/profile-pics/';
+		$this->base_url = $upload_dir['baseurl'] . '/society-nestx/profile-pics/';
 
 		if ( ! file_exists( $this->base_dir ) ) {
 			wp_mkdir_p( $this->base_dir );

@@ -1,23 +1,23 @@
-/**
- * SGVX Toast Notification System
- * Lightweight toast notification library for Society GovernX
+﻿/**
+ * SNESTX Toast Notification System
+ * Lightweight toast notification library for SocietyNestX
  * 
  * Usage:
- * SGVX.toast.success('Operation completed!');
- * SGVX.toast.error('An error occurred');
- * SGVX.toast.warning('Please review');
- * SGVX.toast.info('New notification');
+ * SNESTX.toast.success('Operation completed!');
+ * SNESTX.toast.error('An error occurred');
+ * SNESTX.toast.warning('Please review');
+ * SNESTX.toast.info('New notification');
  */
 (function () {
     'use strict';
 
-    // Create SGVX namespace if it doesn't exist
-    window.SGVX = window.SGVX || {};
+    // Create SNESTX namespace if it doesn't exist
+    window.SNESTX = window.SNESTX || {};
 
     /**
      * Toast Notification API
      */
-    window.SGVX.toast = {
+    window.SNESTX.toast = {
         /**
          * Show success toast
          * @param {string} message Toast message
@@ -61,12 +61,12 @@
          * @param {number} duration Duration in ms
          */
         show: function (message, type = 'success', duration = 3000) {
-            const toastEl = document.getElementById('sgvx-global-toast');
-            const iconEl = document.getElementById('sgvx-toast-icon');
-            const msgEl = document.getElementById('sgvx-toast-message');
+            const toastEl = document.getElementById('snestx-global-toast');
+            const iconEl = document.getElementById('snestx-toast-icon');
+            const msgEl = document.getElementById('snestx-toast-message');
 
             if (!toastEl || !msgEl || !iconEl) {
-                console.warn('SGVX Toast: Toast elements missing from DOM');
+                console.warn('SNESTX Toast: Toast elements missing from DOM');
                 // Fallback to alert if toast not available
                 alert(message);
                 return;
@@ -111,8 +111,8 @@
     };
 
     // Maintain backward compatibility with old API
-    window.sgvxShowToast = function (msg, type = 'success') {
-        SGVX.toast.show(msg, type);
+    window.SNESTXShowToast = function (msg, type = 'success') {
+        SNESTX.toast.show(msg, type);
     };
 
 })();

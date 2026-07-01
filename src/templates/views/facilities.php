@@ -1,7 +1,7 @@
-<?php
+﻿<?php
 /**
  * View: Facilities (Bootstrap Migration)
- * Integrates with SGVX51_DB_Router.
+ * Integrates with SNESTX51_DB_Router.
  *
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 $facilities = $db->get( 'facilities' );
 $bookings   = $db->get( 'bookings' );
 $residents  = $db->get( 'residents' );
@@ -65,9 +65,9 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                 </div>
                 <div class="p-4">
                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="facility-form">
-                        <input type="hidden" name="action" value="sgvx51_add_facility">
+                        <input type="hidden" name="action" value="SNESTX51_add_facility">
                         <input type="hidden" name="facility_id" value="">
-                        <?php wp_nonce_field( 'sgvx51_facility_nonce' ); ?>
+                        <?php wp_nonce_field( 'SNESTX51_facility_nonce' ); ?>
                         
                         <div class="mb-4">
                             <label class="form-label small fw-bold text-secondary">Facility Name <span class="text-danger">*</span></label>
@@ -288,7 +288,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('sgvx51_admin_modals', function() use ($facilities, $residents) {
+add_action('SNESTX51_admin_modals', function() use ($facilities, $residents) {
 ?>
 <!-- Booking Modal -->
 <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
@@ -300,9 +300,9 @@ add_action('sgvx51_admin_modals', function() use ($facilities, $residents) {
             </div>
             <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="booking-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="sgvx51_book_facility">
+                    <input type="hidden" name="action" value="SNESTX51_book_facility">
                     <input type="hidden" name="booking_id" value="">
-                    <?php wp_nonce_field( 'sgvx51_facility_nonce' ); ?>
+                    <?php wp_nonce_field( 'SNESTX51_facility_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Pick Amenity <span class="text-danger">*</span></label>
@@ -409,7 +409,7 @@ function openBookingModal() {
 function resetBookingForm() {
     const form = document.getElementById('booking-form');
     form.reset();
-    form.querySelector('[name="action"]').value = 'sgvx51_book_facility';
+    form.querySelector('[name="action"]').value = 'SNESTX51_book_facility';
     form.querySelector('[name="booking_id"]').value = '';
     form.closest('.modal-content').querySelector('.modal-title')?.textContent || (form.closest('.modal-content').querySelector('h5').textContent = 'Facility Booking');
     document.getElementById('booking-status-container').classList.add('d-none');
@@ -418,7 +418,7 @@ function resetBookingForm() {
 function resetFacilityForm() {
     const form = document.getElementById('facility-form');
     form.reset();
-    form.querySelector('[name="action"]').value = 'sgvx51_add_facility';
+    form.querySelector('[name="action"]').value = 'SNESTX51_add_facility';
     form.querySelector('[name="facility_id"]').value = '';
     form.querySelector('[name="booking_required"]').checked = true;
     document.getElementById('form-title').textContent = 'Define New Amenity';
@@ -440,7 +440,7 @@ function togglePricing(isFree) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality is now handled by sgvx-search-init.js (Fuse.js)
+    // Search functionality is now handled by snestx-search-init.js (Fuse.js)
 
     // 3. Edit Facility
     document.querySelectorAll('.js-edit-facility').forEach(btn => {
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = JSON.parse(this.dataset.facility);
             const form = document.getElementById('facility-form');
             
-            form.querySelector('[name="action"]').value = 'sgvx51_edit_facility';
+            form.querySelector('[name="action"]').value = 'SNESTX51_edit_facility';
             form.querySelector('[name="facility_id"]').value = data.id;
             form.querySelector('[name="name"]').value = data.name;
             form.querySelector('[name="name"]').value = data.name;
@@ -493,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = JSON.parse(this.dataset.booking);
             const form = document.getElementById('booking-form');
             
-            form.querySelector('[name="action"]').value = 'sgvx51_edit_booking';
+            form.querySelector('[name="action"]').value = 'SNESTX51_edit_booking';
             form.querySelector('[name="booking_id"]').value = data.id;
             form.querySelector('[name="facility_id"]').value = data.facility_id;
             form.querySelector('[name="resident_id"]').value = data.resident_id;
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const actionInput = document.createElement('input');
         actionInput.type = 'hidden';
         actionInput.name = 'action';
-        actionInput.value = 'sgvx51_delete_booking';
+        actionInput.value = 'SNESTX51_delete_booking';
         
         const idInput = document.createElement('input');
         idInput.type = 'hidden';
@@ -540,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const nonceInput = document.createElement('input');
         nonceInput.type = 'hidden';
         nonceInput.name = '_wpnonce';
-        nonceInput.value = '<?php echo esc_js( wp_create_nonce("sgvx51_facility_nonce") ); ?>';
+        nonceInput.value = '<?php echo esc_js( wp_create_nonce("SNESTX51_facility_nonce") ); ?>';
         
         form.appendChild(actionInput);
         form.appendChild(idInput);

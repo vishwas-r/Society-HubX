@@ -1,9 +1,9 @@
-<?php
+﻿<?php
 /**
  * Class: Data Migrator
  * Handles migration from JSON blobs to relational MySQL tables.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Data migration routines require direct database table reads and writes.
 
 
-class SGVX51_Data_Migrator {
+class SNESTX51_Data_Migrator {
 
 	/**
 	 * Run all migrations.
@@ -23,7 +23,7 @@ class SGVX51_Data_Migrator {
 		self::migrate_staff_flats();
 		self::migrate_payments();
 		
-		update_option( 'sgvx51_storage_migrated', '1.0.2' );
+		update_option( 'SNESTX51_storage_migrated', '1.0.2' );
 	}
 
 	/**
@@ -31,8 +31,8 @@ class SGVX51_Data_Migrator {
 	 */
 	public static function migrate_resident_roles() {
 		global $wpdb;
-		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}society_governx_residents", ARRAY_A );
-		$map_table = "{$wpdb->prefix}society_governx_resident_role_map";
+		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}Society_NestX_residents", ARRAY_A );
+		$map_table = "{$wpdb->prefix}Society_NestX_resident_role_map";
 
 		foreach ( $residents as $res ) {
 			if ( empty( $res['roles'] ) ) continue;
@@ -54,8 +54,8 @@ class SGVX51_Data_Migrator {
 	 */
 	public static function migrate_staff_flats() {
 		global $wpdb;
-		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}society_governx_daily_help", ARRAY_A );
-		$map_table = "{$wpdb->prefix}society_governx_staff_flats";
+		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}Society_NestX_daily_help", ARRAY_A );
+		$map_table = "{$wpdb->prefix}Society_NestX_staff_flats";
 
 		foreach ( $staff as $s ) {
 			if ( empty( $s['flats_served'] ) ) continue;
@@ -73,9 +73,9 @@ class SGVX51_Data_Migrator {
 
 	public static function migrate_payments() {
 		global $wpdb;
-		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}society_governx_invoices", ARRAY_A );
-		$payments_table = "{$wpdb->prefix}society_governx_payments";
-        $invoices_table = "{$wpdb->prefix}society_governx_invoices";
+		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}Society_NestX_invoices", ARRAY_A );
+		$payments_table = "{$wpdb->prefix}Society_NestX_payments";
+        $invoices_table = "{$wpdb->prefix}Society_NestX_invoices";
 
 		foreach ( $invoices as $inv ) {
 			if ( empty( $inv['payments'] ) ) continue;

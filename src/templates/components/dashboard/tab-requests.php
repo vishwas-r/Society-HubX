@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         <div class="col-lg-10">
             <div class="d-flex justify-content-between align-items-center mb-4 text-start">
                 <h2 class="fs-4 fw-bold m-0">My Requests</h2>
-                <button class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#sgvx51GeneralRequestModal">
+                <button class="btn btn-primary d-flex align-items-center gap-2 px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#SNESTX51GeneralRequestModal">
                     <i class="bi bi-plus-lg"></i> New Request
                 </button>
             </div>

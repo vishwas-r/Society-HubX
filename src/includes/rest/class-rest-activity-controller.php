@@ -1,18 +1,18 @@
-<?php
+﻿<?php
 /**
  * Class: REST Activity Controller
  * Endpoints for society activity logs.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_REST_Activity_Controller extends WP_REST_Controller {
+class SNESTX51_REST_Activity_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-governx/v1';
+	protected $namespace = 'society-nestx/v1';
 	protected $rest_base = 'activity';
 
 	public function register_routes() {
@@ -20,13 +20,13 @@ class SGVX51_REST_Activity_Controller extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_items' ),
-				'permission_callback' => array( 'SGVX51_REST_Manager', 'check_permission' ),
+				'permission_callback' => array( 'SNESTX51_REST_Manager', 'check_permission' ),
 			),
 		) );
 	}
 
 	public function get_items( $request ) {
-		$db = Society_GoVernX::get_instance()->db;
+		$db = Society_NestX::get_instance()->db;
 		$logs = $db->get( 'activity_logs' );
 
 		if ( empty( $logs ) ) {

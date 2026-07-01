@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * View: Roles & Permissions (RBAC)
  *
@@ -9,9 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$rbac = new SGVX51_RBAC_Manager();
+$rbac = new SNESTX51_RBAC_Manager();
 $roles = $rbac->get_all_roles();
-$available_caps = SGVX51_RBAC_Manager::get_available_capabilities();
+$available_caps = SNESTX51_RBAC_Manager::get_available_capabilities();
 ?>
 
     <!-- Page Header -->
@@ -84,7 +84,7 @@ $available_caps = SGVX51_RBAC_Manager::get_available_capabilities();
     </div>
 
 <?php
-add_action('sgvx51_admin_modals', function() use ($available_caps) {
+add_action('SNESTX51_admin_modals', function() use ($available_caps) {
 ?>
 <!-- Role Modal -->
 <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
@@ -96,9 +96,9 @@ add_action('sgvx51_admin_modals', function() use ($available_caps) {
             </div>
             <form id="role-form" method="post" action="<?php echo admin_url('admin-post.php'); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="sgvx51_save_role">
+                    <input type="hidden" name="action" value="SNESTX51_save_role">
                     <input type="hidden" name="role_id" id="role_id" value="">
-                    <?php wp_nonce_field('sgvx51_role_nonce'); ?>
+                    <?php wp_nonce_field('SNESTX51_role_nonce'); ?>
                     
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-secondary text-uppercase tracking-wider">Role Name</label>
@@ -164,9 +164,9 @@ function deleteRole(roleId) {
     form.action = '<?php echo admin_url('admin-post.php'); ?>';
     
     const fields = {
-        action: 'sgvx51_delete_role',
+        action: 'SNESTX51_delete_role',
         role_id: roleId,
-        _wpnonce: '<?php echo esc_js( wp_create_nonce('sgvx51_role_nonce') ); ?>'
+        _wpnonce: '<?php echo esc_js( wp_create_nonce('SNESTX51_role_nonce') ); ?>'
     };
     
     for(const key in fields) {

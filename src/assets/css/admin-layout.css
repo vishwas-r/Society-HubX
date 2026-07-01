@@ -1,5 +1,5 @@
-/* 
- * Society GoVernX - Admin Layout (Bootstrap Migration)
+﻿/* 
+ * SocietyNestX - Admin Layout (Bootstrap Migration)
  * Replacing Tailwind utilities with custom classes + Bootstrap 5
  */
 
@@ -27,12 +27,12 @@
 }
 
 /* Fix WordPress Card Conflict */
-#sgvx51-app-root .card {
+#snestx51-app-root .card {
     max-width: none !important;
 }
 
 /* App Root Overlay */
-#sgvx51-app-root {
+#snestx51-app-root {
     position: fixed;
     top: 0;
     left: 0;
@@ -48,7 +48,7 @@
 }
 
 /* Sidebar */
-.sgvx-sidebar {
+.snestx-sidebar {
     height: 100vh;
     position: relative;
     z-index: 20;
@@ -56,28 +56,28 @@
     background-color: #ffffff !important;
 }
 
-.sgvx-sidebar hr {
+.snestx-sidebar hr {
     opacity: 0.1;
 }
 
-.sgvx-sidebar .nav-link {
+.snestx-sidebar .nav-link {
     border-radius: 8px;
     padding: 10px 14px;
     transition: all 0.2s ease;
     color: var(--slate-600);
 }
 
-.sgvx-sidebar .nav-link.active {
+.snestx-sidebar .nav-link.active {
     background-color: var(--slate-100) !important;
     color: var(--bs-primary) !important;
 }
 
-.sgvx-sidebar .nav-link:not(.active):hover {
+.snestx-sidebar .nav-link:not(.active):hover {
     background-color: var(--slate-50) !important;
     color: var(--slate-900) !important;
 }
 
-.sgvx-sidebar .hover-indigo:hover {
+.snestx-sidebar .hover-indigo:hover {
     color: var(--bs-primary) !important;
 }
 
@@ -116,7 +116,7 @@
 }
 
 /* Main Content */
-.sgvx-main {
+.snestx-main {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -127,7 +127,7 @@
     /* Prevent body scroll, container handles scroll */
 }
 
-.sgvx-top-header {
+.snestx-top-header {
     height: 64px;
     background-color: #ffffff;
     border-bottom: 1px solid var(--slate-200);
@@ -138,7 +138,7 @@
     z-index: 10;
 }
 
-.sgvx-page-title {
+.snestx-page-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--slate-800);
@@ -146,7 +146,7 @@
 }
 
 /* User Profile */
-.sgvx-user-avatar {
+.snestx-user-avatar {
     height: 2rem;
     /* h-8 */
     width: 2rem;
@@ -160,7 +160,7 @@
     overflow: hidden;
 }
 
-.sgvx-content-scroll {
+.snestx-content-scroll {
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
@@ -574,15 +574,15 @@
 }
 
 /* Modal & Form Fixes */
-.sgvx-form-max {
+.snestx-form-max {
     max-width: 800px;
 }
 
 /* Bootstrap Form Overrides (Specificity Bridge) */
-#sgvx51-app-root .form-control,
-#sgvx51-app-root .form-select,
-#sgvx51-modals-root .form-control,
-#sgvx51-modals-root .form-select {
+#snestx51-app-root .form-control,
+#snestx51-app-root .form-select,
+#snestx51-modals-root .form-control,
+#snestx51-modals-root .form-select {
     display: block;
     width: 100%;
     padding: 0.6rem 1rem;
@@ -597,10 +597,10 @@
     height: auto;
 }
 
-#sgvx51-app-root .form-control:focus,
-#sgvx51-app-root .form-select:focus,
-#sgvx51-modals-root .form-control:focus,
-#sgvx51-modals-root .form-select:focus {
+#snestx51-app-root .form-control:focus,
+#snestx51-app-root .form-select:focus,
+#snestx51-modals-root .form-control:focus,
+#snestx51-modals-root .form-select:focus {
     color: var(--slate-900);
     background-color: #fff;
     border-color: var(--custom-primary-color);
@@ -608,8 +608,8 @@
     outline: 0;
 }
 
-#sgvx51-app-root .form-label,
-#sgvx51-modals-root .form-label {
+#snestx51-app-root .form-label,
+#snestx51-modals-root .form-label {
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
     font-weight: 600;
@@ -618,7 +618,7 @@
     letter-spacing: 0.025em;
 }
 
-#sgvx51-app-root .form-check-input:checked {
+#snestx51-app-root .form-check-input:checked {
     background-color: var(--slate-100);
     border-color: var(--custom-primary-color);
 }
@@ -714,15 +714,15 @@
 }
 
 /* Toast Custom Colors (Tailwind compatibility & Visibility Fix) */
-#sgvx-global-toast .btn-close {
+#snestx-global-toast .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-#sgvx-toast-message {
+#snestx-toast-message {
     color: #ffffff !important;
 }
 
-#sgvx-toast-icon {
+#snestx-toast-icon {
     color: #ffffff !important;
 }
 
@@ -753,21 +753,21 @@
     border-color: var(--custom-primary-subtle) !important;
 }
 
-/* --- SGVX Premium Toggle Switch --- */
-.sgvx-toggle {
+/* --- SNESTX Premium Toggle Switch --- */
+.snestx-toggle {
     position: relative;
     display: inline-block;
     width: 60px;
     height: 32px;
 }
 
-.sgvx-toggle input {
+.snestx-toggle input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.sgvx-toggle-slider {
+.snestx-toggle-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -779,7 +779,7 @@
     border-radius: 34px;
 }
 
-.sgvx-toggle-slider:before {
+.snestx-toggle-slider:before {
     position: absolute;
     content: "";
     height: 24px;
@@ -791,38 +791,38 @@
     border-radius: 50%;
 }
 
-input:checked+.sgvx-toggle-slider {
+input:checked+.snestx-toggle-slider {
     background-color: #4BD865;
 }
 
-input:focus+.sgvx-toggle-slider {
+input:focus+.snestx-toggle-slider {
     box-shadow: 0 0 1px #4BD865;
 }
 
-input:checked+.sgvx-toggle-slider:before {
+input:checked+.snestx-toggle-slider:before {
     transform: translateX(28px);
 }
 
 /* Small Variant */
-.sgvx-toggle-sm {
+.snestx-toggle-sm {
     width: 45px;
     height: 24px;
 }
 
-.sgvx-toggle-sm .sgvx-toggle-slider:before {
+.snestx-toggle-sm .snestx-toggle-slider:before {
     height: 18px;
     width: 18px;
     left: 3px;
     bottom: 3px;
 }
 
-input:checked+.sgvx-toggle-sm .sgvx-toggle-slider:before {
+input:checked+.snestx-toggle-sm .snestx-toggle-slider:before {
     transform: translateX(21px);
 }
 
 /* Backward compatibility for previous .toggle usage if any remains */
 .toggle {
-    @extend .sgvx-toggle;
+    @extend .snestx-toggle;
 }
 
 /* Note: CSS doesn't support @extend, but keeping for reference if I need to find/replace */

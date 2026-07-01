@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Class: Email Provider
  * Handles email delivery via WP Mail or Gmail API.
@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Email_Provider implements SGVX51_Notification_Provider_Interface {
+class SNESTX51_Email_Provider implements SNESTX51_Notification_Provider_Interface {
     
     public function send($recipient_id, $content, $args = []) {
         $user = get_userdata($recipient_id);
@@ -38,7 +38,7 @@ class SGVX51_Email_Provider implements SGVX51_Notification_Provider_Interface {
     }
 
     public function is_ready() {
-        $channels = Society_GoVernX::get_instance()->db->get('notification_channels');
+        $channels = Society_NestX::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'email') return (bool) $c['is_active'];
         }

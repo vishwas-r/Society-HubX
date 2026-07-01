@@ -1,16 +1,16 @@
-<?php
+﻿<?php
 /**
  * Class: Google API Handler
  * Handles OAuth2 Authentication and API Requests via REST.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Google_API_Handler {
+class SNESTX51_Google_API_Handler {
 
 	/**
 	 * API Scopes required for the plugin.
@@ -26,7 +26,7 @@ class SGVX51_Google_API_Handler {
 	 * Get the OAuth2 Authorization URL.
 	 */
 	public static function get_auth_url() {
-		$client_id = get_option( 'sgvx51_google_client_id' );
+		$client_id = get_option( 'SNESTX51_google_client_id' );
 		if ( ! $client_id ) {
 			return false;
 		}
@@ -34,7 +34,7 @@ class SGVX51_Google_API_Handler {
 		$params = array(
 			'response_type' => 'code',
 			'client_id'     => $client_id,
-			'redirect_uri'  => admin_url( 'admin.php?page=sgvx51-settings' ),
+			'redirect_uri'  => admin_url( 'admin.php?page=snestx51-settings' ),
 			'scope'         => implode( ' ', self::SCOPES ),
 			'access_type'   => 'offline',
 			'prompt'        => 'consent',
@@ -50,8 +50,8 @@ class SGVX51_Google_API_Handler {
 	 * @return bool|WP_Error True on success, WP_Error on failure.
 	 */
 	public static function exchange_code_for_token( $code ) {
-		$client_id     = get_option( 'sgvx51_google_client_id' );
-		$client_secret = get_option( 'sgvx51_google_client_secret' );
+		$client_id     = get_option( 'SNESTX51_google_client_id' );
+		$client_secret = get_option( 'SNESTX51_google_client_secret' );
 
 		if ( ! $client_id || ! $client_secret ) {
 			return new WP_Error( 'missing_creds', 'Client ID or Secret missing.' );
@@ -61,7 +61,7 @@ class SGVX51_Google_API_Handler {
 			'code'          => $code,
 			'client_id'     => $client_id,
 			'client_secret' => $client_secret,
-			'redirect_uri'  => admin_url( 'admin.php?page=sgvx51-settings' ),
+			'redirect_uri'  => admin_url( 'admin.php?page=snestx51-settings' ),
 			'grant_type'    => 'authorization_code',
 		);
 
@@ -93,9 +93,9 @@ class SGVX51_Google_API_Handler {
 	 * @return string|bool Access token or false.
 	 */
 	public static function refresh_access_token() {
-		$refresh_token = get_option( 'sgvx51_google_refresh_token' );
-		$client_id     = get_option( 'sgvx51_google_client_id' );
-		$client_secret = get_option( 'sgvx51_google_client_secret' );
+		$refresh_token = get_option( 'SNESTX51_google_refresh_token' );
+		$client_id     = get_option( 'SNESTX51_google_client_id' );
+		$client_secret = get_option( 'SNESTX51_google_client_secret' );
 
 		if ( ! $refresh_token || ! $client_id || ! $client_secret ) {
 			return false;
@@ -134,11 +134,11 @@ class SGVX51_Google_API_Handler {
 	 */
 	private static function save_token_data( $data ) {
 		if ( isset( $data['access_token'] ) ) {
-			update_option( 'sgvx51_google_access_token', $data['access_token'] );
-			update_option( 'sgvx51_token_expires_at', time() + $data['expires_in'] );
+			update_option( 'SNESTX51_google_access_token', $data['access_token'] );
+			update_option( 'SNESTX51_token_expires_at', time() + $data['expires_in'] );
 		}
 		if ( isset( $data['refresh_token'] ) ) {
-			update_option( 'sgvx51_google_refresh_token', $data['refresh_token'] );
+			update_option( 'SNESTX51_google_refresh_token', $data['refresh_token'] );
 		}
 	}
 
@@ -146,8 +146,8 @@ class SGVX51_Google_API_Handler {
 	 * Get a valid Access Token (Refreshes if needed).
 	 */
 	public static function get_valid_token() {
-		$token      = get_option( 'sgvx51_google_access_token' );
-		$expires_at = get_option( 'sgvx51_token_expires_at' );
+		$token      = get_option( 'SNESTX51_google_access_token' );
+		$expires_at = get_option( 'SNESTX51_token_expires_at' );
 
 		if ( $token && $expires_at > time() + 30 ) {
 			return $token;

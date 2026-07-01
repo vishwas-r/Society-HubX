@@ -1,5 +1,5 @@
-/**
- * SGVX Core Utilities
+﻿/**
+ * SNESTX Core Utilities
  * Shared between Admin App and Resident Dashboard.
  */
 (function ($) {
@@ -10,12 +10,12 @@
      * @param {string} msg 
      * @param {string} type 'success' | 'error'
      */
-    window.sgvxShowToast = function (msg, type = 'success') {
-        const toastEl = document.getElementById('sgvx-global-toast');
-        const iconEl = document.getElementById('sgvx-toast-icon');
-        const msgEl = document.getElementById('sgvx-toast-message');
+    window.SNESTXShowToast = function (msg, type = 'success') {
+        const toastEl = document.getElementById('snestx-global-toast');
+        const iconEl = document.getElementById('snestx-toast-icon');
+        const msgEl = document.getElementById('snestx-toast-message');
         if (!toastEl || !msgEl || !iconEl) {
-            console.warn('SGVX: Toast elements missing from DOM');
+            console.warn('SNESTX: Toast elements missing from DOM');
             return;
         }
 
@@ -50,8 +50,8 @@
      * @param {object} data   Payload data
      * @returns {Promise}
      */
-    window.sgvxApiRequest = function (action, data = {}) {
-        return SGVX.ajax({
+    window.SNESTXApiRequest = function (action, data = {}) {
+        return SNESTX.ajax({
             action: action,
             data: data
         });
@@ -60,7 +60,7 @@
     /**
      * Debounce helper
      */
-    window.sgvxDebounce = function (func, wait) {
+    window.SNESTXDebounce = function (func, wait) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {

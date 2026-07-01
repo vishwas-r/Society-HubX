@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Assets (Bootstrap Migration)
- * Integrates directly with SGVX51_DB_Router.
+ * Integrates directly with SNESTX51_DB_Router.
  */
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 $assets = $db->get( 'assets' );
 
 $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
@@ -143,13 +143,13 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
                                             <button onclick='openEditAssetModal(<?php echo json_encode($a); ?>)' class="btn btn-sm btn-light border border-light p-2 rounded-3 shadow-none">
                                                 <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                             </button>
-                                            <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=sgvx51_delete_asset&id=' . $a['id']), 'sgvx51_delete_asset_nonce' ); ?>" 
+                                            <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=SNESTX51_delete_asset&id=' . $a['id']), 'SNESTX51_delete_asset_nonce' ); ?>" 
                                             onclick="return confirm('Archive this asset registry entry?');"
                                             class="btn btn-sm btn-light border border-light p-2 text-danger rounded-3 shadow-none">
                                                 <i class="bi bi-archive-fill fs-6"></i>
                                             </a>
                                         <?php else: ?>
-                                            <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=sgvx51_restore_asset&id=' . $a['id']), 'sgvx51_restore_asset_nonce' ); ?>" 
+                                            <a href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=SNESTX51_restore_asset&id=' . $a['id']), 'SNESTX51_restore_asset_nonce' ); ?>" 
                                             class="btn btn-sm btn-outline-success px-3 fw-bold rounded-pill shadow-none" style="font-size: 10px;">
                                                 RESTORE
                                             </a>
@@ -168,7 +168,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('sgvx51_admin_modals', function() {
+add_action('SNESTX51_admin_modals', function() {
 ?>
 <!-- Asset Form Modal (Add/Edit) -->
 <div class="modal fade" id="assetModal" tabindex="-1" aria-hidden="true">
@@ -180,10 +180,10 @@ add_action('sgvx51_admin_modals', function() {
             </div>
             <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="asset-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" id="asset-form-action" value="sgvx51_add_asset">
+                    <input type="hidden" name="action" id="asset-form-action" value="SNESTX51_add_asset">
                     <input type="hidden" name="asset_id" id="asset-id" value="">
-                    <?php wp_nonce_field( 'sgvx51_asset_action' ); ?>
-                    <input type="hidden" name="_wp_http_referer" value="<?php echo admin_url( 'admin.php?page=sgvx51-assets' ); ?>">
+                    <?php wp_nonce_field( 'SNESTX51_asset_action' ); ?>
+                    <input type="hidden" name="_wp_http_referer" value="<?php echo admin_url( 'admin.php?page=snestx51-assets' ); ?>">
 
                     <div class="row g-3">
                         <div class="col-md-8">
@@ -271,11 +271,11 @@ function applyFilters() {
     const searchInput = document.getElementById('assetSearch');
     const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
     
-    if (!fuse && window.sgvxCreateFuse) {
-        fuse = window.sgvxCreateFuse('.asset-row');
+    if (!fuse && window.SNESTXCreateFuse) {
+        fuse = window.SNESTXCreateFuse('.asset-row');
     }
 
-    const fuzzyMatches = searchVal && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(fuse, searchVal) : null;
+    const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(fuse, searchVal) : null;
     
     console.log('[ASSET DEBUG] searchVal:', searchVal);
     console.log('[ASSET DEBUG] fuzzyMatches type:', fuzzyMatches ? fuzzyMatches.constructor.name : 'null');
@@ -320,13 +320,13 @@ function applyFilters() {
 
 document.getElementById('assetSearch').addEventListener('input', applyFilters);
 document.getElementById('assetSearch').addEventListener('focus', function() {
-    if (window.sgvxCreateFuse) fuse = window.sgvxCreateFuse('.asset-row');
+    if (window.SNESTXCreateFuse) fuse = window.SNESTXCreateFuse('.asset-row');
 });
 
 function openAddAssetModal() {
     const form = document.getElementById('asset-form');
     form.reset();
-    document.getElementById('asset-form-action').value = 'sgvx51_add_asset';
+    document.getElementById('asset-form-action').value = 'SNESTX51_add_asset';
     document.getElementById('asset-id').value = '';
     document.getElementById('assetModalTitle').textContent = 'Register New Asset';
     document.getElementById('asset-submit-btn').textContent = 'Register Asset';
@@ -337,7 +337,7 @@ function openAddAssetModal() {
 
 function openEditAssetModal(asset) {
     const form = document.getElementById('asset-form');
-    document.getElementById('asset-form-action').value = 'sgvx51_edit_asset';
+    document.getElementById('asset-form-action').value = 'SNESTX51_edit_asset';
     document.getElementById('asset-id').value = asset.id;
     document.getElementById('asset-name').value = asset.name;
     document.getElementById('asset-purchase-date').value = asset.purchase_date;

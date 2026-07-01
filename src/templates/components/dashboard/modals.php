@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -14,20 +14,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 $profile_resident = $data['resident'] ?? [];
 
 // Retrieve bank details from settings
-$bank_name = get_option('sgvx51_bank_name', 'Society Bank');
-$acct_no   = get_option('sgvx51_bank_account', 'Not Set');
-$ifsc      = get_option('sgvx51_bank_ifsc', 'Not Set');
-$upi       = get_option('sgvx51_bank_upi', 'Not Set');
-$qr_url    = get_option('sgvx51_bank_qr');
+$bank_name = get_option('SNESTX51_bank_name', 'Society Bank');
+$acct_no   = get_option('SNESTX51_bank_account', 'Not Set');
+$ifsc      = get_option('SNESTX51_bank_ifsc', 'Not Set');
+$upi       = get_option('SNESTX51_bank_upi', 'Not Set');
+$qr_url    = get_option('SNESTX51_bank_qr');
 ?>
 
 <!-- 1. Family Member Modal (Add/Edit) -->
 <div class="modal fade" id="familyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="action" value="sgvx51_add_family">
-      <?php wp_nonce_field( 'sgvx51_add_family_nonce' ); ?>
-      <?php wp_nonce_field( 'sgvx51_edit_family_nonce', '_wpnonce_edit_family' ); ?>
+      <input type="hidden" name="action" value="SNESTX51_add_family">
+      <?php wp_nonce_field( 'SNESTX51_add_family_nonce' ); ?>
+      <?php wp_nonce_field( 'SNESTX51_edit_family_nonce', '_wpnonce_edit_family' ); ?>
       <input type="hidden" name="member_id" value="">
       <input type="hidden" name="resident_id" value="">
       
@@ -44,7 +44,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
                   'type'    => 'family'
               ] 
           ];
-          include SGVX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+          include SNESTX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
       </div>
       <div class="modal-footer border-top-0 bg-light px-4 py-3">
@@ -255,12 +255,12 @@ $qr_url    = get_option('sgvx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-         <input type="hidden" name="action" value="sgvx51_add_daily_help">
+         <input type="hidden" name="action" value="SNESTX51_add_daily_help">
          <input type="hidden" name="help_id" value="">
          <input type="hidden" name="document_url" value="">
-          <?php wp_nonce_field('sgvx51_add_help_nonce', '_wpnonce_add_help'); ?>
-          <?php wp_nonce_field('sgvx51_edit_help_nonce', '_wpnonce_edit_help'); ?>
-          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('sgvx51_add_help_nonce')); ?>">
+          <?php wp_nonce_field('SNESTX51_add_help_nonce', '_wpnonce_add_help'); ?>
+          <?php wp_nonce_field('SNESTX51_edit_help_nonce', '_wpnonce_edit_help'); ?>
+          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('SNESTX51_add_help_nonce')); ?>">
          
          <div class="row g-3 mb-3">
              <div class="col-md-7">
@@ -333,11 +333,11 @@ $qr_url    = get_option('sgvx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-         <input type="hidden" name="action" value="sgvx51_add_vehicle_frontend">
+         <input type="hidden" name="action" value="SNESTX51_add_vehicle_frontend">
          <input type="hidden" name="vehicle_id" value="">
-         <?php wp_nonce_field('sgvx51_add_vehicle_frontend_nonce', '_wpnonce_add_vehicle_frontend'); ?>
-         <?php wp_nonce_field('sgvx51_edit_vehicle_action', 'sgvx51_edit_vehicle_token', true, true); ?>
-         <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('sgvx51_add_vehicle_frontend_nonce')); ?>">
+         <?php wp_nonce_field('SNESTX51_add_vehicle_frontend_nonce', '_wpnonce_add_vehicle_frontend'); ?>
+         <?php wp_nonce_field('SNESTX51_edit_vehicle_action', 'SNESTX51_edit_vehicle_token', true, true); ?>
+         <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('SNESTX51_add_vehicle_frontend_nonce')); ?>">
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number <span class="text-danger">*</span></label>
              <input type="text" name="number" class="form-control rounded-3 border-light shadow-none font-monospace" placeholder="KA52AB1234" required>
@@ -379,8 +379,8 @@ $qr_url    = get_option('sgvx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-         <input type="hidden" name="action" value="sgvx51_upload_doc">
-         <?php wp_nonce_field('sgvx51_document_nonce'); ?>
+         <input type="hidden" name="action" value="SNESTX51_upload_doc">
+         <?php wp_nonce_field('SNESTX51_document_nonce'); ?>
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Document Name <span class="text-danger">*</span></label>
              <input type="text" name="doc_name" class="form-control rounded-3 border-light shadow-none" placeholder="Maintenance Bill/Possession Letter" required>
@@ -399,7 +399,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
 </div>
 
 <!-- 7. Quick Pay Modal -->
-<div class="modal fade" id="sgvx51PaymentModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="SNESTX51PaymentModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
       <div class="modal-header bg-primary text-white border-0">
@@ -473,9 +473,9 @@ $qr_url    = get_option('sgvx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-         <input type="hidden" name="action" value="sgvx51_book_facility">
+         <input type="hidden" name="action" value="SNESTX51_book_facility">
          <input type="hidden" name="resident_id" value="<?php echo esc_attr($r['flat_no'] ?? ''); ?>">
-         <?php wp_nonce_field('sgvx51_facility_nonce'); ?>
+         <?php wp_nonce_field('SNESTX51_facility_nonce'); ?>
          
          <div class="mb-4">
              <label class="form-label small fw-bold text-secondary text-uppercase">Facility <span class="text-danger">*</span></label>
@@ -581,7 +581,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
           ];
           // Pass variables to scope for included file (backup)
           $resident = $profile_resident;
-          include SGVX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+          include SNESTX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
         </form>
       </div>
@@ -594,7 +594,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
 
 <script>
     // Data is localized via wp_localize_script in class-frontend-dashboard.php
-    // Redundant window.sgvxDashboardData assignment removed to avoid overwriting localized nonce.
+    // Redundant window.SNESTXDashboardData assignment removed to avoid overwriting localized nonce.
 
     function saveProfileChanges() {
       const btn = event.target.closest('button');
@@ -602,12 +602,12 @@ $qr_url    = get_option('sgvx51_bank_qr');
       if (!form) return;
 
       const formData = new FormData(form);
-      formData.append('action', 'sgvx51_edit_resident');
+      formData.append('action', 'SNESTX51_edit_resident');
       formData.append('resident_id', '<?php echo esc_js($profile_resident['id'] ?? ''); ?>');
-      formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('sgvx51_frontend_nonce')); ?>');
+      formData.append('_wpnonce', '<?php echo esc_js(wp_create_nonce('SNESTX51_frontend_nonce')); ?>');
 
-      SGVX.ajax({
-          action: 'sgvx51_edit_resident',
+      SNESTX.ajax({
+          action: 'SNESTX51_edit_resident',
           data: formData,
           loadingButton: jQuery(btn),
           successMessage: 'Profile updated successfully!',
@@ -618,7 +618,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
 </script>
 
 <!-- General Request Modal -->
-<div class="modal fade" id="sgvx51GeneralRequestModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="SNESTX51GeneralRequestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0">
@@ -626,7 +626,7 @@ $qr_url    = get_option('sgvx51_bank_qr');
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="sgvx51GeneralRequestForm">
+                <form id="SNESTX51GeneralRequestForm">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Category</label>
                         <select name="category" class="form-select border-light shadow-none rounded-3" required>

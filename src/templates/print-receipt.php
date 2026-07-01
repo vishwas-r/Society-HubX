@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -9,7 +9,7 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$society_name = get_option('sgvx51_society_name', get_bloginfo('name'));
+$society_name = get_option('SNESTX51_society_name', get_bloginfo('name'));
 $total_paid = 0;
 foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
 ?>
@@ -72,9 +72,9 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
                 <h1><?php echo esc_html( $society_name ); ?></h1>
                 <div class="address">
                     <?php 
-                        $addr1 = get_option('sgvx51_society_address_line1');
-                        $city  = get_option('sgvx51_society_city');
-                        $pin   = get_option('sgvx51_society_pincode');
+                        $addr1 = get_option('SNESTX51_society_address_line1');
+                        $city  = get_option('SNESTX51_society_city');
+                        $pin   = get_option('SNESTX51_society_pincode');
                         $parts = array_filter([$addr1, $city . ($pin ? " - $pin" : "")]);
                         echo implode(', ', array_map('esc_html', $parts));
                     ?>

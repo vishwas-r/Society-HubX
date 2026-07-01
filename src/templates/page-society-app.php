@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
 
 /**
  * Template Name: Society App (Full Width)
- * Description: A full-width, SaaS-style template for Society GoVernX pages.
+ * Description: A full-width, SaaS-style template for SocietyNestX pages.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,14 +30,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 <body <?php body_class('bg-light text-dark shadow-none'); ?>>
 
     <!-- App Header -->
-    <header class="sgvx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom sticky-top shadow-sm" style="height: 72px; z-index: 1050;">
+    <header class="snestx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom sticky-top shadow-sm" style="height: 72px; z-index: 1050;">
         <div class="d-flex align-items-center gap-3">
-            <button id="sgvx-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 d-lg-none" style="width: 40px; height: 40px;">
+            <button id="snestx-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 d-lg-none" style="width: 40px; height: 40px;">
                 <i class="bi bi-list fs-3"></i>
             </button>
             <div class="d-flex align-items-center gap-2">
                  <div class="rounded bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 2rem; height: 2rem;">S</div>
-                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">Society GoVernX</h1>
+                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">SocietyNestX</h1>
             </div>
         </div>
         <div class="d-flex align-items-center gap-4">
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 $user_avatar = get_avatar_url( $current_user->ID );
                 
                 // Fetch custom profile photo from resident records
-                $resident = Society_GoVernX::get_instance()->db->get_resident_by_wp_id( $current_user->ID );
+                $resident = Society_NestX::get_instance()->db->get_resident_by_wp_id( $current_user->ID );
                 if ( $resident && ! empty( $resident['profile_photo'] ) ) {
                     $user_avatar = $resident['profile_photo'];
                 }
@@ -62,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         <div class="small fw-bold text-dark text-nowrap"><?php echo esc_html( $current_user->display_name ); ?></div>
                         <div class="small text-secondary" style="font-size: 10px;">Resident</div>
                     </div>
-                    <div class="sgvx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
+                    <div class="snestx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
                         <img alt="" src="<?php echo esc_url( $user_avatar ); ?>" class="avatar avatar-36 photo w-100 h-100 object-fit-cover" height="36" width="36" loading="lazy">
                     </div>
                 </button>
@@ -104,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Simple Footer -->
     <footer class="bg-white border-top border-slate-200 py-4 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by Society GoVernX.
+            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by SocietyNestX.
         </div>
     </footer>
 

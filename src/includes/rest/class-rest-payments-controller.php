@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * REST API Controller for Payments (State Hash & Webhooks)
  */
@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_REST_Payments_Controller {
+class SNESTX51_REST_Payments_Controller {
 	
 	public function __construct() {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -15,21 +15,21 @@ class SGVX51_REST_Payments_Controller {
 
 	public function register_routes() {
 		// 1. State Hash Endpoint (Polling)
-		register_rest_route( 'sgvx/v1', '/state-hash', array(
+		register_rest_route( 'SNESTX/v1', '/state-hash', array(
 			'methods'  => WP_REST_Server::READABLE,
 			'callback' => array( $this, 'get_state_hash' ),
 			'permission_callback' => '__return_true' // Lightweight, readable by anyone
 		) );
 		
 		// 2. Dashboard Partial Data Endpoint (For JS re-render)
-		register_rest_route( 'sgvx/v1', '/dashboard-data', array(
+		register_rest_route( 'SNESTX/v1', '/dashboard-data', array(
 			'methods'  => WP_REST_Server::READABLE,
 			'callback' => array( $this, 'get_dashboard_data' ),
 			'permission_callback' => array( $this, 'check_frontend_auth' )
 		) );
 
 		// 3. Webhook Ingress (Gateway Integration)
-		register_rest_route( 'sgvx/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
+		register_rest_route( 'SNESTX/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'handle_webhook' ),
 			'permission_callback' => '__return_true'
@@ -42,14 +42,14 @@ class SGVX51_REST_Payments_Controller {
 
 	public function get_state_hash( $request ) {
 		return rest_ensure_response( array(
-			'hash' => SGVX51_Payment_Service::get_state_hash(),
+			'hash' => SNESTX51_Payment_Service::get_state_hash(),
 			'timestamp' => current_time('mysql')
 		) );
 	}
 	
 	public function get_dashboard_data( $request ) {
 		$user_id = get_current_user_id();
-		$dashboard = new SGVX51_Frontend_Dashboard();
+		$dashboard = new SNESTX51_Frontend_Dashboard();
 		$data = $dashboard->get_dashboard_data( $user_id );
 		
 		// We only need accounts & expenses data for the sync
@@ -100,7 +100,7 @@ class SGVX51_REST_Payments_Controller {
 		}
 
 		if ( $status === 'success' && !empty($invoice_id) && $amount > 0 ) {
-			$result = SGVX51_Payment_Service::process_payment( 
+			$result = SNESTX51_Payment_Service::process_payment( 
 				$invoice_id, 
 				$amount, 
 				ucfirst($gateway), 

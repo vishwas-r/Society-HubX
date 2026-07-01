@@ -1,5 +1,5 @@
-/**
- * SGVX Notices JS (Modernized)
+﻿/**
+ * SNESTX Notices JS (Modernized)
  * Handles AJAX CRUD, Tabs, Pinned Logic, and TinyMCE.
  */
 (function ($) {
@@ -14,8 +14,8 @@
     async function fetchModuleConfig() {
         if (Config.initialized) return;
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'notices' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -81,9 +81,9 @@
 
         const formData = new FormData(form);
         const isUpdate = formData.get('id');
-        const action = isUpdate ? 'sgvx51_update_notice' : 'sgvx51_add_notice';
+        const action = isUpdate ? 'SNESTX51_update_notice' : 'SNESTX51_add_notice';
 
-        SGVX.ajax({
+        SNESTX.ajax({
             action: action,
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
@@ -97,19 +97,19 @@
 
     function deleteNotice(id) {
         if (!confirm('Permanently remove this announcement? This cannot be undone.')) return;
-        SGVX.ajax({
-            action: 'sgvx51_delete_notice',
+        SNESTX.ajax({
+            action: 'SNESTX51_delete_notice',
             data: { id, _wpnonce: Config.deleteNonce },
             successMessage: 'Notice removed',
             onSuccess: function () {
-                $(`.sgvx-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
+                $(`.snestx-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
             }
         });
     }
 
     function togglePin(id, pinned) {
-        SGVX.ajax({
-            action: 'sgvx51_toggle_pin',
+        SNESTX.ajax({
+            action: 'SNESTX51_toggle_pin',
             data: { id, pinned, _wpnonce: Config.nonce },
             successMessage: pinned ? 'Notice pinned to top' : 'Notice unpinned',
             reload: true
@@ -133,8 +133,8 @@
             e.preventDefault();
             const id = $(this).data('id');
 
-            SGVX.ajax({
-                action: 'sgvx51_get_notice',
+            SNESTX.ajax({
+                action: 'SNESTX51_get_notice',
                 data: { id, _wpnonce: Config.nonce },
                 onSuccess: function (data) {
                     openNoticeModal(data);
@@ -160,7 +160,7 @@
             const q = searchInput.value.toLowerCase();
             const urg = urgencyFilter.value.toLowerCase();
 
-            $('.sgvx-notice-card').each(function () {
+            $('.snestx-notice-card').each(function () {
                 const text = $(this).data('search') || '';
                 const cardUrg = $(this).data('urgency') || '';
 

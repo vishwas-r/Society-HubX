@@ -1,8 +1,8 @@
-/**
- * SGVX Expenses JS
+﻿/**
+ * SNESTX Expenses JS
  * - Intercepts expense form submission (handles file upload via fetch)
- * - Handles approve and delete actions via centralized confirmation modal and sgvxApiRequest
- * - Shows spinners and uses sgvxShowToast for feedback
+ * - Handles approve and delete actions via centralized confirmation modal and SNESTXApiRequest
+ * - Shows spinners and uses SNESTXShowToast for feedback
  */
 (function ($) {
     'use strict';
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'expenses' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -37,8 +37,8 @@
     }
 
     function approveExpense(id) {
-        SGVX.ajax({
-            action: 'sgvx51_approve_expense',
+        SNESTX.ajax({
+            action: 'SNESTX51_approve_expense',
             data: { expense_id: id, _wpnonce: Config.nonce },
             successMessage: 'Expense approved successfully',
             reload: true
@@ -51,8 +51,8 @@
 
         if (!modalEl || !confirmBtn) {
             if (!confirm('Delete this expense?')) return;
-            SGVX.ajax({
-                action: 'sgvx51_delete_expense',
+            SNESTX.ajax({
+                action: 'SNESTX51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 reload: true
             });
@@ -64,8 +64,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SGVX.ajax({
-                action: 'sgvx51_delete_expense',
+            SNESTX.ajax({
+                action: 'SNESTX51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 successMessage: 'Expense deleted',
                 onSuccess: function () {
@@ -92,9 +92,9 @@
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const formData = new FormData(form);
-                    if (!formData.get('action')) formData.append('action', 'sgvx51_add_expense');
+                    if (!formData.get('action')) formData.append('action', 'SNESTX51_add_expense');
 
-                    SGVX.ajax({
+                    SNESTX.ajax({
                         action: formData.get('action'),
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),

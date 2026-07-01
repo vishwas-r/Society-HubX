@@ -1,43 +1,43 @@
-<?php
+﻿<?php
 /**
  * Module: Resident Manager
  * Handles the "Residents" table and WP User Sync.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Resident_Manager implements SGVX51_Module {
+class SNESTX51_Resident_Manager implements SNESTX51_Module {
 
 	private $db;
 	private $drive;
 	private $media;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
-		$this->drive = new SGVX51_Drive_Manager();
-		$this->media = new SGVX51_Media_Manager();
+		$this->db = new SNESTX51_DB_Router();
+		$this->drive = new SNESTX51_Drive_Manager();
+		$this->media = new SNESTX51_Media_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		// AJAX Actions
-		add_action( 'wp_ajax_sgvx51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'wp_ajax_sgvx51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'wp_ajax_sgvx51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'wp_ajax_sgvx51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'wp_ajax_sgvx51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'wp_ajax_sgvx51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'wp_ajax_SNESTX51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'wp_ajax_SNESTX51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'wp_ajax_SNESTX51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'wp_ajax_SNESTX51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'wp_ajax_SNESTX51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'wp_ajax_SNESTX51_delete_history', array( $this, 'handle_delete_history' ) );
 
 		// Legacy Admin Post Actions (optional cleanup if no longer used)
-		add_action( 'admin_post_sgvx51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'admin_post_sgvx51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'admin_post_sgvx51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'admin_post_sgvx51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'admin_post_sgvx51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'admin_post_sgvx51_delete_history', array( $this, 'handle_delete_history' ) );
-		add_action( 'admin_post_sgvx51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_SNESTX51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'admin_post_SNESTX51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'admin_post_SNESTX51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'admin_post_SNESTX51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'admin_post_SNESTX51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'admin_post_SNESTX51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'admin_post_SNESTX51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
 
 
 		// Self-Heal Schema (Ensure columns exist)
@@ -50,8 +50,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		}
         
         // Register Module
-        add_filter( 'sgvx51_get_module_residents', array( $this, 'get_instance' ) );
-        add_filter( 'sgvx51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
+        add_filter( 'SNESTX51_get_module_residents', array( $this, 'get_instance' ) );
+        add_filter( 'SNESTX51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
 	}
 
     public function get_instance() {
@@ -93,11 +93,11 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'sgvx51-settings',
+			'snestx51-settings',
 			'Residents Directory',
 			'Residents',
 			'read', // Granular check in render_page
-			'sgvx51-residents',
+			'snestx51-residents',
 			array( $this, 'render_page' )
 		);
 	}
@@ -108,13 +108,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	public function handle_add_resident() {
 		if ( wp_doing_ajax() ) {
             ob_start();
-            check_ajax_referer( 'sgvx51_resident_nonce' );
+            check_ajax_referer( 'SNESTX51_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'sgvx51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'SNESTX51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 	
     // IF ADMIN: Immediate
-   $rbac = Society_GoVernX::get_instance()->rbac;
+   $rbac = Society_NestX::get_instance()->rbac;
    if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
        $_POST['status'] = 'approved';
        $res = $this->process_add_resident( $_POST );
@@ -132,14 +132,14 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
        $_POST['id'] = uniqid('res_');
        $this->process_add_resident( $_POST );
 
-       require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-       $rm = new SGVX51_Request_Manager();
+       require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+       $rm = new SNESTX51_Request_Manager();
        $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
        $res = $rm->create_request( 'residents', 'add', $sanitized_post, $sanitized_post['id'], 'residents', $sanitized_post['flat_no'] );
        
         if ( wp_doing_ajax() ) {
            $debug = ob_get_clean();
-           if(!empty($debug)) error_log('SGVX Resident Add Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+           if(!empty($debug)) error_log('SNESTX Resident Add Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
            
            // Aggressive Clean
            while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -149,7 +149,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
        }
    }
 
-	wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=added' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=added' ) );
 	exit;
 }
 
@@ -158,16 +158,16 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		if ( wp_doing_ajax() ) {
             ob_start();
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce($nonce, 'sgvx51_resident_nonce') && ! wp_verify_nonce($nonce, 'sgvx51_frontend_nonce') ) {
+            if ( ! wp_verify_nonce($nonce, 'SNESTX51_resident_nonce') && ! wp_verify_nonce($nonce, 'SNESTX51_frontend_nonce') ) {
                 ob_get_clean(); // Clean before error
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                error_log("SGVX51 Error: Nonce verification failed for edit_resident"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                error_log("SNESTX51 Error: Nonce verification failed for edit_resident"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
         } else {
-		    if ( ! check_admin_referer( 'sgvx51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'SNESTX51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
     
     $id = isset($_POST['resident_id']) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -180,12 +180,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
     }
 
     // Handle Photo Upload (for both Admin and Resident requests)
-    error_log("SGVX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+    error_log("SNESTX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
     
     if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
         $photo_url = $this->handle_photo_upload($flat_no, $name);
         if ( is_wp_error( $photo_url ) ) {
-            error_log("SGVX51 Error: Photo upload failed: " . $photo_url->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("SNESTX51 Error: Photo upload failed: " . $photo_url->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
             if ( wp_doing_ajax() ) {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error(['message' => 'Photo upload failed: ' . $photo_url->get_error_message()]);
@@ -193,12 +193,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             }
         } else {
             $_POST['profile_photo'] = $photo_url;
-            error_log("SGVX51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("SNESTX51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         }
     }
     
     // IF ADMIN OR RESIDENT EDITING OWN BASIC PROFILE: Immediate
-    $rbac = Society_GoVernX::get_instance()->rbac;
+    $rbac = Society_NestX::get_instance()->rbac;
     $is_admin = $rbac->has_capability( get_current_user_id(), 'residents_manage' );
     
     // Check if it's a self-profile edit (basic details only)
@@ -220,8 +220,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         }
 
         // 1. Synchronize with Request Manager if a pending request exists
-        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SGVX51_Request_Manager();
+        require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SNESTX51_Request_Manager();
         $sync_res = $rm->approve_request( $id );
         
         if ( ! is_wp_error( $sync_res ) ) {
@@ -232,7 +232,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Profile updated and request synchronized']);
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=sgvx-profile&status=updated' ) ); // Contextual redirect might be needed
+                wp_safe_redirect( admin_url( 'admin.php?page=snestx-profile&status=updated' ) ); // Contextual redirect might be needed
             }
             exit;
         }
@@ -250,14 +250,14 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             exit;
         }
     } else {
-        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SGVX51_Request_Manager();
+        require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SNESTX51_Request_Manager();
         $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
         $res = $rm->create_request( 'residents', 'edit', $sanitized_post, $id, 'residents', $sanitized_post['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
             $debug = ob_get_clean();
-            if(!empty($debug)) error_log('SGVX Resident Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            if(!empty($debug)) error_log('SNESTX Resident Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
             // Aggressive Clean
             while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -271,7 +271,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
         }
     }
 
-	wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=updated' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=updated' ) );
 	exit;
 }
     private function perform_edit_resident( $data ) {
@@ -398,7 +398,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
              
              if ( $user && ! is_wp_error( $user ) ) {
                  $update_data['wp_user_id'] = $user->ID;
-                 update_user_meta( $user->ID, 'sgvx51_flat_no', $update_data['flat_no'] );
+                 update_user_meta( $user->ID, 'SNESTX51_flat_no', $update_data['flat_no'] );
 
                  // Sync Profile Changes to WP User
                  $wp_user_data = [
@@ -422,19 +422,19 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 */
 	public function handle_delete_resident() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'sgvx51_delete_resident_nonce' );
+            check_ajax_referer( 'SNESTX51_delete_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'sgvx51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'SNESTX51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
         
-        $rbac = Society_GoVernX::get_instance()->rbac;
+        $rbac = Society_NestX::get_instance()->rbac;
         if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
             $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
         } else {
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SGVX51_Request_Manager();
+            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SNESTX51_Request_Manager();
             $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
         }
 
@@ -444,7 +444,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             wp_send_json_success(['message' => 'Resident archived successfully']);
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=archived' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=archived' ) );
 		exit;
 	}
 
@@ -453,12 +453,12 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
      */
     public function handle_move_to_history() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'sgvx51_move_to_history_nonce' );
+            check_ajax_referer( 'SNESTX51_move_to_history_nonce' );
         } else {
-            if ( ! check_admin_referer( 'sgvx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! check_admin_referer( 'SNESTX51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $rbac = Society_GoVernX::get_instance()->rbac;
+        $rbac = Society_NestX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die('Unauthorized');
 
         $resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -482,7 +482,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             }
         }
 
-        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=permanently_deleted' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=permanently_deleted' ) );
         exit;
     }
 
@@ -490,13 +490,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Restore Resident from Archive.
 	 */
 	public function handle_restore_resident() {
-        $rbac = Society_GoVernX::get_instance()->rbac;
+        $rbac = Society_NestX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'sgvx51_restore_resident_nonce' );
+			check_ajax_referer( 'SNESTX51_restore_resident_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'sgvx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'SNESTX51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
 		}
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -538,8 +538,8 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 
 			// Log Audit
 			$name = $to_restore['name'] ?? 'Unknown';
-			require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-			$rm = new SGVX51_Request_Manager();
+			require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+			$rm = new SNESTX51_Request_Manager();
 			$rm->log_audit('resident_restored', 'residents', $resident_id, "Resident: $name (source: $source)");
 
 			if ( wp_doing_ajax() ) {
@@ -553,7 +553,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=restored' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=restored' ) );
 		exit;
 	}
 
@@ -591,13 +591,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Permanently Delete from History Archive.
 	 */
 	public function handle_delete_history() {
-    $rbac = Society_GoVernX::get_instance()->rbac;
+    $rbac = Society_NestX::get_instance()->rbac;
     if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
     if ( wp_doing_ajax() ) {
-        check_ajax_referer( 'sgvx51_delete_history_nonce' );
+        check_ajax_referer( 'SNESTX51_delete_history_nonce' );
     } else {
-	    if ( ! check_admin_referer( 'sgvx51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
+	    if ( ! check_admin_referer( 'SNESTX51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
     }
 
 	$history_id = isset( $_POST['history_id'] ) ? sanitize_text_field( wp_unslash( $_POST['history_id'] ) ) : '';
@@ -613,7 +613,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
             wp_send_json_error(['message' => 'Delete failed']);
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=history_deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=history_deleted' ) );
 		exit;
 	}
 
@@ -621,10 +621,10 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-        $rbac = Society_GoVernX::get_instance()->rbac;
+        $rbac = Society_NestX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
-		if ( ! check_admin_referer( 'sgvx51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'SNESTX51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -656,7 +656,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -745,7 +745,7 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 			
 			if ( $user && ! is_wp_error( $user ) ) {
 				$data['wp_user_id'] = $user->ID;
-				update_user_meta( $user->ID, 'sgvx51_flat_no', $data['flat_no'] );
+				update_user_meta( $user->ID, 'SNESTX51_flat_no', $data['flat_no'] );
 
                 // Sync Roles immediately
                 $this->sync_wp_user_roles( $user->ID, $data['id'] );
@@ -757,17 +757,17 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	}
 
 	public function render_page() {
-        $rbac = Society_GoVernX::get_instance()->rbac;
+        $rbac = Society_NestX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
             wp_die( 'You do not have permission to view the Residents Directory.' );
         }
 		// Pass Residents and Flats for the form dropdown
-        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SGVX51_Request_Manager();
+        require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SNESTX51_Request_Manager();
         $unified = $rm->get_unified_data( 'residents', 'residents', 'resident_history', true ); // Added load_relations
         $flats = $this->db->get('flats');
 		
-		SGVX51_Admin_App::render_view('residents', [
+		SNESTX51_Admin_App::render_view('residents', [
 			'residents' => $unified['active'], 
             'pending'   => $unified['pending'],
             'history'   => $unified['archived'],
@@ -779,16 +779,16 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 	 * Sync Society Roles to WordPress User Roles.
 	 */
 	public function sync_wp_user_roles( $user_id, $resident_id ) {
-		$rbac = Society_GoVernX::get_instance()->rbac;
+		$rbac = Society_NestX::get_instance()->rbac;
 		$society_roles = $this->db->get_mysql( 'resident_role_map', array( 'where' => array( 'resident_id' => $resident_id ) ) );
 		
 		$wp_user = new WP_User( $user_id );
 		if ( ! $wp_user->exists() ) return;
 
-		// 1. Remove all existing SGVX roles from user
+		// 1. Remove all existing SNESTX roles from user
 		$current_wp_roles = $wp_user->roles;
 		foreach ( $current_wp_roles as $role_slug ) {
-			if ( strpos( $role_slug, 'sgvx_' ) === 0 ) {
+			if ( strpos( $role_slug, 'SNESTX_' ) === 0 ) {
 				$wp_user->remove_role( $role_slug );
 			}
 		}
@@ -796,13 +796,13 @@ class SGVX51_Resident_Manager implements SGVX51_Module {
 		// 2. Add new roles based on society mapping
 		foreach ( $society_roles as $map ) {
 			$role_id = $map['role_id'];
-			$wp_role_id = 'sgvx_' . sanitize_title( $role_id );
+			$wp_role_id = 'SNESTX_' . sanitize_title( $role_id );
             
             // Ensure role exists in WP (double check)
             if ( ! get_role( $wp_role_id ) ) {
                 $role_def = $rbac->get_role( $role_id );
                 $role_name = $role_def ? $role_def['name'] : ucfirst( str_replace( '_', ' ', $role_id ) );
-                add_role( $wp_role_id, 'SGVX: ' . $role_name, array( 'read' => true ) );
+                add_role( $wp_role_id, 'SNESTX: ' . $role_name, array( 'read' => true ) );
             }
 
 			$wp_user->add_role( $wp_role_id );

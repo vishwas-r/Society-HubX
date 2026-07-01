@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array $data Dashboard data
  */
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 $user_id = get_current_user_id();
 $residents = $db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 $resident_id = !empty($residents) ? $residents[0]['id'] : '';
@@ -25,8 +25,8 @@ $categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' 
 
 // Get pending acknowledgments
 global $wpdb;
-$rules_table = "{$wpdb->prefix}society_governx_rules";
-$acks_table = "{$wpdb->prefix}society_governx_rule_acknowledgments";
+$rules_table = "{$wpdb->prefix}Society_NestX_rules";
+$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
 
 $pending_rules = $wpdb->get_results($wpdb->prepare("
     SELECT r.* FROM $rules_table r
@@ -449,21 +449,21 @@ function handleAcknowledge(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'sgvx51_acknowledge_rule',
+            action: 'SNESTX51_acknowledge_rule',
             rule_id: formData.get('rule_id'),
-            _wpnonce: '<?php echo wp_create_nonce('sgvx51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('SNESTX51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {
                 acknowledgeModal.hide();
-                sgvxShowToast('Rule acknowledged successfully!', 'success');
+                SNESTXShowToast('Rule acknowledged successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                sgvxShowToast(response.data?.message || 'Error acknowledging rule', 'error');
+                SNESTXShowToast(response.data?.message || 'Error acknowledging rule', 'error');
             }
         },
         error: function() {
-            sgvxShowToast('Error communicating with server', 'error');
+            SNESTXShowToast('Error communicating with server', 'error');
         }
     });
 }
@@ -499,15 +499,15 @@ function handleAppeal(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'sgvx51_appeal_violation',
+            action: 'SNESTX51_appeal_violation',
             violation_id: formData.get('violation_id'),
             appeal_reason: formData.get('appeal_reason'),
-            _wpnonce: '<?php echo wp_create_nonce('sgvx51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('SNESTX51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {
                 appealModal.hide();
-                sgvxShowToast('Appeal submitted successfully!', 'success');
+                SNESTXShowToast('Appeal submitted successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
                 alert(response.data.message || 'Error submitting appeal');

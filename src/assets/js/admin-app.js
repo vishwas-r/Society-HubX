@@ -1,4 +1,4 @@
-
+﻿
 /**
  * Admin App JS
  * Handles interactions for the Society Govern X Admin App.
@@ -68,14 +68,14 @@
         });
 
         // 4. Sidebar Toggle Logic
-        const sidebar = document.getElementById('sgvx-sidebar');
-        const sidebarToggle = document.getElementById('sgvx-sidebar-toggle');
-        const sidebarClose = document.getElementById('sgvx-sidebar-close');
-        const sidebarBackdrop = document.getElementById('sgvx-sidebar-backdrop');
+        const sidebar = document.getElementById('snestx-sidebar');
+        const sidebarToggle = document.getElementById('snestx-sidebar-toggle');
+        const sidebarClose = document.getElementById('snestx-sidebar-close');
+        const sidebarBackdrop = document.getElementById('snestx-sidebar-backdrop');
 
         if (sidebar && sidebarToggle) {
             // Restore state from localStorage
-            const isCollapsed = localStorage.getItem('sgvx_sidebar_collapsed') === 'true';
+            const isCollapsed = localStorage.getItem('SNESTX_sidebar_collapsed') === 'true';
             if (isCollapsed && window.innerWidth >= 992) {
                 sidebar.classList.add('collapsed');
             }
@@ -94,7 +94,7 @@
                 } else {
                     // Desktop: Toggle collapse
                     sidebar.classList.toggle('collapsed');
-                    localStorage.setItem('sgvx_sidebar_collapsed', sidebar.classList.contains('collapsed'));
+                    localStorage.setItem('SNESTX_sidebar_collapsed', sidebar.classList.contains('collapsed'));
                 }
             });
         }
@@ -113,8 +113,8 @@
 
         // 5. Global Chart Responsiveness (CanvasJS)
         window.addEventListener('resize', debounce(() => {
-            if (window.sgvxCharts && Array.isArray(window.sgvxCharts)) {
-                window.sgvxCharts.forEach(chart => {
+            if (window.SNESTXCharts && Array.isArray(window.SNESTXCharts)) {
+                window.SNESTXCharts.forEach(chart => {
                     if (typeof chart.render === 'function') chart.render();
                 });
             }
@@ -158,7 +158,7 @@
      * Global AJAX API Wrapper - MOVED TO core.js
      */
     /*
-    window.sgvxApiRequest = async function (action, data = {}) { ... };
+    window.SNESTXApiRequest = async function (action, data = {}) { ... };
     */
 
 
@@ -169,7 +169,7 @@
      * Show Global Toast - MOVED TO core.js
      */
     /*
-    window.sgvxShowToast = function (msg, type = 'success') {
+    window.SNESTXShowToast = function (msg, type = 'success') {
         ...
     };
     */
@@ -183,8 +183,8 @@
         // 1. Direct Message Parameter
         const msg = params.get('msg');
         const error = params.get('error');
-        if (msg) return window.sgvxShowToast(decodeURIComponent(msg.replace(/\+/g, ' ')), 'success');
-        if (error) return window.sgvxShowToast(decodeURIComponent(error.replace(/\+/g, ' ')), 'error');
+        if (msg) return window.SNESTXShowToast(decodeURIComponent(msg.replace(/\+/g, ' ')), 'success');
+        if (error) return window.SNESTXShowToast(decodeURIComponent(error.replace(/\+/g, ' ')), 'error');
 
         // 2. Status Code Parameter
         const status = params.get('status');
@@ -204,7 +204,7 @@
 
             const statusCode = status || success;
             if (statusMap[statusCode]) {
-                window.sgvxShowToast(statusMap[statusCode], 'success');
+                window.SNESTXShowToast(statusMap[statusCode], 'success');
             }
         }
 
@@ -234,7 +234,7 @@
             payload = JSON.parse(data.payload || '{}');
             original = JSON.parse(data.original || '{}');
         } catch (err) {
-            console.error('SGVX: Error parsing request payload', err, data.payload);
+            console.error('SNESTX: Error parsing request payload', err, data.payload);
         }
 
         // Relocate to body if not already there to fix z-index/stacking context issues in WP Admin
@@ -360,11 +360,11 @@
             const id = approveBtn.dataset.id;
             if (!confirm('Approve this request?')) return;
 
-            SGVX.ajax({
-                action: 'sgvx51_approve_request',
+            SNESTX.ajax({
+                action: 'SNESTX51_approve_request',
                 data: {
                     id: id,
-                    _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
+                    _wpnonce: typeof snestx51RequestNonce !== 'undefined' ? snestx51RequestNonce : ''
                 },
                 loadingButton: approveBtn,
                 successMessage: 'Request approved successfully!',
@@ -378,12 +378,12 @@
             const reason = prompt('Reason for rejection (optional):');
             if (reason === null) return; // Cancelled prompt
 
-            SGVX.ajax({
-                action: 'sgvx51_reject_request',
+            SNESTX.ajax({
+                action: 'SNESTX51_reject_request',
                 data: {
                     id: id,
                     admin_note: reason,
-                    _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
+                    _wpnonce: typeof snestx51RequestNonce !== 'undefined' ? snestx51RequestNonce : ''
                 },
                 loadingButton: rejectBtn,
                 successMessage: 'Request rejected.',
@@ -395,10 +395,10 @@
     /**
      * Bulk Action Logic
      */
-    window.sgvxBulkProcess = function (action) {
-        const checkboxes = document.querySelectorAll('.sgvx-bulk-checkbox:checked');
+    window.SNESTXBulkProcess = function (action) {
+        const checkboxes = document.querySelectorAll('.snestx-bulk-checkbox:checked');
         if (checkboxes.length === 0) {
-            SGVX.toast.warning('Please select at least one item');
+            SNESTX.toast.warning('Please select at least one item');
             return;
         }
 
@@ -411,13 +411,13 @@
             if (!confirm(`Are you sure you want to approve ${ids.length} items?`)) return;
         }
 
-        SGVX.ajax({
-            action: 'sgvx51_bulk_process_requests',
+        SNESTX.ajax({
+            action: 'SNESTX51_bulk_process_requests',
             data: {
                 ids: ids,
                 bulk_action: action,
                 note: note,
-                _wpnonce: typeof sgvx51RequestNonce !== 'undefined' ? sgvx51RequestNonce : ''
+                _wpnonce: typeof snestx51RequestNonce !== 'undefined' ? snestx51RequestNonce : ''
             },
             successMessage: `Bulk ${action} processed successfully!`,
             reload: true
@@ -427,19 +427,19 @@
     // --- Bulk Checkbox Helpers ---
     document.addEventListener('change', function (e) {
         if (e.target.id === 'bulk-select-all') {
-            const checkboxes = document.querySelectorAll('.sgvx-bulk-checkbox:not(:disabled)');
+            const checkboxes = document.querySelectorAll('.snestx-bulk-checkbox:not(:disabled)');
             checkboxes.forEach(cb => cb.checked = e.target.checked);
             updateBulkToolbar();
         }
 
-        if (e.target.classList.contains('sgvx-bulk-checkbox')) {
+        if (e.target.classList.contains('snestx-bulk-checkbox')) {
             updateBulkToolbar();
         }
     });
 
     function updateBulkToolbar() {
-        const checked = document.querySelectorAll('.sgvx-bulk-checkbox:checked').length;
-        const toolbar = document.querySelector('.sgvx-bulk-actions');
+        const checked = document.querySelectorAll('.snestx-bulk-checkbox:checked').length;
+        const toolbar = document.querySelector('.snestx-bulk-actions');
         const countSpan = document.getElementById('selected-count');
 
         if (toolbar) {

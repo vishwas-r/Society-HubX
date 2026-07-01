@@ -1,21 +1,21 @@
-<?php
+﻿<?php
 /**
  * Class: Privacy Manager
  * Handles DPDP/GDPR Compliance (Data Export & Erasure).
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Privacy_Manager {
+class SNESTX51_Privacy_Manager {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
+		$this->db = new SNESTX51_DB_Router();
 		
 		// Register WP Privacy Hooks
 		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_exporters' ) );
@@ -26,8 +26,8 @@ class SGVX51_Privacy_Manager {
 	 * Register Data Exporters.
 	 */
 	public function register_exporters( $exporters ) {
-		$exporters['society-governx'] = array(
-			'exporter_friendly_name' => __( 'Society GoVernX Data', 'society-governx' ),
+		$exporters['society-nestx'] = array(
+			'exporter_friendly_name' => __( 'SocietyNestX Data', 'society-nestx' ),
 			'callback'               => array( $this, 'export_society_data' ),
 		);
 		return $exporters;
@@ -37,8 +37,8 @@ class SGVX51_Privacy_Manager {
 	 * Register Data Erasers.
 	 */
 	public function register_erasers( $erasers ) {
-		$erasers['society-governx'] = array(
-			'eraser_friendly_name' => __( 'Society GoVernX Data', 'society-governx' ),
+		$erasers['society-nestx'] = array(
+			'eraser_friendly_name' => __( 'SocietyNestX Data', 'society-nestx' ),
 			'callback'             => array( $this, 'erase_society_data' ),
 		);
 		return $erasers;
@@ -55,16 +55,16 @@ class SGVX51_Privacy_Manager {
 		foreach ( $residents as $resident ) {
 			$item_id = "resident-{$resident['id']}";
 			$data = array(
-				array( 'name' => __( 'Name', 'society-governx' ), 'value' => $resident['name'] ),
-				array( 'name' => __( 'Flat No', 'society-governx' ), 'value' => $resident['flat_no'] ),
-				array( 'name' => __( 'Phone', 'society-governx' ), 'value' => $resident['phone'] ),
-				array( 'name' => __( 'Type', 'society-governx' ), 'value' => $resident['type'] ),
-				array( 'name' => __( 'DOB', 'society-governx' ), 'value' => $resident['dob'] ?? '' ),
+				array( 'name' => __( 'Name', 'society-nestx' ), 'value' => $resident['name'] ),
+				array( 'name' => __( 'Flat No', 'society-nestx' ), 'value' => $resident['flat_no'] ),
+				array( 'name' => __( 'Phone', 'society-nestx' ), 'value' => $resident['phone'] ),
+				array( 'name' => __( 'Type', 'society-nestx' ), 'value' => $resident['type'] ),
+				array( 'name' => __( 'DOB', 'society-nestx' ), 'value' => $resident['dob'] ?? '' ),
 			);
 
 			$data_to_export[] = array(
-				'group_id'    => 'society-governx-residents',
-				'group_label' => __( 'Society Residents', 'society-governx' ),
+				'group_id'    => 'society-nestx-residents',
+				'group_label' => __( 'Society Residents', 'society-nestx' ),
 				'item_id'     => $item_id,
 				'data'        => $data,
 			);
@@ -87,7 +87,7 @@ class SGVX51_Privacy_Manager {
 
 		foreach ( $residents as $resident ) {
 			$anon_data = array(
-				'name'          => __( 'Anonymized', 'society-governx' ),
+				'name'          => __( 'Anonymized', 'society-nestx' ),
 				'email'         => '',
 				'phone'         => '0000000000',
 				'profile_photo' => '',
@@ -110,7 +110,7 @@ class SGVX51_Privacy_Manager {
 	 * Helper: Mask PII for UI Display.
 	 */
 	public static function mask_data( $data, $type = 'phone' ) {
-		if ( ! get_option( 'sgvx51_privacy_masking', 1 ) ) {
+		if ( ! get_option( 'SNESTX51_privacy_masking', 1 ) ) {
 			return $data;
 		}
 
@@ -118,8 +118,8 @@ class SGVX51_Privacy_Manager {
 			return $data;
 		}
 		// If current user has high privileges, don't mask
-		$sgvx = Society_GoVernX::get_instance();
-		if ( $sgvx->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
+		$SNESTX = Society_NestX::get_instance();
+		if ( $snestx->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			return $data;
 		}
 

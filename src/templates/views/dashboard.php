@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Dashboard (Bootstrap Migration)
- * Integrates with SGVX51_DB_Router for real statistics.
+ * Integrates with SNESTX51_DB_Router for real statistics.
  */
 
-$db = new SGVX51_DB_Router();
+$db = new SNESTX51_DB_Router();
 
 // Fetch Data
 $flats     = $db->get( 'flats' );
@@ -349,19 +349,19 @@ $activities = array_slice($activities, 0, 10);
                 <div class="p-4 p-md-5 d-flex flex-column h-100">
                     <h5 class="fw-bold text-primary mb-4" style="letter-spacing: -0.01em;">Quick Actions</h5>
                     <div class="d-flex flex-column gap-3">
-                        <a href="?page=sgvx51-notices" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
+                        <a href="?page=snestx51-notices" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
                             <i class="bi bi-megaphone text-primary fs-5"></i>
                             <span class="fw-bold text-dark small">Publish Notice</span>
                         </a>
-                        <a href="?page=sgvx51-residents" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
+                        <a href="?page=snestx51-residents" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
                             <i class="bi bi-person-plus text-primary fs-5"></i>
                             <span class="fw-bold text-dark small">Add Resident</span>
                         </a>
-                        <a href="?page=sgvx51-expenses" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
+                        <a href="?page=snestx51-expenses" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
                             <i class="bi bi-plus-square text-primary fs-5"></i>
                             <span class="fw-bold text-dark small">Record Expense</span>
                         </a>
-                        <a href="?page=sgvx51-facilities" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
+                        <a href="?page=snestx51-facilities" class="btn btn-white text-start py-3 px-4 d-flex align-items-center gap-3 rounded-3 border-0 shadow-sm transition-all hover-translate-y">
                             <i class="bi bi-calendar-check text-primary fs-5"></i>
                             <span class="fw-bold text-dark small">Book Facility</span>
                         </a>

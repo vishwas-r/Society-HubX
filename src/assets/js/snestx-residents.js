@@ -1,4 +1,4 @@
-(function ($) {
+﻿(function ($) {
     'use strict';
 
     // Module configuration (fetched at runtime)
@@ -58,10 +58,10 @@
 
         // Refresh Fuse if needed
         if (!State.fuse) {
-            State.fuse = window.sgvxCreateFuse('.resident-row');
+            State.fuse = window.SNESTXCreateFuse('.resident-row');
         }
 
-        const fuzzyMatches = searchVal && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(State.fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(State.fuse, searchVal) : null;
 
         rows.forEach(row => {
             const type = row.dataset.type;
@@ -155,7 +155,7 @@
         form.reset();
 
         const actionInput = form.querySelector('[name="action"]');
-        if (actionInput) actionInput.value = 'sgvx51_add_resident';
+        if (actionInput) actionInput.value = 'SNESTX51_add_resident';
 
         const idInput = form.querySelector('[name="resident_id"]');
         if (idInput) idInput.value = '';
@@ -250,7 +250,7 @@
                 }
             });
 
-            setVal('action', 'sgvx51_edit_resident');
+            setVal('action', 'SNESTX51_edit_resident');
             setVal('resident_id', r.id);
 
             const title = document.getElementById('modal-title');
@@ -302,7 +302,7 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             try {
-                await SGVX.ajax('sgvx51_delete_resident', {
+                await SNESTX.ajax('SNESTX51_delete_resident', {
                     resident_id: id,
                     _wpnonce: Config.deleteNonce
                 }, {
@@ -321,7 +321,7 @@
 
     async function restoreResident(id) {
         try {
-            await SGVX.ajax('sgvx51_restore_resident', {
+            await SNESTX.ajax('SNESTX51_restore_resident', {
                 resident_id: id,
                 _wpnonce: Config.restoreNonce
             }, {
@@ -354,10 +354,10 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             try {
-                const action = (source === 'history') ? 'sgvx51_delete_history' : 'sgvx51_move_to_history';
+                const action = (source === 'history') ? 'SNESTX51_delete_history' : 'SNESTX51_move_to_history';
                 const nonce = (source === 'history') ? Config.deleteHistoryNonce : Config.moveToHistoryNonce;
 
-                await SGVX.ajax(action, {
+                await SNESTX.ajax(action, {
                     ...(source === 'history' ? { history_id: id } : { resident_id: id }),
                     _wpnonce: nonce
                 }, {
@@ -379,8 +379,8 @@
         if (State.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'residents' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -410,14 +410,14 @@
                     e.preventDefault();
                     const formData = new FormData(form);
 
-                    SGVX.ajax({
+                    SNESTX.ajax({
                         action: formData.get('action'),
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
-                        successMessage: (formData.get('action') === 'sgvx51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
+                        successMessage: (formData.get('action') === 'SNESTX51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
                         onSuccess: function () {
                             closeResidentModal();
-                            window.location.href = window.location.origin + window.location.pathname + '?page=sgvx51-residents';
+                            window.location.href = window.location.origin + window.location.pathname + '?page=snestx51-residents';
                         }
                     });
                 });
@@ -438,7 +438,7 @@
                     applyFilters();
                 });
                 searchInput.addEventListener('focus', function () {
-                    State.fuse = window.sgvxCreateFuse('.resident-row');
+                    State.fuse = window.SNESTXCreateFuse('.resident-row');
                 });
             }
 

@@ -1,50 +1,50 @@
-<?php
+﻿<?php
 /**
  * Module: Expense Manager
  * Handles Expenses and Receipts.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Expense_Manager {
+class SNESTX51_Expense_Manager {
 
 	private $db;
 	private $drive;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
-		$this->drive = new SGVX51_Drive_Manager();
+		$this->db = new SNESTX51_DB_Router();
+		$this->drive = new SNESTX51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_sgvx51_add_expense', array( $this, 'handle_add_expense' ) );
-		add_action( 'admin_post_sgvx51_edit_expense', array( $this, 'handle_edit_expense' ) );
-		add_action( 'admin_post_sgvx51_delete_expense', array( $this, 'handle_delete_expense' ) );
-		add_action( 'admin_post_sgvx51_approve_expense', array( $this, 'handle_approve_expense' ) );
+		add_action( 'admin_post_SNESTX51_add_expense', array( $this, 'handle_add_expense' ) );
+		add_action( 'admin_post_SNESTX51_edit_expense', array( $this, 'handle_edit_expense' ) );
+		add_action( 'admin_post_SNESTX51_delete_expense', array( $this, 'handle_delete_expense' ) );
+		add_action( 'admin_post_SNESTX51_approve_expense', array( $this, 'handle_approve_expense' ) );
 		
 		// AJAX Handlers
-		add_action( 'wp_ajax_sgvx51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
-		add_action( 'wp_ajax_sgvx51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
-		add_action( 'wp_ajax_sgvx51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
-		add_action( 'wp_ajax_sgvx51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
+		add_action( 'wp_ajax_SNESTX51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
+		add_action( 'wp_ajax_SNESTX51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
+		add_action( 'wp_ajax_SNESTX51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
+		add_action( 'wp_ajax_SNESTX51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
 	}
 
 	public function register_menu() {
 		add_submenu_page(
-			'sgvx51-settings',
+			'snestx51-settings',
 			'Accounts & Expenses',
 			'Expenses',
 			'manage_options',
-			'sgvx51-expenses',
+			'snestx51-expenses',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function handle_add_expense() {
-		if ( ! check_admin_referer( 'sgvx51_add_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'SNESTX51_add_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -78,22 +78,22 @@ class SGVX51_Expense_Manager {
 
 		if ( ! is_wp_error( $result ) ) {
             // Create a request for approval
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SGVX51_Request_Manager();
+            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SNESTX51_Request_Manager();
             $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
             
             if ( ! is_wp_error( $req_id ) ) {
                 $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
             }
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&year=' . $year . '&success=1' ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		}
 		exit;
 	}
 
 	public function handle_edit_expense() {
-		if ( ! check_admin_referer( 'sgvx51_edit_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'SNESTX51_edit_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -124,15 +124,15 @@ class SGVX51_Expense_Manager {
 		$result = $this->db->update( $table, $data, array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&year=' . $year . '&success=1' ) );
 		}
 		exit;
 	}
 
 	public function handle_delete_expense() {
-		if ( ! check_admin_referer( 'sgvx51_delete_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'SNESTX51_delete_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -148,12 +148,12 @@ class SGVX51_Expense_Manager {
 
 		$this->db->delete( $table, array( 'id' => $id ) );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&year=' . $year . '&deleted=1' ) );
 		exit;
 	}
 
 	public function handle_approve_expense() {
-		if ( ! check_admin_referer( 'sgvx51_approve_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'SNESTX51_approve_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -167,27 +167,27 @@ class SGVX51_Expense_Manager {
 		$year = gmdate( 'Y', strtotime( $date ) );
 
         // Direct approval is now replaced by multi-stage workflow if requested via Admin UI
-        require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SGVX51_Request_Manager();
+        require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new SNESTX51_Request_Manager();
         $result = $rm->approve_request( $id );
 
 		if ( is_wp_error( $result ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-expenses&year=' . $year . '&approved=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-expenses&year=' . $year . '&approved=1' ) );
 		}
 		exit;
 	}
 
 	public function render_page() {
-		SGVX51_Admin_App::render_view('expenses');
+		SNESTX51_Admin_App::render_view('expenses');
 	}
 	
 	/**
 	 * AJAX Handler for Adding Expense
 	 */
 	public function handle_add_expense_ajax() {
-		check_ajax_referer( 'sgvx51_add_expense_nonce', '_wpnonce' );
+		check_ajax_referer( 'SNESTX51_add_expense_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -230,8 +230,8 @@ class SGVX51_Expense_Manager {
 		
 		if ( ! is_wp_error( $result ) ) {
             // Create a request for approval
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SGVX51_Request_Manager();
+            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SNESTX51_Request_Manager();
             $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
 
             if ( ! is_wp_error( $req_id ) ) {
@@ -251,7 +251,7 @@ class SGVX51_Expense_Manager {
 	 * AJAX Handler for Editing Expense
 	 */
 	public function handle_edit_expense_ajax() {
-		check_ajax_referer( 'sgvx51_edit_expense_nonce', '_wpnonce' );
+		check_ajax_referer( 'SNESTX51_edit_expense_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -297,7 +297,7 @@ class SGVX51_Expense_Manager {
 	 * AJAX Handler for Deleting Expense
 	 */
 	public function handle_delete_expense_ajax() {
-		check_ajax_referer( 'sgvx51_nonce', '_wpnonce' );
+		check_ajax_referer( 'SNESTX51_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -322,7 +322,7 @@ class SGVX51_Expense_Manager {
 	 * AJAX Handler for Approving Expense
 	 */
 	public function handle_approve_expense_ajax() {
-		check_ajax_referer( 'sgvx51_nonce', '_wpnonce' );
+		check_ajax_referer( 'SNESTX51_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );

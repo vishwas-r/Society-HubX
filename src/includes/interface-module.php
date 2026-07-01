@@ -1,18 +1,18 @@
-<?php
+﻿<?php
 /**
  * Interface: Module
  * 
- * Standard interface for all Society GoVernX modules to support
+ * Standard interface for all SocietyNestX modules to support
  * centralized request handling (Approval/Rejection).
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-interface SGVX51_Module {
+interface SNESTX51_Module {
     /**
      * Get the unique slug for this module.
      * Used to route requests to the correct module.

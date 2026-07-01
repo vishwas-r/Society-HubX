@@ -1,16 +1,16 @@
-<?php
+﻿<?php
 /**
  * Class: Admin UI Helper
  * Enqueues Bootstrap and custom styles for Admin Backend.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Admin_UI {
+class SNESTX51_Admin_UI {
 
 	public static function init() {
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
@@ -108,7 +108,7 @@ class SGVX51_Admin_UI {
     }
 
     public static function render_inline_actions( $status, $id, $module = '' ) {
-        $html = '<div class="d-flex justify-content-end gap-1 sgvx-inline-actions">';
+        $html = '<div class="d-flex justify-content-end gap-1 snestx-inline-actions">';
         
         if ( $status === 'pending' ) {
             $html .= sprintf(
@@ -143,27 +143,27 @@ class SGVX51_Admin_UI {
     }
 
 	public static function enqueue_admin_assets( $hook ) {
-		// Assets are now centrally handled in society-governx.php with priority 999 
+		// Assets are now centrally handled in society-nestx.php with priority 999 
         // to ensure correct loading order and Bootstrap overrides.
         return;
         
 		// Only load on our plugin pages
-		if ( strpos( $hook, 'sgvx51' ) === false ) {
+		if ( strpos( $hook, 'SNESTX51' ) === false ) {
 			return;
 		}
 
 		// 1. Google Fonts (Inter) - Local
-		wp_enqueue_style( 'sgvx-fonts', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
+		wp_enqueue_style( 'snestx-fonts', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
 
 		// 2. Bootstrap 5 - Local
-		wp_enqueue_style( 'sgvx-bootstrap', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_style( 'sgvx-bootstrap-icons', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap-icons.min.css', array(), '1.11.3' );
-		wp_enqueue_script( 'sgvx-bootstrap-js', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/lib/bootstrap.bundle.min.js', array('jquery'), '5.3.0', false );
+		wp_enqueue_style( 'snestx-bootstrap', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
+		wp_enqueue_style( 'snestx-bootstrap-icons', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap-icons.min.css', array(), '1.11.3' );
+		wp_enqueue_script( 'snestx-bootstrap-js', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/lib/bootstrap.bundle.min.js', array('jquery'), '5.3.0', false );
 
         // 3. Admin Premium Theme
-		wp_enqueue_style( 'sgvx51-admin-layout', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-layout.css', array('sgvx51-bootstrap'), '1.0.0' );
-		wp_enqueue_style( 'sgvx51-admin-premium', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-premium.css', array('sgvx51-bootstrap', 'sgvx51-admin-layout'), '1.0.1' );
+		wp_enqueue_style( 'snestx51-admin-layout', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-layout.css', array('snestx51-bootstrap'), '1.0.0' );
+		wp_enqueue_style( 'snestx51-admin-premium', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-premium.css', array('snestx51-bootstrap', 'snestx51-admin-layout'), '1.0.1' );
 	}
 }
 
-SGVX51_Admin_UI::init();
+SNESTX51_Admin_UI::init();

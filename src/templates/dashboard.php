@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -44,8 +44,8 @@ if (!empty($data['pending_payment_requests'])) {
 }
 
 // Helper for Indian Numbering Format
-if ( ! function_exists( 'sgvx_in_fmt' ) ) {
-    function sgvx_in_fmt($num, $decimals = 2) {
+if ( ! function_exists( 'SNESTX_in_fmt' ) ) {
+    function SNESTX_in_fmt($num, $decimals = 2) {
         $num = (float)$num;
         if (class_exists('NumberFormatter')) {
             $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
@@ -75,7 +75,7 @@ if ( ! function_exists( 'sgvx_in_fmt' ) ) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var sgvx51_nonce = '<?php echo wp_create_nonce( 'sgvx51_frontend_nonce' ); ?>';
+    var SNESTX51_nonce = '<?php echo wp_create_nonce( 'SNESTX51_frontend_nonce' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
 </script>
 
@@ -101,15 +101,15 @@ if ( ! function_exists( 'sgvx_in_fmt' ) ) {
 <!-- Replace simplified visible/hidden logic with Bootstrap Modals -->
 
 <!-- Modals & Scripts -->
-<?php include SGVX51_PLUGIN_DIR . 'templates/components/dashboard/modals.php'; ?>
+<?php include SNESTX51_PLUGIN_DIR . 'templates/components/dashboard/modals.php'; ?>
 
 <!-- Global Toasts Container -->
 <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 100070;">
-    <div id="sgvx-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="snestx-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-3 py-3 px-4">
-                <i id="sgvx-toast-icon" class="bi fs-4"></i>
-                <div id="sgvx-toast-message" class="fw-bold"></div>
+                <i id="snestx-toast-icon" class="bi fs-4"></i>
+                <div id="snestx-toast-message" class="fw-bold"></div>
             </div>
             <button type="button" class="btn-close btn-close-white me-3 m-auto opacity-50" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -118,7 +118,7 @@ if ( ! function_exists( 'sgvx_in_fmt' ) ) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const requestForm = document.getElementById('sgvx51GeneralRequestForm');
+    const requestForm = document.getElementById('SNESTX51GeneralRequestForm');
     if (requestForm) {
         requestForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -128,11 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerText = 'Submitting...';
 
             const formData = new FormData(this);
-            formData.append('action', 'sgvx51_submit_general_request');
-            formData.append('_wpnonce', '<?php echo wp_create_nonce("sgvx51_frontend_nonce"); ?>');
+            formData.append('action', 'SNESTX51_submit_general_request');
+            formData.append('_wpnonce', '<?php echo wp_create_nonce("SNESTX51_frontend_nonce"); ?>');
 
-            SGVX.ajax({
-                action: 'sgvx51_submit_general_request',
+            SNESTX.ajax({
+                action: 'SNESTX51_submit_general_request',
                 data: formData,
                 loadingButton: btn,
                 reload: true

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Class: DB Router
  * Handles data operations (CRUD) for the Society Management System.
@@ -7,14 +7,14 @@
  * - Writes go to Google Sheets (if connected) then Update Local.
  * - If Offline, Writes go directly to Local JSON.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_DB_Router {
+class SNESTX51_DB_Router {
 	/**
 	 * List of all database table slugs for hybrid storage and data portability.
 	 */
@@ -68,34 +68,34 @@ class SGVX51_DB_Router {
 	public function get_table_name( $slug ) {
 		global $wpdb;
 		$tables = array(
-            'residents'               => $wpdb->prefix . 'society_governx_residents',
-            'flats'                   => $wpdb->prefix . 'society_governx_flats',
-            'daily_help'              => $wpdb->prefix . 'society_governx_daily_help',
-            'invoices'                => $wpdb->prefix . 'society_governx_invoices',
-            'transactions'            => $wpdb->prefix . 'society_governx_transactions',
-            'notices'                 => $wpdb->prefix . 'society_governx_notices',
-            'amenities'               => $wpdb->prefix . 'society_governx_amenities',
-            'bookings'                => $wpdb->prefix . 'society_governx_bookings',
-            'vehicles'                => $wpdb->prefix . 'society_governx_vehicles',
-            'visitors'                => $wpdb->prefix . 'society_governx_visitors',
-            'complaints'              => $wpdb->prefix . 'society_governx_complaints',
-            'suggestions'             => $wpdb->prefix . 'society_governx_suggestions',
-            'polls'                   => $wpdb->prefix . 'society_governx_polls',
-            'poll_options'            => $wpdb->prefix . 'society_governx_poll_options',
-            'poll_votes'              => $wpdb->prefix . 'society_governx_poll_votes',
-            'documents'               => $wpdb->prefix . 'society_governx_documents',
-            'events'                  => $wpdb->prefix . 'society_governx_events',
-            'vendors'                 => $wpdb->prefix . 'society_governx_vendors',
-            'staff'                   => $wpdb->prefix . 'society_governx_staff',
-            'settings'                => $wpdb->prefix . 'society_governx_settings',
-            'requests'                => $wpdb->prefix . 'society_governx_requests',
-            'audit_logs'              => $wpdb->prefix . 'society_governx_audit_logs',
-            'roles'                   => $wpdb->prefix . 'society_governx_roles',
-            'staff_flats'             => $wpdb->prefix . 'society_governx_staff_flats',
-            'resident_role_map'       => $wpdb->prefix . 'society_governx_resident_role_map',
-            'payments'                => $wpdb->prefix . 'society_governx_payments',
+            'residents'               => $wpdb->prefix . 'Society_NestX_residents',
+            'flats'                   => $wpdb->prefix . 'Society_NestX_flats',
+            'daily_help'              => $wpdb->prefix . 'Society_NestX_daily_help',
+            'invoices'                => $wpdb->prefix . 'Society_NestX_invoices',
+            'transactions'            => $wpdb->prefix . 'Society_NestX_transactions',
+            'notices'                 => $wpdb->prefix . 'Society_NestX_notices',
+            'amenities'               => $wpdb->prefix . 'Society_NestX_amenities',
+            'bookings'                => $wpdb->prefix . 'Society_NestX_bookings',
+            'vehicles'                => $wpdb->prefix . 'Society_NestX_vehicles',
+            'visitors'                => $wpdb->prefix . 'Society_NestX_visitors',
+            'complaints'              => $wpdb->prefix . 'Society_NestX_complaints',
+            'suggestions'             => $wpdb->prefix . 'Society_NestX_suggestions',
+            'polls'                   => $wpdb->prefix . 'Society_NestX_polls',
+            'poll_options'            => $wpdb->prefix . 'Society_NestX_poll_options',
+            'poll_votes'              => $wpdb->prefix . 'Society_NestX_poll_votes',
+            'documents'               => $wpdb->prefix . 'Society_NestX_documents',
+            'events'                  => $wpdb->prefix . 'Society_NestX_events',
+            'vendors'                 => $wpdb->prefix . 'Society_NestX_vendors',
+            'staff'                   => $wpdb->prefix . 'Society_NestX_staff',
+            'settings'                => $wpdb->prefix . 'Society_NestX_settings',
+            'requests'                => $wpdb->prefix . 'Society_NestX_requests',
+            'audit_logs'              => $wpdb->prefix . 'Society_NestX_audit_logs',
+            'roles'                   => $wpdb->prefix . 'Society_NestX_roles',
+            'staff_flats'             => $wpdb->prefix . 'Society_NestX_staff_flats',
+            'resident_role_map'       => $wpdb->prefix . 'Society_NestX_resident_role_map',
+            'payments'                => $wpdb->prefix . 'Society_NestX_payments',
         );
-		return $tables[ $slug ] ?? $wpdb->prefix . 'society_governx_' . $slug;
+		return $tables[ $slug ] ?? $wpdb->prefix . 'Society_NestX_' . $slug;
 	}
 
 	/**
@@ -160,7 +160,7 @@ class SGVX51_DB_Router {
 		$results = $this->wpdb->get_results( $query, ARRAY_A );
 		
 		if ( $this->wpdb->last_error ) {
-			error_log( 'SGVX51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log( 'SNESTX51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			return array();
 		}
 		

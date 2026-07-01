@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -9,14 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Setup Wizard
- * A premium, multi-step installer for Society GoVernX.
+ * A premium, multi-step installer for SocietyNestX.
  */
 $step = isset($_GET['step']) ? intval( wp_unslash( $_GET['step'] ) ) : 1;
 $total_steps = 4;
 $progress = ($step / $total_steps) * 100;
 
 // Get current options if any
-$society_name = get_option('sgvx51_society_name', '');
+$society_name = get_option('SNESTX51_society_name', '');
 ?>
 <div class="setup-wizard-wrapper d-flex align-items-center justify-content-center min-vh-100 bg-light">
     <div class="setup-card bg-white shadow-lg rounded-4 overflow-hidden" style="max-width: 800px; width: 100%;">
@@ -50,18 +50,18 @@ $society_name = get_option('sgvx51_society_name', '');
                     </ul>
                 </div>
                 <div class="small text-white-50">
-                    &copy; <?php echo wp_date('Y'); ?> Society GoVernX
+                    &copy; <?php echo wp_date('Y'); ?> SocietyNestX
                 </div>
             </div>
 
             <!-- Content Area -->
             <div class="col-md-8 p-5">
                 <form method="post" action="admin-post.php" enctype="multipart/form-data">
-                    <?php wp_nonce_field('sgvx51_setup_nonce'); ?>
-                    <input type="hidden" name="action" value="sgvx51_setup_action">
+                    <?php wp_nonce_field('SNESTX51_setup_nonce'); ?>
+                    <input type="hidden" name="action" value="SNESTX51_setup_action">
                     
                     <?php if($step == 1): ?>
-                        <input type="hidden" name="sgvx51_setup_step" value="identity">
+                        <input type="hidden" name="SNESTX51_setup_step" value="identity">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 1 of 4</span>
                             <h2 class="fw-bold text-dark">Society Identity</h2>
@@ -91,7 +91,7 @@ $society_name = get_option('sgvx51_society_name', '');
                         </div>
 
                     <?php elseif($step == 2): ?>
-                        <input type="hidden" name="sgvx51_setup_step" value="property">
+                        <input type="hidden" name="SNESTX51_setup_step" value="property">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 2 of 4</span>
                             <h2 class="fw-bold text-dark">Property Structure</h2>
@@ -120,7 +120,7 @@ $society_name = get_option('sgvx51_society_name', '');
                         </div>
 
                     <?php elseif($step == 3): ?>
-                        <input type="hidden" name="sgvx51_setup_step" value="financials">
+                        <input type="hidden" name="SNESTX51_setup_step" value="financials">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 3 of 4</span>
                             <h2 class="fw-bold text-dark">Financial Base</h2>
@@ -155,7 +155,7 @@ $society_name = get_option('sgvx51_society_name', '');
                         </div>
 
                     <?php elseif($step == 4): ?>
-                        <input type="hidden" name="sgvx51_setup_step" value="finalize">
+                        <input type="hidden" name="SNESTX51_setup_step" value="finalize">
                         <input type="hidden" name="finalize" value="1">
                         <div class="text-center py-4">
                             <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
@@ -174,7 +174,7 @@ $society_name = get_option('sgvx51_society_name', '');
 
                     <div class="mt-5 d-flex justify-content-between align-items-center pt-4 border-top border-light">
                         <?php if($step > 1 && $step < 4): ?>
-                            <a href="?page=sgvx51-setup&step=<?php echo $step - 1; ?>" class="btn btn-link text-secondary text-decoration-none fw-semibold">
+                            <a href="?page=snestx51-setup&step=<?php echo $step - 1; ?>" class="btn btn-link text-secondary text-decoration-none fw-semibold">
                                 <i class="bi bi-arrow-left me-2"></i> Back
                             </a>
                         <?php else: ?>
@@ -187,7 +187,7 @@ $society_name = get_option('sgvx51_society_name', '');
                     </div>
 
                     <?php if($step < 4): ?>
-                    <input type="hidden" name="_wp_http_referer" value="<?php echo esc_url(add_query_arg('step', $step + 1, admin_url('admin.php?page=sgvx51-setup'))); ?>">
+                    <input type="hidden" name="_wp_http_referer" value="<?php echo esc_url(add_query_arg('step', $step + 1, admin_url('admin.php?page=snestx51-setup'))); ?>">
                     <?php endif; ?>
                 </form>
             </div>

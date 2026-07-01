@@ -1,58 +1,58 @@
-<?php
+﻿<?php
 /**
  * Module: Notice Board
  * Handles Public/Private Notices with modern AJAX Support.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Notice_Board {
+class SNESTX51_Notice_Board {
 
 	private $db;
 	private $drive;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
-		$this->drive = new SGVX51_Drive_Manager();
+		$this->db = new SNESTX51_DB_Router();
+		$this->drive = new SNESTX51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 
         // AJAX Handlers
-        add_action( 'wp_ajax_sgvx51_add_notice', array( $this, 'ajax_save_notice' ) );
-        add_action( 'wp_ajax_sgvx51_update_notice', array( $this, 'ajax_save_notice' ) );
-        add_action( 'wp_ajax_sgvx51_delete_notice', array( $this, 'ajax_delete_notice' ) );
-        add_action( 'wp_ajax_sgvx51_toggle_pin', array( $this, 'ajax_toggle_pin' ) );
-        add_action( 'wp_ajax_sgvx51_get_notice', array( $this, 'ajax_get_notice' ) );
+        add_action( 'wp_ajax_SNESTX51_add_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_SNESTX51_update_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_SNESTX51_delete_notice', array( $this, 'ajax_delete_notice' ) );
+        add_action( 'wp_ajax_SNESTX51_toggle_pin', array( $this, 'ajax_toggle_pin' ) );
+        add_action( 'wp_ajax_SNESTX51_get_notice', array( $this, 'ajax_get_notice' ) );
 	}
 
 	public function register_menu() {
 		add_submenu_page(
-			'sgvx51-settings',
+			'snestx51-settings',
 			'Notice Board',
 			'Notices',
 			'read', // Granular check inside render_page
-			'sgvx51-notices',
+			'snestx51-notices',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function render_page() {
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_view' ) ) {
             wp_die( 'You do not have permission to view notices.' );
         }
-		SGVX51_Admin_App::render_view('notices');
+		SNESTX51_Admin_App::render_view('notices');
 	}
 
     /**
      * AJAX: Get Single Notice.
      */
     public function ajax_get_notice() {
-        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
         
         $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $notices = $this->db->get('notices');
@@ -70,9 +70,9 @@ class SGVX51_Notice_Board {
      * AJAX: Save/Update Notice.
      */
     public function ajax_save_notice() {
-        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
 
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
@@ -128,9 +128,9 @@ class SGVX51_Notice_Board {
      * AJAX: Delete Notice.
      */
     public function ajax_delete_notice() {
-        check_ajax_referer('sgvx51_delete_notice_nonce', '_wpnonce');
+        check_ajax_referer('SNESTX51_delete_notice_nonce', '_wpnonce');
         
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
@@ -145,9 +145,9 @@ class SGVX51_Notice_Board {
      * AJAX: Toggle Pin Status.
      */
     public function ajax_toggle_pin() {
-        check_ajax_referer('sgvx51_notice_nonce', '_wpnonce');
+        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
         
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
             wp_send_json_error(['message' => 'Unauthorized'], 403);
         }
@@ -166,7 +166,7 @@ class SGVX51_Notice_Board {
     private function broadcast_notice($notice) {
         $residents = $this->db->get('residents');
         $audience = $notice['audience'];
-        $dispatcher = Society_GoVernX::get_instance()->notifications;
+        $dispatcher = Society_NestX::get_instance()->notifications;
 
         if (!$dispatcher) return;
 

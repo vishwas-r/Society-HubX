@@ -1,18 +1,18 @@
-<?php
+﻿<?php
 /**
  * Class: REST Staff Controller
  * Endpoints for managing society staff and daily help.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_REST_Staff_Controller extends WP_REST_Controller {
+class SNESTX51_REST_Staff_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-governx/v1';
+	protected $namespace = 'society-nestx/v1';
 	protected $rest_base = 'staff';
 
 	public function register_routes() {
@@ -20,13 +20,13 @@ class SGVX51_REST_Staff_Controller extends WP_REST_Controller {
 			array(
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( $this, 'get_items' ),
-				'permission_callback' => array( 'SGVX51_REST_Manager', 'check_permission' ),
+				'permission_callback' => array( 'SNESTX51_REST_Manager', 'check_permission' ),
 			),
 		) );
 	}
 
 	public function get_items( $request ) {
-		$db = Society_GoVernX::get_instance()->db;
+		$db = Society_NestX::get_instance()->db;
 		$staff = $db->get( 'daily_help' );
 
 		if ( empty( $staff ) ) {
@@ -34,11 +34,11 @@ class SGVX51_REST_Staff_Controller extends WP_REST_Controller {
 		}
 
 		// Apply DPDP masking
-		$privileged = Society_GoVernX::get_instance()->rbac->check_capability( get_current_user_id(), 'view_pii' );
+		$privileged = Society_NestX::get_instance()->rbac->check_capability( get_current_user_id(), 'view_pii' );
 		
 		foreach ( $staff as &$s ) {
 			if ( ! $privileged ) {
-				$s['phone'] = SGVX51_Privacy_Manager::mask_data( $s['phone'] );
+				$s['phone'] = SNESTX51_Privacy_Manager::mask_data( $s['phone'] );
 			}
 		}
 

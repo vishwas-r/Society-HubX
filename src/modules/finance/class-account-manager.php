@@ -1,38 +1,38 @@
-<?php
+﻿<?php
 /**
  * Module: Account Manager
  * Handles Resident Invoices, Payments, and Maintenance Dues.
  *
- * @package Society_GoVernX
+ * @package Society_NestX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SGVX51_Account_Manager implements SGVX51_Module {
+class SNESTX51_Account_Manager implements SNESTX51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SGVX51_DB_Router();
+		$this->db = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// Handlers
-		add_action( 'admin_post_sgvx51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
-		add_action( 'admin_post_sgvx51_record_payment', array( $this, 'handle_record_payment' ) );
-		add_action( 'admin_post_sgvx51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
-		add_action( 'admin_post_sgvx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
-		add_action( 'admin_post_sgvx51_delete_payment', array( $this, 'handle_delete_payment' ) );
-		add_action( 'admin_post_sgvx51_print_receipt', array( $this, 'handle_print_receipt' ) );
+		add_action( 'admin_post_SNESTX51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
+		add_action( 'admin_post_SNESTX51_record_payment', array( $this, 'handle_record_payment' ) );
+		add_action( 'admin_post_SNESTX51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
+		add_action( 'admin_post_SNESTX51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
+		add_action( 'admin_post_SNESTX51_delete_payment', array( $this, 'handle_delete_payment' ) );
+		add_action( 'admin_post_SNESTX51_print_receipt', array( $this, 'handle_print_receipt' ) );
 
 		// AJAX for Residents
-		add_action( 'wp_ajax_sgvx51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
+		add_action( 'wp_ajax_SNESTX51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
 
 		// Register Module
-		add_filter( 'sgvx51_get_module_accounts', array( $this, 'get_instance' ) );
-		add_filter( 'sgvx51_get_module_account', array( $this, 'get_instance' ) );
+		add_filter( 'SNESTX51_get_module_accounts', array( $this, 'get_instance' ) );
+		add_filter( 'SNESTX51_get_module_account', array( $this, 'get_instance' ) );
 	}
 
 	public function get_instance() {
@@ -56,11 +56,11 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'sgvx51-settings',
+			'snestx51-settings',
 			'Society Accounts',
 			'Accounts',
 			'read', // Granular check inside render_page
-			'sgvx51-accounts',
+			'snestx51-accounts',
 			array( $this, 'render_page' )
 		);
 	}
@@ -69,20 +69,20 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Render Admin View.
 	 */
 	public function render_page() {
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_view' ) ) {
             wp_die( 'You do not have permission to view accounts.' );
         }
-		SGVX51_Admin_App::render_view('accounts');
+		SNESTX51_Admin_App::render_view('accounts');
 	}
 
 	/**
 	 * Generate Monthly Invoices (Bulk or Single)
 	 */
 	public function handle_generate_invoices() {
-		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
         
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$month = isset( $_POST['month'] ) ? sanitize_text_field( wp_unslash( $_POST['month'] ) ) : ''; // YYYY-MM
@@ -94,26 +94,26 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 		if ( ! $month || ! $amount ) wp_die( 'Invalid Data' );
 
         // Check if job already running
-        $job_key = "sgvx51_job_bulk_invoice_{$month}_{$type}";
+        $job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
         $existing_job = get_option( $job_key );
         if ( $existing_job && $existing_job['status'] === 'running' ) {
-            wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&error=job_running' ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&error=job_running' ) );
             exit;
         }
 
         // Enterprise Upgrade: Background Processing
-        if ( class_exists('SGVX51_Background_Worker') ) {
-            $worker = new SGVX51_Background_Worker();
+        if ( class_exists('SNESTX51_Background_Worker') ) {
+            $worker = new SNESTX51_Background_Worker();
             if ( $worker->is_available() ) {
                 $worker->schedule_bulk_invoices( $month, $amount, $type );
-                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=scheduled' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=scheduled' ) );
                 exit;
             }
         }
         
         // Fallback to synchronous if worker missing or unavailable
         $this->perform_bulk_invoice_generation( $month, $amount, $type, $due_date, $description );
-        wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=generated' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=generated' ) );
 		exit;
 	}
 
@@ -181,21 +181,21 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Record a Payment manually.
 	 */
 	public function handle_record_payment() {
-		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
 		
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
         $invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
         
         // 1. Synchronize with Request Manager if a pending request exists
         if ( ! empty( $invoice_id ) && $invoice_id !== 'Total Outstanding' ) {
-            require_once SGVX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SGVX51_Request_Manager();
+            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SNESTX51_Request_Manager();
             $sync_res = $rm->approve_request( $invoice_id );
             
             if ( ! is_wp_error( $sync_res ) ) {
-                wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=payment_recorded' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=payment_recorded' ) );
                 exit;
             }
         }
@@ -207,7 +207,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 			wp_die( esc_html( $res->get_error_message() ) );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=payment_recorded' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=payment_recorded' ) );
 		exit;
 	}
 
@@ -226,7 +226,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
         $request_id = sanitize_text_field( $data['request_id'] ?? '' );
         
         // Debug Log
-        error_log("SGVX51 Payment: Processing Payment for Flat: $block-$flat_no, Amount: $amount_remaining, Inv: $invoice_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+        error_log("SNESTX51 Payment: Processing Payment for Flat: $block-$flat_no, Amount: $amount_remaining, Inv: $invoice_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		$affected_invoices = [];
 
@@ -259,7 +259,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
                 return strtolower(trim($inv['status'] ?? '')) !== 'paid';
             });
 
-            error_log("SGVX51 Payment: Found " . count($unpaid_invoices) . " unpaid invoices for FIFO."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("SNESTX51 Payment: Found " . count($unpaid_invoices) . " unpaid invoices for FIFO."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
             foreach ( $unpaid_invoices as $inv ) {
                 if ( $amount_remaining <= 0 ) break;
@@ -282,13 +282,13 @@ class SGVX51_Account_Manager implements SGVX51_Module {
                          $affected_invoices[] = $inv;
                      $amount_remaining -= $payment_towards_this_inv;
                      
-                     error_log("SGVX51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                     error_log("SNESTX51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 }
             }
         }
 
         // Save all affected invoices (Status + Aggregate Data updates)
-        error_log("SGVX51 Payment: Saving status for " . count($affected_invoices) . " affected invoices."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+        error_log("SNESTX51 Payment: Saving status for " . count($affected_invoices) . " affected invoices."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         foreach ( $affected_invoices as $inv ) {
             $this->db->update( 'invoices', array( 
                 'status'     => $inv['status'],
@@ -369,7 +369,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	 * Handle Payment Request from Resident (Frontend)
 	 */
 	public function handle_submit_payment_request() {
-		check_ajax_referer( 'sgvx51_frontend_nonce' );
+		check_ajax_referer( 'SNESTX51_frontend_nonce' );
 		
 		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 		$amount = isset( $_POST['amount'] ) ? floatval( wp_unslash( $_POST['amount'] ) ) : 0;
@@ -403,7 +403,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 			'resident_name' => $resident ? $resident['name'] : 'Unknown'
 		];
 
-		$rm = new SGVX51_Request_Manager();
+		$rm = new SNESTX51_Request_Manager();
 		$res = $rm->create_request( 'accounts', 'record_payment', $payload, $invoice_id );
 
         if ( ! is_wp_error( $res ) ) {
@@ -422,9 +422,9 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 
 
 	public function handle_delete_payment() {
-		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
 
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
@@ -445,7 +445,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
             $status = ( $paid >= floatval( $inv['amount'] ) ) ? 'paid' : ( ( $paid > 0 ) ? 'partial' : 'unpaid' );
             $this->db->update( 'invoices', array( 'status' => $status ), array( 'id' => $invoice_id ) );
             
-            wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=updated' ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=updated' ) );
         } else {
             wp_die( 'Invoice not found' );
         }
@@ -453,9 +453,9 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	}
 
 	public function handle_edit_invoice() {
-		if ( ! check_admin_referer( 'sgvx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
 
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
@@ -481,7 +481,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
             
 			$this->db->update( 'invoices', $update_data, array( 'id' => $id ) );
 			
-			wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=updated' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=updated' ) );
 		} else {
 			wp_die( 'Invoice not found' );
 		}
@@ -489,20 +489,20 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 	}
 
 	public function handle_delete_invoice() {
-		if ( ! check_admin_referer( 'sgvx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
 
-        $rbac = new SGVX51_RBAC_Manager();
+        $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$this->db->delete( 'invoices', array( 'id' => $id ) );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=sgvx51-accounts&success=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&success=deleted' ) );
 		exit;
 	}
 
 	public function handle_print_receipt() {
-		if ( ! check_admin_referer( 'sgvx51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'SNESTX51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
 
 		$invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
 		$invoices = $this->db->get( 'invoices' );
@@ -518,7 +518,7 @@ class SGVX51_Account_Manager implements SGVX51_Module {
 		if ( ! $inv ) wp_die( 'Invoice not found' );
 
 		// Load Template directly
-		include SGVX51_PLUGIN_DIR . 'templates/print-receipt.php';
+		include SNESTX51_PLUGIN_DIR . 'templates/print-receipt.php';
 		exit;
 	}
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Utility: Fuzzy Search Initialization
  * Uses Fuse.js to provide robust fuzzy searching across the app.
  */
@@ -6,10 +6,10 @@
 /**
  * Window-level helper to create a Fuse instance for a set of items
  */
-window.sgvxCreateFuse = function (itemSelector, optionsOrKeys = ['text']) {
+window.SNESTXCreateFuse = function (itemSelector, optionsOrKeys = ['text']) {
     const itemElements = document.querySelectorAll(itemSelector);
     if (!itemElements.length) {
-        // console.warn('sgvxCreateFuse: No elements found for selector:', itemSelector);
+        // console.warn('SNESTXCreateFuse: No elements found for selector:', itemSelector);
         return null; // Silent fail in production often preferred, logging only if debug
     }
 
@@ -41,7 +41,7 @@ window.sgvxCreateFuse = function (itemSelector, optionsOrKeys = ['text']) {
         return { el: el, text: searchText };
     });
 
-    // console.log(`sgvxCreateFuse: Indexed ${items.length} items for ${itemSelector}`);
+    // console.log(`SNESTXCreateFuse: Indexed ${items.length} items for ${itemSelector}`);
 
     return new Fuse(items, {
         keys: keys,
@@ -53,7 +53,7 @@ window.sgvxCreateFuse = function (itemSelector, optionsOrKeys = ['text']) {
     });
 };
 
-window.sgvxGetFuzzyMatches = function (fuse, query) {
+window.SNESTXGetFuzzyMatches = function (fuse, query) {
     if (!query || !fuse) return null;
     try {
         const results = fuse.search(query);
@@ -67,25 +67,25 @@ window.sgvxGetFuzzyMatches = function (fuse, query) {
 
         return new Set(mapped);
     } catch (e) {
-        console.error('sgvxGetFuzzyMatches Error:', e);
+        console.error('SNESTXGetFuzzyMatches Error:', e);
         return new Set();
     }
 };
 
-window.sgvxInitFuzzySearch = function (inputSelector, containerSelector, itemSelector) {
+window.SNESTXInitFuzzySearch = function (inputSelector, containerSelector, itemSelector) {
     const input = document.querySelector(inputSelector);
     if (!input) {
-        console.warn('sgvxInitFuzzySearch: Input not found for selector:', inputSelector);
+        console.warn('SNESTXInitFuzzySearch: Input not found for selector:', inputSelector);
         return;
     }
 
-    console.log(`sgvxInitFuzzySearch: Initialized for input ${inputSelector}, targeting ${itemSelector}`);
+    console.log(`SNESTXInitFuzzySearch: Initialized for input ${inputSelector}, targeting ${itemSelector}`);
 
     // We refresh the list occasionally to handle dynamic items
     let fuse = null;
 
     const refreshFuse = () => {
-        fuse = window.sgvxCreateFuse(itemSelector);
+        fuse = window.SNESTXCreateFuse(itemSelector);
     };
 
     // Initial load
@@ -101,7 +101,7 @@ window.sgvxInitFuzzySearch = function (inputSelector, containerSelector, itemSel
                 el.classList.remove('d-none');
                 el.style.display = '';
             });
-            console.log(`sgvxInitFuzzySearch [${inputSelector}]: Query cleared, showing all ${items.length} items`);
+            console.log(`SNESTXInitFuzzySearch [${inputSelector}]: Query cleared, showing all ${items.length} items`);
             return;
         }
 
@@ -109,7 +109,7 @@ window.sgvxInitFuzzySearch = function (inputSelector, containerSelector, itemSel
         const results = fuse.search(query);
         const matches = new Set(results.filter(r => r && r.item).map(r => r.item.el));
 
-        console.log(`sgvxInitFuzzySearch [${inputSelector}]: Query="${query}", Found ${matches.size}/${items.length} matches`);
+        console.log(`SNESTXInitFuzzySearch [${inputSelector}]: Query="${query}", Found ${matches.size}/${items.length} matches`);
 
         items.forEach(el => {
             if (matches.has(el)) {
@@ -128,19 +128,19 @@ window.sgvxInitFuzzySearch = function (inputSelector, containerSelector, itemSel
 document.addEventListener('DOMContentLoaded', function () {
     // Admin Panel Search Initializations
     if (document.getElementById('facility-list-search')) {
-        sgvxInitFuzzySearch('#facility-list-search', null, '.list-group-item[data-search]');
+        SNESTXInitFuzzySearch('#facility-list-search', null, '.list-group-item[data-search]');
     }
     if (document.getElementById('bookingSearch')) {
-        sgvxInitFuzzySearch('#bookingSearch', null, '.booking-row[data-search]');
+        SNESTXInitFuzzySearch('#bookingSearch', null, '.booking-row[data-search]');
     }
     // Modules with specific search logic (Residents, Flats, Vehicles, Staff, Assets, Expenses)
     // are handled in their own JS files to avoid conflicts with tab/filter state.
 
     // Resident Dashboard Search Initializations
     if (document.getElementById('facility-dashboard-search')) {
-        sgvxInitFuzzySearch('#facility-dashboard-search', null, '.facility-card');
+        SNESTXInitFuzzySearch('#facility-dashboard-search', null, '.facility-card');
     }
     if (document.getElementById('booking-dashboard-search')) {
-        sgvxInitFuzzySearch('#booking-dashboard-search', null, '.booking-dash-row');
+        SNESTXInitFuzzySearch('#booking-dashboard-search', null, '.booking-dash-row');
     }
 });

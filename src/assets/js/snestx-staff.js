@@ -1,5 +1,5 @@
-/**
- * SGVX Staff Management JS
+﻿/**
+ * SNESTX Staff Management JS
  */
 (function ($) {
     'use strict';
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SGVX.ajax({
-                action: 'sgvx51_get_module_config',
+            const result = await SNESTX.ajax({
+                action: 'SNESTX51_get_module_config',
                 data: { module: 'staff' },
                 showOverlay: false,
                 suppressErrorToast: true // Silent fetch for config
@@ -83,11 +83,11 @@
         const categoryVal = categoryFilter ? categoryFilter.value : 'all';
         const statusVal = statusFilter ? statusFilter.value : 'all';
 
-        if (!fuse && window.sgvxCreateFuse) {
-            fuse = window.sgvxCreateFuse('.staff-row');
+        if (!fuse && window.SNESTXCreateFuse) {
+            fuse = window.SNESTXCreateFuse('.staff-row');
         }
 
-        const fuzzyMatches = searchVal && window.sgvxGetFuzzyMatches ? window.sgvxGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(fuse, searchVal) : null;
 
         $('.staff-row').each(function () {
             const $row = $(this);
@@ -177,7 +177,7 @@
 
         $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
-        $form.find('[name="action"]').val('sgvx51_edit_staff');
+        $form.find('[name="action"]').val('SNESTX51_edit_staff');
 
         $('#staffModalTitle').text('Edit Staff: ' + staff.name);
         staffModal.show();
@@ -186,7 +186,7 @@
     function resetStaffForm() {
         const $form = $('#add-staff-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('sgvx51_add_staff');
+        $form.find('[name="action"]').val('SNESTX51_add_staff');
         $form.find('[name="flats_served[]"]').val([]); // Clear multi-select
         $form.find('[name="staff_id"]').val('');
 
@@ -212,8 +212,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
-            SGVX.ajax({
-                action: 'sgvx51_delete_staff',
+            SNESTX.ajax({
+                action: 'SNESTX51_delete_staff',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -238,8 +238,8 @@
     };
 
     window.restoreStaff = async function (id) {
-        SGVX.ajax({
-            action: 'sgvx51_restore_staff',
+        SNESTX.ajax({
+            action: 'SNESTX51_restore_staff',
             data: {
                 id: id,
                 _wpnonce: Config.nonce
@@ -272,7 +272,7 @@
             $('#staff-search-input').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.sgvxCreateFuse) fuse = window.sgvxCreateFuse('.staff-row');
+                if (window.SNESTXCreateFuse) fuse = window.SNESTXCreateFuse('.staff-row');
             });
 
             // Filter Buttons
@@ -293,7 +293,7 @@
                     const action = $form.find('[name="action"]').val();
                     const formData = new FormData($form[0]);
 
-                    SGVX.ajax({
+                    SNESTX.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),
