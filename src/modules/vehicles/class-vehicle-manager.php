@@ -8,37 +8,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
+class SHUBX51_Vehicle_Manager implements SHUBX51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SNESTX51_DB_Router();
+		$this->db = new SHUBX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 
 		// AJAX Endpoints
-		add_action( 'wp_ajax_snestx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
-		add_action( 'wp_ajax_snestx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
-		add_action( 'wp_ajax_snestx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
-		add_action( 'wp_ajax_snestx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
+		add_action( 'wp_ajax_shubx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
+		add_action( 'wp_ajax_shubx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
+		add_action( 'wp_ajax_shubx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
+		add_action( 'wp_ajax_shubx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
 
-		add_action( 'admin_post_snestx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
-		add_action( 'admin_post_snestx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
-		add_action( 'admin_post_snestx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
-		add_action( 'admin_post_snestx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
-		add_action( 'admin_post_snestx51_approve_vehicle', array( $this, 'handle_approve_vehicle' ) );
+		add_action( 'admin_post_shubx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
+		add_action( 'admin_post_shubx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
+		add_action( 'admin_post_shubx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
+		add_action( 'admin_post_shubx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
+		add_action( 'admin_post_shubx51_approve_vehicle', array( $this, 'handle_approve_vehicle' ) );
         
         // Register Module
-        add_filter( 'snestx51_get_module_vehicles', array( $this, 'get_instance' ) );
-        add_filter( 'snestx51_get_module_vehicle', array( $this, 'get_instance' ) ); // Singular alias
+        add_filter( 'shubx51_get_module_vehicles', array( $this, 'get_instance' ) );
+        add_filter( 'shubx51_get_module_vehicle', array( $this, 'get_instance' ) ); // Singular alias
 	}
 
     /**
      * Singleton accessor for the filter to return this instance.
      * Note: Since the constructor is called in main plugin, $this is already instantiated.
      * But the filter needs to return THIS object.
-     * Since we don't have a static instance in this class pattern (it was 'new SNESTX51_Vehicle_Manager' in main),
+     * Since we don't have a static instance in this class pattern (it was 'new SHUBX51_Vehicle_Manager' in main),
      * we need to capture it.
      * 
      * Actually, the main plugin file treats these as 'new Class()'.
@@ -89,7 +89,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 	private function perform_save_vehicle( $data, $is_update ) {
 		// Ensure DB Schema is up to date
-		SNESTX51_DB_Schema::create_tables();
+		SHUBX51_DB_Schema::create_tables();
 
         // Extract Data safely
 		$number  = isset($data['number']) ? sanitize_text_field( $data['number'] ) : '';
@@ -168,11 +168,11 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'snestx51-settings',
+			'shubx51-settings',
 			'Vehicle Registry',
 			'Vehicles',
 			'read', // Granular check in render_page
-			'snestx51-vehicles',
+			'shubx51-vehicles',
 			array( $this, 'render_page' )
 		);
 	}
@@ -181,9 +181,9 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 		if ( wp_doing_ajax() ) {
             // Start buffering to catch any PHP warnings/notices
             ob_start();
-            check_ajax_referer( 'snestx51_add_vehicle_nonce' );
+            check_ajax_referer( 'shubx51_add_vehicle_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'snestx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $payload = $_POST;
@@ -191,7 +191,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
             $payload['id'] = uniqid('veh_');
         }
         
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
 
         // IF ADMIN or has vehicles_manage: Immediate Add
@@ -199,7 +199,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
             $res = $this->perform_save_vehicle( $payload, false );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean(); // Capture any premature output
-                if ( ! empty( $debug_output ) ) error_log( 'SNESTX Vehicle Add Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                if ( ! empty( $debug_output ) ) error_log( 'SHUBX Vehicle Add Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 
                 // Aggressive Clean: Wipe all buffers
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -214,11 +214,11 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
            $payload['status'] = 'pending';
            $this->perform_save_vehicle( $payload, false );
 
-            $rm = new SNESTX51_Request_Manager();
+            $rm = new SHUBX51_Request_Manager();
            $res = $rm->create_request( 'vehicles', 'add', $payload, $payload['id'] );
            if ( wp_doing_ajax() ) {
                $debug_output = ob_get_clean();
-               if ( ! empty( $debug_output ) ) error_log( 'SNESTX Vehicle Add Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+               if ( ! empty( $debug_output ) ) error_log( 'SHUBX Vehicle Add Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                // Aggressive Clean
                while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -231,23 +231,23 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
            }
        }
 		
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&success=Added' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&success=Added' ) );
 		exit;
 	}
 
 	public function handle_edit_vehicle() {
 		if ( wp_doing_ajax() ) {
             ob_start(); // Start buffering
-            check_ajax_referer( 'snestx51_add_vehicle_nonce' );
+            check_ajax_referer( 'shubx51_add_vehicle_nonce' );
         } else {
             // Accept either the admin/add nonce or the frontend edit token
             $nonce_ok = false;
             if ( ! empty( $_POST['_wpnonce'] ) ) {
-                if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_vehicle_nonce' ) || wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_edit_vehicle_action' ) ) {
+                if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_vehicle_nonce' ) || wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_edit_vehicle_action' ) ) {
                     $nonce_ok = true;
                 }
             }
-            if ( ! $nonce_ok && ! empty( $_POST['snestx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['snestx51_edit_vehicle_token'] ) ), 'snestx51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['shubx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['shubx51_edit_vehicle_token'] ) ), 'shubx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) wp_die( 'Security check failed' );
@@ -255,14 +255,14 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 		$id = isset($_POST['vehicle_id']) ? sanitize_text_field( wp_unslash( $_POST['vehicle_id'] ) ) : '';
         
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
 
         // IF ADMIN or has vehicles_manage: Immediate
         if ( $has_manage ) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sync_res = $rm->approve_request( $id );
             
             if ( ! is_wp_error( $sync_res ) ) {
@@ -272,7 +272,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
                     while ( ob_get_level() > 0 ) { ob_end_clean(); }
                     wp_send_json_success(['message' => 'Vehicle updated and request synchronized']);
                 } else {
-                    wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&success=Updated' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&success=Updated' ) );
                 }
                 exit;
             }
@@ -290,11 +290,11 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
                 exit;
             }
         } else {
-            $rm = new SNESTX51_Request_Manager();
+            $rm = new SHUBX51_Request_Manager();
             $res = $rm->create_request( 'vehicles', 'edit', $_POST, $id );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean();
-                if ( ! empty( $debug_output ) ) error_log( 'SNESTX Vehicle Edit Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                if ( ! empty( $debug_output ) ) error_log( 'SHUBX Vehicle Edit Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -307,7 +307,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
             }
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&success=Updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&success=Updated' ) );
 		exit;
 	}
 
@@ -315,36 +315,36 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 	public function handle_delete_vehicle() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_delete_vehicle_nonce' );
+            check_ajax_referer( 'shubx51_delete_vehicle_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'snestx51_delete_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_delete_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
         
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
 
         // IF ADMIN or has vehicles_manage: Immediate
         if ( $has_manage ) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sync_res = $rm->approve_request( $id );
             
             if ( ! is_wp_error( $sync_res ) ) {
                 if ( wp_doing_ajax() ) {
                     wp_send_json_success(['message' => 'Vehicle archived and request synchronized']);
                 } else {
-                    wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&deleted=1' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&deleted=1' ) );
                 }
                 exit;
             }
 
              $res = $this->perform_delete_vehicle( ['id' => $id] );
         } else {
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $res = $rm->create_request( 'vehicles', 'delete', ['id' => $id], $id );
             if ( wp_doing_ajax() ) {
                 if ( is_wp_error( $res ) ) {
@@ -355,27 +355,27 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
             }
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&deleted=1' ) );
 		exit;
 	}
 
 	public function handle_restore_vehicle() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_add_vehicle_nonce' ); // Reusing add nonce
+            check_ajax_referer( 'shubx51_add_vehicle_nonce' ); // Reusing add nonce
         } else {
-		    if ( ! check_admin_referer( 'snestx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
         
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
 
         if ( $has_manage ) {
             $this->db->update( 'vehicles', array( 'status' => 'approved' ), array( 'id' => $id ) );
 
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $rm->log_audit('vehicle_restored', 'vehicles', $id, "Vehicle ID: $id");
 
             if ( wp_doing_ajax() ) {
@@ -384,30 +384,30 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
              }
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&restored=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&restored=1' ) );
 		exit;
 	}
 
 	public function handle_approve_vehicle() {
 		// Use the same nonce as add/edit for now or generic custom one? 
 		// Simpler to rely on generic admin nonce for actions if not form.
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'vehicles_manage' ) ) wp_die('Unauthorized');
 		
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin action link redirect verification.
 		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$this->db->update( 'vehicles', array( 'status' => 'approved' ), array( 'id' => $id ) );
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-vehicles&approved=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-vehicles&approved=1' ) );
 		exit;
 	}
 
 	public function render_page() {
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'vehicles_view' ) ) {
             wp_die( 'You do not have permission to view the Vehicle Registry.' );
         }
 
-        $rm = new SNESTX51_Request_Manager();
+        $rm = new SHUBX51_Request_Manager();
         $unified = $rm->get_unified_data( 'vehicles', 'vehicles' );
         
         $flats = $this->db->get('flats');
@@ -418,7 +418,7 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
             return strnatcmp($a['id'] ?? '', $b['id'] ?? '');
         });
 
-		SNESTX51_Admin_App::render_view('vehicles', [
+		SHUBX51_Admin_App::render_view('vehicles', [
             'vehicles' => $unified['active'],
             'pending'  => $unified['pending'],
             'history'  => array_filter($unified['active'], function($v){ return ($v['status'] ?? '') === 'archived'; }),

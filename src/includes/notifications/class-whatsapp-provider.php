@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_WhatsApp_Provider implements SNESTX51_Notification_Provider_Interface {
+class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interface {
     
     public function send($user_id, $content, $args = []) {
         $config = $this->get_config();
@@ -21,7 +21,7 @@ class SNESTX51_WhatsApp_Provider implements SNESTX51_Notification_Provider_Inter
             return new WP_Error('budget_exceeded', 'WhatsApp monthly budget reached');
         }
 
-        $resident = Society_NestX::get_instance()->db->get_resident_by_wp_id($user_id);
+        $resident = Society_HubX::get_instance()->db->get_resident_by_wp_id($user_id);
         if (!$resident || empty($resident['phone'])) {
             return new WP_Error('invalid_phone', 'Resident phone number not found');
         }
@@ -54,7 +54,7 @@ class SNESTX51_WhatsApp_Provider implements SNESTX51_Notification_Provider_Inter
     }
 
     private function get_config() {
-        $channels = Society_NestX::get_instance()->db->get('notification_channels');
+        $channels = Society_HubX::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'whatsapp') {
                 $settings = json_decode($c['config'], true) ?: [];

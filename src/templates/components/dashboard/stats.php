@@ -74,15 +74,15 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                         <i class="bi <?php echo $status_icon; ?> fs-5"></i>
                      </div>
                  </div>
-                 <div class="h2 fw-bold text-dark m-0">₹<?php echo SNESTX_in_fmt($display_dues, 0); ?></div>
+                 <div class="h2 fw-bold text-dark m-0">₹<?php echo SHUBX_in_fmt($display_dues, 0); ?></div>
                  
                   <?php if ( $pending_payment_total > 0 && $display_dues == 0 ) : ?>
                      <div class="mt-3 d-flex align-items-center gap-2 bg-info bg-opacity-10 text-info rounded-2 px-3 py-2 small fw-bold border border-info border-opacity-10">
                          <div class="spinner-grow spinner-grow-sm" role="status"></div>
-                         <span>Verifying: ₹<?php echo SNESTX_in_fmt($pending_payment_total, 0); ?></span>
+                         <span>Verifying: ₹<?php echo SHUBX_in_fmt($pending_payment_total, 0); ?></span>
                      </div>
                   <?php elseif ( $display_dues > 0 ) : ?>
-                  <button data-bs-toggle="modal" data-bs-target="#SNESTX51PaymentModal" 
+                  <button data-bs-toggle="modal" data-bs-target="#SHUBX51PaymentModal" 
                           data-amount="<?php echo esc_attr($display_dues); ?>"
                           data-invoice-id="Total Outstanding"
                           class="js-btn-pay btn btn-<?php echo $status_class; ?> w-100 mt-3 py-2 rounded-3 fw-bold shadow-sm transition-all hover-translate-y">

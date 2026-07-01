@@ -1,23 +1,23 @@
 ﻿/**
- * SNESTX Toast Notification System
- * Lightweight toast notification library for SocietyNestX
+ * SHUBX Toast Notification System
+ * Lightweight toast notification library for Society HubX
  * 
  * Usage:
- * SNESTX.toast.success('Operation completed!');
- * SNESTX.toast.error('An error occurred');
- * SNESTX.toast.warning('Please review');
- * SNESTX.toast.info('New notification');
+ * SHUBX.toast.success('Operation completed!');
+ * SHUBX.toast.error('An error occurred');
+ * SHUBX.toast.warning('Please review');
+ * SHUBX.toast.info('New notification');
  */
 (function () {
     'use strict';
 
-    // Create SNESTX namespace if it doesn't exist
-    window.SNESTX = window.SNESTX || {};
+    // Create SHUBX namespace if it doesn't exist
+    window.SHUBX = window.SHUBX || {};
 
     /**
      * Toast Notification API
      */
-    window.SNESTX.toast = {
+    window.SHUBX.toast = {
         /**
          * Show success toast
          * @param {string} message Toast message
@@ -61,12 +61,12 @@
          * @param {number} duration Duration in ms
          */
         show: function (message, type = 'success', duration = 3000) {
-            const toastEl = document.getElementById('snestx-global-toast');
-            const iconEl = document.getElementById('snestx-toast-icon');
-            const msgEl = document.getElementById('snestx-toast-message');
+            const toastEl = document.getElementById('shubx-global-toast');
+            const iconEl = document.getElementById('shubx-toast-icon');
+            const msgEl = document.getElementById('shubx-toast-message');
 
             if (!toastEl || !msgEl || !iconEl) {
-                console.warn('SNESTX Toast: Toast elements missing from DOM');
+                console.warn('SHUBX Toast: Toast elements missing from DOM');
                 // Fallback to alert if toast not available
                 alert(message);
                 return;
@@ -111,8 +111,8 @@
     };
 
     // Maintain backward compatibility with old API
-    window.SNESTXShowToast = function (msg, type = 'success') {
-        SNESTX.toast.show(msg, type);
+    window.SHUBXShowToast = function (msg, type = 'success') {
+        SHUBX.toast.show(msg, type);
     };
 
 })();

@@ -1,4 +1,4 @@
-=== Society NestX ===
+=== Society HubX ===
 Contributors: vishwas-r
 Tags: society, management, portal, billing, ledger, notices, polls, resident-directory, staff-management, facility-booking, rules-regulations, flat-management
 Requires at least: 6.0
@@ -11,7 +11,7 @@ A comprehensive, state-of-the-art society management portal for managing flat re
 
 == Description ==
 
-Society NestX is a feature-rich, premium WordPress plugin designed to streamline the administration of housing societies, gated communities, and residential complexes. With dedicated modules for administrators and residents, it brings transparency, efficiency, and automated workflows to community management.
+Society HubX is a feature-rich, premium WordPress plugin designed to streamline the administration of housing societies, gated communities, and residential complexes. With dedicated modules for administrators and residents, it brings transparency, efficiency, and automated workflows to community management.
 
 ### Key Features:
 * **Flat Management:** Track flat details, block structure, occupancy types (Owner/Tenant), and allocation.
@@ -26,21 +26,21 @@ Society NestX is a feature-rich, premium WordPress plugin designed to streamline
 * **Finance, Billing & Ledger:** Generate maintenance bills, record payments, and track society financial ledgers with customizable billing cycles.
 
 ### GitHub & Support:
-* **GitHub Repository:** [github.com/vishwas-r/society-nestx](https://github.com/vishwas-r/society-nestx)
-* **Issue Tracker:** [github.com/vishwas-r/society-nestx/issues](https://github.com/vishwas-r/society-nestx/issues)
+* **GitHub Repository:** [github.com/vishwas-r/society-hubx](https://github.com/vishwas-r/society-hubx)
+* **Issue Tracker:** [github.com/vishwas-r/society-hubx/issues](https://github.com/vishwas-r/society-hubx/issues)
 
 == Installation ==
 
-1. Upload the entire `society-nestx` folder to the `/wp-content/plugins/` directory, or install it directly via the WordPress Admin panel under Plugins > Add New.
+1. Upload the entire `society-hubx` folder to the `/wp-content/plugins/` directory, or install it directly via the WordPress Admin panel under Plugins > Add New.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Upon activation, access the **Setup Wizard** from the WordPress admin sidebar under **Society NestX** to initialize your database tables and seed default settings.
+3. Upon activation, access the **Setup Wizard** from the WordPress admin sidebar under **Society HubX** to initialize your database tables and seed default settings.
 4. To set up the frontend resident dashboard, create a new WordPress Page (e.g., "Resident Portal") and add the following shortcode:
-   `[society_nestx_dashboard]`
+   `[society_hubx_dashboard]`
 5. Publish the page. Residents will now be able to log in and access their dashboard from this page.
 
 == Settings & Configurations ==
 
-To configure the plugin, navigate to the **Society NestX > Settings** menu in the WordPress Admin Dashboard. The settings are organized into the following tabs:
+To configure the plugin, navigate to the **Society HubX > Settings** menu in the WordPress Admin Dashboard. The settings are organized into the following tabs:
 
 ### 1. Society Profile
 * Configure basic society details such as Society Name, Registration Number, Address, and Contact Info.
@@ -65,9 +65,9 @@ To configure the plugin, navigate to the **Society NestX > Settings** menu in th
 
 The plugin provides the following shortcodes to render portal elements on frontend pages:
 
-* `[society_nestx_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
-* `[society_nestx_notices]` - Renders a standalone public notice board feed.
-* `[society_nestx_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
+* `[society_hubx_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
+* `[society_hubx_notices]` - Renders a standalone public notice board feed.
+* `[society_hubx_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == Changelog ==
 

@@ -3,19 +3,19 @@
  * Class: REST API Manager
  * Handles registration of REST routes and authentication.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_REST_Manager {
+class SHUBX51_REST_Manager {
 
 	/**
 	 * API Namespace for the plugin.
 	 */
-	const NAMESPACE = 'society-nestx/v1';
+	const NAMESPACE = 'society-hubx/v1';
 
 	/**
 	 * Register hooks.
@@ -29,19 +29,19 @@ class SNESTX51_REST_Manager {
 	 */
 	public function register_routes() {
 		// Residents Controller
-		$resident_controller = new SNESTX51_REST_Residents_Controller();
+		$resident_controller = new SHUBX51_REST_Residents_Controller();
 		$resident_controller->register_routes();
 
 		// Staff Controller
-		$staff_controller = new SNESTX51_REST_Staff_Controller();
+		$staff_controller = new SHUBX51_REST_Staff_Controller();
 		$staff_controller->register_routes();
 
 		// Activity Controller
-		$activity_controller = new SNESTX51_REST_Activity_Controller();
+		$activity_controller = new SHUBX51_REST_Activity_Controller();
 		$activity_controller->register_routes();
 
 		// Payments Controller (Webhooks & Polling)
-		$payments_controller = new SNESTX51_REST_Payments_Controller();
+		$payments_controller = new SHUBX51_REST_Payments_Controller();
 		$payments_controller->register_routes();
 	}
 
@@ -55,7 +55,7 @@ class SNESTX51_REST_Manager {
 	public static function check_permission( $request ) {
 		// API Key authentication can be added here
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.', 'society-nestx' ), array( 'status' => 401 ) );
+			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.', 'society-hubx' ), array( 'status' => 401 ) );
 		}
 
 		return true;

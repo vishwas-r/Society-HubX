@@ -1,27 +1,27 @@
 ﻿jQuery(document).ready(function ($) {
     // 1. Initialize Modals
-    const channelModalNode = document.getElementById('snestx-channel-modal');
-    const templateModalNode = document.getElementById('snestx-template-modal');
+    const channelModalNode = document.getElementById('shubx-channel-modal');
+    const templateModalNode = document.getElementById('shubx-template-modal');
 
     const channelModal = channelModalNode ? new bootstrap.Modal(channelModalNode) : null;
     const templateModal = templateModalNode ? new bootstrap.Modal(templateModalNode) : null;
 
-    const $channelForm = $('#snestx-channel-form');
-    const $templateForm = $('#snestx-template-form');
-    const $fieldsContainer = $('#snestx-channel-settings-fields');
+    const $channelForm = $('#shubx-channel-form');
+    const $templateForm = $('#shubx-template-form');
+    const $fieldsContainer = $('#shubx-channel-settings-fields');
 
     // 2. Channel Configuration
-    $('.snestx-configure-channel').on('click', function () {
+    $('.shubx-configure-channel').on('click', function () {
         const channel = $(this).data('channel');
-        $('#snestx-modal-channel-name').text(channel.charAt(0).toUpperCase() + channel.slice(1));
-        $('#snestx-modal-channel-slug').val(channel);
+        $('#shubx-modal-channel-name').text(channel.charAt(0).toUpperCase() + channel.slice(1));
+        $('#shubx-modal-channel-slug').val(channel);
 
-        // Fetch current config via SNESTX.ajax
-        SNESTX.ajax({
-            action: 'snestx51_get_channel_config',
+        // Fetch current config via SHUBX.ajax
+        SHUBX.ajax({
+            action: 'shubx51_get_channel_config',
             data: {
                 channel: channel,
-                _ajax_nonce: snestx51RequestNonce
+                _ajax_nonce: shubx51RequestNonce
             },
             onSuccess: function (data) {
                 if (channelModal) {
@@ -40,7 +40,7 @@
             html = `
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-700">Delivery Method</label>
-                    <select class="form-select rounded-3" id="snestx-email-method" name="config[method]">
+                    <select class="form-select rounded-3" id="shubx-email-method" name="config[method]">
                         <option value="wp_mail" ${config.method === 'wp_mail' ? 'selected' : ''}>WordPress Default (wp_mail)</option>
                         <option value="gmail" ${config.method === 'gmail' ? 'selected' : ''}>Gmail API (OAuth2)</option>
                         <option value="smtp" ${config.method === 'smtp' ? 'selected' : ''}>Custom SMTP</option>
@@ -48,7 +48,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-700">Sender Name</label>
-                    <input type="text" class="form-control rounded-3" name="config[from_name]" value="${config.from_name || ''}" placeholder="SocietyNestX">
+                    <input type="text" class="form-control rounded-3" name="config[from_name]" value="${config.from_name || ''}" placeholder="Society HubX">
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-700">Sender Email</label>
@@ -56,7 +56,7 @@
                 </div>
 
                 <!-- Gmail API Config Fields -->
-                <div id="snestx-email-config-gmail" class="snestx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
+                <div id="shubx-email-config-gmail" class="shubx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
                     <h6 class="fw-bold mb-3 small text-primary"><i class="bi bi-google me-2"></i>Gmail OAuth2 Settings</h6>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Gmail Client ID</label>
@@ -68,12 +68,12 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Authorized Redirect URI</label>
-                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=snestx51_gmail_oauth_callback" readonly>
+                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=shubx51_gmail_oauth_callback" readonly>
                     </div>
                 </div>
 
                 <!-- Custom SMTP Config Fields -->
-                <div id="snestx-email-config-smtp" class="snestx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
+                <div id="shubx-email-config-smtp" class="shubx-email-sub-config mt-3 p-3 border rounded-3 bg-light" style="display: none;">
                     <h6 class="fw-bold mb-3 small text-primary"><i class="bi bi-envelope-check me-2"></i>Custom SMTP Settings</h6>
                     <div class="row g-2 mb-3">
                         <div class="col-md-8">
@@ -133,15 +133,15 @@
         // Bind dynamic visibility trigger for delivery methods
         if (channel === 'email') {
             const toggleEmailMethodFields = () => {
-                const method = $('#snestx-email-method').val();
-                $('.snestx-email-sub-config').hide();
+                const method = $('#shubx-email-method').val();
+                $('.shubx-email-sub-config').hide();
                 if (method === 'gmail') {
-                    $('#snestx-email-config-gmail').show();
+                    $('#shubx-email-config-gmail').show();
                 } else if (method === 'smtp') {
-                    $('#snestx-email-config-smtp').show();
+                    $('#shubx-email-config-smtp').show();
                 }
             };
-            $('#snestx-email-method').on('change', toggleEmailMethodFields);
+            $('#shubx-email-method').on('change', toggleEmailMethodFields);
             toggleEmailMethodFields(); // Run initially
         }
     }
@@ -150,8 +150,8 @@
         e.preventDefault();
         const formData = Object.fromEntries(new FormData(this));
 
-        SNESTX.ajax({
-            action: 'snestx51_save_channel_config',
+        SHUBX.ajax({
+            action: 'shubx51_save_channel_config',
             data: formData,
             successMessage: 'Channel configuration saved!',
             reload: true,
@@ -162,52 +162,52 @@
     });
 
     // 3. Channel Toggles
-    $('.snestx-channel-toggle').on('change', function () {
+    $('.shubx-channel-toggle').on('change', function () {
         const channel = $(this).data('channel');
         const active = $(this).is(':checked') ? 1 : 0;
 
-        SNESTX.ajax({
-            action: 'snestx51_toggle_channel',
+        SHUBX.ajax({
+            action: 'shubx51_toggle_channel',
             data: {
                 channel: channel,
                 active: active,
-                _ajax_nonce: snestx51RequestNonce
+                _ajax_nonce: shubx51RequestNonce
             }
         });
     });
 
     // 4. Event Mapping
-    $('.snestx-mapping-toggle').on('change', function () {
+    $('.shubx-mapping-toggle').on('change', function () {
         const event = $(this).data('event');
         const channel = $(this).data('channel');
 
-        SNESTX.ajax({
-            action: 'snestx51_update_event_mapping',
+        SHUBX.ajax({
+            action: 'shubx51_update_event_mapping',
             data: {
                 event: event,
                 channel: channel,
                 enabled: $(this).is(':checked') ? 1 : 0,
-                _ajax_nonce: snestx51RequestNonce
+                _ajax_nonce: shubx51RequestNonce
             }
         });
     });
 
     // 5. Template Editing
-    $('.snestx-edit-template').on('click', function () {
+    $('.shubx-edit-template').on('click', function () {
         const id = $(this).data('id');
 
-        SNESTX.ajax({
-            action: 'snestx51_get_template',
+        SHUBX.ajax({
+            action: 'shubx51_get_template',
             data: {
                 id: id,
-                _ajax_nonce: snestx51RequestNonce
+                _ajax_nonce: shubx51RequestNonce
             },
             onSuccess: function (tpl) {
                 if (templateModal) {
-                    $('#snestx-template-id').val(tpl.id);
-                    $('#snestx-template-event-name').text(tpl.event_slug.replace(/_/g, ' '));
-                    $('#snestx-template-subject').val(tpl.subject);
-                    $('#snestx-template-content').val(tpl.content);
+                    $('#shubx-template-id').val(tpl.id);
+                    $('#shubx-template-event-name').text(tpl.event_slug.replace(/_/g, ' '));
+                    $('#shubx-template-subject').val(tpl.subject);
+                    $('#shubx-template-content').val(tpl.content);
 
                     // Show/Hide subject based on channel
                     if (tpl.channel === 'whatsapp' || tpl.channel === 'inapp') {
@@ -226,8 +226,8 @@
         e.preventDefault();
         const formData = Object.fromEntries(new FormData(this));
 
-        SNESTX.ajax({
-            action: 'snestx51_save_template',
+        SHUBX.ajax({
+            action: 'shubx51_save_template',
             data: formData,
             successMessage: 'Notification template saved!',
             reload: true,

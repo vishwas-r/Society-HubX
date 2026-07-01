@@ -9,11 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = new SNESTX51_DB_Router();
+$db = new SHUBX51_DB_Router();
 $invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
 $residents = $db->get( 'residents', array( 'load_relations' => true ) );
 
-$ledger_mgr = new SNESTX51_Ledger_Manager();
+$ledger_mgr = new SHUBX51_Ledger_Manager();
 $selected_year = isset( $_GET['year'] ) ? sanitize_text_field( wp_unslash( $_GET['year'] ) ) : wp_date('Y');
 $ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
@@ -60,7 +60,7 @@ foreach($relevant_reqs as $pr) {
 }
 
 // Helper for Indian Numbering Format
-function SNESTX_in_fmt($num, $decimals = 2) {
+function SHUBX_in_fmt($num, $decimals = 2) {
     $num = (float)$num;
     if (class_exists('NumberFormatter')) {
         $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
@@ -88,8 +88,8 @@ function SNESTX_in_fmt($num, $decimals = 2) {
 
 // New Consolidated Stats
 $total_credit = 0; $total_debit = 0;
-$opening_bank = floatval(get_option('snestx51_opening_bank_' . $selected_year, 0));
-$opening_cash = floatval(get_option('snestx51_opening_cash_' . $selected_year, 0));
+$opening_bank = floatval(get_option('shubx51_opening_bank_' . $selected_year, 0));
+$opening_cash = floatval(get_option('shubx51_opening_cash_' . $selected_year, 0));
 
 foreach($ledger_entries as $e) {
     if(($e['type'] ?? '') === 'Credit') $total_credit += $e['amount'];
@@ -99,8 +99,8 @@ foreach($ledger_entries as $e) {
 $last_entry = end($ledger_entries);
 $net_balance = ($last_entry['bank_balance'] ?? 0) + ($last_entry['cash_balance'] ?? 0);
 
-$actual_bank = floatval(get_option('snestx51_actual_bank_' . $selected_year, 0));
-$actual_cash = floatval(get_option('snestx51_actual_cash_' . $selected_year, 0));
+$actual_bank = floatval(get_option('shubx51_actual_bank_' . $selected_year, 0));
+$actual_cash = floatval(get_option('shubx51_actual_cash_' . $selected_year, 0));
 $actual_total = $actual_bank + $actual_cash;
 $variance = $actual_total - $net_balance;
 
@@ -192,12 +192,12 @@ if ( isset( $_GET['success'] ) ) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var SNESTX51AdminNonce = '<?php echo wp_create_nonce( 'snestx51_nonce' ); ?>';
-    var snestx51RequestNonce = '<?php echo wp_create_nonce( 'snestx51_request_action' ); ?>';
+    var SHUBX51AdminNonce = '<?php echo wp_create_nonce( 'shubx51_nonce' ); ?>';
+    var shubx51RequestNonce = '<?php echo wp_create_nonce( 'shubx51_request_action' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
     
     // Chart Data
-    var SNESTXAccountsChartData = {
+    var SHUBXAccountsChartData = {
         monthlyData: <?php echo json_encode($monthly_data); ?>,
         collectionData: {
             paid: <?php echo $paid_count; ?>,
@@ -234,7 +234,7 @@ if ( isset( $_GET['success'] ) ) {
                 <div class="bg-white px-3 py-2 rounded-3 d-flex align-items-center gap-3 border border-light shadow-sm">
                     <span class="small fw-bold text-secondary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Fiscal Period</span>
                     <form method="get" class="m-0">
-                        <input type="hidden" name="page" value="snestx51-accounts">
+                        <input type="hidden" name="page" value="shubx51-accounts">
                         <select name="year" onchange="this.form.submit()" class="form-select form-select-sm bg-light border-0 shadow-none fw-bold text-dark" style="min-width: 100px;">
                              <?php for($y = (int)wp_date('Y'); $y >= (int)wp_date('Y')-2; $y--) {
                                 $sel = ($y == (int)sanitize_text_field($selected_year)) ? 'selected' : '';
@@ -256,7 +256,7 @@ if ( isset( $_GET['success'] ) ) {
     $all_options = wp_load_alloptions();
     $running_jobs = array();
     foreach ( $all_options as $key => $val ) {
-        if ( strpos( $key, 'snestx51_job_bulk_invoice_' ) === 0 ) {
+        if ( strpos( $key, 'shubx51_job_bulk_invoice_' ) === 0 ) {
             $job = maybe_unserialize( $val );
             if ( $job && $job['status'] === 'running' ) {
                 $running_jobs[] = $job;
@@ -291,12 +291,12 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Revenue (Inflow)</p>
                     <i class="bi bi-graph-up-arrow text-success fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SNESTX_in_fmt($total_credit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SHUBX_in_fmt($total_credit, 0); ?></h3>
                 <div class="progress mt-3" style="height: 4px;">
                     <div class="progress-bar bg-success" style="width: <?php echo $collection_pct; ?>%"></div>
                 </div>
                 <div class="small text-muted mt-2" style="font-size: 10px;">
-                    COLLECTED: ₹<?php echo SNESTX_in_fmt($total_collected); ?> / DEMAND: ₹<?php echo SNESTX_in_fmt($total_demand); ?> (<?php echo $collection_pct; ?>%)
+                    COLLECTED: ₹<?php echo SHUBX_in_fmt($total_collected); ?> / DEMAND: ₹<?php echo SHUBX_in_fmt($total_demand); ?> (<?php echo $collection_pct; ?>%)
                 </div>
             </div>
         </div>
@@ -306,7 +306,7 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Expenses (Outflow)</p>
                     <i class="bi bi-graph-down-arrow text-danger fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SNESTX_in_fmt($total_debit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SHUBX_in_fmt($total_debit, 0); ?></h3>
                 <div class="small text-danger fw-bold mt-2" style="font-size: 10px;">TOTAL APPROVED COSTS</div>
             </div>
         </div>
@@ -317,7 +317,7 @@ if ( isset( $_GET['success'] ) ) {
                     <i class="bi bi-calculator fs-5"></i>
                 </div>
                 <!-- Yearly Balance -->
-                <h3 class="h2 fw-bold m-0">₹<?php echo SNESTX_in_fmt($net_balance, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo SHUBX_in_fmt($net_balance, 0); ?></h3>
                 <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">YEAR END POSITION</div>
                 
                 <!-- Overall Live Balance (Added) -->
@@ -329,7 +329,7 @@ if ( isset( $_GET['success'] ) ) {
                     <div class="mt-3 pt-3 border-top border-white-50">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="small fw-bold text-white-50" style="font-size: 10px;">LIVE BALANCE</span>
-                            <span class="fw-bold text-white">₹<?php echo SNESTX_in_fmt($live_bal['total'] ?? 0, 0); ?></span>
+                            <span class="fw-bold text-white">₹<?php echo SHUBX_in_fmt($live_bal['total'] ?? 0, 0); ?></span>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -341,14 +341,14 @@ if ( isset( $_GET['success'] ) ) {
                     <p class="small fw-bold text-uppercase tracking-wider m-0">Physical Funds</p>
                     <i class="bi bi-safe2 fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold m-0">₹<?php echo SNESTX_in_fmt($actual_total, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo SHUBX_in_fmt($actual_total, 0); ?></h3>
                 <div class="d-flex gap-2 mt-2">
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo SNESTX_in_fmt($actual_bank); ?></span>
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo SNESTX_in_fmt($actual_cash); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo SHUBX_in_fmt($actual_bank); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo SHUBX_in_fmt($actual_cash); ?></span>
                 </div>
                 <?php if(abs($variance) > 1): ?>
                     <div class="mt-2 small fw-bold text-white" style="font-size: 10px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo SNESTX_in_fmt($variance); ?>
+                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo SHUBX_in_fmt($variance); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -416,10 +416,10 @@ if ( isset( $_GET['success'] ) ) {
         <div class="px-5 bg-white border-bottom border-light">
             <ul class="nav nav-tabs border-0 gap-5" id="accountTabs">
                 <li class="nav-item">
-                    <a href="?page=snestx51-accounts&tab=invoices" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices & Maintenance</a>
+                    <a href="?page=shubx51-accounts&tab=invoices" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices & Maintenance</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?page=snestx51-accounts&tab=ledger" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
+                    <a href="?page=shubx51-accounts&tab=ledger" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
                 </li>
             </ul>
         </div>
@@ -489,9 +489,9 @@ if ( isset( $_GET['success'] ) ) {
                                             <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
-                                            <div class="fw-bold text-dark">₹<?php echo SNESTX_in_fmt($inv['amount']); ?></div>
+                                            <div class="fw-bold text-dark">₹<?php echo SHUBX_in_fmt($inv['amount']); ?></div>
                                             <?php if($paid > 0 && $paid < $inv['amount']): ?>
-                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo SNESTX_in_fmt($paid); ?></div>
+                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo SHUBX_in_fmt($paid); ?></div>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -501,7 +501,7 @@ if ( isset( $_GET['success'] ) ) {
                                                 $p_payload = is_array($pending_request['payload'] ?? null) ? $pending_request['payload'] : json_decode($pending_request['payload'], true);
                                             ?>
                                                 <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold mb-1" style="font-size: 9px;">VERIFICATION PENDING</span>
-                                                <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo SNESTX_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
+                                                <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo SHUBX_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
                                             <?php elseif ( ($inv['status'] ?? '') === 'partial' ) : ?>
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">PARTIAL</span>
                                             <?php else : ?>
@@ -612,12 +612,12 @@ if ( isset( $_GET['success'] ) ) {
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-success <?php echo ($ln['type'] ?? '') === 'Credit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? SNESTX_in_fmt($ln['amount']) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? SHUBX_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-danger <?php echo ($ln['type'] ?? '') === 'Debit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? SNESTX_in_fmt($ln['amount']) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? SHUBX_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -627,8 +627,8 @@ if ( isset( $_GET['success'] ) ) {
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex flex-column align-items-end">
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo SNESTX_in_fmt($ln['bank_balance']); ?></span></span>
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo SNESTX_in_fmt($ln['cash_balance']); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo SHUBX_in_fmt($ln['bank_balance']); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo SHUBX_in_fmt($ln['cash_balance']); ?></span></span>
                                             </div>
                                         </td>
                                     </tr>
@@ -645,7 +645,7 @@ if ( isset( $_GET['success'] ) ) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
+add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
 ?>
 <!-- Reconcile Modal -->
 <div class="modal fade" id="reconcileModal" tabindex="-1" aria-hidden="true">
@@ -657,9 +657,9 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_reconcile_balance">
+                    <input type="hidden" name="action" value="shubx51_reconcile_balance">
                     <input type="hidden" name="year" value="<?php echo $selected_year; ?>">
-                    <?php wp_nonce_field('snestx51_reconcile_nonce'); ?>
+                    <?php wp_nonce_field('shubx51_reconcile_nonce'); ?>
                     
                     <h6 class="fw-bold text-primary small text-uppercase mb-3">Actual Physical Funds (Now)</h6>
                     <div class="mb-3">
@@ -702,9 +702,9 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_generate_invoices">
+                    <input type="hidden" name="action" value="shubx51_generate_invoices">
                     <input type="hidden" name="type" value="maintenance">
-                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
@@ -719,7 +719,7 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Amount (₹)</label>
-                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('snestx51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('shubx51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
@@ -750,9 +750,9 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_generate_invoices">
+                    <input type="hidden" name="action" value="shubx51_generate_invoices">
                     <input type="hidden" name="type" value="adhoc">
-                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Title / Reason</label>
@@ -794,9 +794,9 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="edit-invoice-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_edit_invoice">
+                    <input type="hidden" name="action" value="shubx51_edit_invoice">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Description</label>
@@ -850,9 +850,9 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="payment-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_record_payment">
+                    <input type="hidden" name="action" value="shubx51_record_payment">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Amount Received (₹)</label>
@@ -915,7 +915,7 @@ add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank
 <?php }); ?>
 
 
-<!-- Accounts page JS moved to `assets/js/snestx-accounts.js` -->
+<!-- Accounts page JS moved to `assets/js/shubx-accounts.js` -->
 
 <script>
 // Receipt Functions for Admin
@@ -958,7 +958,7 @@ window.openAdminReceipt = function (btn) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'action=snestx51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + SNESTX51AdminNonce
+        body: 'action=shubx51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + SHUBX51AdminNonce
     })
         .then(response => response.json())
         .then(data => {
@@ -1075,7 +1075,7 @@ function populateReceiptModal(receiptData) {
         <!-- Footer -->
         <div class="receipt-footer-standard">
             <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-            <p class="mb-0">Society NestX - Empowering Communities</p>
+            <p class="mb-0">Society HubX - Empowering Communities</p>
         </div>
     `;
 }
@@ -1144,16 +1144,16 @@ window.downloadReceipt = function(event) {
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
         
         // Determine which tab is active
-        const invoiceTab = document.querySelector('[href="?page=snestx51-accounts&tab=invoices"]');
+        const invoiceTab = document.querySelector('[href="?page=shubx51-accounts&tab=invoices"]');
         const isInvoicesTab = invoiceTab && invoiceTab.classList.contains('active');
         
         if (isInvoicesTab) {
             // Search invoices
-            if (!invoiceFuse && window.SNESTXCreateFuse) {
-                invoiceFuse = window.SNESTXCreateFuse('.invoice-row');
+            if (!invoiceFuse && window.SHUBXCreateFuse) {
+                invoiceFuse = window.SHUBXCreateFuse('.invoice-row');
             }
 
-            const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(invoiceFuse, searchVal) : null;
+            const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(invoiceFuse, searchVal) : null;
 
             document.querySelectorAll('.invoice-row').forEach(row => {
                 const matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
@@ -1171,11 +1171,11 @@ window.downloadReceipt = function(event) {
             }
         } else {
             // Search ledger
-            if (!ledgerFuse && window.SNESTXCreateFuse) {
-                ledgerFuse = window.SNESTXCreateFuse('.ledger-row');
+            if (!ledgerFuse && window.SHUBXCreateFuse) {
+                ledgerFuse = window.SHUBXCreateFuse('.ledger-row');
             }
 
-            const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(ledgerFuse, searchVal) : null;
+            const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(ledgerFuse, searchVal) : null;
 
             document.querySelectorAll('.ledger-row').forEach(row => {
                 const matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
@@ -1199,14 +1199,14 @@ window.downloadReceipt = function(event) {
         searchInput.addEventListener('input', applyAccountSearch);
         searchInput.addEventListener('focus', function () {
             // Re-index on focus based on active tab
-            const invoiceTab = document.querySelector('[href="?page=snestx51-accounts&tab=invoices"]');
+            const invoiceTab = document.querySelector('[href="?page=shubx51-accounts&tab=invoices"]');
             const isInvoicesTab = invoiceTab && invoiceTab.classList.contains('active');
             
-            if (window.SNESTXCreateFuse) {
+            if (window.SHUBXCreateFuse) {
                 if (isInvoicesTab) {
-                    invoiceFuse = window.SNESTXCreateFuse('.invoice-row');
+                    invoiceFuse = window.SHUBXCreateFuse('.invoice-row');
                 } else {
-                    ledgerFuse = window.SNESTXCreateFuse('.ledger-row');
+                    ledgerFuse = window.SHUBXCreateFuse('.ledger-row');
                 }
             }
         });
@@ -1223,7 +1223,7 @@ let collectionChart = null;
 let currentChartView = 'monthly';
 
 function initCharts() {
-    if (!window.Chart || !window.SNESTXAccountsChartData) {
+    if (!window.Chart || !window.SHUBXAccountsChartData) {
         console.log('Chart.js or chart data not available');
         return;
     }
@@ -1237,7 +1237,7 @@ function renderCashFlowChart() {
     const container = document.getElementById("cashFlowChart");
     if (!container) return;
 
-    const chartData = window.SNESTXAccountsChartData.monthlyData;
+    const chartData = window.SHUBXAccountsChartData.monthlyData;
     if (!chartData) return;
 
     const labels = [];
@@ -1309,7 +1309,7 @@ function renderCollectionChart() {
     const container = document.getElementById("collectionChart");
     if (!container) return;
 
-    const data = window.SNESTXAccountsChartData.collectionData;
+    const data = window.SHUBXAccountsChartData.collectionData;
     if (!data) return;
 
     const total = data.paid + data.unpaid + data.partial;
@@ -1358,7 +1358,7 @@ function renderCategoryChart() {
     const container = document.getElementById("expenseCategoryChart");
     if (!container) return;
 
-    const data = window.SNESTXAccountsChartData.categoryData;
+    const data = window.SHUBXAccountsChartData.categoryData;
     if (!data || Object.keys(data).length === 0) return;
 
     const labels = [];
@@ -1448,8 +1448,8 @@ function initAdminPaymentSync() {
         
         try {
             const formData = new URLSearchParams();
-            formData.append('action', 'snestx51_poll_state_hash');
-            formData.append('_wpnonce', window.snestx51_admin_nonce);
+            formData.append('action', 'shubx51_poll_state_hash');
+            formData.append('_wpnonce', window.shubx51_admin_nonce);
             
             const req = await fetch(window.ajaxurl, {
                 method: 'POST',
@@ -1461,13 +1461,13 @@ function initAdminPaymentSync() {
                 if (currentHash === null) {
                     currentHash = res.data.hash;
                 } else if (currentHash !== res.data.hash) {
-                    console.log('SNESTX Admin: State Hash changed. Syncing UI...');
+                    console.log('SHUBX Admin: State Hash changed. Syncing UI...');
                     currentHash = res.data.hash;
                     await refreshAdminDashboard();
                 }
             }
         } catch(e) {
-            console.error('SNESTX Admin Sync Error:', e);
+            console.error('SHUBX Admin Sync Error:', e);
         }
         
         isPolling = false;
@@ -1496,7 +1496,7 @@ function initAdminPaymentSync() {
                 // Update chart data from the new script block
                 const scripts = doc.querySelectorAll('script');
                 scripts.forEach(s => {
-                    if (s.textContent.includes('SNESTXAccountsChartData')) {
+                    if (s.textContent.includes('SHUBXAccountsChartData')) {
                         try {
                             eval(s.textContent); 
                             initCharts(); 
@@ -1504,12 +1504,12 @@ function initAdminPaymentSync() {
                     }
                 });
                 
-                if (window.SNESTX && window.SNESTX.toast) {
-                    SNESTX.toast.success('Live Update: Financials synced in real-time.', { icon: 'check-circle' });
+                if (window.SHUBX && window.SHUBX.toast) {
+                    SHUBX.toast.success('Live Update: Financials synced in real-time.', { icon: 'check-circle' });
                 }
             }
         } catch(e) {
-            console.error('SNESTX Admin Refresh Error:', e);
+            console.error('SHUBX Admin Refresh Error:', e);
         }
     }
     

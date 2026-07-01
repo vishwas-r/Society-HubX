@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Expenses (Bootstrap Migration)
- * Integrates with SNESTX51_DB_Router.
+ * Integrates with SHUBX51_DB_Router.
  */
 
-$db = new SNESTX51_DB_Router();
+$db = new SHUBX51_DB_Router();
 $current_year = wp_date( 'Y' );
 $selected_year = isset( $_GET['year'] ) ? sanitize_text_field( wp_unslash( $_GET['year'] ) ) : $current_year;
 
@@ -20,11 +20,11 @@ $all_expenses = $db->get( 'expenses' );
 
 // Debug: Log the raw expenses returned
 if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-	error_log( 'SNESTX51 Expenses Admin: Count=' . count( $all_expenses ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+	error_log( 'SHUBX51 Expenses Admin: Count=' . count( $all_expenses ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	if ( count( $all_expenses ) > 0 ) {
-		error_log( 'SNESTX51 First Expense Sample: ' . wp_json_encode( array_slice( $all_expenses[0], 0, 3 ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log( 'SHUBX51 First Expense Sample: ' . wp_json_encode( array_slice( $all_expenses[0], 0, 3 ) ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	} else {
-		error_log( 'SNESTX51 No expenses found. Check table existence or file permissions.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log( 'SHUBX51 No expenses found. Check table existence or file permissions.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 	}
 }
 
@@ -313,8 +313,8 @@ if(!empty($expenses)) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('snestx51_admin_modals', function() {
-    $add_nonce = wp_create_nonce( 'snestx51_add_expense_nonce' );
+add_action('shubx51_admin_modals', function() {
+    $add_nonce = wp_create_nonce( 'shubx51_add_expense_nonce' );
 ?>
 <!-- Add/Edit Expense Modal (Bootstrap) -->
 <div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
@@ -327,15 +327,15 @@ add_action('snestx51_admin_modals', function() {
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" id="expense-form">
                 <div class="modal-body p-4">
                     <?php 
-                    $edit_nonce = wp_create_nonce( 'snestx51_edit_expense_nonce' );
+                    $edit_nonce = wp_create_nonce( 'shubx51_edit_expense_nonce' );
                     ?>
                     <input type="hidden" id="raw_add_nonce" value="<?php echo esc_attr($add_nonce); ?>">
                     <input type="hidden" id="raw_edit_nonce" value="<?php echo esc_attr($edit_nonce); ?>">
-                    <input type="hidden" name="action" value="snestx51_add_expense">
+                    <input type="hidden" name="action" value="shubx51_add_expense">
                     <input type="hidden" name="expense_id" value="">
                     <input type="hidden" name="existing_receipt_url" value="">
                     <input type="hidden" name="_wpnonce" id="active_nonce_field" value="<?php echo esc_attr($add_nonce); ?>">
-                    <input type="hidden" name="_wp_http_referer" value="<?php echo admin_url( 'admin.php?page=snestx51-settings&view=expenses' ); ?>">
+                    <input type="hidden" name="_wp_http_referer" value="<?php echo admin_url( 'admin.php?page=shubx51-settings&view=expenses' ); ?>">
 
                     <div class="row g-3 mb-3">
                         <div class="col-6">
@@ -438,7 +438,7 @@ function editExpense(btn) {
     form.querySelector('[name="existing_receipt_url"]').value = data.receipt_url || '';
     if(form.querySelector('[name="account_type"]')) form.querySelector('[name="account_type"]').value = data.account_type || 'bank';
     
-    form.querySelector('[name="action"]').value = 'snestx51_edit_expense';
+    form.querySelector('[name="action"]').value = 'shubx51_edit_expense';
     form.querySelector('[name="expense_id"]').value = data.id || ''; 
     document.getElementById('active_nonce_field').value = document.getElementById('raw_edit_nonce').value;
     
@@ -449,7 +449,7 @@ function editExpense(btn) {
 function resetExpenseForm() {
     const form = document.getElementById('expense-form');
     form.reset();
-    form.querySelector('[name="action"]').value = 'snestx51_add_expense';
+    form.querySelector('[name="action"]').value = 'shubx51_add_expense';
     form.querySelector('[name="expense_id"]').value = '';
     document.getElementById('active_nonce_field').value = document.getElementById('raw_add_nonce').value;
     document.getElementById('expenseModalTitle').textContent = 'Record New Expense';
@@ -462,11 +462,11 @@ window.applyExpenseSearch = function() {
     const input = document.getElementById('expenseSearch');
     const query = input ? input.value.trim() : '';
     
-    if (!expenseFuse && window.SNESTXCreateFuse) {
-        expenseFuse = window.SNESTXCreateFuse('.expense-row');
+    if (!expenseFuse && window.SHUBXCreateFuse) {
+        expenseFuse = window.SHUBXCreateFuse('.expense-row');
     }
 
-    const matches = query && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(expenseFuse, query) : null;
+    const matches = query && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(expenseFuse, query) : null;
     
     document.querySelectorAll('.expense-row').forEach(row => {
         const isPending = row.closest('#view-pending') !== null;
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('input', applyExpenseSearch);
         searchInput.addEventListener('focus', function() {
-            if (window.SNESTXCreateFuse) expenseFuse = window.SNESTXCreateFuse('.expense-row');
+            if (window.SHUBXCreateFuse) expenseFuse = window.SHUBXCreateFuse('.expense-row');
         });
     }
 });

@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     </div>
     <h2 class="fw-bold text-slate-900 mb-2">Access Denied</h2>
     <p class="text-slate-500 text-center mb-4">You do not have the required permissions to access this module.<br>Please contact your society administrator if you believe this is an error.</p>
-    <a href="<?php echo admin_url('admin.php?page=snestx51-settings'); ?>" class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2.5 rounded-xl shadow-sm">
+    <a href="<?php echo admin_url('admin.php?page=shubx51-settings'); ?>" class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2.5 rounded-xl shadow-sm">
         <i class="bi bi-arrow-left"></i>
         <span>Back to Dashboard</span>
     </a>

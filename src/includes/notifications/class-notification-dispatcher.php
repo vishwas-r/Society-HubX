@@ -8,23 +8,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Notification_Dispatcher {
+class SHUBX51_Notification_Dispatcher {
     /**
-     * @var SNESTX51_Notification_Provider_Interface[]
+     * @var SHUBX51_Notification_Provider_Interface[]
      */
     private $providers = [];
 
     /**
-     * @var SNESTX51_DB_Router
+     * @var SHUBX51_DB_Router
      */
     private $db;
 
     public function __construct($db = null) {
-        $this->db = $db ?: Society_NestX::get_instance()->db;
+        $this->db = $db ?: Society_HubX::get_instance()->db;
         $this->load_providers();
         
         // Hook into Action Scheduler for background processing
-        add_action('snestx51_async_notification', [$this, 'dispatch_now'], 10, 4);
+        add_action('shubx51_async_notification', [$this, 'dispatch_now'], 10, 4);
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -41,9 +41,9 @@ class SNESTX51_Notification_Dispatcher {
         require_once plugin_dir_path(__FILE__) . 'class-whatsapp-provider.php';
         require_once plugin_dir_path(__FILE__) . 'class-inapp-provider.php';
 
-        $this->providers['email']    = new SNESTX51_Email_Provider();
-        $this->providers['whatsapp'] = new SNESTX51_WhatsApp_Provider();
-        $this->providers['inapp']    = new SNESTX51_InApp_Provider();
+        $this->providers['email']    = new SHUBX51_Email_Provider();
+        $this->providers['whatsapp'] = new SHUBX51_WhatsApp_Provider();
+        $this->providers['inapp']    = new SHUBX51_InApp_Provider();
     }
 
     /**
@@ -61,7 +61,7 @@ class SNESTX51_Notification_Dispatcher {
         }
 
         if ($async && function_exists('as_enqueue_async_action')) {
-            as_enqueue_async_action('snestx51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
+            as_enqueue_async_action('shubx51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
             return true;
         }
 

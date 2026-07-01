@@ -2,25 +2,25 @@
 /**
  * Class: Receipt Manager
  * Handles receipt generation and numbering for payments.
- * Receipt format: snestx-YYYYMMXXX (Year, Month, Auto-incremented number)
+ * Receipt format: shubx-YYYYMMXXX (Year, Month, Auto-incremented number)
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Receipt_Manager {
+class SHUBX51_Receipt_Manager {
 	private $db;
 
 	public function __construct() {
-		$this->db = new SNESTX51_DB_Router();
+		$this->db = new SHUBX51_DB_Router();
 	}
 
 	/**
 	 * Generate Receipt Number for given invoice
-	 * Format: snestx-YYYYMMXXX
+	 * Format: shubx-YYYYMMXXX
 	 * YYYY = Year, MM = Month, XXX = Auto-incremented (001-999)
 	 *
 	 * @param string $invoice_id Invoice ID
@@ -46,7 +46,7 @@ class SNESTX51_Receipt_Manager {
 		$highest = 0;
 		foreach ( $receipts as $receipt ) {
 			$num = $receipt['receipt_number'];
-			if ( strpos( $num, 'snestx-' . $year . $month_str ) === 0 ) {
+			if ( strpos( $num, 'shubx-' . $year . $month_str ) === 0 ) {
 				$seq = intval( substr( $num, -3 ) );
 				if ( $seq > $highest ) {
 					$highest = $seq;
@@ -56,7 +56,7 @@ class SNESTX51_Receipt_Manager {
 
 		// Increment sequence
 		$next_seq = str_pad( $highest + 1, 3, '0', STR_PAD_LEFT );
-		$receipt_number = 'snestx-' . $year . $month_str . $next_seq;
+		$receipt_number = 'shubx-' . $year . $month_str . $next_seq;
 
 		// Store in receipts table
 		$receipt_data = array(
@@ -147,7 +147,7 @@ class SNESTX51_Receipt_Manager {
 			'balance_due'      => $balance_due,
 			'status'           => $this->get_payment_status( $invoice_amount, $total_paid ),
 			'payments'         => $payments,
-			'society_name'     => get_option( 'snestx51_society_name', 'Society' ),
+			'society_name'     => get_option( 'shubx51_society_name', 'Society' ),
 		);
 	}
 

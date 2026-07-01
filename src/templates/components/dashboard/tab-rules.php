@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array $data Dashboard data
  */
 
-$db = new SNESTX51_DB_Router();
+$db = new SHUBX51_DB_Router();
 $user_id = get_current_user_id();
 $residents = $db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 $resident_id = !empty($residents) ? $residents[0]['id'] : '';
@@ -25,8 +25,8 @@ $categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' 
 
 // Get pending acknowledgments
 global $wpdb;
-$rules_table = "{$wpdb->prefix}society_nestx_rules";
-$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
+$rules_table = "{$wpdb->prefix}society_hubx_rules";
+$acks_table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
 
 $pending_rules = $wpdb->get_results($wpdb->prepare("
     SELECT r.* FROM $rules_table r
@@ -449,21 +449,21 @@ function handleAcknowledge(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'snestx51_acknowledge_rule',
+            action: 'shubx51_acknowledge_rule',
             rule_id: formData.get('rule_id'),
-            _wpnonce: '<?php echo wp_create_nonce('snestx51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('shubx51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {
                 acknowledgeModal.hide();
-                SNESTXShowToast('Rule acknowledged successfully!', 'success');
+                SHUBXShowToast('Rule acknowledged successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
-                SNESTXShowToast(response.data?.message || 'Error acknowledging rule', 'error');
+                SHUBXShowToast(response.data?.message || 'Error acknowledging rule', 'error');
             }
         },
         error: function() {
-            SNESTXShowToast('Error communicating with server', 'error');
+            SHUBXShowToast('Error communicating with server', 'error');
         }
     });
 }
@@ -499,15 +499,15 @@ function handleAppeal(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'snestx51_appeal_violation',
+            action: 'shubx51_appeal_violation',
             violation_id: formData.get('violation_id'),
             appeal_reason: formData.get('appeal_reason'),
-            _wpnonce: '<?php echo wp_create_nonce('snestx51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('shubx51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {
                 appealModal.hide();
-                SNESTXShowToast('Appeal submitted successfully!', 'success');
+                SHUBXShowToast('Appeal submitted successfully!', 'success');
                 setTimeout(() => location.reload(), 1000);
             } else {
                 alert(response.data.message || 'Error submitting appeal');

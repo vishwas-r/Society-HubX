@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Residents (Bootstrap Migration)
- * Integrates directly with SNESTX51_DB_Router for data.
+ * Integrates directly with SHUBX51_DB_Router for data.
  */
 
-// Data is passed from SNESTX51_Resident_Manager::render_page via context
+// Data is passed from SHUBX51_Resident_Manager::render_page via context
 // $residents, $pending, $history, $flats are available.
 
 if (!isset($residents)) $residents = array();
@@ -47,13 +47,13 @@ if (!isset($flats)) $flats = array();
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <div class="dropdown snestx-bulk-actions d-none">
+                    <div class="dropdown shubx-bulk-actions d-none">
                         <button class="btn btn-outline-secondary dropdown-toggle px-3 rounded-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 48px;">
                             Bulk Actions (<span id="selected-count">0</span>)
                         </button>
                         <ul class="dropdown-menu shadow-sm border-0 mt-1">
-                            <li><a class="dropdown-item fw-bold text-success" href="#" onclick="SNESTXBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
-                            <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SNESTXBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
+                            <li><a class="dropdown-item fw-bold text-success" href="#" onclick="SHUBXBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
+                            <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SHUBXBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
                     <button class="js-toggle-filters btn btn-light px-3 px-sm-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center gap-2" style="height: 48px;">
@@ -151,7 +151,7 @@ if (!isset($flats)) $flats = array();
 
                     // 0.1 Build Role Mapping for display
                     $role_map = array();
-                    $all_rbac_roles = Society_NestX::get_instance()->rbac->get_all_roles();
+                    $all_rbac_roles = Society_HubX::get_instance()->rbac->get_all_roles();
                     if ( ! empty( $all_rbac_roles ) ) {
                         foreach ( $all_rbac_roles as $role_def ) {
                             $role_map[$role_def['id']] = $role_def['name'];
@@ -244,14 +244,14 @@ if (!isset($flats)) $flats = array();
                             data-type="<?php echo esc_attr($type); ?>"
                             data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['name']??''))); ?>">
                             <td class="ps-3 ps-md-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input snestx-bulk-checkbox shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input shubx-bulk-checkbox shadow-none">
                             </td>
                             <td class="ps-0 ps-md-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
-                                    <?php echo SNESTX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
+                                    <?php echo SHUBX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
                                     <div>
                                         <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>"><?php echo esc_html( $row['name'] ); ?></div>
-                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( SNESTX51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
+                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
                                     </div>
                                 </div>
                             </td>
@@ -285,20 +285,20 @@ if (!isset($flats)) $flats = array();
                                 if ($is_deletion_pending) {
                                     echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
                                 } else if ($is_update_pending) {
-                                    echo SNESTX51_Admin_UI::render_status_badge( 'pending' );
+                                    echo SHUBX51_Admin_UI::render_status_badge( 'pending' );
                                     echo '<div class="small text-warning mt-1" style="font-size: 10px; font-weight: 600;">UPDATE PENDING</div>';
                                 } else {
-                                    echo SNESTX51_Admin_UI::render_status_badge( $status ); 
+                                    echo SHUBX51_Admin_UI::render_status_badge( $status ); 
                                 }
                                 ?>
                             </td>
                             <td class="px-4 py-4">
-                                <div class="text-secondary fw-bold small"><?php echo esc_html( SNESTX51_Privacy_Manager::mask_data($row['phone'] ?? '-', 'phone') ); ?></div>
+                                <div class="text-secondary fw-bold small"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data($row['phone'] ?? '-', 'phone') ); ?></div>
                             </td>
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <?php if ( $is_request ) : ?>
-                                        <?php echo SNESTX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
+                                        <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
@@ -334,16 +334,16 @@ if (!isset($flats)) $flats = array();
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('snestx51_admin_modals', function() use ($flats) {
+add_action('shubx51_admin_modals', function() use ($flats) {
 ?>
 <!-- Modal Refactor to Bootstrap structure -->
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
             <form id="add-resident-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="snestx51_add_resident">
+                <input type="hidden" name="action" value="shubx51_add_resident">
                 <input type="hidden" name="resident_id" value="">
-                <?php wp_nonce_field( 'snestx51_resident_nonce' ); ?>
+                <?php wp_nonce_field( 'shubx51_resident_nonce' ); ?>
                 
                 <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
                     <h5 class="fw-bold m-0" id="modal-title">Add New Resident</h5>
@@ -356,7 +356,7 @@ add_action('snestx51_admin_modals', function() use ($flats) {
                         'flats'   => $flats,
                         'resident' => [] // Will be populated by JS for edits
                     ];
-                    include SNESTX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+                    include SHUBX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
                     ?>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Defines the structure for all notification delivery channels.
  */
 
-interface SNESTX51_Notification_Provider_Interface {
+interface SHUBX51_Notification_Provider_Interface {
     /**
      * Send a notification.
      * 

@@ -11,8 +11,8 @@
 
     // --- Chart Logic ---
     function initCharts() {
-        if (!window.Chart || !window.SNESTXDashboardData) {
-            console.warn('SNESTX Dashboard: Chart.js or SNESTXDashboardData missing. Some features may not work.');
+        if (!window.Chart || !window.SHUBXDashboardData) {
+            console.warn('SHUBX Dashboard: Chart.js or SHUBXDashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -23,7 +23,7 @@
             const btnId = 'btn-tab-' + tabName;
             const btn = document.getElementById(btnId);
             if (!btn) {
-                console.error('SNESTX Dashboard: Tab button not found:', btnId);
+                console.error('SHUBX Dashboard: Tab button not found:', btnId);
                 return;
             }
 
@@ -125,8 +125,8 @@
 
         // 1. Society Expense Trend
         const expenseContainer = document.getElementById('expensesChart');
-        if (expenseContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.expenseChartData) {
-            const expenseData = window.SNESTXDashboardData.expenseChartData;
+        if (expenseContainer && window.SHUBXDashboardData && window.SHUBXDashboardData.expenseChartData) {
+            const expenseData = window.SHUBXDashboardData.expenseChartData;
             const labels = [];
             const dataValues = [];
 
@@ -186,8 +186,8 @@
 
         // 2. Resident Payment History
         const paymentContainer = document.getElementById('paymentHistoryChart');
-        if (paymentContainer && window.SNESTXDashboardData && window.SNESTXDashboardData.paymentHistory) {
-            const paymentData = window.SNESTXDashboardData.paymentHistory;
+        if (paymentContainer && window.SHUBXDashboardData && window.SHUBXDashboardData.paymentHistory) {
+            const paymentData = window.SHUBXDashboardData.paymentHistory;
             const labels = [];
             const dataValues = [];
 
@@ -278,7 +278,7 @@
 
     // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('SNESTX Dashboard: DOMContentLoaded fired. Initializing...');
+        console.log('SHUBX Dashboard: DOMContentLoaded fired. Initializing...');
         // Init Charts
         initCharts();
         
@@ -382,7 +382,7 @@
                 if (window.filterDirectory) window.filterDirectory();
             });
             dirSearch.addEventListener('focus', function () {
-                if (window.SNESTXCreateFuse) dirFuse = window.SNESTXCreateFuse('.dir-card');
+                if (window.SHUBXCreateFuse) dirFuse = window.SHUBXCreateFuse('.dir-card');
             });
         }
 
@@ -391,11 +391,11 @@
         if (facilitySearch) {
             facilitySearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!facFuse && window.SNESTXCreateFuse) {
-                    facFuse = window.SNESTXCreateFuse('.facility-card');
+                if (!facFuse && window.SHUBXCreateFuse) {
+                    facFuse = window.SHUBXCreateFuse('.facility-card');
                 }
 
-                const matches = val && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(facFuse, val) : null;
+                const matches = val && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(facFuse, val) : null;
 
                 document.querySelectorAll('.facility-card').forEach(card => {
                     const isMatch = !val || (matches && matches.has(card));
@@ -409,7 +409,7 @@
                 });
             });
             facilitySearch.addEventListener('focus', function () {
-                if (window.SNESTXCreateFuse) facFuse = window.SNESTXCreateFuse('.facility-card');
+                if (window.SHUBXCreateFuse) facFuse = window.SHUBXCreateFuse('.facility-card');
             });
         }
 
@@ -418,11 +418,11 @@
         if (bookingSearch) {
             bookingSearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!bookingFuse && window.SNESTXCreateFuse) {
-                    bookingFuse = window.SNESTXCreateFuse('.booking-dash-row');
+                if (!bookingFuse && window.SHUBXCreateFuse) {
+                    bookingFuse = window.SHUBXCreateFuse('.booking-dash-row');
                 }
 
-                const matches = val && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(bookingFuse, val) : null;
+                const matches = val && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(bookingFuse, val) : null;
 
                 document.querySelectorAll('.booking-dash-row').forEach(row => {
                     const isMatch = !val || (matches && matches.has(row));
@@ -434,7 +434,7 @@
                 });
             });
             bookingSearch.addEventListener('focus', function () {
-                if (window.SNESTXCreateFuse) bookingFuse = window.SNESTXCreateFuse('.booking-dash-row');
+                if (window.SHUBXCreateFuse) bookingFuse = window.SHUBXCreateFuse('.booking-dash-row');
             });
         }
 
@@ -491,9 +491,9 @@
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(familyForm);
-                if (!formData.get('action')) formData.append('action', 'snestx51_add_family');
+                if (!formData.get('action')) formData.append('action', 'shubx51_add_family');
 
-                SNESTX.ajax({
+                SHUBX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(familyForm).find('button[type="submit"]'),
@@ -510,7 +510,7 @@
                 e.preventDefault();
                 const formData = new FormData(helpForm);
 
-                SNESTX.ajax({
+                SHUBX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(helpForm).find('button[type="submit"]'),
@@ -527,7 +527,7 @@
                 e.preventDefault();
                 const formData = new FormData(vehicleForm);
 
-                SNESTX.ajax({
+                SHUBX.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(vehicleForm).find('button[type="submit"]'),
@@ -566,8 +566,8 @@
                     const form = e.target;
                     const formData = new FormData(form);
 
-                    SNESTX.ajax({
-                        action: 'snestx51_cast_vote',
+                    SHUBX.ajax({
+                        action: 'shubx51_cast_vote',
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
                         successMessage: 'Vote cast successfully!',
@@ -615,7 +615,7 @@
 
             // Reset action to add
             const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'snestx51_add_family';
+            if (actionInput) actionInput.value = 'shubx51_add_family';
 
             // Reset Relation Wrapper
             const relWrapper = document.getElementById('relation-wrapper-frontend_family');
@@ -664,7 +664,7 @@
             }
 
             // Set action and IDs for edit
-            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'snestx51_edit_family';
+            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'shubx51_edit_family';
             if (form.querySelector('[name="member_id"]')) form.querySelector('[name="member_id"]').value = d.id || d.memberId || '';
             if (form.querySelector('[name="resident_id"]')) form.querySelector('[name="resident_id"]').value = d.id || '';
 
@@ -725,7 +725,7 @@
                 }
 
                 // Set Action
-                form.querySelector('[name="action"]').value = 'snestx51_edit_help_frontend';
+                form.querySelector('[name="action"]').value = 'shubx51_edit_help_frontend';
 
                 // Set ID
                 let idInput = form.querySelector('[name="help_id"]');
@@ -795,7 +795,7 @@
         window.resetHelpModal = function () {
             const form = document.querySelector('#helpModal form');
             form.reset();
-            form.querySelector('[name="action"]').value = 'snestx51_add_daily_help';
+            form.querySelector('[name="action"]').value = 'shubx51_add_daily_help';
             const idInput = form.querySelector('[name="help_id"]');
             if (idInput) idInput.value = '';
             const docUrlInput = form.querySelector('[name="document_url"]');
@@ -831,13 +831,13 @@
             setVal('model', payload.model);
 
             const actionField = form.querySelector('[name="action"]');
-            if (actionField) actionField.value = 'snestx51_edit_vehicle_frontend';
+            if (actionField) actionField.value = 'shubx51_edit_vehicle_frontend';
 
             const idField = form.querySelector('[name="vehicle_id"]');
             if (idField) idField.value = payload.id;
 
             // Swap Nonce
-            const editNonce = form.querySelector('[name="snestx51_edit_vehicle_token"]');
+            const editNonce = form.querySelector('[name="shubx51_edit_vehicle_token"]');
             const mainNonce = form.querySelector('[name="_wpnonce"]');
             if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
@@ -894,10 +894,10 @@
             if (btn) { e.preventDefault(); handleDeleteFamily(btn); return; }
 
             btn = e.target.closest('.js-delete-help-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'snestx51_delete_daily_help_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'shubx51_delete_daily_help_frontend'); return; }
 
             btn = e.target.closest('.js-delete-vehicle-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'snestx51_delete_vehicle_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'shubx51_delete_vehicle_frontend'); return; }
         });
 
         // --- Generic Delete Handler ---
@@ -907,7 +907,7 @@
             const id = btn.dataset.id;
             const nonce = btn.dataset.nonce;
 
-            SNESTX.ajax({
+            SHUBX.ajax({
                 action: action,
                 data: { id: id, _wpnonce: nonce },
                 loadingButton: btn,
@@ -918,7 +918,7 @@
 
         // --- Specific Delete Handlers (can wrap generic if needed) ---
         function handleDeleteFamily(btn) {
-            handleDeleteGeneric(btn, 'snestx51_delete_family_frontend');
+            handleDeleteGeneric(btn, 'shubx51_delete_family_frontend');
         }
 
         // Optional: Hook into global window.switchTab if it exists (legacy support)
@@ -1068,19 +1068,19 @@
             const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
             const dirCards = document.querySelectorAll('.dir-card');
 
-            if (!dirFuse && window.SNESTXCreateFuse) {
+            if (!dirFuse && window.SHUBXCreateFuse) {
                 if (typeof Fuse === 'undefined') {
                     console.error('Fuse.js is not loaded! Search will fail.');
                     return;
                 }
                 // Use stricter threshold (0.2) and only search metadata to avoid noise from labels
-                dirFuse = window.SNESTXCreateFuse('.dir-card', {
+                dirFuse = window.SHUBXCreateFuse('.dir-card', {
                     threshold: 0.3,
                     searchOnlyMeta: true
                 });
             }
 
-            const fuzzyMatches = searchTerm && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(dirFuse, searchTerm) : null;
+            const fuzzyMatches = searchTerm && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(dirFuse, searchTerm) : null;
 
             dirCards.forEach(function (card) {
                 // 1. Check Search Match
@@ -1166,7 +1166,7 @@
         window.downloadReceipt = function () {
             const receiptElement = document.getElementById('receipt-content');
             if (!receiptElement) {
-                SNESTX.toast.error('Receipt not found!');
+                SHUBX.toast.error('Receipt not found!');
                 return;
             }
 
@@ -1176,7 +1176,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
 
             if (typeof html2canvas === 'undefined') {
-                SNESTX.toast.error('Library not loaded. Please try again.');
+                SHUBX.toast.error('Library not loaded. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 return;
@@ -1198,7 +1198,7 @@
                 btn.innerHTML = originalText;
             }).catch(error => {
                 console.error('Download error:', error);
-                SNESTX.toast.error('Error generating receipt image. Please try again.');
+                SHUBX.toast.error('Error generating receipt image. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             });
@@ -1219,15 +1219,15 @@
                 return;
             }
 
-            const nonce = (window.SNESTXDashboardData && window.SNESTXDashboardData.nonce) ? window.SNESTXDashboardData.nonce : (typeof snestx51_nonce !== 'undefined' ? snestx51_nonce : '');
+            const nonce = (window.SHUBXDashboardData && window.SHUBXDashboardData.nonce) ? window.SHUBXDashboardData.nonce : (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
 
-            SNESTX.ajax({
-                action: 'snestx51_get_receipt',
+            SHUBX.ajax({
+                action: 'shubx51_get_receipt',
                 data: { invoice_id: invoiceId, nonce: nonce },
                 onSuccess: function (data) {
                     populateReceiptModal(data);
                     let modalEl = document.getElementById('receiptModal');
-                    if (!modalEl) modalEl = document.getElementById('snestx-resident-receipt-modal');
+                    if (!modalEl) modalEl = document.getElementById('shubx-resident-receipt-modal');
 
                     if (modalEl) {
                         const modal = new bootstrap.Modal(modalEl);
@@ -1331,7 +1331,7 @@
                 <!-- Footer -->
                 <div class="receipt-footer-standard">
                     <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-                    <p class="mb-0">Society NestX - Empowering Communities</p>
+                    <p class="mb-0">Society HubX - Empowering Communities</p>
                 </div>
             `;
         }
@@ -1362,22 +1362,22 @@
             const amount = form.querySelector('[name="amount"]').value;
             const ref = form.querySelector('[name="reference"]').value;
             if (!amount || !ref) {
-                SNESTX.toast.warning('Please fill in the Amount and Reference Number.');
+                SHUBX.toast.warning('Please fill in the Amount and Reference Number.');
                 return;
             }
 
             const formData = new FormData(form);
-            const nonce = (window.SNESTXDashboardData && window.SNESTXDashboardData.nonce) ? window.SNESTXDashboardData.nonce : '';
+            const nonce = (window.SHUBXDashboardData && window.SHUBXDashboardData.nonce) ? window.SHUBXDashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
-            SNESTX.ajax({
-                action: 'snestx51_submit_payment_request',
+            SHUBX.ajax({
+                action: 'shubx51_submit_payment_request',
                 data: formData,
                 loadingButton: btn,
                 successMessage: 'Payment confirmation sent successfully!',
                 reload: true,
                 onSuccess: function () {
-                    const modalEl = document.getElementById('SNESTX51PaymentModal');
+                    const modalEl = document.getElementById('SHUBX51PaymentModal');
                     if (modalEl) {
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
@@ -1405,16 +1405,16 @@
 
         // Fix: Auto-populate Resident Profile Modal
         var profileModal = document.getElementById('editProfileModal');
-        // console.log("SNESTX Debug: Profile Modal Reset Script Loaded", profileModal); 
+        // console.log("SHUBX Debug: Profile Modal Reset Script Loaded", profileModal); 
 
-        if (profileModal && typeof SNESTXDashboardData !== 'undefined' && SNESTXDashboardData.resident) {
+        if (profileModal && typeof SHUBXDashboardData !== 'undefined' && SHUBXDashboardData.resident) {
             profileModal.addEventListener('show.bs.modal', function () {
-                var r = SNESTXDashboardData.resident;
-                // console.log("SNESTX Debug: Populating Profile Modal", r);
+                var r = SHUBXDashboardData.resident;
+                // console.log("SHUBX Debug: Populating Profile Modal", r);
 
                 var form = profileModal.querySelector('form');
                 if (!form) {
-                    // console.error("SNESTX Debug: Profile Form not found in modal");
+                    // console.error("SHUBX Debug: Profile Form not found in modal");
                     return;
                 }
 
@@ -1423,9 +1423,9 @@
                     var el = form.querySelector('[name="' + name + '"]');
                     if (el) {
                         el.value = val || '';
-                        // console.log("SNESTX Debug: Set " + name + " to " + val);
+                        // console.log("SHUBX Debug: Set " + name + " to " + val);
                     } else {
-                        // console.warn("SNESTX Debug: Input not found for " + name);
+                        // console.warn("SHUBX Debug: Input not found for " + name);
                     }
                 };
 
@@ -1449,10 +1449,10 @@
             });
         } else {
             /*
-            console.warn("SNESTX Debug: Missing Data or Modal", {
+            console.warn("SHUBX Debug: Missing Data or Modal", {
                modal: !!profileModal,
-               data: typeof SNESTXDashboardData,
-               resident: (SNESTXDashboardData || {}).resident
+               data: typeof SHUBXDashboardData,
+               resident: (SHUBXDashboardData || {}).resident
             });
             */
         }
@@ -1591,9 +1591,9 @@
 
     // --- Resident Request View Detail ---
     window.viewResidentRequestDetail = function(requestId) {
-        if (!window.SNESTXDashboardData || !window.SNESTXDashboardData.my_requests) return;
+        if (!window.SHUBXDashboardData || !window.SHUBXDashboardData.my_requests) return;
         
-        const req = window.SNESTXDashboardData.my_requests.find(r => r.id === requestId);
+        const req = window.SHUBXDashboardData.my_requests.find(r => r.id === requestId);
         if (!req) return;
 
         const modalEl = document.getElementById('residentRequestDetailModal');
@@ -1655,15 +1655,15 @@
 
     // --- Real-time Payment Sync (Optimistic UI) ---
     function initPaymentSync() {
-        if (!window.SNESTXDashboardData || !window.SNESTXDashboardData.rest_url || !window.SNESTXDashboardData.rest_nonce) {
+        if (!window.SHUBXDashboardData || !window.SHUBXDashboardData.rest_url || !window.SHUBXDashboardData.rest_nonce) {
             return;
         }
 
         let currentHash = null;
         let isPolling = false;
         const POLL_INTERVAL = 4000; // 4 seconds
-        const API_BASE = window.SNESTXDashboardData.rest_url;
-        const NONCE = window.SNESTXDashboardData.rest_nonce;
+        const API_BASE = window.SHUBXDashboardData.rest_url;
+        const NONCE = window.SHUBXDashboardData.rest_nonce;
 
         async function pollStateHash() {
             if (isPolling) return;
@@ -1681,14 +1681,14 @@
                         if (currentHash === null) {
                             currentHash = data.hash; // Initial load
                         } else if (currentHash !== data.hash) {
-                            console.log('SNESTX: State Hash change detected. Refreshing data...');
+                            console.log('SHUBX: State Hash change detected. Refreshing data...');
                             currentHash = data.hash;
                             await refreshDashboard();
                         }
                     }
                 }
             } catch (err) {
-                console.error('SNESTX Sync Error:', err);
+                console.error('SHUBX Sync Error:', err);
             } finally {
                 isPolling = false;
                 setTimeout(pollStateHash, POLL_INTERVAL);
@@ -1706,8 +1706,8 @@
                 if (resJson.ok) {
                     const data = await resJson.json();
                     if (data.success && data.data) {
-                        window.SNESTXDashboardData.paymentHistory = data.data.paymentHistory;
-                        window.SNESTXDashboardData.expenseChartData = data.data.expenseChartData;
+                        window.SHUBXDashboardData.paymentHistory = data.data.paymentHistory;
+                        window.SHUBXDashboardData.expenseChartData = data.data.expenseChartData;
 
                         // Update Charts seamlessly
                         if (paymentChart && data.data.paymentHistory) {
@@ -1794,13 +1794,13 @@
                         }
                     }
                     
-                    if (window.SNESTX && window.SNESTX.toast) {
-                        window.SNESTX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
+                    if (window.SHUBX && window.SHUBX.toast) {
+                        window.SHUBX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
                     }
                 }
 
             } catch (err) {
-                console.error('SNESTX Dashboard Refresh Error:', err);
+                console.error('SHUBX Dashboard Refresh Error:', err);
             }
         }
 

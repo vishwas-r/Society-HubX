@@ -1,5 +1,5 @@
 ﻿/**
- * SNESTX Vehicles Management JS
+ * SHUBX Vehicles Management JS
  */
 (function ($) {
     'use strict';
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SNESTX.ajax({
-                action: 'snestx51_get_module_config',
+            const result = await SHUBX.ajax({
+                action: 'shubx51_get_module_config',
                 data: { module: 'vehicles' },
                 showOverlay: false, // Silent fetch for config
                 suppressErrorToast: true
@@ -69,11 +69,11 @@
         const searchInput = document.getElementById('filter-search');
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-        if (!fuse && window.SNESTXCreateFuse) {
-            fuse = window.SNESTXCreateFuse('.vehicle-row');
+        if (!fuse && window.SHUBXCreateFuse) {
+            fuse = window.SHUBXCreateFuse('.vehicle-row');
         }
 
-        const fuzzyMatches = searchVal && window.SNESTXGetFuzzyMatches ? window.SNESTXGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(fuse, searchVal) : null;
 
         $('.vehicle-row').each(function () {
             const $row = $(this);
@@ -109,7 +109,7 @@
         $form.find('[name="sticker"]').val(vehicle.sticker || '');
         $form.find('[name="flat_no"]').val(vehicle.flat_no || '');
         $form.find('[name="vehicle_id"]').val(vehicle.id);
-        $form.find('[name="action"]').val('snestx51_edit_vehicle');
+        $form.find('[name="action"]').val('shubx51_edit_vehicle');
 
         $('#vehicleModalTitle').text('Edit Vehicle: ' + vehicle.number);
         vehicleModal.show();
@@ -118,7 +118,7 @@
     function resetVehicleForm() {
         const $form = $('#add-vehicle-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('snestx51_add_vehicle');
+        $form.find('[name="action"]').val('shubx51_add_vehicle');
         $('#vehicleModalTitle').text('Add New Vehicle');
     }
 
@@ -135,8 +135,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
-            SNESTX.ajax({
-                action: 'snestx51_delete_vehicle',
+            SHUBX.ajax({
+                action: 'shubx51_delete_vehicle',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -161,8 +161,8 @@
     };
 
     window.restoreVehicle = async function (id) {
-        SNESTX.ajax({
-            action: 'snestx51_restore_vehicle',
+        SHUBX.ajax({
+            action: 'shubx51_restore_vehicle',
             data: {
                 id: id,
                 _wpnonce: Config.nonce
@@ -204,7 +204,7 @@
                     const action = $form.find('[name="action"]').val();
                     const formData = new FormData($form[0]);
 
-                    SNESTX.ajax({
+                    SHUBX.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),
@@ -220,7 +220,7 @@
             $('#filter-search').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.SNESTXCreateFuse) fuse = window.SNESTXCreateFuse('.vehicle-row');
+                if (window.SHUBXCreateFuse) fuse = window.SHUBXCreateFuse('.vehicle-row');
             });
         });
     });

@@ -3,31 +3,31 @@
  * Class: Poll Manager
  * Handles Digital Democracy (Polling & Voting).
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Poll_Manager implements SNESTX51_Module {
+class SHUBX51_Poll_Manager implements SHUBX51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SNESTX51_DB_Router();
+		$this->db = new SHUBX51_DB_Router();
         
         // Admin Actions
-		add_action( 'admin_post_snestx51_create_poll', array( $this, 'handle_create_poll' ) );
-        add_action( 'admin_post_snestx51_delete_poll', array( $this, 'handle_delete_poll' ) );
-        add_action( 'admin_post_snestx51_close_poll', array( $this, 'handle_close_poll' ) );
+		add_action( 'admin_post_shubx51_create_poll', array( $this, 'handle_create_poll' ) );
+        add_action( 'admin_post_shubx51_delete_poll', array( $this, 'handle_delete_poll' ) );
+        add_action( 'admin_post_shubx51_close_poll', array( $this, 'handle_close_poll' ) );
 
         // Frontend Actions
-        add_action( 'admin_post_snestx51_cast_vote', array( $this, 'handle_cast_vote' ) );
-        add_action( 'wp_ajax_snestx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'admin_post_shubx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'wp_ajax_shubx51_cast_vote', array( $this, 'handle_cast_vote' ) );
 
         // Register Module
-        add_filter( 'snestx51_get_module_polls', array( $this, 'get_instance' ) );
+        add_filter( 'shubx51_get_module_polls', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -63,8 +63,8 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 	 * Create a new Poll.
 	 */
 	public function handle_create_poll() {
-        $rbac = new SNESTX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
+        $rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -92,7 +92,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 
         $this->db->insert('polls', $new_poll);
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-polls&created=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&created=1' ) );
 		exit;
 	}
 
@@ -100,8 +100,8 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
      * Delete a Poll.
      */
     public function handle_delete_poll() {
-        $rbac = new SNESTX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
+        $rbac = new SHUBX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -112,7 +112,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
         // DB_Router doesn't support delete_many efficiently yet without key, 
         // but votes don't have unique ID in current schema? 
         // Wait, votes schema: id, poll_id... check schema.
-        // Schema says: society_nestx_votes (id, poll_id, flat_no, ...)
+        // Schema says: society_hubx_votes (id, poll_id, flat_no, ...)
         // JSON file had flat_no+poll_id as key somewhat. 
         // For MySQL, we run a DELETE query. For JSON, we might leave orphans or iterate?
         // Since DB_Router relies on 'id' for delete(), we can't delete by poll_id easily.
@@ -125,7 +125,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
             }
         }
 
-        wp_safe_redirect( admin_url( 'admin.php?page=snestx51-polls&deleted=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&deleted=1' ) );
         exit;
     }
 
@@ -133,8 +133,8 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
      * Close a Poll manually.
      */
     public function handle_close_poll() {
-        $rbac = new SNESTX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
+        $rbac = new SHUBX51_RBAC_Manager();
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -142,7 +142,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
         // Update Poll Status
         $this->db->update('polls', ['status' => 'closed'], ['id' => $id]);
 
-        wp_safe_redirect( admin_url( 'admin.php?page=snestx51-polls&closed=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&closed=1' ) );
         exit;
     }
 
@@ -151,9 +151,9 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 	 */
 	public function handle_cast_vote() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_vote_nonce' );
+            check_ajax_referer( 'shubx51_vote_nonce' );
         } else {
-            if ( ! is_user_logged_in() || ! check_admin_referer( 'snestx51_vote_nonce' ) ) {
+            if ( ! is_user_logged_in() || ! check_admin_referer( 'shubx51_vote_nonce' ) ) {
                 wp_die( 'Unauthorized' );
             }
         }

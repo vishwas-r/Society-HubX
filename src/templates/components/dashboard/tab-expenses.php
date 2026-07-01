@@ -22,18 +22,18 @@ if ( ! defined( 'ABSPATH' ) ) {
                   <div class="card-body p-4 d-flex flex-column justify-content-between">
                        <div>
                            <p class="text-secondary small fw-bold text-uppercase mb-1" style="color: #94a3b8 !important;">Total Society Funds</p>
-                           <h2 class="display-6 fw-bold mb-0">₹<?php echo SNESTX_in_fmt($data['current_balance']['total'] ?? 0); ?></h2>
+                           <h2 class="display-6 fw-bold mb-0">₹<?php echo SHUBX_in_fmt($data['current_balance']['total'] ?? 0); ?></h2>
                        </div>
                        
                        <div class="pt-3 border-top border-secondary">
                             <div class="row">
                                  <div class="col-6">
                                      <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Bank</div>
-                                     <div class="fw-bold text-primary">₹<?php echo SNESTX_in_fmt($data['current_balance']['bank'] ?? 0); ?></div>
+                                     <div class="fw-bold text-primary">₹<?php echo SHUBX_in_fmt($data['current_balance']['bank'] ?? 0); ?></div>
                                  </div>
                                  <div class="col-6 border-start border-secondary">
                                      <div class="small text-secondary fw-bold text-uppercase" style="color: #64748b !important; font-size: 10px;">Cash</div>
-                                     <div class="fw-bold text-warning">₹<?php echo SNESTX_in_fmt($data['current_balance']['cash'] ?? 0); ?></div>
+                                     <div class="fw-bold text-warning">₹<?php echo SHUBX_in_fmt($data['current_balance']['cash'] ?? 0); ?></div>
                                  </div>
                             </div>
                        </div>
@@ -211,7 +211,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                           <div class="small text-muted" style="font-size: 10px;"><?php echo esc_html($ex['payee'] ?? 'General Vendor'); ?></div>
                                       </td>
                                       <td><span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1" style="font-size: 9px;"><?php echo esc_html($ex['category'] ?? 'General'); ?></span></td>
-                                      <td class="text-end pe-4 fw-bold">₹<?php echo SNESTX_in_fmt($ex['amount'] ?? 0); ?></td>
+                                      <td class="text-end pe-4 fw-bold">₹<?php echo SHUBX_in_fmt($ex['amount'] ?? 0); ?></td>
                                   </tr>
                               <?php endforeach; ?>
                           <?php endif; ?>

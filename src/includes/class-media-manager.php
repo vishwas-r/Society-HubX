@@ -3,22 +3,22 @@
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Media_Manager {
+class SHUBX51_Media_Manager {
 
 	private $base_dir;
 	private $base_url;
 
 	public function __construct() {
 		$upload_dir = wp_upload_dir();
-		$this->base_dir = $upload_dir['basedir'] . '/society-nestx/profile-pics/';
-		$this->base_url = $upload_dir['baseurl'] . '/society-nestx/profile-pics/';
+		$this->base_dir = $upload_dir['basedir'] . '/society-hubx/profile-pics/';
+		$this->base_url = $upload_dir['baseurl'] . '/society-hubx/profile-pics/';
 
 		if ( ! file_exists( $this->base_dir ) ) {
 			wp_mkdir_p( $this->base_dir );
@@ -58,9 +58,9 @@ class SNESTX51_Media_Manager {
 
 		// Move file using WordPress standard wp_handle_upload
 		$upload_dir_filter = function( $uploads ) use ( $subfolder, $filename ) {
-			$uploads['path']   = $uploads['basedir'] . '/society-nestx/profile-pics/' . $subfolder;
-			$uploads['url']    = $uploads['baseurl'] . '/society-nestx/profile-pics/' . $subfolder;
-			$uploads['subdir'] = '/society-nestx/profile-pics/' . $subfolder;
+			$uploads['path']   = $uploads['basedir'] . '/society-hubx/profile-pics/' . $subfolder;
+			$uploads['url']    = $uploads['baseurl'] . '/society-hubx/profile-pics/' . $subfolder;
+			$uploads['subdir'] = '/society-hubx/profile-pics/' . $subfolder;
 			return $uploads;
 		};
 		add_filter( 'upload_dir', $upload_dir_filter );

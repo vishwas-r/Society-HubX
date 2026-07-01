@@ -7,14 +7,14 @@
  * 3. Creates Local JSON files + Headers (if offline/shadow).
  * 4. Creates Drive Folder Hierarchy.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Setup_Wizard {
+class SHUBX51_Setup_Wizard {
 
 	/**
 	 * Canonical Schema Definitions.
@@ -35,17 +35,17 @@ class SNESTX51_Setup_Wizard {
 	 * Run the Setup Process (Step-by-Step).
 	 */
 	public static function save_step( $step, $data ) {
-		error_log("SNESTX51 Debug: Saving Setup Step: $step"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51 Debug: Saving Setup Step: $step"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		$log = array();
 		
 		switch ( $step ) {
 			case 'identity':
-				update_option( 'snestx51_society_name', sanitize_text_field( $data['society_name'] ) );
-				update_option( 'snestx51_society_address_line1', sanitize_text_field( $data['address_line1'] ) );
-				update_option( 'snestx51_society_address_line2', sanitize_text_field( $data['address_line2'] ) );
-				update_option( 'snestx51_society_city', sanitize_text_field( $data['city'] ) );
-				update_option( 'snestx51_society_pincode', sanitize_text_field( $data['pincode'] ) );
-				update_option( 'snestx51_society_contact', sanitize_text_field( $data['contact'] ) );
+				update_option( 'shubx51_society_name', sanitize_text_field( $data['society_name'] ) );
+				update_option( 'shubx51_society_address_line1', sanitize_text_field( $data['address_line1'] ) );
+				update_option( 'shubx51_society_address_line2', sanitize_text_field( $data['address_line2'] ) );
+				update_option( 'shubx51_society_city', sanitize_text_field( $data['city'] ) );
+				update_option( 'shubx51_society_pincode', sanitize_text_field( $data['pincode'] ) );
+				update_option( 'shubx51_society_contact', sanitize_text_field( $data['contact'] ) );
 				$log[] = 'Society identity saved.';
 				break;
 
@@ -54,17 +54,17 @@ class SNESTX51_Setup_Wizard {
 				break;
 
 			case 'financials':
-				update_option( 'snestx51_maintenance_amount', floatval( $data['maintenance_amount'] ) );
-				update_option( 'snestx51_bank_name', sanitize_text_field( $data['bank_name'] ) );
-				update_option( 'snestx51_bank_account', sanitize_text_field( $data['bank_account'] ) );
-				update_option( 'snestx51_bank_ifsc', sanitize_text_field( $data['bank_ifsc'] ) );
-				update_option( 'snestx51_bank_upi', sanitize_text_field( $data['bank_upi'] ) );
+				update_option( 'shubx51_maintenance_amount', floatval( $data['maintenance_amount'] ) );
+				update_option( 'shubx51_bank_name', sanitize_text_field( $data['bank_name'] ) );
+				update_option( 'shubx51_bank_account', sanitize_text_field( $data['bank_account'] ) );
+				update_option( 'shubx51_bank_ifsc', sanitize_text_field( $data['bank_ifsc'] ) );
+				update_option( 'shubx51_bank_upi', sanitize_text_field( $data['bank_upi'] ) );
 				$log[] = 'Financial settings updated.';
 				break;
 
 			case 'finalize':
 				self::create_frontend_pages();
-				update_option( 'snestx51_is_setup_complete', true );
+				update_option( 'shubx51_is_setup_complete', true );
 				$log[] = 'Setup finalized successfully!';
 				break;
 		}
@@ -81,7 +81,7 @@ class SNESTX51_Setup_Wizard {
 		$floors = intval( $data['floors'] ?? 1 );
 		$flats_per_floor = intval( $data['flats_per_floor'] ?? 1 );
 
-		$db = Society_NestX::get_instance()->db;
+		$db = Society_HubX::get_instance()->db;
 		$count = 0;
 
 		foreach ( $blocks as $block ) {
@@ -120,15 +120,15 @@ class SNESTX51_Setup_Wizard {
 		$pages = array(
 			'Resident Dashboard' => array(
 				'slug'    => 'resident-dashboard',
-				'content' => '[society_nestx_dashboard]',
+				'content' => '[society_hubx_dashboard]',
 			),
 			'Society Notices' => array(
 				'slug'    => 'society-notices',
-				'content' => '[society_nestx_notices]',
+				'content' => '[society_hubx_notices]',
 			),
 			'Residents Directory' => array(
 				'slug'    => 'residents-directory',
-				'content' => '[society_nestx_directory]',
+				'content' => '[society_hubx_directory]',
 			),
 		);
 
@@ -158,27 +158,27 @@ class SNESTX51_Setup_Wizard {
 	 */
 	private static function setup_google_workspace() {
 		// 1. Check if Spreadsheet ID already exists.
-		$sheet_id = get_option( 'snestx51_master_sheet_id' );
+		$sheet_id = get_option( 'shubx51_master_sheet_id' );
 		if ( $sheet_id ) {
 			return 'Spreadsheet already linked: ' . $sheet_id;
 		}
 
 		// 2. Create New Spreadsheet.
-		$sheet_title = 'society_nestx_Master_' . gmdate( 'Y-m-d' );
+		$sheet_title = 'society_hubx_Master_' . gmdate( 'Y-m-d' );
 		$body = array(
 			'properties' => array( 'title' => $sheet_title ),
 		);
 
 		// Use the Google API Handler.
-		$response = SNESTX51_Google_API_Handler::api_request( 'https://sheets.googleapis.com/v4/spreadsheets', 'POST', $body );
+		$response = SHUBX51_Google_API_Handler::api_request( 'https://sheets.googleapis.com/v4/spreadsheets', 'POST', $body );
 
 		if ( is_wp_error( $response ) ) {
 			return 'Error creating Sheet: ' . $response->get_error_message();
 		}
 
 		$sheet_id = $response['spreadsheetId'];
-		update_option( 'snestx51_master_sheet_id', $sheet_id );
-		update_option( 'snestx51_master_sheet_url', $response['spreadsheetUrl'] );
+		update_option( 'shubx51_master_sheet_id', $sheet_id );
+		update_option( 'shubx51_master_sheet_url', $response['spreadsheetUrl'] );
 
 		// 3. Add Tabs and Headers.
 		self::initialize_sheet_headers( $sheet_id );
@@ -218,7 +218,7 @@ class SNESTX51_Setup_Wizard {
 
 		// Execute Batch Update (Create Tabs).
 		$batch_url = "https://sheets.googleapis.com/v4/spreadsheets/$sheet_id:batchUpdate";
-		SNESTX51_Google_API_Handler::api_request( $batch_url, 'POST', array( 'requests' => $requests ) );
+		SHUBX51_Google_API_Handler::api_request( $batch_url, 'POST', array( 'requests' => $requests ) );
 
 		// Now write Headers.
 		// We do this in a separate loop for data values.
@@ -231,7 +231,7 @@ class SNESTX51_Setup_Wizard {
 		}
 
 		$values_url = "https://sheets.googleapis.com/v4/spreadsheets/$sheet_id/values:batchUpdate";
-		SNESTX51_Google_API_Handler::api_request( $values_url, 'POST', array(
+		SHUBX51_Google_API_Handler::api_request( $values_url, 'POST', array(
 			'valueInputOption' => 'RAW',
 			'data' => $data,
 		) );
@@ -247,10 +247,10 @@ class SNESTX51_Setup_Wizard {
 			'mimeType' => 'application/vnd.google-apps.folder',
 		);
 		
-		$root = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $root_meta );
+		$root = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $root_meta );
 		
 		if ( ! is_wp_error( $root ) && isset( $root['id'] ) ) {
-			update_option( 'snestx51_drive_root_id', $root['id'] );
+			update_option( 'shubx51_drive_root_id', $root['id'] );
 			
 			// Subfolders.
 			$subs = array( 'Notices', 'Receipts', 'Assets', 'Resident_Docs' );
@@ -260,7 +260,7 @@ class SNESTX51_Setup_Wizard {
 					'mimeType' => 'application/vnd.google-apps.folder',
 					'parents' => array( $root['id'] ),
 				);
-				SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $sub_meta );
+				SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $sub_meta );
 			}
 		}
 	}

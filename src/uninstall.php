@@ -1,11 +1,11 @@
 <?php
 /**
- * SocietyNestX Uninstall
+ * Society HubX Uninstall
  *
  * Triggered when the plugin is uninstalled.
  * Cleans up options and custom database tables.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 // If uninstall not called from WordPress, exit.
@@ -15,16 +15,16 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 // Delete options.
 $options = array(
-	'snestx51_society_name',
-	'snestx51_society_address_line1',
-	'snestx51_society_address_line2',
-	'snestx51_society_city',
-	'snestx51_society_contact',
-	'snestx51_approval_family',
-	'snestx51_approval_help',
-	'snestx51_db_version',
-	'snestx51_google_refresh_token',
-	'snestx51_drive_root_id',
+	'shubx51_society_name',
+	'shubx51_society_address_line1',
+	'shubx51_society_address_line2',
+	'shubx51_society_city',
+	'shubx51_society_contact',
+	'shubx51_approval_family',
+	'shubx51_approval_help',
+	'shubx51_db_version',
+	'shubx51_google_refresh_token',
+	'shubx51_drive_root_id',
 );
 
 foreach ( $options as $option ) {
@@ -35,27 +35,27 @@ foreach ( $options as $option ) {
 global $wpdb;
 
 $tables = array(
-	'society_nestx_flats',
-	'society_nestx_residents',
-	'society_nestx_resident_history',
-	'society_nestx_resident_role_map',
-	'society_nestx_daily_help',
-	'society_nestx_notices',
-	'society_nestx_documents',
-	'society_nestx_bookings',
-	'society_nestx_facilities',
-	'society_nestx_assets',
-	'society_nestx_expenses',
-	'society_nestx_invoices',
-	'society_nestx_ledger',
-	'society_nestx_payments',
-	'society_nestx_rules',
-	'society_nestx_rule_versions',
-	'society_nestx_rule_acknowledgments',
-	'society_nestx_rule_violations',
-	'society_nestx_rule_categories',
-	'society_nestx_requests',
-	'society_nestx_activity_logs',
+	'society_hubx_flats',
+	'society_hubx_residents',
+	'society_hubx_resident_history',
+	'society_hubx_resident_role_map',
+	'society_hubx_daily_help',
+	'society_hubx_notices',
+	'society_hubx_documents',
+	'society_hubx_bookings',
+	'society_hubx_facilities',
+	'society_hubx_assets',
+	'society_hubx_expenses',
+	'society_hubx_invoices',
+	'society_hubx_ledger',
+	'society_hubx_payments',
+	'society_hubx_rules',
+	'society_hubx_rule_versions',
+	'society_hubx_rule_acknowledgments',
+	'society_hubx_rule_violations',
+	'society_hubx_rule_categories',
+	'society_hubx_requests',
+	'society_hubx_activity_logs',
 );
 
 foreach ( $tables as $table ) {

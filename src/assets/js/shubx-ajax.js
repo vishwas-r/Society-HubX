@@ -1,10 +1,10 @@
 ﻿/**
- * SNESTX Centralized AJAX Handler
+ * SHUBX Centralized AJAX Handler
  * Provides automatic loading indicators and toast notifications
  * 
  * Usage:
- * SNESTX.ajax({
- *     action: 'snestx51_some_action',
+ * SHUBX.ajax({
+ *     action: 'shubx51_some_action',
  *     data: { key: 'value' },
  *     loadingButton: '#saveBtn',
  *     successMessage: 'Saved successfully!',
@@ -14,7 +14,7 @@
 (function ($) {
     'use strict';
 
-    window.SNESTX = window.SNESTX || {};
+    window.SHUBX = window.SHUBX || {};
 
     // Loading state management
     const loadingState = {
@@ -29,7 +29,7 @@
     function showGlobalLoader() {
         if (!loadingState.overlay) {
             loadingState.overlay = $(`
-                <div id="snestx-loading-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+                <div id="shubx-loading-overlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: center; justify-content: center;">
                     <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
                         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
                             <span class="visually-hidden">Loading...</span>
@@ -107,7 +107,7 @@
      * @param {function} options.complete Complete callback
      * @returns {Promise}
      */
-    window.SNESTX.ajax = function (optionsOrAction, data, extra) {
+    window.SHUBX.ajax = function (optionsOrAction, data, extra) {
         let options = {};
 
         // Support (action, data, extra) signature
@@ -147,7 +147,7 @@
 
                 // Robust nonce detection for FormData
                 if (!requestData.has('_wpnonce') || !requestData.get('_wpnonce')) {
-                    const fallbackNonce = (typeof snestx51_nonce !== 'undefined' ? snestx51_nonce : '');
+                    const fallbackNonce = (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
                     const providedNonce = (config.data && typeof config.data.get === 'function') ? config.data.get('_wpnonce') : (config.data ? config.data._wpnonce : null);
                     const finalNonce = providedNonce || fallbackNonce;
 
@@ -158,7 +158,7 @@
             } else {
                 requestData.action = config.action;
                 if (!requestData._wpnonce) {
-                    requestData._wpnonce = config.data._wpnonce || (typeof snestx51_nonce !== 'undefined' ? snestx51_nonce : '');
+                    requestData._wpnonce = config.data._wpnonce || (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
                 }
             }
 
@@ -185,9 +185,9 @@
                     if (response.success) {
                         // Show success toast
                         if (config.successMessage) {
-                            SNESTX.toast.success(config.successMessage);
+                            SHUBX.toast.success(config.successMessage);
                         } else if (response.data && response.data.message) {
-                            SNESTX.toast.success(response.data.message);
+                            SHUBX.toast.success(response.data.message);
                         }
 
                         // Call success callback
@@ -207,7 +207,7 @@
 
                         // Only show toast if not suppressed
                         if (!config.suppressErrorToast) {
-                            SNESTX.toast.error(errorMsg);
+                            SHUBX.toast.error(errorMsg);
                         }
 
                         if (config.onError) {
@@ -225,7 +225,7 @@
 
                     // Only show toast if not suppressed
                     if (!config.suppressErrorToast) {
-                        SNESTX.toast.error(errorMsg);
+                        SHUBX.toast.error(errorMsg);
                     }
 
                     if (config.onError) {

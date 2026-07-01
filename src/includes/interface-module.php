@@ -2,17 +2,17 @@
 /**
  * Interface: Module
  * 
- * Standard interface for all SocietyNestX modules to support
+ * Standard interface for all Society HubX modules to support
  * centralized request handling (Approval/Rejection).
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-interface SNESTX51_Module {
+interface SHUBX51_Module {
     /**
      * Get the unique slug for this module.
      * Used to route requests to the correct module.

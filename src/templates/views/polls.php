@@ -9,9 +9,9 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$db = new SNESTX51_DB_Router();
+$db = new SHUBX51_DB_Router();
 $polls = $db->get( 'polls' );
-$poll_manager = new SNESTX51_Poll_Manager();
+$poll_manager = new SHUBX51_Poll_Manager();
 
 // Sort polls by created_at DESC
 usort( $polls, function($a, $b) {
@@ -45,7 +45,7 @@ usort( $polls, function($a, $b) {
                 <!-- Smart Search -->
                 <div class="flex-grow-1 position-relative">
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                    <input type="text" id="snestx-poll-search" placeholder="Search by poll title, description..." 
+                    <input type="text" id="shubx-poll-search" placeholder="Search by poll title, description..." 
                            class="form-control ps-5 bg-light border-0 shadow-none rounded-xl fw-medium" 
                            style="height: 48px; font-size: 0.95rem;">
                 </div>
@@ -79,7 +79,7 @@ usort( $polls, function($a, $b) {
                 $status_bg = $final_status === 'Active' ? 'bg-success bg-opacity-10 text-success border-success border-opacity-10' : 'bg-light text-secondary border-light';
                 $search_text = esc_attr(strtolower(($p['title']??'') . ' ' . ($p['description']??'')));
             ?>
-                <div class="col-lg-6 snestx-poll-card" data-search="<?php echo $search_text; ?>">
+                <div class="col-lg-6 shubx-poll-card" data-search="<?php echo $search_text; ?>">
                     <div class="card border border-light shadow-none rounded-3 h-100 overflow-hidden bg-white hover-shadow-sm transition-all border-top border-4 <?php echo $final_status === 'Active' ? 'border-primary' : 'border-secondary opacity-50'; ?>">
                         <div class="p-4 p-md-5 flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start mb-4">
@@ -92,9 +92,9 @@ usort( $polls, function($a, $b) {
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border shadow-lg rounded-xl mt-2">
                                         <?php if($final_status === 'Active'): ?>
-                                            <li><a class="dropdown-item fw-bold text-warning py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=snestx51_close_poll&id='.$p['id']), 'snestx51_poll_action' ); ?>" onclick="return confirm('Close this poll?')"><i class="bi bi-lock me-2"></i>Close Poll</a></li>
+                                            <li><a class="dropdown-item fw-bold text-warning py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=shubx51_close_poll&id='.$p['id']), 'shubx51_poll_action' ); ?>" onclick="return confirm('Close this poll?')"><i class="bi bi-lock me-2"></i>Close Poll</a></li>
                                         <?php endif; ?>
-                                        <li><a class="dropdown-item fw-bold text-danger py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=snestx51_delete_poll&id='.$p['id']), 'snestx51_poll_action' ); ?>" onclick="return confirm('Delete this poll permanently?')"><i class="bi bi-trash me-2"></i>Delete Poll</a></li>
+                                        <li><a class="dropdown-item fw-bold text-danger py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=shubx51_delete_poll&id='.$p['id']), 'shubx51_poll_action' ); ?>" onclick="return confirm('Delete this poll permanently?')"><i class="bi bi-trash me-2"></i>Delete Poll</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ usort( $polls, function($a, $b) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('snestx51_admin_modals', function() {
+add_action('shubx51_admin_modals', function() {
 ?>
 <!-- Create Poll Modal -->
 <div class="modal fade" id="createPollModal" tabindex="-1" aria-hidden="true">
@@ -155,8 +155,8 @@ add_action('snestx51_admin_modals', function() {
             </div>
             <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_create_poll">
-                    <?php wp_nonce_field('snestx51_poll_action'); ?>
+                    <input type="hidden" name="action" value="shubx51_create_poll">
+                    <?php wp_nonce_field('shubx51_poll_action'); ?>
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Poll Title</label>
@@ -211,11 +211,11 @@ function openPollModal() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const search = document.getElementById('snestx-poll-search');
+    const search = document.getElementById('shubx-poll-search');
     if(search) {
         search.addEventListener('keyup', (e) => {
             const val = e.target.value.toLowerCase();
-            document.querySelectorAll('.snestx-poll-card').forEach(el => {
+            document.querySelectorAll('.shubx-poll-card').forEach(el => {
                 const text = el.dataset.search || '';
                 el.style.display = text.includes(val) ? '' : 'none';
             });

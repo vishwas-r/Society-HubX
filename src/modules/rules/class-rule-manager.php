@@ -3,7 +3,7 @@
  * Module: Rule Manager
  * Handles Society Rules & Regulations, Acknowledgments, and Violations.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,58 +13,58 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema and query helper logic uses dynamic tables and custom queries.
 
 
-class SNESTX51_Rule_Manager implements SNESTX51_Module {
+class SHUBX51_Rule_Manager implements SHUBX51_Module {
 
 	private $db;
 	private $media;
 	private $notifications;
 
 	public function __construct() {
-		$this->db = new SNESTX51_DB_Router();
-		$this->media = new SNESTX51_Media_Manager();
+		$this->db = new SHUBX51_DB_Router();
+		$this->media = new SHUBX51_Media_Manager();
 		
 		// Initialize notifications with error handling
 		try {
-			$plugin_instance = Society_NestX::get_instance();
+			$plugin_instance = Society_HubX::get_instance();
 			if ( $plugin_instance && isset($plugin_instance->notifications) ) {
 				$this->notifications = $plugin_instance->notifications;
 			} else {
-				error_log('SNESTX51_Rule_Manager: Notifications object not found in plugin instance'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+				error_log('SHUBX51_Rule_Manager: Notifications object not found in plugin instance'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				$this->notifications = null;
 			}
 		} catch ( Exception $e ) {
-			error_log('SNESTX51_Rule_Manager: Error initializing notifications - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Error initializing notifications - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			$this->notifications = null;
 		}
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// Admin AJAX Actions
-		add_action( 'wp_ajax_snestx51_add_rule', array( $this, 'handle_add_rule' ) );
-		add_action( 'wp_ajax_snestx51_edit_rule', array( $this, 'handle_edit_rule' ) );
-		add_action( 'wp_ajax_snestx51_delete_rule', array( $this, 'handle_delete_rule' ) );
-		add_action( 'wp_ajax_snestx51_publish_rule', array( $this, 'handle_publish_rule' ) );
-		add_action( 'wp_ajax_snestx51_get_version_history', array( $this, 'handle_get_version_history' ) );
-		add_action( 'wp_ajax_snestx51_restore_version', array( $this, 'handle_restore_version' ) );
-		add_action( 'wp_ajax_snestx51_add_violation', array( $this, 'handle_submit_violation' ) );
-		add_action( 'wp_ajax_snestx51_resolve_violation', array( $this, 'handle_resolve_violation' ) );
-		add_action( 'wp_ajax_snestx51_send_acknowledgment_reminders', array( $this, 'handle_send_reminders' ) );
-		add_action( 'wp_ajax_snestx51_manage_category', array( $this, 'handle_manage_category' ) );
+		add_action( 'wp_ajax_shubx51_add_rule', array( $this, 'handle_add_rule' ) );
+		add_action( 'wp_ajax_shubx51_edit_rule', array( $this, 'handle_edit_rule' ) );
+		add_action( 'wp_ajax_shubx51_delete_rule', array( $this, 'handle_delete_rule' ) );
+		add_action( 'wp_ajax_shubx51_publish_rule', array( $this, 'handle_publish_rule' ) );
+		add_action( 'wp_ajax_shubx51_get_version_history', array( $this, 'handle_get_version_history' ) );
+		add_action( 'wp_ajax_shubx51_restore_version', array( $this, 'handle_restore_version' ) );
+		add_action( 'wp_ajax_shubx51_add_violation', array( $this, 'handle_submit_violation' ) );
+		add_action( 'wp_ajax_shubx51_resolve_violation', array( $this, 'handle_resolve_violation' ) );
+		add_action( 'wp_ajax_shubx51_send_acknowledgment_reminders', array( $this, 'handle_send_reminders' ) );
+		add_action( 'wp_ajax_shubx51_manage_category', array( $this, 'handle_manage_category' ) );
 		
 		// Resident AJAX Actions
-		add_action( 'wp_ajax_snestx51_acknowledge_rule', array( $this, 'handle_acknowledge_rule' ) );
-		add_action( 'wp_ajax_snestx51_appeal_violation', array( $this, 'handle_appeal_violation' ) );
-		add_action( 'wp_ajax_snestx51_get_pending_acknowledgments', array( $this, 'handle_get_pending_acknowledgments' ) );
-		add_action( 'wp_ajax_snestx51_search_rules', array( $this, 'handle_search_rules' ) );
+		add_action( 'wp_ajax_shubx51_acknowledge_rule', array( $this, 'handle_acknowledge_rule' ) );
+		add_action( 'wp_ajax_shubx51_appeal_violation', array( $this, 'handle_appeal_violation' ) );
+		add_action( 'wp_ajax_shubx51_get_pending_acknowledgments', array( $this, 'handle_get_pending_acknowledgments' ) );
+		add_action( 'wp_ajax_shubx51_search_rules', array( $this, 'handle_search_rules' ) );
 		
 		// Scheduled Actions
-		add_action( 'snestx51_daily_acknowledgment_reminders', array( $this, 'send_daily_reminders' ) );
-		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('snestx51_daily_acknowledgment_reminders') ) {
-			as_schedule_recurring_action( strtotime('09:00:00'), DAY_IN_SECONDS, 'snestx51_daily_acknowledgment_reminders' );
+		add_action( 'shubx51_daily_acknowledgment_reminders', array( $this, 'send_daily_reminders' ) );
+		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('shubx51_daily_acknowledgment_reminders') ) {
+			as_schedule_recurring_action( strtotime('09:00:00'), DAY_IN_SECONDS, 'shubx51_daily_acknowledgment_reminders' );
 		}
 		
 		// Register Module
-		add_filter( 'snestx51_get_module_rules', array( $this, 'get_instance' ) );
+		add_filter( 'shubx51_get_module_rules', array( $this, 'get_instance' ) );
 	}
 
 	public function get_instance() {
@@ -77,7 +77,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 
 	/**
 	 * Execute a request (add, edit, delete).
-	 * Required by SNESTX51_Module interface.
+	 * Required by SHUBX51_Module interface.
 	 * 
 	 * @param string $action  The action to perform (add, edit, delete)
 	 * @param array  $payload The data associated with the request
@@ -107,11 +107,11 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'snestx51-settings',
+			'shubx51-settings',
 			'Rules & Regulations',
 			'Rules',
 			'read', // Granular check inside render_page
-			'snestx51-rules',
+			'shubx51-rules',
 			array( $this, 'render_page' )
 		);
 	}
@@ -121,7 +121,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 */
 	public function handle_add_rule() {
 		ob_start(); // Capture any stray output so it doesn't corrupt the JSON response
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			ob_end_clean();
@@ -195,7 +195,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 					// Save version history
 					$this->save_version($rule_id, $old_rule, 'Rule updated');
 					$data['version'] = intval($old_rule['version']) + 1;
-					error_log("SNESTX51_Rule_Manager: Incrementing rule version from {$old_rule['version']} to {$data['version']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+					error_log("SHUBX51_Rule_Manager: Incrementing rule version from {$old_rule['version']} to {$data['version']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				}
 			}
 			
@@ -221,14 +221,14 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// If status is 'published', send notifications
 		if ( $status === 'published' ) {
-			error_log("SNESTX51_Rule_Manager: Rule saved with published status, sending notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log("SHUBX51_Rule_Manager: Rule saved with published status, sending notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			try {
 				$rules = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
 				if ( !empty($rules) ) {
 					$this->send_rule_published_notifications($rules[0]);
 				}
 			} catch ( Exception $e ) {
-				error_log('SNESTX51_Rule_Manager: Failed to send notif after save - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+				error_log('SHUBX51_Rule_Manager: Failed to send notif after save - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			}
 		}
 		
@@ -244,9 +244,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_delete_rule() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -268,9 +268,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_publish_rule() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -290,23 +290,23 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 		
-		error_log("SNESTX51_Rule_Manager: Rule published successfully, attempting to send notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51_Rule_Manager: Rule published successfully, attempting to send notifications..."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		// Send notifications to residents
 		try {
 			// Get rule details for notification
 			$rules = $this->db->get( 'rules', array( 'where' => array( 'id' => $rule_id ) ) );
-			error_log("SNESTX51_Rule_Manager: Fetched rule for notifications: " . (!empty($rules) ? 'found' : 'not found')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log("SHUBX51_Rule_Manager: Fetched rule for notifications: " . (!empty($rules) ? 'found' : 'not found')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			
 			if ( !empty($rules) ) {
 				$rule = $rules[0];
-				error_log("SNESTX51_Rule_Manager: Calling send_rule_published_notifications for rule: {$rule['title']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+				error_log("SHUBX51_Rule_Manager: Calling send_rule_published_notifications for rule: {$rule['title']}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				
 				// Send notifications to all residents
 				$this->send_rule_published_notifications($rule);
 			}
 		} catch ( Exception $e ) {
-			error_log('SNESTX51_Rule_Manager: Failed to send notifications after publishing rule - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Failed to send notifications after publishing rule - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			// Don't fail the publish operation - continue
 		}
 		
@@ -318,12 +318,12 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 */
 	private function save_version($rule_id, $rule_data, $change_summary = '') {
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rule_versions";
+		$table = "{$wpdb->prefix}society_hubx_rule_versions";
 
 		// Silently skip if table does not exist yet (avoids corrupting AJAX JSON response)
 		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 		if ( ! $table_exists ) {
-			error_log( 'SNESTX51_Rule_Manager: rule_versions table missing, skipping save_version.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log( 'SHUBX51_Rule_Manager: rule_versions table missing, skipping save_version.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			return false;
 		}
 		
@@ -345,7 +345,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_get_version_history() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
 		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		
@@ -354,7 +354,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		}
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rule_versions";
+		$table = "{$wpdb->prefix}society_hubx_rule_versions";
 		$versions = $wpdb->get_results($wpdb->prepare(
 			"SELECT * FROM $table WHERE rule_id = %s ORDER BY version DESC",
 			$rule_id
@@ -364,9 +364,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_restore_version() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -379,7 +379,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		}
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rule_versions";
+		$table = "{$wpdb->prefix}society_hubx_rule_versions";
 		$version_data = $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM $table WHERE rule_id = %s AND version = %d",
 			$rule_id, $version
@@ -414,55 +414,55 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Acknowledgments
 	 */
 	public function handle_acknowledge_rule() {
-		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
-			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - user not logged in'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Acknowledgment failed - user not logged in'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Please login to acknowledge' ), 403 );
 		}
 		
 		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		$signature_data = isset($_POST['signature']) ? sanitize_text_field( wp_unslash( $_POST['signature'] ) ) : '';
 		
-		error_log("SNESTX51_Rule_Manager: Acknowledge attempt - Rule ID: {$rule_id}, User: " . get_current_user_id()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51_Rule_Manager: Acknowledge attempt - Rule ID: {$rule_id}, User: " . get_current_user_id()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( empty($rule_id) ) {
-			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - rule_id is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Acknowledgment failed - rule_id is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Rule ID required' ), 400 );
 		}
 		
 		// Get resident details
 		$user_id = get_current_user_id();
-		$flat_no = get_user_meta($user_id, 'snestx51_flat_no', true);
+		$flat_no = get_user_meta($user_id, 'shubx51_flat_no', true);
 		$residents = $this->db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
-		error_log("SNESTX51_Rule_Manager: User ID: {$user_id}, Flat: {$flat_no}, Resident ID: {$resident_id}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51_Rule_Manager: User ID: {$user_id}, Flat: {$flat_no}, Resident ID: {$resident_id}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( empty($flat_no) ) {
-			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - flat_no is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Acknowledgment failed - flat_no is empty'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Flat number not found for your account' ), 400 );
 		}
 		
 		// Get rule version - use direct query to avoid caching
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}society_nestx_rules";
+		$rules_table = "{$wpdb->prefix}society_hubx_rules";
 		$rule = $wpdb->get_row($wpdb->prepare(
 			"SELECT version, title FROM $rules_table WHERE id = %s",
 			$rule_id
 		), ARRAY_A);
 		
 		if ( empty($rule) ) {
-			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - rule not found'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Acknowledgment failed - rule not found'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Rule not found' ), 404 );
 		}
 		$rule_version = $rule['version'];
 		
-		error_log("SNESTX51_Rule_Manager: Rule version: {$rule_version} (Rule: {$rule['title']})"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51_Rule_Manager: Rule version: {$rule_version} (Rule: {$rule['title']})"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		// Save acknowledgment
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
+		$table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
 		
 		// Check if already acknowledged
 		$existing = $wpdb->get_var($wpdb->prepare(
@@ -470,10 +470,10 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 			$rule_id, $rule_version, $resident_id
 		));
 		
-		error_log("SNESTX51_Rule_Manager: Existing acknowledgments count: {$existing}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log("SHUBX51_Rule_Manager: Existing acknowledgments count: {$existing}"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		
 		if ( $existing > 0 ) {
-			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - already acknowledged this version'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Acknowledgment failed - already acknowledged this version'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'You have already acknowledged this rule' ), 400 );
 		}
 		
@@ -492,11 +492,11 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 			$result = $wpdb->insert($table, $ack_data);
 			
 			if ( $result === false ) {
-				error_log('SNESTX51_Rule_Manager: Failed to insert acknowledgment - ' . $wpdb->last_error); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+				error_log('SHUBX51_Rule_Manager: Failed to insert acknowledgment - ' . $wpdb->last_error); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 				wp_send_json_error( array( 'message' => 'Failed to save acknowledgment: ' . $wpdb->last_error ), 500 );
 			}
 		} catch ( Exception $e ) {
-			error_log('SNESTX51_Rule_Manager: Exception while saving acknowledgment - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log('SHUBX51_Rule_Manager: Exception while saving acknowledgment - ' . $e->getMessage()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			wp_send_json_error( array( 'message' => 'Error saving acknowledgment' ), 500 );
 		}
 		
@@ -504,7 +504,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_get_pending_acknowledgments() {
-		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Please login' ), 403 );
@@ -521,8 +521,8 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 
 	private function get_pending_acknowledgments($resident_id) {
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}society_nestx_rules";
-		$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
+		$rules_table = "{$wpdb->prefix}society_hubx_rules";
+		$acks_table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
 		
 		$sql = "SELECT r.* FROM $rules_table r
 				WHERE r.status = 'published' 
@@ -543,9 +543,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Violations
 	 */
 	public function handle_submit_violation() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -616,9 +616,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_resolve_violation() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -652,7 +652,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_appeal_violation() {
-		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Please login' ), 403 );
@@ -681,9 +681,9 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Category Management
 	 */
 	public function handle_manage_category() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -741,7 +741,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Check if any ACTIVE rules are using this category (exclude archived)
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}society_nestx_rules";
+		$rules_table = "{$wpdb->prefix}society_hubx_rules";
 		$count = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(*) FROM $rules_table WHERE category = %s AND status != 'archived'",
 			$category_slug
@@ -755,7 +755,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Hard delete the category
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rule_categories";
+		$table = "{$wpdb->prefix}society_hubx_rule_categories";
 		$result = $wpdb->delete($table, array('id' => $category_id));
 		
 		if ( $result === false ) {
@@ -770,13 +770,13 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	* Search Rules
 	*/
 	public function handle_search_rules() {
-		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
 		
 		$query = isset($_POST['query']) ? sanitize_text_field( wp_unslash( $_POST['query'] ) ) : '';
 		$category = isset($_POST['category']) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rules";
+		$table = "{$wpdb->prefix}society_hubx_rules";
 		$sql = "SELECT * FROM $table WHERE status = 'published'";
 		
 		if ( !empty($query) ) {
@@ -804,8 +804,8 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 */
 	private function send_rule_published_notifications($rule) {
         // Enterprise Upgrade: Defer to Background Worker
-        if ( class_exists('SNESTX51_Background_Worker') ) {
-            $worker = new SNESTX51_Background_Worker();
+        if ( class_exists('SHUBX51_Background_Worker') ) {
+            $worker = new SHUBX51_Background_Worker();
             $worker->schedule_notification_blast( 'rule_published', array(
                 'title'    => $rule['title'],
                 'deadline' => $rule['acknowledgment_deadline'] ? gmdate('M d, Y', strtotime($rule['acknowledgment_deadline'])) : 'N/A'
@@ -895,7 +895,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_send_reminders() {
-		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -912,7 +912,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	private function get_rule_by_slug($slug) {
 		// Only check non-archived rules for slug uniqueness
 		global $wpdb;
-		$table = "{$wpdb->prefix}society_nestx_rules";
+		$table = "{$wpdb->prefix}society_hubx_rules";
 		return $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM $table WHERE slug = %s AND status != 'archived' LIMIT 1",
 			$slug
@@ -920,7 +920,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function render_page() {
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'rules_view' ) ) {
             wp_die( 'You do not have permission to view society rules.' );
         }
@@ -931,10 +931,10 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Get acknowledgment stats
 		global $wpdb;
-		$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
+		$acks_table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
 		$total_acks = $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 		
-		SNESTX51_Admin_App::render_view('rules', [
+		SHUBX51_Admin_App::render_view('rules', [
 			'rules' => $rules,
 			'categories' => $categories,
 			'violations' => $violations,

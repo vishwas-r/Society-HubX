@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bash script to build the Society NestX Webapp Bundle
+# Bash script to build the Society HubX Webapp Bundle
 # Downloads WordPress core, installs the plugin, adds setup.php, and compresses it.
 
 set -e
@@ -9,10 +9,10 @@ WORKSPACE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ZIP_URL="https://wordpress.org/latest.zip"
 ZIP_FILE="$WORKSPACE/wordpress-temp.zip"
 DIST_DIR="$WORKSPACE/dist"
-OUT_ZIP="$WORKSPACE/society-nestx-webapp.zip"
+OUT_ZIP="$WORKSPACE/society-hubx-webapp.zip"
 
 echo "=============================================="
-echo "  SocietyNestX - Webapp Packager (Bash)  "
+echo "  Society HubX - Webapp Packager (Bash)  "
 echo "=============================================="
 
 # 1. Clean up old build files
@@ -55,7 +55,7 @@ sleep 1
 
 # 4. Create plugin directory structure
 echo "[4/7] Creating plugin folder structure..."
-PLUGIN_DIR="$DIST_DIR/wp-content/plugins/society-nestx"
+PLUGIN_DIR="$DIST_DIR/wp-content/plugins/society-hubx"
 mkdir -p "$PLUGIN_DIR"
 
 # 5. Copy plugin assets & files from src/
@@ -67,7 +67,7 @@ echo "[6/7] Copying setup.php wizard to root..."
 cp "$WORKSPACE/setup.php" "$DIST_DIR/setup.php"
 
 # 7. Package everything into webapp zip
-echo "[7/7] Packaging into society-nestx-webapp.zip..."
+echo "[7/7] Packaging into society-hubx-webapp.zip..."
 if command -v zip >/dev/null 2>&1; then
     (cd "$DIST_DIR" && zip -rq "$OUT_ZIP" .)
 else

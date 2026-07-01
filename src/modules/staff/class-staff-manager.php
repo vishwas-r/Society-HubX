@@ -3,14 +3,14 @@
  * Module: Staff Manager
  * Handles Maintenance Staff & Daily Help.
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class SNESTX51_Staff_Manager implements SNESTX51_Module
+class SHUBX51_Staff_Manager implements SHUBX51_Module
 {
 
     private $db;
@@ -18,21 +18,21 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
 
     public function __construct()
     {
-        $this->db = new SNESTX51_DB_Router();
-        $this->drive = new SNESTX51_Drive_Manager();
+        $this->db = new SHUBX51_DB_Router();
+        $this->drive = new SHUBX51_Drive_Manager();
 
         add_action('admin_menu', array($this, 'register_menu'), 200);
 
         // AJAX
-        add_action('wp_ajax_snestx51_add_staff', array($this, 'handle_add_staff'));
-        add_action('wp_ajax_snestx51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('wp_ajax_snestx51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('wp_ajax_snestx51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('wp_ajax_shubx51_add_staff', array($this, 'handle_add_staff'));
+        add_action('wp_ajax_shubx51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('wp_ajax_shubx51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('wp_ajax_shubx51_restore_staff', array($this, 'handle_restore_staff'));
 
-        add_action('admin_post_snestx51_add_staff', array($this, 'handle_add_staff'));
-        add_action('admin_post_snestx51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('admin_post_snestx51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('admin_post_snestx51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('admin_post_shubx51_add_staff', array($this, 'handle_add_staff'));
+        add_action('admin_post_shubx51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('admin_post_shubx51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('admin_post_shubx51_restore_staff', array($this, 'handle_restore_staff'));
 
         // Self-Heal Schema (Ensure columns exist)
         if (is_admin()) {
@@ -45,7 +45,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
         }
 
         // Register Module
-        add_filter('snestx51_get_module_daily_help', array($this, 'get_instance'));
+        add_filter('shubx51_get_module_daily_help', array($this, 'get_instance'));
     }
 
     public function get_instance()
@@ -119,7 +119,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
         // Handle Profile Photo Upload (Avatar)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_add_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
-            $media = new SNESTX51_Media_Manager();
+            $media = new SHUBX51_Media_Manager();
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $db_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
@@ -192,7 +192,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
         // Handle Profile Photo Upload (Avatar)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed in handle_edit_staff caller method.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
-            $media = new SNESTX51_Media_Manager();
+            $media = new SHUBX51_Media_Manager();
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is validated inside upload_profile_photo.
             $photo_url = $media->upload_profile_photo($_FILES['profile_photo'], 'staff', $update_data['name'], 'staffs');
             if (!is_wp_error($photo_url)) {
@@ -218,21 +218,21 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     public function handle_restore_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('snestx51_staff_nonce');
+            check_ajax_referer('shubx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('snestx51_staff_nonce'))
+            if (!check_admin_referer('shubx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $id = isset($_POST['staff_id']) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : (isset($_GET['staff_id']) ? sanitize_text_field( wp_unslash( $_GET['staff_id'] ) ) : '');
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ($rbac->has_capability( get_current_user_id(), 'staff_manage' )) {
             $this->db->update('daily_help', array('status' => 'approved'), array('id' => $id));
 
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $rm->log_audit('staff_restored', 'daily_help', $id, "Staff ID: $id");
 
             if (wp_doing_ajax()) {
@@ -245,34 +245,34 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
         exit;
     }
 
     public function register_menu()
     {
         add_submenu_page(
-            'snestx51-settings',
+            'shubx51-settings',
             'Staff & Help',
             'Staff & Help',
             'read', // Granular check inside render_page
-            'snestx51-staff',
+            'shubx51-staff',
             array($this, 'render_page')
         );
     }
 
     public function render_page()
     {
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'staff_view' ) ) {
             wp_die( 'You do not have permission to view staff records.' );
         }
 
-        $rm = new SNESTX51_Request_Manager();
+        $rm = new SHUBX51_Request_Manager();
         $unified = $rm->get_unified_data('daily_help', 'daily_help', '', true);
         $flats = $this->db->get('flats');
 
-        SNESTX51_Admin_App::render_view('staff', [
+        SHUBX51_Admin_App::render_view('staff', [
             'staff' => $unified['active'],
             'pending' => $unified['pending'],
             'archived' => array_filter($unified['active'], function ($s) {
@@ -286,16 +286,16 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('snestx51_staff_nonce');
+            check_ajax_referer('shubx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('snestx51_staff_nonce'))
+            if (!check_admin_referer('shubx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $_POST['id'] = uniqid('staff_');
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
@@ -318,14 +318,14 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             $_POST['status'] = 'pending';
             $this->perform_add_staff($_POST);
 
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
             $res = $rm->create_request('daily_help', 'add', $sanitized_post, $sanitized_post['id'], 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SNESTX Staff Add Request Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                    error_log('SHUBX Staff Add Request Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -340,7 +340,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=added'));
+        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=added'));
         exit;
     }
 
@@ -348,23 +348,23 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('snestx51_staff_nonce');
+            check_ajax_referer('shubx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('snestx51_staff_nonce'))
+            if (!check_admin_referer('shubx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
         if ($has_manage) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sync_res = $rm->approve_request($id);
 
             if (!is_wp_error($sync_res)) {
@@ -377,7 +377,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
                     wp_send_json_success(['message' => 'Staff updated and request synchronized']);
                 }
                 else {
-                    wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=updated'));
+                    wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
                 }
                 exit;
             }
@@ -398,13 +398,13 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             }
         }
         else {
-            $rm = new SNESTX51_Request_Manager();
+            $rm = new SHUBX51_Request_Manager();
             $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
             $res = $rm->create_request('daily_help', 'edit', $sanitized_post, $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SNESTX Staff Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                    error_log('SHUBX Staff Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -419,30 +419,30 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
         exit;
     }
 
     public function handle_delete_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('snestx51_staff_nonce');
+            check_ajax_referer('shubx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('snestx51_staff_nonce'))
+            if (!check_admin_referer('shubx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
         if ($has_manage) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sync_res = $rm->approve_request($id);
 
             if (!is_wp_error($sync_res)) {
@@ -454,7 +454,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
                     wp_send_json_success(['message' => 'Staff record archived and request synchronized']);
                 }
                 else {
-                    wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=deleted'));
+                    wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=deleted'));
                 }
                 exit;
             }
@@ -462,8 +462,8 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             $res = $this->perform_delete_staff(['id' => $id]);
         }
         else {
-            require_once SNESTX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SNESTX51_Request_Manager();
+            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new SHUBX51_Request_Manager();
             $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
             $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
             if (wp_doing_ajax()) {
@@ -477,7 +477,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=snestx51-staff&status=deleted'));
+        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=deleted'));
         exit;
     }
 }

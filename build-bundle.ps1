@@ -1,4 +1,4 @@
-# PowerShell script to build the Society NestX Webapp Bundle
+# PowerShell script to build the Society HubX Webapp Bundle
 # Downloads WordPress core, installs the plugin, adds setup.php, and compresses it.
 
 $ErrorActionPreference = "Stop"
@@ -7,10 +7,10 @@ $WORKSPACE = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ZIP_URL = "https://wordpress.org/latest.zip"
 $ZIP_FILE = Join-Path $WORKSPACE "wordpress-temp.zip"
 $DIST_DIR = Join-Path $WORKSPACE "dist"
-$OUT_ZIP = Join-Path $WORKSPACE "society-nestx-webapp.zip"
+$OUT_ZIP = Join-Path $WORKSPACE "society-hubx-webapp.zip"
 
 Write-Host "==============================================" -ForegroundColor Cyan
-Write-Host "  SocietyNestX - Webapp Packager  " -ForegroundColor Cyan
+Write-Host "  Society HubX - Webapp Packager  " -ForegroundColor Cyan
 Write-Host "==============================================" -ForegroundColor Cyan
 
 # 1. Clean up old build files
@@ -29,7 +29,7 @@ if (Test-Path $OUT_ZIP) {
 
 # 2. Download WordPress Core
 Write-Host "[2/7] Downloading WordPress Core (latest.zip)..." -ForegroundColor Green
-Invoke-WebRequest -Uri $ZIP_URL -OutFile $ZIP_FILE
+    Invoke-WebRequest -Uri $ZIP_URL -OutFile $ZIP_FILE
 
 # 3. Extract WordPress Core
 Write-Host "[3/7] Extracting WordPress Core..." -ForegroundColor Green
@@ -41,7 +41,7 @@ Start-Sleep -Seconds 1
 
 # 4. Create plugin directory structure
 Write-Host "[4/7] Creating plugin folder structure..." -ForegroundColor Green
-$PLUGIN_DIR = Join-Path $DIST_DIR "wp-content\plugins\society-nestx"
+$PLUGIN_DIR = Join-Path $DIST_DIR "wp-content\plugins\society-hubx"
 New-Item -ItemType Directory -Force -Path $PLUGIN_DIR | Out-Null
 
 # 5. Copy plugin assets & files from src/
@@ -53,7 +53,7 @@ Write-Host "[6/7] Copying setup.php wizard to root..." -ForegroundColor Green
 Copy-Item -Path (Join-Path $WORKSPACE "setup.php") -Destination (Join-Path $DIST_DIR "setup.php") -Force
 
 # 7. Package everything into webapp zip
-Write-Host "[7/7] Packaging into society-nestx-webapp.zip..." -ForegroundColor Green
+Write-Host "[7/7] Packaging into society-hubx-webapp.zip..." -ForegroundColor Green
 Get-ChildItem -Path $DIST_DIR | Compress-Archive -DestinationPath $OUT_ZIP -Force
 
 # 8. Clean up temp files

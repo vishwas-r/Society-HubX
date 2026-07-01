@@ -3,43 +3,43 @@
  * Module: Flat Manager
  * Handles Flats/Units Master Data (Block, Number, Parking).
  *
- * @package Society_NestX
+ * @package Society_HubX
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SNESTX51_Flat_Manager {
+class SHUBX51_Flat_Manager {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SNESTX51_DB_Router();
+		$this->db = new SHUBX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// AJAX
-		add_action( 'wp_ajax_snestx51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'wp_ajax_snestx51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'wp_ajax_snestx51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'wp_ajax_snestx51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'wp_ajax_snestx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
+		add_action( 'wp_ajax_shubx51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'wp_ajax_shubx51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'wp_ajax_shubx51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'wp_ajax_shubx51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'wp_ajax_shubx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
 
-		add_action( 'admin_post_snestx51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'admin_post_snestx51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'admin_post_snestx51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'admin_post_snestx51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'admin_post_snestx51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_shubx51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'admin_post_shubx51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'admin_post_shubx51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'admin_post_shubx51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'admin_post_shubx51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
 	}
 
 	public function register_menu() {
 		add_submenu_page(
-			'snestx51-settings',
+			'shubx51-settings',
 			'Society Units / Flats',
 			'Flats & Units',
 			'read', // Granular check inside render_page
-			'snestx51-flats',
+			'shubx51-flats',
 			array( $this, 'render_page' )
 		);
 	}
@@ -49,9 +49,9 @@ class SNESTX51_Flat_Manager {
 	 */
 	public function handle_add_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_add_flat_nonce' );
+            check_ajax_referer( 'shubx51_add_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$res = $this->process_add_flat( $_POST );
@@ -64,7 +64,7 @@ class SNESTX51_Flat_Manager {
             exit;
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
 		exit;
 	}
 
@@ -72,9 +72,9 @@ class SNESTX51_Flat_Manager {
 	 * Handle Edit.
 	 */
 	public function handle_hard_delete_flat() {
-		check_ajax_referer( 'snestx51_hard_delete_flat_nonce' );
+		check_ajax_referer( 'shubx51_hard_delete_flat_nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) && ! (new SNESTX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+		if ( ! current_user_can( 'manage_options' ) && ! (new SHUBX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
 		}
 
@@ -90,12 +90,12 @@ class SNESTX51_Flat_Manager {
 
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
-            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_flat_nonce') ) {
+            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_flat_nonce') ) {
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
         } else {
-		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$data = array(
@@ -120,13 +120,13 @@ class SNESTX51_Flat_Manager {
 
 		$where_id = ! empty( $original_id ) ? $original_id : $new_id;
 
-		error_log( 'SNESTX51 handle_edit_flat: Attempting to update flat. original_id=' . $original_id . ', new_id=' . $new_id . ', where_id=' . $where_id . ', data=' . json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log( 'SHUBX51 handle_edit_flat: Attempting to update flat. original_id=' . $original_id . ', new_id=' . $new_id . ', where_id=' . $where_id . ', data=' . json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		$res = $this->db->update( 'flats', $data, array( 'id' => $where_id ) );
 
-		error_log( 'SNESTX51 handle_edit_flat: Update result: ' . json_encode( $res ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		error_log( 'SHUBX51 handle_edit_flat: Update result: ' . json_encode( $res ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
 
 	    if ( wp_doing_ajax() ) {
@@ -143,18 +143,18 @@ class SNESTX51_Flat_Manager {
 	        exit;
 	    }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-flats&success=1&msg=Updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1&msg=Updated' ) );
 		exit;
 	}
 
 	public function handle_delete_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_delete_flat_nonce' );
+            check_ajax_referer( 'shubx51_delete_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'snestx51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
 
 		$id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
@@ -168,15 +168,15 @@ class SNESTX51_Flat_Manager {
             exit;
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-flats&status=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&status=deleted' ) );
 		exit;
 	}
 
 	public function handle_restore_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'snestx51_add_flat_nonce' );
+            check_ajax_referer( 'shubx51_add_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$id = isset($_POST['flat_id']) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
@@ -190,7 +190,7 @@ class SNESTX51_Flat_Manager {
             exit;
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
 		exit;
 	}
 
@@ -198,7 +198,7 @@ class SNESTX51_Flat_Manager {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-		if ( ! check_admin_referer( 'snestx51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'shubx51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -230,7 +230,7 @@ class SNESTX51_Flat_Manager {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-flats&imported=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&imported=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -264,10 +264,10 @@ class SNESTX51_Flat_Manager {
 	}
 
 	public function render_page() {
-        $rbac = new SNESTX51_RBAC_Manager();
+        $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_view' ) ) {
             wp_die( 'You do not have permission to view flats.' );
         }
-		SNESTX51_Admin_App::render_view('flats');
+		SHUBX51_Admin_App::render_view('flats');
 	}
 }

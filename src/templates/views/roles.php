@@ -9,9 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$rbac = new SNESTX51_RBAC_Manager();
+$rbac = new SHUBX51_RBAC_Manager();
 $roles = $rbac->get_all_roles();
-$available_caps = SNESTX51_RBAC_Manager::get_available_capabilities();
+$available_caps = SHUBX51_RBAC_Manager::get_available_capabilities();
 ?>
 
     <!-- Page Header -->
@@ -84,7 +84,7 @@ $available_caps = SNESTX51_RBAC_Manager::get_available_capabilities();
     </div>
 
 <?php
-add_action('snestx51_admin_modals', function() use ($available_caps) {
+add_action('shubx51_admin_modals', function() use ($available_caps) {
 ?>
 <!-- Role Modal -->
 <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
@@ -96,9 +96,9 @@ add_action('snestx51_admin_modals', function() use ($available_caps) {
             </div>
             <form id="role-form" method="post" action="<?php echo admin_url('admin-post.php'); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="snestx51_save_role">
+                    <input type="hidden" name="action" value="shubx51_save_role">
                     <input type="hidden" name="role_id" id="role_id" value="">
-                    <?php wp_nonce_field('snestx51_role_nonce'); ?>
+                    <?php wp_nonce_field('shubx51_role_nonce'); ?>
                     
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-secondary text-uppercase tracking-wider">Role Name</label>
@@ -164,9 +164,9 @@ function deleteRole(roleId) {
     form.action = '<?php echo admin_url('admin-post.php'); ?>';
     
     const fields = {
-        action: 'snestx51_delete_role',
+        action: 'shubx51_delete_role',
         role_id: roleId,
-        _wpnonce: '<?php echo esc_js( wp_create_nonce('snestx51_role_nonce') ); ?>'
+        _wpnonce: '<?php echo esc_js( wp_create_nonce('shubx51_role_nonce') ); ?>'
     };
     
     for(const key in fields) {

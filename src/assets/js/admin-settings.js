@@ -10,7 +10,7 @@
         $('.settings-tab-pane').addClass('hidden');
         $('#tab-content-' + tab).removeClass('hidden');
 
-        $('#snestx-settings-tabs button').removeClass('active border-primary text-primary')
+        $('#shubx-settings-tabs button').removeClass('active border-primary text-primary')
             .addClass('border-transparent text-muted');
 
         $('#tab-btn-' + tab).removeClass('border-transparent text-muted')
@@ -45,7 +45,7 @@
         // --- 2. QR Upload (Media Library) ---
         const $btnUpload = $('#btn-upload-qr');
         const $btnRemove = $('#btn-remove-qr');
-        const $inputQr = $('#snestx51_bank_qr');
+        const $inputQr = $('#shubx51_bank_qr');
         const $preview = $('#qr-preview-container');
 
         if ($btnUpload.length) {
@@ -54,7 +54,7 @@
 
                 // Professional Check: Is wp.media available?
                 if (typeof wp === 'undefined' || !wp.media) {
-                    SNESTX.toast.error('WordPress Media Library not loaded properly. Please refresh the page.');
+                    SHUBX.toast.error('WordPress Media Library not loaded properly. Please refresh the page.');
                     return;
                 }
 

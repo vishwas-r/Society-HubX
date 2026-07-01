@@ -1,24 +1,24 @@
 ﻿/**
- * SocietyNestX: Surgical WP Style Buster
+ * Society HubX: Surgical WP Style Buster
  * 
  * This shim uses high-specificity selectors to "bust" the properties 
  * WordPress forces on standard input tags. It unsets ONLY the 
  * layout-breaking values, allowing Bootstrap's classes to apply naturally.
  * 
- * Scope: #snestx51-app-root
+ * Scope: #shubx51-app-root
  */
 
 /* Target the specific attribute selectors WordPress uses */
-#snestx51-app-root input[type="text"],
-#snestx51-app-root input[type="search"],
-#snestx51-app-root input[type="number"],
-#snestx51-app-root input[type="email"],
-#snestx51-app-root input[type="password"],
-#snestx51-app-root input[type="tel"],
-#snestx51-app-root input[type="url"],
-#snestx51-app-root input[type="date"],
-#snestx51-app-root select,
-#snestx51-app-root textarea {
+#shubx51-app-root input[type="text"],
+#shubx51-app-root input[type="search"],
+#shubx51-app-root input[type="number"],
+#shubx51-app-root input[type="email"],
+#shubx51-app-root input[type="password"],
+#shubx51-app-root input[type="tel"],
+#shubx51-app-root input[type="url"],
+#shubx51-app-root input[type="date"],
+#shubx51-app-root select,
+#shubx51-app-root textarea {
     /* Nullify WP's forced metrics */
     height: auto;
     min-height: 0;
@@ -36,24 +36,24 @@
 }
 
 /* Specific Select Fix: WP adds a Dashicon arrow background image */
-#snestx51-app-root select {
+#shubx51-app-root select {
     background-image: none;
     padding-right: 0;
 }
 
 /* Clear WP Typography leaks */
-#snestx51-app-root h1,
-#snestx51-app-root h2,
-#snestx51-app-root h3,
-#snestx51-app-root h4,
-#snestx51-app-root h5,
-#snestx51-app-root h6,
-#snestx51-app-root p {
+#shubx51-app-root h1,
+#shubx51-app-root h2,
+#shubx51-app-root h3,
+#shubx51-app-root h4,
+#shubx51-app-root h5,
+#shubx51-app-root h6,
+#shubx51-app-root p {
     margin: 0;
 }
 
 /* Clear WP Card constraints */
-#snestx51-app-root .card {
+#shubx51-app-root .card {
     max-width: none !important;
     margin: 0;
 }

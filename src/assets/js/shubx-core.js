@@ -1,5 +1,5 @@
 ﻿/**
- * SNESTX Core Utilities
+ * SHUBX Core Utilities
  * Shared between Admin App and Resident Dashboard.
  */
 (function ($) {
@@ -10,12 +10,12 @@
      * @param {string} msg 
      * @param {string} type 'success' | 'error'
      */
-    window.SNESTXShowToast = function (msg, type = 'success') {
-        const toastEl = document.getElementById('snestx-global-toast');
-        const iconEl = document.getElementById('snestx-toast-icon');
-        const msgEl = document.getElementById('snestx-toast-message');
+    window.SHUBXShowToast = function (msg, type = 'success') {
+        const toastEl = document.getElementById('shubx-global-toast');
+        const iconEl = document.getElementById('shubx-toast-icon');
+        const msgEl = document.getElementById('shubx-toast-message');
         if (!toastEl || !msgEl || !iconEl) {
-            console.warn('SNESTX: Toast elements missing from DOM');
+            console.warn('SHUBX: Toast elements missing from DOM');
             return;
         }
 
@@ -50,8 +50,8 @@
      * @param {object} data   Payload data
      * @returns {Promise}
      */
-    window.SNESTXApiRequest = function (action, data = {}) {
-        return SNESTX.ajax({
+    window.SHUBXApiRequest = function (action, data = {}) {
+        return SHUBX.ajax({
             action: action,
             data: data
         });
@@ -60,7 +60,7 @@
     /**
      * Debounce helper
      */
-    window.SNESTXDebounce = function (func, wait) {
+    window.SHUBXDebounce = function (func, wait) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {

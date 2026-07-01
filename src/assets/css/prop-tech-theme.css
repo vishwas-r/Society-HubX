@@ -1,5 +1,5 @@
 ﻿/* 
- * SocietyNestX - Premium Frontend Theme
+ * Society HubX - Premium Frontend Theme
  * Design System: "PropTech Modern"
  */
 
@@ -13,7 +13,7 @@
     --pt-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
 }
 
-.snestx51-dashboard {
+.shubx51-dashboard {
     font-family: 'Inter', sans-serif;
     background-color: var(--pt-bg);
     padding: 40px 0;
@@ -21,15 +21,15 @@
 }
 
 /* 1. Header & Welcome */
-.snestx51-dashboard h1,
-.snestx51-dashboard h2,
-.snestx51-dashboard h3 {
+.shubx51-dashboard h1,
+.shubx51-dashboard h2,
+.shubx51-dashboard h3 {
     font-weight: 700;
     letter-spacing: -0.02em;
 }
 
 /* 2. Premium Tabs (Replacing Button Look) */
-.snestx51-dashboard .nav-pills {
+.shubx51-dashboard .nav-pills {
     background: #fff;
     padding: 6px;
     border-radius: 12px;
@@ -39,7 +39,7 @@
     border: 1px solid var(--pt-border);
 }
 
-.snestx51-dashboard .nav-pills .nav-link {
+.shubx51-dashboard .nav-pills .nav-link {
     border-radius: 8px;
     color: var(--pt-muted);
     font-weight: 500;
@@ -50,19 +50,19 @@
     outline: none;
 }
 
-.snestx51-dashboard .nav-pills .nav-link:hover {
+.shubx51-dashboard .nav-pills .nav-link:hover {
     color: var(--pt-primary);
     background: rgba(37, 99, 235, 0.05);
 }
 
-.snestx51-dashboard .nav-pills .nav-link.active {
+.shubx51-dashboard .nav-pills .nav-link.active {
     background-color: var(--pt-primary);
     color: #fff;
     box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
 }
 
 /* 3. Cards */
-.snestx51-card {
+.shubx51-card {
     border: none;
     border-radius: 20px;
     background: var(--pt-surface);
@@ -71,7 +71,7 @@
     overflow: hidden;
 }
 
-.snestx51-card .card-header {
+.shubx51-card .card-header {
     background: #fff;
     border-bottom: 1px solid #f3f4f6;
     padding: 24px;
@@ -79,7 +79,7 @@
     font-size: 1.1rem;
 }
 
-.snestx51-card .card-body {
+.shubx51-card .card-body {
     padding: 24px;
 }
 
@@ -99,7 +99,7 @@
 }
 
 /* 5. Directory Search Bar */
-.snestx51-directory-search {
+.shubx51-directory-search {
     border: none;
     background: #f9fafb;
     padding: 16px;
@@ -108,7 +108,7 @@
     width: 100%;
 }
 
-.snestx51-directory-search:focus {
+.shubx51-directory-search:focus {
     background: #fff;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     outline: none;

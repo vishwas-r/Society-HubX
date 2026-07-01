@@ -104,7 +104,7 @@ $my_bookings = $data['my_bookings'] ?? [];
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="text-secondary small"><?php echo esc_html($a['category']); ?></td>
-                                                <td class="text-secondary small">₹<?php echo SNESTX_in_fmt($a['value']); ?></td>
+                                                <td class="text-secondary small">₹<?php echo SHUBX_in_fmt($a['value']); ?></td>
                                                 <td class="pe-4 text-end">
                                                     <span class="badge bg-light text-dark border border-light rounded-pill px-2 border-opacity-10 small fw-normal"><?php echo esc_html($a['status']); ?></span>
                                                 </td>
@@ -264,10 +264,10 @@ $my_bookings = $data['my_bookings'] ?? [];
                         <div id="modalBookingFormContainer" class="d-none">
                             <h6 class="fw-bold text-dark small text-uppercase mb-2">Book This Facility</h6>
                             <form id="residentBookingForm" onsubmit="handleResidentBooking(event)">
-                                <input type="hidden" name="action" value="snestx51_book_facility">
+                                <input type="hidden" name="action" value="shubx51_book_facility">
                                 <input type="hidden" name="facility_id" id="bookingFacId">
                                 <!-- Secure Nonce for Resident Booking -->
-                                <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('snestx51_facility_nonce'); ?>">
+                                <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('shubx51_facility_nonce'); ?>">
                                 <input type="hidden" name="resident_id" value="<?php echo esc_attr($data['resident']['flat_no'] ?? ''); ?>">
 
                                 <div class="mb-3">
@@ -422,7 +422,7 @@ function openResidentFacilityModal(jsonStr) {
 async function fetchFacilitySchedule(facId) {
     const list = document.getElementById('modalScheduleList');
     try {
-        const response = await fetch(`${ajaxurl}?action=snestx51_get_facility_bookings&facility_id=${facId}`);
+        const response = await fetch(`${ajaxurl}?action=shubx51_get_facility_bookings&facility_id=${facId}`);
         const res = await response.json();
         
         if(res.success) {
@@ -478,8 +478,8 @@ async function handleResidentBooking(e) {
     const fd = new FormData(e.target);
     
     try {
-        const res = await window.SNESTXApiRequest('snestx51_book_facility', fd);
-        // On Success (SNESTXApiRequest throws on error)
+        const res = await window.SHUBXApiRequest('shubx51_book_facility', fd);
+        // On Success (SHUBXApiRequest throws on error)
         btn.textContent = 'Success!';
         setTimeout(() => {
             facilityModal.hide();
@@ -490,7 +490,7 @@ async function handleResidentBooking(e) {
             window.location.reload(); 
         }, 1000);
     } catch(err) {
-        // SNESTXShowToast already handled the alert
+        // SHUBXShowToast already handled the alert
         btn.textContent = originalText;
         btn.disabled = false;
     }
