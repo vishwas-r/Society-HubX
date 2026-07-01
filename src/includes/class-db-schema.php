@@ -27,7 +27,7 @@ class SNESTX51_DB_Schema {
 		$tables = array();
 
 		// 1. Flats Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_flats (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_number varchar(20) DEFAULT '' NOT NULL,
@@ -42,7 +42,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 2. Residents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_residents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_residents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -67,7 +67,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 3. Resident History Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_resident_history (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_resident_history (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -87,7 +87,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 4. Expenses Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_expenses (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_expenses (
 			id varchar(50) NOT NULL,
 			title varchar(255) DEFAULT '' NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -105,7 +105,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 5. Assets Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_assets (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_assets (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			value decimal(15,2) DEFAULT 0 NOT NULL,
@@ -121,7 +121,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 6. Notices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notices (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			content longtext NOT NULL,
@@ -138,7 +138,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 7. Invoices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_invoices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_invoices (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -161,7 +161,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 8. Receipts Table (for tracking receipt numbers)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_receipts (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_receipts (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			receipt_number varchar(50) NOT NULL,
@@ -172,7 +172,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 9. Polls Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_polls (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_polls (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			description text NOT NULL,
@@ -184,7 +184,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 10. Votes Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_votes (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_votes (
 			id int(11) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			poll_id varchar(50) NOT NULL,
@@ -198,7 +198,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 11. Vehicles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_vehicles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_vehicles (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -216,7 +216,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Facilities Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_facilities (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_facilities (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			rate decimal(10,2) DEFAULT 0 NOT NULL,
@@ -230,7 +230,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Bookings Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_bookings (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_bookings (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -248,7 +248,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 13. Daily Help Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_daily_help (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_daily_help (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			role varchar(50) DEFAULT '' NOT NULL,
@@ -262,7 +262,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 14. Rules Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_rules (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_rules (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			slug varchar(255) NOT NULL,
@@ -291,7 +291,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Rule Versions Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_rule_versions (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_rule_versions (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			rule_id varchar(50) NOT NULL,
 			version int(11) NOT NULL,
@@ -306,7 +306,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Rule Acknowledgments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_rule_acknowledgments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_rule_acknowledgments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -325,7 +325,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Rule Violations Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_rule_violations (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_rule_violations (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -354,7 +354,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Rule Categories Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_rule_categories (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_rule_categories (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			slug varchar(100) NOT NULL,
@@ -369,7 +369,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Documents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_documents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_documents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
@@ -387,7 +387,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Requests Table (Audit Trail)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_requests (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_requests (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			module varchar(50) DEFAULT '' NOT NULL,
@@ -409,7 +409,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Audit Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_audit_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_audit_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			action varchar(100) NOT NULL,
@@ -423,7 +423,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Meta Table (Key-Value Store)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_meta (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_meta (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			meta_key varchar(255) NOT NULL,
 			meta_value longtext NOT NULL,
@@ -433,7 +433,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Notification Channels
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notification_channels (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notification_channels (
 			channel_slug varchar(20) NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
 			config longtext NOT NULL,
@@ -441,7 +441,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Notification Events
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notification_events (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notification_events (
 			event_slug varchar(50) NOT NULL,
 			module varchar(20) NOT NULL,
 			default_channels varchar(255) NOT NULL,
@@ -449,7 +449,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 20. Notification Templates
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notification_templates (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notification_templates (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			event_slug varchar(50) NOT NULL,
 			channel varchar(20) NOT NULL,
@@ -464,7 +464,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 21. Notification Preferences
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notification_preferences (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notification_preferences (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -476,7 +476,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 22. Notification Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_notification_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_notification_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -494,7 +494,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 23. In-App Notifications
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_inapp_notifications (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_inapp_notifications (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -508,7 +508,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 24. Custom Roles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_roles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_roles (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			capabilities longtext NOT NULL,
@@ -519,7 +519,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 25. Staff-Flat Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_staff_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_staff_flats (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			staff_id varchar(50) NOT NULL,
 			flat_id varchar(50) NOT NULL,
@@ -529,7 +529,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 26. Resident-Role Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_resident_role_map (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_resident_role_map (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			resident_id varchar(50) NOT NULL,
 			role_id varchar(50) NOT NULL,
@@ -539,7 +539,7 @@ class SNESTX51_DB_Schema {
 		) $charset_collate;";
 
 		// 27. Detailed Payments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}Society_NestX_payments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_nestx_payments (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -568,7 +568,7 @@ class SNESTX51_DB_Schema {
 		global $wpdb;
 
 		// 1. Channels
-		$channels_table = "{$wpdb->prefix}Society_NestX_notification_channels";
+		$channels_table = "{$wpdb->prefix}society_nestx_notification_channels";
 		$existing_channels = $wpdb->get_var("SELECT COUNT(*) FROM $channels_table");
 		
 		if ($existing_channels == 0) {
@@ -578,7 +578,7 @@ class SNESTX51_DB_Schema {
 		}
 
 		// 2. Events
-		$events_table = "{$wpdb->prefix}Society_NestX_notification_events";
+		$events_table = "{$wpdb->prefix}society_nestx_notification_events";
 		$default_events = [
 			['event_slug' => 'visitor_checkin', 'module' => 'visitors', 'default_channels' => 'inapp,whatsapp,email'],
 			['event_slug' => 'invoice_generated', 'module' => 'accounts', 'default_channels' => 'email,inapp'],
@@ -605,7 +605,7 @@ class SNESTX51_DB_Schema {
 		}
 
 		// 3. Templates (Default V1)
-		$templates_table = "{$wpdb->prefix}Society_NestX_notification_templates";
+		$templates_table = "{$wpdb->prefix}society_nestx_notification_templates";
 		$default_templates = [
 			// Visitor Templates
 			['event_slug' => 'visitor_checkin', 'channel' => 'inapp', 'subject' => 'Visitor Arrived', 'content' => 'Visitor {visitor_name} has arrived at the gate.'],
@@ -663,7 +663,7 @@ class SNESTX51_DB_Schema {
 		}
 		
 		// 4. Seed Default Rule Categories
-		$categories_table = "{$wpdb->prefix}Society_NestX_rule_categories";
+		$categories_table = "{$wpdb->prefix}society_nestx_rule_categories";
 		$existing_categories = $wpdb->get_var("SELECT COUNT(*) FROM $categories_table");
 		
 		if ($existing_categories == 0) {
@@ -685,7 +685,7 @@ class SNESTX51_DB_Schema {
 		}
 
 		// 5. Seed Default Roles
-		$roles_table = "{$wpdb->prefix}Society_NestX_roles";
+		$roles_table = "{$wpdb->prefix}society_nestx_roles";
 		$existing_roles = $wpdb->get_var("SELECT COUNT(*) FROM $roles_table");
 		
 		if ($existing_roles == 0) {
@@ -735,39 +735,39 @@ class SNESTX51_DB_Schema {
         global $wpdb;
         
         $tables = array(
-            'Society_NestX_flats',
-            'Society_NestX_residents',
-            'Society_NestX_resident_history',
-            'Society_NestX_expenses',
-            'Society_NestX_assets',
-            'Society_NestX_notices',
-            'Society_NestX_invoices',
-            'Society_NestX_receipts',
-            'Society_NestX_polls',
-            'Society_NestX_votes',
-            'Society_NestX_vehicles',
-            'Society_NestX_facilities',
-            'Society_NestX_bookings',
-            'Society_NestX_daily_help',
-            'Society_NestX_documents',
-            'Society_NestX_rules',
-            'Society_NestX_rule_versions',
-            'Society_NestX_rule_acknowledgments',
-            'Society_NestX_rule_violations',
-            'Society_NestX_rule_categories',
-            'Society_NestX_requests',
-            'Society_NestX_audit_logs',
-            'Society_NestX_meta',
-            'Society_NestX_notification_channels',
-            'Society_NestX_notification_events',
-            'Society_NestX_notification_templates',
-            'Society_NestX_notification_preferences',
-            'Society_NestX_notification_logs',
-            'Society_NestX_inapp_notifications',
-            'Society_NestX_roles',
-            'Society_NestX_staff_flats',
-            'Society_NestX_resident_role_map',
-            'Society_NestX_payments'
+            'society_nestx_flats',
+            'society_nestx_residents',
+            'society_nestx_resident_history',
+            'society_nestx_expenses',
+            'society_nestx_assets',
+            'society_nestx_notices',
+            'society_nestx_invoices',
+            'society_nestx_receipts',
+            'society_nestx_polls',
+            'society_nestx_votes',
+            'society_nestx_vehicles',
+            'society_nestx_facilities',
+            'society_nestx_bookings',
+            'society_nestx_daily_help',
+            'society_nestx_documents',
+            'society_nestx_rules',
+            'society_nestx_rule_versions',
+            'society_nestx_rule_acknowledgments',
+            'society_nestx_rule_violations',
+            'society_nestx_rule_categories',
+            'society_nestx_requests',
+            'society_nestx_audit_logs',
+            'society_nestx_meta',
+            'society_nestx_notification_channels',
+            'society_nestx_notification_events',
+            'society_nestx_notification_templates',
+            'society_nestx_notification_preferences',
+            'society_nestx_notification_logs',
+            'society_nestx_inapp_notifications',
+            'society_nestx_roles',
+            'society_nestx_staff_flats',
+            'society_nestx_resident_role_map',
+            'society_nestx_payments'
         );
         
         foreach($tables as $t) {

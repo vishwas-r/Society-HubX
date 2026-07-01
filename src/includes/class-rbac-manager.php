@@ -18,7 +18,7 @@ class SNESTX51_RBAC_Manager {
 	public function __construct() {
 		global $wpdb;
 		$this->db = new SNESTX51_DB_Router();
-		$this->roles_table = "{$wpdb->prefix}Society_NestX_roles";
+		$this->roles_table = "{$wpdb->prefix}society_nestx_roles";
 	}
 
 	/**

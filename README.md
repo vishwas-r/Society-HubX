@@ -65,9 +65,9 @@ After setup, navigate to **GovernX > Settings** in the WordPress Admin Dashboard
 ## Frontend Shortcodes
 
 Render portal components on any frontend WordPress page using the following shortcodes:
-* `[Society_NestX_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
-* `[Society_NestX_notices]` - Renders a standalone public notice board.
-* `[Society_NestX_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
+* `[society_nestx_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
+* `[society_nestx_notices]` - Renders a standalone public notice board.
+* `[society_nestx_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
 
 ---
 

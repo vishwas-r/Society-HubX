@@ -26,7 +26,7 @@ $total_violations = count($violations);
 $pending_violations = count(array_filter($violations, fn($v) => $v['status'] === 'pending'));
 
 global $wpdb;
-$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
+$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
 $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 ?>
 
@@ -383,8 +383,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
             <?php
             // Get acknowledgment stats per rule
-            $rules_table = "{$wpdb->prefix}Society_NestX_rules";
-            $residents_table = "{$wpdb->prefix}Society_NestX_residents";
+            $rules_table = "{$wpdb->prefix}society_nestx_rules";
+            $residents_table = "{$wpdb->prefix}society_nestx_residents";
             $ack_stats = $wpdb->get_results("
                 SELECT r.id, r.title, r.requires_acknowledgment, r.acknowledgment_deadline,
                        COUNT(DISTINCT a.resident_id) as ack_count,

@@ -25,8 +25,8 @@ $categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' 
 
 // Get pending acknowledgments
 global $wpdb;
-$rules_table = "{$wpdb->prefix}Society_NestX_rules";
-$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
+$rules_table = "{$wpdb->prefix}society_nestx_rules";
+$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
 
 $pending_rules = $wpdb->get_results($wpdb->prepare("
     SELECT r.* FROM $rules_table r

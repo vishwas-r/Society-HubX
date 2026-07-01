@@ -21,9 +21,9 @@ class SNESTX51_Frontend_Dashboard {
 		$this->drive = new SNESTX51_Drive_Manager();
 		$this->media = new SNESTX51_Media_Manager();
 		
-		add_shortcode( 'Society_NestX_dashboard', array( $this, 'render_dashboard' ) );
-		add_shortcode( 'Society_NestX_notices', array( $this, 'render_notices' ) );
-		add_shortcode( 'Society_NestX_directory', array( $this, 'render_directory' ) );
+		add_shortcode( 'society_nestx_dashboard', array( $this, 'render_dashboard' ) );
+		add_shortcode( 'society_nestx_notices', array( $this, 'render_notices' ) );
+		add_shortcode( 'society_nestx_directory', array( $this, 'render_directory' ) );
 		// Form Handlers
 		add_action( 'admin_post_SNESTX51_update_profile', array( $this, 'handle_profile_update' ) );
 		add_action( 'admin_post_SNESTX51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );

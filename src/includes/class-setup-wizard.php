@@ -120,15 +120,15 @@ class SNESTX51_Setup_Wizard {
 		$pages = array(
 			'Resident Dashboard' => array(
 				'slug'    => 'resident-dashboard',
-				'content' => '[Society_NestX_dashboard]',
+				'content' => '[society_nestx_dashboard]',
 			),
 			'Society Notices' => array(
 				'slug'    => 'society-notices',
-				'content' => '[Society_NestX_notices]',
+				'content' => '[society_nestx_notices]',
 			),
 			'Residents Directory' => array(
 				'slug'    => 'residents-directory',
-				'content' => '[Society_NestX_directory]',
+				'content' => '[society_nestx_directory]',
 			),
 		);
 
@@ -164,7 +164,7 @@ class SNESTX51_Setup_Wizard {
 		}
 
 		// 2. Create New Spreadsheet.
-		$sheet_title = 'Society_NestX_Master_' . gmdate( 'Y-m-d' );
+		$sheet_title = 'society_nestx_Master_' . gmdate( 'Y-m-d' );
 		$body = array(
 			'properties' => array( 'title' => $sheet_title ),
 		);

@@ -112,7 +112,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
         // DB_Router doesn't support delete_many efficiently yet without key, 
         // but votes don't have unique ID in current schema? 
         // Wait, votes schema: id, poll_id... check schema.
-        // Schema says: Society_NestX_votes (id, poll_id, flat_no, ...)
+        // Schema says: society_nestx_votes (id, poll_id, flat_no, ...)
         // JSON file had flat_no+poll_id as key somewhat. 
         // For MySQL, we run a DELETE query. For JSON, we might leave orphans or iterate?
         // Since DB_Router relies on 'id' for delete(), we can't delete by poll_id easily.

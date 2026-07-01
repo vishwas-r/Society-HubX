@@ -77,7 +77,7 @@ class SNESTX51_Data_Portability {
 		file_put_contents( $temp_dir . 'search_index_dump.json', json_encode( $full_dump, JSON_PRETTY_PRINT ) );
 
 		// 4. Create ZIP
-		$zip_filename = 'Society_NestX_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
+		$zip_filename = 'society_nestx_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
 		$zip_path     = $temp_dir . $zip_filename;
 
 		if ( class_exists( 'ZipArchive' ) ) {

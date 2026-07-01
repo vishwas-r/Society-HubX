@@ -38,14 +38,14 @@ class SNESTX51_Log_Manager {
         // 1. Purge Audit Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}Society_NestX_audit_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}society_nestx_audit_logs WHERE created_at < %s",
             $cutoff_date
         ));
 
         // 2. Purge Notification Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}Society_NestX_notification_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}society_nestx_notification_logs WHERE created_at < %s",
             $cutoff_date
         ));
 

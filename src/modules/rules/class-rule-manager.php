@@ -318,7 +318,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 */
 	private function save_version($rule_id, $rule_data, $change_summary = '') {
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rule_versions";
+		$table = "{$wpdb->prefix}society_nestx_rule_versions";
 
 		// Silently skip if table does not exist yet (avoids corrupting AJAX JSON response)
 		$table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
@@ -354,7 +354,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		}
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rule_versions";
+		$table = "{$wpdb->prefix}society_nestx_rule_versions";
 		$versions = $wpdb->get_results($wpdb->prepare(
 			"SELECT * FROM $table WHERE rule_id = %s ORDER BY version DESC",
 			$rule_id
@@ -379,7 +379,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		}
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rule_versions";
+		$table = "{$wpdb->prefix}society_nestx_rule_versions";
 		$version_data = $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM $table WHERE rule_id = %s AND version = %d",
 			$rule_id, $version
@@ -446,7 +446,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Get rule version - use direct query to avoid caching
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}Society_NestX_rules";
+		$rules_table = "{$wpdb->prefix}society_nestx_rules";
 		$rule = $wpdb->get_row($wpdb->prepare(
 			"SELECT version, title FROM $rules_table WHERE id = %s",
 			$rule_id
@@ -462,7 +462,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Save acknowledgment
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
+		$table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
 		
 		// Check if already acknowledged
 		$existing = $wpdb->get_var($wpdb->prepare(
@@ -521,8 +521,8 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 
 	private function get_pending_acknowledgments($resident_id) {
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}Society_NestX_rules";
-		$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
+		$rules_table = "{$wpdb->prefix}society_nestx_rules";
+		$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
 		
 		$sql = "SELECT r.* FROM $rules_table r
 				WHERE r.status = 'published' 
@@ -741,7 +741,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Check if any ACTIVE rules are using this category (exclude archived)
 		global $wpdb;
-		$rules_table = "{$wpdb->prefix}Society_NestX_rules";
+		$rules_table = "{$wpdb->prefix}society_nestx_rules";
 		$count = $wpdb->get_var($wpdb->prepare(
 			"SELECT COUNT(*) FROM $rules_table WHERE category = %s AND status != 'archived'",
 			$category_slug
@@ -755,7 +755,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Hard delete the category
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rule_categories";
+		$table = "{$wpdb->prefix}society_nestx_rule_categories";
 		$result = $wpdb->delete($table, array('id' => $category_id));
 		
 		if ( $result === false ) {
@@ -776,7 +776,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		$category = isset($_POST['category']) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 		
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rules";
+		$table = "{$wpdb->prefix}society_nestx_rules";
 		$sql = "SELECT * FROM $table WHERE status = 'published'";
 		
 		if ( !empty($query) ) {
@@ -912,7 +912,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	private function get_rule_by_slug($slug) {
 		// Only check non-archived rules for slug uniqueness
 		global $wpdb;
-		$table = "{$wpdb->prefix}Society_NestX_rules";
+		$table = "{$wpdb->prefix}society_nestx_rules";
 		return $wpdb->get_row($wpdb->prepare(
 			"SELECT * FROM $table WHERE slug = %s AND status != 'archived' LIMIT 1",
 			$slug
@@ -931,7 +931,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Get acknowledgment stats
 		global $wpdb;
-		$acks_table = "{$wpdb->prefix}Society_NestX_rule_acknowledgments";
+		$acks_table = "{$wpdb->prefix}society_nestx_rule_acknowledgments";
 		$total_acks = $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 		
 		SNESTX51_Admin_App::render_view('rules', [

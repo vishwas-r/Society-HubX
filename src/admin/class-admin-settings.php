@@ -258,7 +258,7 @@ class SNESTX51_Admin_Settings {
 
 	private function record_exists( $table, $row, $original_id = null ) {
 		global $wpdb;
-		$sql_table = $wpdb->prefix . 'Society_NestX_' . $table;
+		$sql_table = $wpdb->prefix . 'society_nestx_' . $table;
 		
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema check query requires dynamic table name.
 		// 1. Check by ID if available (and if the table uses this ID type)

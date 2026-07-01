@@ -539,7 +539,7 @@ final class Society_NestX {
 	 * Load Custom Page Templates.
 	 * Logic:
 	 * 1. If explicit template is selected in dropdown.
-	 * 2. OR if the page contains string '[Society_NestX_dashboard]' - AUTO APPLY.
+	 * 2. OR if the page contains string '[society_nestx_dashboard]' - AUTO APPLY.
 	 */
 	public function load_page_template( $template ) {
 		global $post;
@@ -551,7 +551,7 @@ final class Society_NestX {
 		}
 
 		// 2. Auto-detect Shortcode (Fallback if user can't select template)
-		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'Society_NestX_dashboard' ) ) {
+		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'society_nestx_dashboard' ) ) {
 			 return SNESTX51_PLUGIN_DIR . 'templates/page-society-app.php';
 		}
 

@@ -35,7 +35,7 @@ SocietyNestX is a feature-rich, premium WordPress plugin designed to streamline 
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Upon activation, access the **Setup Wizard** from the WordPress admin sidebar under **GovernX** to initialize your database tables and seed default settings.
 4. To set up the frontend resident dashboard, create a new WordPress Page (e.g., "Resident Portal") and add the following shortcode:
-   `[Society_NestX_dashboard]`
+   `[society_nestx_dashboard]`
 5. Publish the page. Residents will now be able to log in and access their dashboard from this page.
 
 == Settings & Configurations ==
@@ -65,9 +65,9 @@ To configure the plugin, navigate to the **GovernX > Settings** menu in the Word
 
 The plugin provides the following shortcodes to render portal elements on frontend pages:
 
-* `[Society_NestX_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
-* `[Society_NestX_notices]` - Renders a standalone public notice board feed.
-* `[Society_NestX_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
+* `[society_nestx_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
+* `[society_nestx_notices]` - Renders a standalone public notice board feed.
+* `[society_nestx_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == Changelog ==
 

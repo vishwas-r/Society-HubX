@@ -31,8 +31,8 @@ class SNESTX51_Data_Migrator {
 	 */
 	public static function migrate_resident_roles() {
 		global $wpdb;
-		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}Society_NestX_residents", ARRAY_A );
-		$map_table = "{$wpdb->prefix}Society_NestX_resident_role_map";
+		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}society_nestx_residents", ARRAY_A );
+		$map_table = "{$wpdb->prefix}society_nestx_resident_role_map";
 
 		foreach ( $residents as $res ) {
 			if ( empty( $res['roles'] ) ) continue;
@@ -54,8 +54,8 @@ class SNESTX51_Data_Migrator {
 	 */
 	public static function migrate_staff_flats() {
 		global $wpdb;
-		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}Society_NestX_daily_help", ARRAY_A );
-		$map_table = "{$wpdb->prefix}Society_NestX_staff_flats";
+		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}society_nestx_daily_help", ARRAY_A );
+		$map_table = "{$wpdb->prefix}society_nestx_staff_flats";
 
 		foreach ( $staff as $s ) {
 			if ( empty( $s['flats_served'] ) ) continue;
@@ -73,9 +73,9 @@ class SNESTX51_Data_Migrator {
 
 	public static function migrate_payments() {
 		global $wpdb;
-		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}Society_NestX_invoices", ARRAY_A );
-		$payments_table = "{$wpdb->prefix}Society_NestX_payments";
-        $invoices_table = "{$wpdb->prefix}Society_NestX_invoices";
+		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}society_nestx_invoices", ARRAY_A );
+		$payments_table = "{$wpdb->prefix}society_nestx_payments";
+        $invoices_table = "{$wpdb->prefix}society_nestx_invoices";
 
 		foreach ( $invoices as $inv ) {
 			if ( empty( $inv['payments'] ) ) continue;
