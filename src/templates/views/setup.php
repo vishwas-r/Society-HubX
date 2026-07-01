@@ -28,7 +28,7 @@ $society_name = get_option('SNESTX51_society_name', '');
                         <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
                             <i class="bi bi-building text-white"></i>
                         </div>
-                        <h5 class="fw-bold mb-0">GoVernX</h5>
+                        <h5 class="fw-bold mb-0">Society NestX</h5>
                     </div>
                     <ul class="list-unstyled setup-steps">
                         <li class="mb-4 d-flex align-items-center gap-3 <?php echo $step >= 1 ? 'text-white' : 'text-white-50'; ?>">
@@ -50,7 +50,7 @@ $society_name = get_option('SNESTX51_society_name', '');
                     </ul>
                 </div>
                 <div class="small text-white-50">
-                    &copy; <?php echo wp_date('Y'); ?> SocietyNestX
+                    &copy; <?php echo wp_date('Y'); ?> Society NestX
                 </div>
             </div>
 

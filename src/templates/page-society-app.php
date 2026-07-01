@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             </button>
             <div class="d-flex align-items-center gap-2">
                  <div class="rounded bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 2rem; height: 2rem;">S</div>
-                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">SocietyNestX</h1>
+                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">Society NestX</h1>
             </div>
         </div>
         <div class="d-flex align-items-center gap-4">
@@ -104,7 +104,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Simple Footer -->
     <footer class="bg-white border-top border-slate-200 py-4 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by SocietyNestX.
+            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>. Powered by Society NestX.
         </div>
     </footer>
 

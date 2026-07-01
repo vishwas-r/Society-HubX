@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                     
                     <div class="mt-4 pt-3 border-top border-light">
-                        <p class="small text-secondary m-0">Powered by <strong>SocietyNestX</strong></p>
+                        <p class="small text-secondary m-0">Powered by <strong>Society NestX</strong></p>
                     </div>
                 </div>
 

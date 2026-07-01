@@ -1,6 +1,6 @@
 <?php
 /*
- * Plugin Name:       SocietyNestX – Society Management Portal
+ * Plugin Name:       Society NestX – Society Management Portal
  * Plugin URI:        https://github.com/vishwas-r/Society-GovernX
  * Description:       A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
  * Version:           1.0.4

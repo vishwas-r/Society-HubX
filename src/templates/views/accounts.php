@@ -1075,7 +1075,7 @@ function populateReceiptModal(receiptData) {
         <!-- Footer -->
         <div class="receipt-footer-standard">
             <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-            <p class="mb-0">SocietyNestX - Empowering Communities</p>
+            <p class="mb-0">Society NestX - Empowering Communities</p>
         </div>
     `;
 }

@@ -1,4 +1,4 @@
-# PowerShell script to build the Society GoVernX Webapp Bundle
+# PowerShell script to build the Society NestX Webapp Bundle
 # Downloads WordPress core, installs the plugin, adds setup.php, and compresses it.
 
 $ErrorActionPreference = "Stop"

@@ -30,7 +30,7 @@ if (!is_admin() && php_sapi_name() !== 'cli') {
     }
 }
 
-echo "<h1>SocietyNestX - Database Update Utility</h1>";
+echo "<h1>Society NestX - Database Update Utility</h1>";
 echo "<p>Starting database update and migration...</p>";
 
 // 1. Force Include Plugin Classes

@@ -148,7 +148,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                 <div class="bg-primary rounded-xl d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
                     <i class="bi bi-building-fill text-white" style="font-size: 1rem;"></i>
                 </div>
-                <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">SocietyNestX</span>
+                <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Society NestX</span>
             </a>
             <button id="snestx-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">
                 <i class="bi bi-x-lg fs-5"></i>

@@ -45,8 +45,8 @@ class SNESTX51_Admin_Settings {
 
 	public function register_settings_page() {
 		add_menu_page(
-			'SocietyNestX',
-			'SocietyNestX',
+			'Society NestX',
+			'Society NestX',
 			'read', // RBAC checked in render functions
 			'snestx51-settings',
 			array( $this, 'render_settings_page' ),
@@ -376,7 +376,7 @@ class SNESTX51_Admin_Settings {
 
 		echo '<div class="notice notice-warning is-dismissible">';
 		echo '<p>' . sprintf(
-			esc_html__( 'SocietyNestX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-nestx' ),
+			esc_html__( 'Society NestX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-nestx' ),
 			'<a href="' . esc_url( admin_url( 'admin.php?page=snestx51-setup' ) ) . '"><strong>',
 			'</strong></a>'
 		) . '</p>';
