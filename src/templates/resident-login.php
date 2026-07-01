@@ -57,7 +57,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                     <!-- Login Form -->
                     <form id="resident-login-form" method="post">
-                        <?php wp_nonce_field( 'SNESTX51_login_nonce', 'login_nonce' ); ?>
+                        <?php wp_nonce_field( 'snestx51_login_nonce', 'login_nonce' ); ?>
                         
                         <div class="form-floating mb-3">
                             <input type="text" name="user_login" class="form-control" id="floatingInput" placeholder="Username" required>
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
             spinner.classList.remove('d-none');
 
             const formData = new FormData(loginForm);
-            formData.append('action', 'SNESTX51_resident_login');
+            formData.append('action', 'snestx51_resident_login');
 
             fetch(ajaxurl, {
                 method: 'POST',

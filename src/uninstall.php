@@ -15,16 +15,16 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 // Delete options.
 $options = array(
-	'SNESTX51_society_name',
-	'SNESTX51_society_address_line1',
-	'SNESTX51_society_address_line2',
-	'SNESTX51_society_city',
-	'SNESTX51_society_contact',
-	'SNESTX51_approval_family',
-	'SNESTX51_approval_help',
-	'SNESTX51_db_version',
-	'SNESTX51_google_refresh_token',
-	'SNESTX51_drive_root_id',
+	'snestx51_society_name',
+	'snestx51_society_address_line1',
+	'snestx51_society_address_line2',
+	'snestx51_society_city',
+	'snestx51_society_contact',
+	'snestx51_approval_family',
+	'snestx51_approval_help',
+	'snestx51_db_version',
+	'snestx51_google_refresh_token',
+	'snestx51_drive_root_id',
 );
 
 foreach ( $options as $option ) {

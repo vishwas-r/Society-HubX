@@ -92,9 +92,9 @@ usort( $polls, function($a, $b) {
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end border shadow-lg rounded-xl mt-2">
                                         <?php if($final_status === 'Active'): ?>
-                                            <li><a class="dropdown-item fw-bold text-warning py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=SNESTX51_close_poll&id='.$p['id']), 'SNESTX51_poll_action' ); ?>" onclick="return confirm('Close this poll?')"><i class="bi bi-lock me-2"></i>Close Poll</a></li>
+                                            <li><a class="dropdown-item fw-bold text-warning py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=snestx51_close_poll&id='.$p['id']), 'snestx51_poll_action' ); ?>" onclick="return confirm('Close this poll?')"><i class="bi bi-lock me-2"></i>Close Poll</a></li>
                                         <?php endif; ?>
-                                        <li><a class="dropdown-item fw-bold text-danger py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=SNESTX51_delete_poll&id='.$p['id']), 'SNESTX51_poll_action' ); ?>" onclick="return confirm('Delete this poll permanently?')"><i class="bi bi-trash me-2"></i>Delete Poll</a></li>
+                                        <li><a class="dropdown-item fw-bold text-danger py-2" href="<?php echo wp_nonce_url( admin_url('admin-post.php?action=snestx51_delete_poll&id='.$p['id']), 'snestx51_poll_action' ); ?>" onclick="return confirm('Delete this poll permanently?')"><i class="bi bi-trash me-2"></i>Delete Poll</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@ usort( $polls, function($a, $b) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() {
+add_action('snestx51_admin_modals', function() {
 ?>
 <!-- Create Poll Modal -->
 <div class="modal fade" id="createPollModal" tabindex="-1" aria-hidden="true">
@@ -155,8 +155,8 @@ add_action('SNESTX51_admin_modals', function() {
             </div>
             <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_create_poll">
-                    <?php wp_nonce_field('SNESTX51_poll_action'); ?>
+                    <input type="hidden" name="action" value="snestx51_create_poll">
+                    <?php wp_nonce_field('snestx51_poll_action'); ?>
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Poll Title</label>

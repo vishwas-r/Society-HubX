@@ -215,40 +215,40 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Profile -->
                 <div class="settings-tab-pane" id="tab-content-profile">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'SNESTX51_options_group' ); ?>
+                        <?php settings_fields( 'snestx51_options_group' ); ?>
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="SNESTX51_bank_name" value="<?php echo esc_attr( get_option('SNESTX51_bank_name') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_account" value="<?php echo esc_attr( get_option('SNESTX51_bank_account') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_ifsc" value="<?php echo esc_attr( get_option('SNESTX51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_upi" value="<?php echo esc_attr( get_option('SNESTX51_bank_upi') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_qr" value="<?php echo esc_attr( get_option('SNESTX51_bank_qr') ); ?>">
+                        <input type="hidden" name="snestx51_bank_name" value="<?php echo esc_attr( get_option('snestx51_bank_name') ); ?>">
+                        <input type="hidden" name="snestx51_bank_account" value="<?php echo esc_attr( get_option('snestx51_bank_account') ); ?>">
+                        <input type="hidden" name="snestx51_bank_ifsc" value="<?php echo esc_attr( get_option('snestx51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="snestx51_bank_upi" value="<?php echo esc_attr( get_option('snestx51_bank_upi') ); ?>">
+                        <input type="hidden" name="snestx51_bank_qr" value="<?php echo esc_attr( get_option('snestx51_bank_qr') ); ?>">
                         
                         <div class="mb-5">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Public Details</h5>
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Official Society Name</label>
-                                    <input type="text" name="SNESTX51_society_name" value="<?php echo esc_attr( get_option('SNESTX51_society_name', 'Society Name') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_name" value="<?php echo esc_attr( get_option('snestx51_society_name', 'Society Name') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Address Line 1</label>
-                                    <input type="text" name="SNESTX51_society_address_line1" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line1') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_address_line1" value="<?php echo esc_attr( get_option('snestx51_society_address_line1') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Address Line 2</label>
-                                    <input type="text" name="SNESTX51_society_address_line2" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line2') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_address_line2" value="<?php echo esc_attr( get_option('snestx51_society_address_line2') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">City</label>
-                                    <input type="text" name="SNESTX51_society_city" value="<?php echo esc_attr( get_option('SNESTX51_society_city') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_city" value="<?php echo esc_attr( get_option('snestx51_society_city') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Pincode</label>
-                                    <input type="text" name="SNESTX51_society_pincode" value="<?php echo esc_attr( get_option('SNESTX51_society_pincode') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_pincode" value="<?php echo esc_attr( get_option('snestx51_society_pincode') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Office Contact (Email/Phone)</label>
-                                    <input type="text" name="SNESTX51_society_contact" value="<?php echo esc_attr( get_option('SNESTX51_society_contact') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_society_contact" value="<?php echo esc_attr( get_option('snestx51_society_contact') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -260,16 +260,16 @@ $templates = $db->get('notification_templates');
                                     <label class="form-label small fw-bold text-secondary">Base Maintenance (₹)</label>
                                     <div class="input-group flex-nowrap">
                                         <span class="input-group-text bg-light border-0 text-muted rounded-start-3">₹</span>
-                                        <input type="number" name="SNESTX51_maintenance_amount" value="<?php echo esc_attr( get_option('SNESTX51_maintenance_amount', '5000') ); ?>" class="form-control shadow-none border-0 bg-light rounded-end-3 fw-bold">
+                                        <input type="number" name="snestx51_maintenance_amount" value="<?php echo esc_attr( get_option('snestx51_maintenance_amount', '5000') ); ?>" class="form-control shadow-none border-0 bg-light rounded-end-3 fw-bold">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Bank Opening Balance</label>
-                                    <input type="number" step="0.01" name="SNESTX51_opening_bank" value="<?php echo esc_attr( get_option('SNESTX51_opening_bank', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="snestx51_opening_bank" value="<?php echo esc_attr( get_option('snestx51_opening_bank', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Cash Opening Balance</label>
-                                    <input type="number" step="0.01" name="SNESTX51_opening_cash" value="<?php echo esc_attr( get_option('SNESTX51_opening_cash', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="snestx51_opening_cash" value="<?php echo esc_attr( get_option('snestx51_opening_cash', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -283,41 +283,41 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Bank -->
                 <div class="settings-tab-pane hidden" id="tab-content-bank">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'SNESTX51_options_group' ); ?>
+                        <?php settings_fields( 'snestx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="SNESTX51_society_name" value="<?php echo esc_attr( get_option('SNESTX51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line1" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line1') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line2" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line2') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_city" value="<?php echo esc_attr( get_option('SNESTX51_society_city') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_pincode" value="<?php echo esc_attr( get_option('SNESTX51_society_pincode') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_contact" value="<?php echo esc_attr( get_option('SNESTX51_society_contact') ); ?>">
-                        <input type="hidden" name="SNESTX51_maintenance_amount" value="<?php echo esc_attr( get_option('SNESTX51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_bank" value="<?php echo esc_attr( get_option('SNESTX51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_cash" value="<?php echo esc_attr( get_option('SNESTX51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="snestx51_society_name" value="<?php echo esc_attr( get_option('snestx51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line1" value="<?php echo esc_attr( get_option('snestx51_society_address_line1') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line2" value="<?php echo esc_attr( get_option('snestx51_society_address_line2') ); ?>">
+                        <input type="hidden" name="snestx51_society_city" value="<?php echo esc_attr( get_option('snestx51_society_city') ); ?>">
+                        <input type="hidden" name="snestx51_society_pincode" value="<?php echo esc_attr( get_option('snestx51_society_pincode') ); ?>">
+                        <input type="hidden" name="snestx51_society_contact" value="<?php echo esc_attr( get_option('snestx51_society_contact') ); ?>">
+                        <input type="hidden" name="snestx51_maintenance_amount" value="<?php echo esc_attr( get_option('snestx51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="snestx51_opening_bank" value="<?php echo esc_attr( get_option('snestx51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="snestx51_opening_cash" value="<?php echo esc_attr( get_option('snestx51_opening_cash', '0') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Beneficiary Details</h5>
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label small fw-bold text-secondary">Primary Bank Name</label>
-                                    <input type="text" name="SNESTX51_bank_name" value="<?php echo esc_attr( get_option('SNESTX51_bank_name') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="snestx51_bank_name" value="<?php echo esc_attr( get_option('snestx51_bank_name') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Account Number</label>
-                                    <input type="text" name="SNESTX51_bank_account" value="<?php echo esc_attr( get_option('SNESTX51_bank_account') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace">
+                                    <input type="text" name="snestx51_bank_account" value="<?php echo esc_attr( get_option('snestx51_bank_account') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">IFSC Code</label>
-                                    <input type="text" name="SNESTX51_bank_ifsc" value="<?php echo esc_attr( get_option('SNESTX51_bank_ifsc') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace text-uppercase">
+                                    <input type="text" name="snestx51_bank_ifsc" value="<?php echo esc_attr( get_option('snestx51_bank_ifsc') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace text-uppercase">
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label small fw-bold text-secondary">UPI ID for Direct Transfers</label>
-                                    <input type="text" name="SNESTX51_bank_upi" value="<?php echo esc_attr( get_option('SNESTX51_bank_upi') ); ?>" class="form-control shadow-none rounded-3 border-light text-primary fw-bold">
+                                    <input type="text" name="snestx51_bank_upi" value="<?php echo esc_attr( get_option('snestx51_bank_upi') ); ?>" class="form-control shadow-none rounded-3 border-light text-primary fw-bold">
                                 </div>
                                 <div class="col-12 mt-4">
                                     <label class="form-label small fw-bold text-secondary">Payment QR Image</label>
                                     <div class="d-flex align-items-start gap-4 p-3 bg-light rounded-3 border border-light">
                                         <div id="qr-preview-container" class="bg-white border border-light rounded-3 shadow-sm d-flex align-items-center justify-content-center p-2" style="width: 100px; height: 100px;">
-                                            <?php $qr_url = get_option('SNESTX51_bank_qr'); ?>
+                                            <?php $qr_url = get_option('snestx51_bank_qr'); ?>
                                             <?php if($qr_url): ?>
                                                 <img src="<?php echo esc_url($qr_url); ?>" class="img-fluid rounded-3">
                                             <?php else: ?>
@@ -325,7 +325,7 @@ $templates = $db->get('notification_templates');
                                             <?php endif; ?>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <input type="hidden" id="SNESTX51_bank_qr" name="SNESTX51_bank_qr" value="<?php echo esc_attr($qr_url); ?>">
+                                            <input type="hidden" id="snestx51_bank_qr" name="snestx51_bank_qr" value="<?php echo esc_attr($qr_url); ?>">
                                             <div class="d-flex flex-column gap-2">
                                                 <button type="button" id="btn-upload-qr" class="btn btn-sm btn-outline-primary fw-bold rounded-3">Select / Upload Image</button>
                                                 <?php if($qr_url): ?>
@@ -507,7 +507,7 @@ $templates = $db->get('notification_templates');
                             <div id="collapseGovernance" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
                                 <div class="accordion-body p-4">
                                     <form method="post" action="options.php">
-                                        <?php settings_fields( 'SNESTX51_options_group' ); ?>
+                                        <?php settings_fields( 'snestx51_options_group' ); ?>
                                         <div class="row g-4">
                                             <div class="col-md-6">
                                                 <div class="p-3 bg-light rounded-4 border border-light d-flex align-items-center justify-content-between">
@@ -516,7 +516,7 @@ $templates = $db->get('notification_templates');
                                                         <p class="x-small text-muted m-0">Record admin/resident actions.</p>
                                                     </div>
                                                     <label class="snestx-premium-toggle">
-                                                        <input type="checkbox" name="SNESTX51_enable_audit" value="1" <?php checked(get_option('SNESTX51_enable_audit', 1), 1); ?>/>
+                                                        <input type="checkbox" name="snestx51_enable_audit" value="1" <?php checked(get_option('snestx51_enable_audit', 1), 1); ?>/>
                                                         <span class="slider"></span>
                                                     </label>
                                                 </div>
@@ -524,11 +524,11 @@ $templates = $db->get('notification_templates');
                                             <div class="col-md-6 text-end d-flex align-items-center gap-3">
                                                 <div class="flex-grow-1 text-start">
                                                     <label class="form-label small fw-bold text-dark mb-1">Retention Period</label>
-                                                    <select name="SNESTX51_log_retention" class="form-select shadow-none rounded-3 border-light fw-bold">
-                                                        <option value="30" <?php selected(get_option('SNESTX51_log_retention', 30), 30); ?>>30 Days</option>
-                                                        <option value="60" <?php selected(get_option('SNESTX51_log_retention'), 60); ?>>60 Days</option>
-                                                        <option value="90" <?php selected(get_option('SNESTX51_log_retention'), 90); ?>>90 Days</option>
-                                                        <option value="0" <?php selected(get_option('SNESTX51_log_retention'), 0); ?>>Unlimited</option>
+                                                    <select name="snestx51_log_retention" class="form-select shadow-none rounded-3 border-light fw-bold">
+                                                        <option value="30" <?php selected(get_option('snestx51_log_retention', 30), 30); ?>>30 Days</option>
+                                                        <option value="60" <?php selected(get_option('snestx51_log_retention'), 60); ?>>60 Days</option>
+                                                        <option value="90" <?php selected(get_option('snestx51_log_retention'), 90); ?>>90 Days</option>
+                                                        <option value="0" <?php selected(get_option('snestx51_log_retention'), 0); ?>>Unlimited</option>
                                                     </select>
                                                 </div>
                                                 <button type="submit" class="btn btn-primary fw-bold rounded-3 px-4 shadow-sm" style="height: 48px; margin-top: 24px;">Save Policy</button>
@@ -544,23 +544,23 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Approval Workflow -->
                 <div class="settings-tab-pane hidden" id="tab-content-approval">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'SNESTX51_options_group' ); ?>
+                        <?php settings_fields( 'snestx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="SNESTX51_society_name" value="<?php echo esc_attr( get_option('SNESTX51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line1" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line1') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line2" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line2') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_city" value="<?php echo esc_attr( get_option('SNESTX51_society_city') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_pincode" value="<?php echo esc_attr( get_option('SNESTX51_society_pincode') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_contact" value="<?php echo esc_attr( get_option('SNESTX51_society_contact') ); ?>">
-                        <input type="hidden" name="SNESTX51_maintenance_amount" value="<?php echo esc_attr( get_option('SNESTX51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_bank" value="<?php echo esc_attr( get_option('SNESTX51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_cash" value="<?php echo esc_attr( get_option('SNESTX51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="snestx51_society_name" value="<?php echo esc_attr( get_option('snestx51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line1" value="<?php echo esc_attr( get_option('snestx51_society_address_line1') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line2" value="<?php echo esc_attr( get_option('snestx51_society_address_line2') ); ?>">
+                        <input type="hidden" name="snestx51_society_city" value="<?php echo esc_attr( get_option('snestx51_society_city') ); ?>">
+                        <input type="hidden" name="snestx51_society_pincode" value="<?php echo esc_attr( get_option('snestx51_society_pincode') ); ?>">
+                        <input type="hidden" name="snestx51_society_contact" value="<?php echo esc_attr( get_option('snestx51_society_contact') ); ?>">
+                        <input type="hidden" name="snestx51_maintenance_amount" value="<?php echo esc_attr( get_option('snestx51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="snestx51_opening_bank" value="<?php echo esc_attr( get_option('snestx51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="snestx51_opening_cash" value="<?php echo esc_attr( get_option('snestx51_opening_cash', '0') ); ?>">
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="SNESTX51_bank_name" value="<?php echo esc_attr( get_option('SNESTX51_bank_name') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_account" value="<?php echo esc_attr( get_option('SNESTX51_bank_account') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_ifsc" value="<?php echo esc_attr( get_option('SNESTX51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_upi" value="<?php echo esc_attr( get_option('SNESTX51_bank_upi') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_qr" value="<?php echo esc_attr( get_option('SNESTX51_bank_qr') ); ?>">
+                        <input type="hidden" name="snestx51_bank_name" value="<?php echo esc_attr( get_option('snestx51_bank_name') ); ?>">
+                        <input type="hidden" name="snestx51_bank_account" value="<?php echo esc_attr( get_option('snestx51_bank_account') ); ?>">
+                        <input type="hidden" name="snestx51_bank_ifsc" value="<?php echo esc_attr( get_option('snestx51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="snestx51_bank_upi" value="<?php echo esc_attr( get_option('snestx51_bank_upi') ); ?>">
+                        <input type="hidden" name="snestx51_bank_qr" value="<?php echo esc_attr( get_option('snestx51_bank_qr') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Verification Policies</h5>
                             <p class="small text-secondary mb-4">Control whether resident-submitted changes require admin oversight.</p>
@@ -568,10 +568,10 @@ $templates = $db->get('notification_templates');
                             <div class="d-flex flex-column gap-3">
                                 <?php 
                                 $policies = [
-                                    'SNESTX51_approval_family' => 'Resident Family Members',
-                                    'SNESTX51_approval_help'   => 'Domestic Help & Personal Staff',
-                                    'SNESTX51_approval_vehicle' => 'Private Vehicles',
-                                    'SNESTX51_approval_facility' => 'Facility & Amenity Bookings'
+                                    'snestx51_approval_family' => 'Resident Family Members',
+                                    'snestx51_approval_help'   => 'Domestic Help & Personal Staff',
+                                    'snestx51_approval_vehicle' => 'Private Vehicles',
+                                    'snestx51_approval_facility' => 'Facility & Amenity Bookings'
                                 ];
                                 foreach($policies as $opt => $label): ?>
                                     <div class="card border border-light shadow-none bg-light bg-opacity-50 rounded-3">
@@ -634,8 +634,8 @@ $templates = $db->get('notification_templates');
                                                 </p>
                                             </div>
                                             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" class="mt-4">
-                                                <input type="hidden" name="action" value="SNESTX51_export_data">
-                                                <?php wp_nonce_field( 'SNESTX51_export_nonce' ); ?>
+                                                <input type="hidden" name="action" value="snestx51_export_data">
+                                                <?php wp_nonce_field( 'snestx51_export_nonce' ); ?>
                                                 <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-none">
                                                     <i class="bi bi-file-earmark-zip me-2"></i>Download .zip
                                                 </button>
@@ -660,8 +660,8 @@ $templates = $db->get('notification_templates');
                                                 </p>
                                             </div>
                                             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data" class="mt-4">
-                                                <input type="hidden" name="action" value="SNESTX51_import_data">
-                                                <?php wp_nonce_field( 'SNESTX51_import_nonce' ); ?>
+                                                <input type="hidden" name="action" value="snestx51_import_data">
+                                                <?php wp_nonce_field( 'snestx51_import_nonce' ); ?>
                                                 
                                                 <div class="mb-3">
                                                     <select name="target_table" class="form-select shadow-none border-light bg-light small fw-bold rounded-3">
@@ -709,8 +709,8 @@ $templates = $db->get('notification_templates');
                                         </div>
                                         <div>
                                             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                                <input type="hidden" name="action" value="SNESTX51_relaunch_wizard">
-                                                <?php wp_nonce_field( 'SNESTX51_relaunch_nonce' ); ?>
+                                                <input type="hidden" name="action" value="snestx51_relaunch_wizard">
+                                                <?php wp_nonce_field( 'snestx51_relaunch_nonce' ); ?>
                                                 <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
                                                     Start Wizard
                                                 </button>
@@ -735,17 +735,17 @@ $templates = $db->get('notification_templates');
                                         </div>
                                         <div class="d-flex flex-column flex-sm-row gap-2">
                                             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                                <input type="hidden" name="action" value="SNESTX51_reset_db">
+                                                <input type="hidden" name="action" value="snestx51_reset_db">
                                                 <input type="hidden" name="reset_type" value="mysql">
-                                                <?php wp_nonce_field( 'SNESTX51_reset_nonce' ); ?>
+                                                <?php wp_nonce_field( 'snestx51_reset_nonce' ); ?>
                                                 <button type="submit" onclick="return confirm('Wipe entire MySQL schema content? (Non-reversible)')" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
                                                     Purge MySQL DB
                                                 </button>
                                             </form>
                                             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                                                <input type="hidden" name="action" value="SNESTX51_reset_db">
+                                                <input type="hidden" name="action" value="snestx51_reset_db">
                                                 <input type="hidden" name="reset_type" value="json">
-                                                <?php wp_nonce_field( 'SNESTX51_reset_nonce' ); ?>
+                                                <?php wp_nonce_field( 'snestx51_reset_nonce' ); ?>
                                                 <button type="submit" onclick="return confirm('Delete all JSON data files? (Non-reversible)')" class="btn btn-outline-danger fw-bold px-4 py-2 rounded-3 shadow-none w-100">
                                                     Purge JSON Files
                                                 </button>
@@ -762,23 +762,23 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Privacy & DPDP -->
                 <div class="tab-pane settings-tab-pane hidden" id="tab-content-privacy">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'SNESTX51_options_group' ); ?>
+                        <?php settings_fields( 'snestx51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="SNESTX51_society_name" value="<?php echo esc_attr( get_option('SNESTX51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line1" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line1') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_address_line2" value="<?php echo esc_attr( get_option('SNESTX51_society_address_line2') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_city" value="<?php echo esc_attr( get_option('SNESTX51_society_city') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_pincode" value="<?php echo esc_attr( get_option('SNESTX51_society_pincode') ); ?>">
-                        <input type="hidden" name="SNESTX51_society_contact" value="<?php echo esc_attr( get_option('SNESTX51_society_contact') ); ?>">
-                        <input type="hidden" name="SNESTX51_maintenance_amount" value="<?php echo esc_attr( get_option('SNESTX51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_bank" value="<?php echo esc_attr( get_option('SNESTX51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="SNESTX51_opening_cash" value="<?php echo esc_attr( get_option('SNESTX51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="snestx51_society_name" value="<?php echo esc_attr( get_option('snestx51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line1" value="<?php echo esc_attr( get_option('snestx51_society_address_line1') ); ?>">
+                        <input type="hidden" name="snestx51_society_address_line2" value="<?php echo esc_attr( get_option('snestx51_society_address_line2') ); ?>">
+                        <input type="hidden" name="snestx51_society_city" value="<?php echo esc_attr( get_option('snestx51_society_city') ); ?>">
+                        <input type="hidden" name="snestx51_society_pincode" value="<?php echo esc_attr( get_option('snestx51_society_pincode') ); ?>">
+                        <input type="hidden" name="snestx51_society_contact" value="<?php echo esc_attr( get_option('snestx51_society_contact') ); ?>">
+                        <input type="hidden" name="snestx51_maintenance_amount" value="<?php echo esc_attr( get_option('snestx51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="snestx51_opening_bank" value="<?php echo esc_attr( get_option('snestx51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="snestx51_opening_cash" value="<?php echo esc_attr( get_option('snestx51_opening_cash', '0') ); ?>">
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="SNESTX51_bank_name" value="<?php echo esc_attr( get_option('SNESTX51_bank_name') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_account" value="<?php echo esc_attr( get_option('SNESTX51_bank_account') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_ifsc" value="<?php echo esc_attr( get_option('SNESTX51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_upi" value="<?php echo esc_attr( get_option('SNESTX51_bank_upi') ); ?>">
-                        <input type="hidden" name="SNESTX51_bank_qr" value="<?php echo esc_attr( get_option('SNESTX51_bank_qr') ); ?>">
+                        <input type="hidden" name="snestx51_bank_name" value="<?php echo esc_attr( get_option('snestx51_bank_name') ); ?>">
+                        <input type="hidden" name="snestx51_bank_account" value="<?php echo esc_attr( get_option('snestx51_bank_account') ); ?>">
+                        <input type="hidden" name="snestx51_bank_ifsc" value="<?php echo esc_attr( get_option('snestx51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="snestx51_bank_upi" value="<?php echo esc_attr( get_option('snestx51_bank_upi') ); ?>">
+                        <input type="hidden" name="snestx51_bank_qr" value="<?php echo esc_attr( get_option('snestx51_bank_qr') ); ?>">
                         
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">DPDP Compliance & Data Privacy</h5>
@@ -792,14 +792,14 @@ $templates = $db->get('notification_templates');
                                             <p class="x-small text-muted m-0">Enable phone/email obfuscation for unauthorized admin/staff viewers to protect personal identifiable info (PII).</p>
                                         </div>
                                         <label class="snestx-premium-toggle">
-                                            <input type="checkbox" name="SNESTX51_privacy_masking" value="1" <?php checked(get_option('SNESTX51_privacy_masking', 1), 1); ?>/>
+                                            <input type="checkbox" name="snestx51_privacy_masking" value="1" <?php checked(get_option('snestx51_privacy_masking', 1), 1); ?>/>
                                             <span class="slider"></span>
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Personal Data Export Consent Notice</label>
-                                    <textarea name="SNESTX51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_textarea( get_option('SNESTX51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ); ?></textarea>
+                                    <textarea name="snestx51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_textarea( get_option('snestx51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ); ?></textarea>
                                     <div class="x-small text-muted mt-1">This text is displayed during personal data exports.</div>
                                 </div>
                             </div>
@@ -814,8 +814,8 @@ $templates = $db->get('notification_templates');
         </div>
     </div>
 </div><?php
-// Hook modals into SNESTX51_admin_modals
-add_action('SNESTX51_admin_modals', function() {
+// Hook modals into snestx51_admin_modals
+add_action('snestx51_admin_modals', function() {
 ?>
 <!-- Channel Configuration Modal -->
 <div class="modal fade" id="snestx-channel-modal" tabindex="-1" aria-hidden="true">
@@ -828,7 +828,7 @@ add_action('SNESTX51_admin_modals', function() {
             <form id="snestx-channel-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="channel_slug" id="snestx-modal-channel-slug">
-                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('SNESTX51_request_action'); ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('snestx51_request_action'); ?>">
                     <div id="snestx-channel-settings-fields">
                         <!-- Fields dynamically rendered by JS -->
                     </div>
@@ -853,7 +853,7 @@ add_action('SNESTX51_admin_modals', function() {
             <form id="snestx-template-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="id" id="snestx-template-id">
-                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('SNESTX51_request_action'); ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('snestx51_request_action'); ?>">
                     
                     <div class="mb-3 subject-field">
                         <label class="form-label small fw-bold text-slate-700">Subject</label>

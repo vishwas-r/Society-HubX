@@ -18,10 +18,10 @@ class SNESTX51_General_Request_Manager implements SNESTX51_Module {
 		$this->db = new SNESTX51_DB_Router();
         
         // Register Module
-        add_filter( 'SNESTX51_get_module_general', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_general', array( $this, 'get_instance' ) );
         
         // AJAX Handlers
-        add_action( 'wp_ajax_SNESTX51_submit_general_request', array( $this, 'handle_submit_request' ) );
+        add_action( 'wp_ajax_snestx51_submit_general_request', array( $this, 'handle_submit_request' ) );
 	}
 
 	public function get_instance() {
@@ -43,7 +43,7 @@ class SNESTX51_General_Request_Manager implements SNESTX51_Module {
 	 * Handle request submission from Resident (Frontend).
 	 */
 	public function handle_submit_request() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce' ); // Standard frontend nonce for this plugin
+		check_ajax_referer( 'snestx51_frontend_nonce' ); // Standard frontend nonce for this plugin
 		
 		$category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 		$comments = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';

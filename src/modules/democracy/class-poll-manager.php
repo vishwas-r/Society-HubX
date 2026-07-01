@@ -18,16 +18,16 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 		$this->db = new SNESTX51_DB_Router();
         
         // Admin Actions
-		add_action( 'admin_post_SNESTX51_create_poll', array( $this, 'handle_create_poll' ) );
-        add_action( 'admin_post_SNESTX51_delete_poll', array( $this, 'handle_delete_poll' ) );
-        add_action( 'admin_post_SNESTX51_close_poll', array( $this, 'handle_close_poll' ) );
+		add_action( 'admin_post_snestx51_create_poll', array( $this, 'handle_create_poll' ) );
+        add_action( 'admin_post_snestx51_delete_poll', array( $this, 'handle_delete_poll' ) );
+        add_action( 'admin_post_snestx51_close_poll', array( $this, 'handle_close_poll' ) );
 
         // Frontend Actions
-        add_action( 'admin_post_SNESTX51_cast_vote', array( $this, 'handle_cast_vote' ) );
-        add_action( 'wp_ajax_SNESTX51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'admin_post_snestx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'wp_ajax_snestx51_cast_vote', array( $this, 'handle_cast_vote' ) );
 
         // Register Module
-        add_filter( 'SNESTX51_get_module_polls', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_polls', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -64,7 +64,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 	 */
 	public function handle_create_poll() {
         $rbac = new SNESTX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'SNESTX51_poll_action' ) ) {
+		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -101,7 +101,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
      */
     public function handle_delete_poll() {
         $rbac = new SNESTX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'SNESTX51_poll_action' ) ) {
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -134,7 +134,7 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
      */
     public function handle_close_poll() {
         $rbac = new SNESTX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'SNESTX51_poll_action' ) ) {
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'snestx51_poll_action' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -151,9 +151,9 @@ class SNESTX51_Poll_Manager implements SNESTX51_Module {
 	 */
 	public function handle_cast_vote() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_vote_nonce' );
+            check_ajax_referer( 'snestx51_vote_nonce' );
         } else {
-            if ( ! is_user_logged_in() || ! check_admin_referer( 'SNESTX51_vote_nonce' ) ) {
+            if ( ! is_user_logged_in() || ! check_admin_referer( 'snestx51_vote_nonce' ) ) {
                 wp_die( 'Unauthorized' );
             }
         }

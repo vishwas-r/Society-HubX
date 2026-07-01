@@ -13,7 +13,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'accounts' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -54,7 +54,7 @@
             if (!confirm(`Are you sure you want to ${actionLabel} this payment notification?`)) return;
 
             SNESTX.ajax({
-                action: isApprove ? 'SNESTX51_approve_request' : 'SNESTX51_reject_request',
+                action: isApprove ? 'snestx51_approve_request' : 'snestx51_reject_request',
                 data: {
                     id: requestId,
                     _ajax_nonce: window.snestx51RequestNonce
@@ -224,7 +224,7 @@
         const id = btn.getAttribute('data-id');
 
         SNESTX.ajax({
-            action: 'SNESTX51_delete_invoice',
+            action: 'snestx51_delete_invoice',
             data: {
                 id: id,
                 _wpnonce: (window.SNESTXAccountsData && window.SNESTXAccountsData.deleteInvoiceNonce) ? window.SNESTXAccountsData.deleteInvoiceNonce : undefined
@@ -243,7 +243,7 @@
         const txnId = btn.getAttribute('data-txn-id');
 
         SNESTX.ajax({
-            action: 'SNESTX51_delete_payment',
+            action: 'snestx51_delete_payment',
             data: {
                 invoice_id: invoiceId,
                 txn_id: txnId,
@@ -263,7 +263,7 @@
         const formData = new FormData(form);
 
         SNESTX.ajax({
-            action: 'SNESTX51_edit_invoice',
+            action: 'snestx51_edit_invoice',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Invoice updated successfully',
@@ -282,7 +282,7 @@
         }
 
         SNESTX.ajax({
-            action: 'SNESTX51_record_payment',
+            action: 'snestx51_record_payment',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Payment recorded successfully!',

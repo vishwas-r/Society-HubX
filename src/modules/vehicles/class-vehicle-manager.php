@@ -18,20 +18,20 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 
 		// AJAX Endpoints
-		add_action( 'wp_ajax_SNESTX51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
-		add_action( 'wp_ajax_SNESTX51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
-		add_action( 'wp_ajax_SNESTX51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
+		add_action( 'wp_ajax_snestx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
+		add_action( 'wp_ajax_snestx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
+		add_action( 'wp_ajax_snestx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
+		add_action( 'wp_ajax_snestx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
 
-		add_action( 'admin_post_SNESTX51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
-		add_action( 'admin_post_SNESTX51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
-		add_action( 'admin_post_SNESTX51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
-		add_action( 'admin_post_SNESTX51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
-		add_action( 'admin_post_SNESTX51_approve_vehicle', array( $this, 'handle_approve_vehicle' ) );
+		add_action( 'admin_post_snestx51_add_vehicle', array( $this, 'handle_add_vehicle' ) );
+		add_action( 'admin_post_snestx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ) );
+		add_action( 'admin_post_snestx51_delete_vehicle', array( $this, 'handle_delete_vehicle' ) );
+		add_action( 'admin_post_snestx51_restore_vehicle', array( $this, 'handle_restore_vehicle' ) );
+		add_action( 'admin_post_snestx51_approve_vehicle', array( $this, 'handle_approve_vehicle' ) );
         
         // Register Module
-        add_filter( 'SNESTX51_get_module_vehicles', array( $this, 'get_instance' ) );
-        add_filter( 'SNESTX51_get_module_vehicle', array( $this, 'get_instance' ) ); // Singular alias
+        add_filter( 'snestx51_get_module_vehicles', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_vehicle', array( $this, 'get_instance' ) ); // Singular alias
 	}
 
     /**
@@ -181,9 +181,9 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 		if ( wp_doing_ajax() ) {
             // Start buffering to catch any PHP warnings/notices
             ob_start();
-            check_ajax_referer( 'SNESTX51_add_vehicle_nonce' );
+            check_ajax_referer( 'snestx51_add_vehicle_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $payload = $_POST;
@@ -238,16 +238,16 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 	public function handle_edit_vehicle() {
 		if ( wp_doing_ajax() ) {
             ob_start(); // Start buffering
-            check_ajax_referer( 'SNESTX51_add_vehicle_nonce' );
+            check_ajax_referer( 'snestx51_add_vehicle_nonce' );
         } else {
             // Accept either the admin/add nonce or the frontend edit token
             $nonce_ok = false;
             if ( ! empty( $_POST['_wpnonce'] ) ) {
-                if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_add_vehicle_nonce' ) || wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_edit_vehicle_action' ) ) {
+                if ( wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_vehicle_nonce' ) || wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_edit_vehicle_action' ) ) {
                     $nonce_ok = true;
                 }
             }
-            if ( ! $nonce_ok && ! empty( $_POST['SNESTX51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['SNESTX51_edit_vehicle_token'] ) ), 'SNESTX51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['snestx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['snestx51_edit_vehicle_token'] ) ), 'snestx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) wp_die( 'Security check failed' );
@@ -315,9 +315,9 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 	public function handle_delete_vehicle() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_vehicle_nonce' );
+            check_ajax_referer( 'snestx51_delete_vehicle_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_delete_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_delete_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');
@@ -361,9 +361,9 @@ class SNESTX51_Vehicle_Manager implements SNESTX51_Module {
 
 	public function handle_restore_vehicle() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_add_vehicle_nonce' ); // Reusing add nonce
+            check_ajax_referer( 'snestx51_add_vehicle_nonce' ); // Reusing add nonce
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 		
 		$id = isset($_POST['id']) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : (isset($_GET['id']) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '');

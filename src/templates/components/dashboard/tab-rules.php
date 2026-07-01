@@ -449,9 +449,9 @@ function handleAcknowledge(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'SNESTX51_acknowledge_rule',
+            action: 'snestx51_acknowledge_rule',
             rule_id: formData.get('rule_id'),
-            _wpnonce: '<?php echo wp_create_nonce('SNESTX51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('snestx51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {
@@ -499,10 +499,10 @@ function handleAppeal(e) {
         url: ajaxurl,
         type: 'POST',
         data: {
-            action: 'SNESTX51_appeal_violation',
+            action: 'snestx51_appeal_violation',
             violation_id: formData.get('violation_id'),
             appeal_reason: formData.get('appeal_reason'),
-            _wpnonce: '<?php echo wp_create_nonce('SNESTX51_frontend_nonce'); ?>'
+            _wpnonce: '<?php echo wp_create_nonce('snestx51_frontend_nonce'); ?>'
         },
         success: function(response) {
             if(response.success) {

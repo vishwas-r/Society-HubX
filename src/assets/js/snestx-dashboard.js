@@ -491,7 +491,7 @@
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(familyForm);
-                if (!formData.get('action')) formData.append('action', 'SNESTX51_add_family');
+                if (!formData.get('action')) formData.append('action', 'snestx51_add_family');
 
                 SNESTX.ajax({
                     action: formData.get('action'),
@@ -567,7 +567,7 @@
                     const formData = new FormData(form);
 
                     SNESTX.ajax({
-                        action: 'SNESTX51_cast_vote',
+                        action: 'snestx51_cast_vote',
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
                         successMessage: 'Vote cast successfully!',
@@ -615,7 +615,7 @@
 
             // Reset action to add
             const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'SNESTX51_add_family';
+            if (actionInput) actionInput.value = 'snestx51_add_family';
 
             // Reset Relation Wrapper
             const relWrapper = document.getElementById('relation-wrapper-frontend_family');
@@ -664,7 +664,7 @@
             }
 
             // Set action and IDs for edit
-            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'SNESTX51_edit_family';
+            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'snestx51_edit_family';
             if (form.querySelector('[name="member_id"]')) form.querySelector('[name="member_id"]').value = d.id || d.memberId || '';
             if (form.querySelector('[name="resident_id"]')) form.querySelector('[name="resident_id"]').value = d.id || '';
 
@@ -725,7 +725,7 @@
                 }
 
                 // Set Action
-                form.querySelector('[name="action"]').value = 'SNESTX51_edit_help_frontend';
+                form.querySelector('[name="action"]').value = 'snestx51_edit_help_frontend';
 
                 // Set ID
                 let idInput = form.querySelector('[name="help_id"]');
@@ -795,7 +795,7 @@
         window.resetHelpModal = function () {
             const form = document.querySelector('#helpModal form');
             form.reset();
-            form.querySelector('[name="action"]').value = 'SNESTX51_add_daily_help';
+            form.querySelector('[name="action"]').value = 'snestx51_add_daily_help';
             const idInput = form.querySelector('[name="help_id"]');
             if (idInput) idInput.value = '';
             const docUrlInput = form.querySelector('[name="document_url"]');
@@ -831,13 +831,13 @@
             setVal('model', payload.model);
 
             const actionField = form.querySelector('[name="action"]');
-            if (actionField) actionField.value = 'SNESTX51_edit_vehicle_frontend';
+            if (actionField) actionField.value = 'snestx51_edit_vehicle_frontend';
 
             const idField = form.querySelector('[name="vehicle_id"]');
             if (idField) idField.value = payload.id;
 
             // Swap Nonce
-            const editNonce = form.querySelector('[name="SNESTX51_edit_vehicle_token"]');
+            const editNonce = form.querySelector('[name="snestx51_edit_vehicle_token"]');
             const mainNonce = form.querySelector('[name="_wpnonce"]');
             if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
@@ -894,10 +894,10 @@
             if (btn) { e.preventDefault(); handleDeleteFamily(btn); return; }
 
             btn = e.target.closest('.js-delete-help-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'SNESTX51_delete_daily_help_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'snestx51_delete_daily_help_frontend'); return; }
 
             btn = e.target.closest('.js-delete-vehicle-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'SNESTX51_delete_vehicle_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'snestx51_delete_vehicle_frontend'); return; }
         });
 
         // --- Generic Delete Handler ---
@@ -918,7 +918,7 @@
 
         // --- Specific Delete Handlers (can wrap generic if needed) ---
         function handleDeleteFamily(btn) {
-            handleDeleteGeneric(btn, 'SNESTX51_delete_family_frontend');
+            handleDeleteGeneric(btn, 'snestx51_delete_family_frontend');
         }
 
         // Optional: Hook into global window.switchTab if it exists (legacy support)
@@ -1222,7 +1222,7 @@
             const nonce = (window.SNESTXDashboardData && window.SNESTXDashboardData.nonce) ? window.SNESTXDashboardData.nonce : (typeof snestx51_nonce !== 'undefined' ? snestx51_nonce : '');
 
             SNESTX.ajax({
-                action: 'SNESTX51_get_receipt',
+                action: 'snestx51_get_receipt',
                 data: { invoice_id: invoiceId, nonce: nonce },
                 onSuccess: function (data) {
                     populateReceiptModal(data);
@@ -1371,7 +1371,7 @@
             formData.append('_ajax_nonce', nonce);
 
             SNESTX.ajax({
-                action: 'SNESTX51_submit_payment_request',
+                action: 'snestx51_submit_payment_request',
                 data: formData,
                 loadingButton: btn,
                 successMessage: 'Payment confirmation sent successfully!',

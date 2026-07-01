@@ -16,10 +16,10 @@ class SNESTX51_Asset_Manager {
 		$this->db = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_add_asset', array( $this, 'handle_add_asset' ) );
-		add_action( 'admin_post_SNESTX51_edit_asset', array( $this, 'handle_edit_asset' ) );
-		add_action( 'admin_post_SNESTX51_delete_asset', array( $this, 'handle_delete_asset' ) );
-		add_action( 'admin_post_SNESTX51_restore_asset', array( $this, 'handle_restore_asset' ) );
+		add_action( 'admin_post_snestx51_add_asset', array( $this, 'handle_add_asset' ) );
+		add_action( 'admin_post_snestx51_edit_asset', array( $this, 'handle_edit_asset' ) );
+		add_action( 'admin_post_snestx51_delete_asset', array( $this, 'handle_delete_asset' ) );
+		add_action( 'admin_post_snestx51_restore_asset', array( $this, 'handle_restore_asset' ) );
 	}
 
 	public function register_menu() {
@@ -34,7 +34,7 @@ class SNESTX51_Asset_Manager {
 	}
 
 	public function handle_add_asset() {
-		if ( ! check_admin_referer( 'SNESTX51_asset_action' ) ) {
+		if ( ! check_admin_referer( 'snestx51_asset_action' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -57,7 +57,7 @@ class SNESTX51_Asset_Manager {
 	}
 
 	public function handle_edit_asset() {
-		if ( ! check_admin_referer( 'SNESTX51_asset_action' ) ) {
+		if ( ! check_admin_referer( 'snestx51_asset_action' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -80,7 +80,7 @@ class SNESTX51_Asset_Manager {
 	}
 
 	public function handle_delete_asset() {
-		if ( ! check_admin_referer( 'SNESTX51_delete_asset_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_delete_asset_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -92,7 +92,7 @@ class SNESTX51_Asset_Manager {
 	}
 
 	public function handle_restore_asset() {
-		if ( ! check_admin_referer( 'SNESTX51_restore_asset_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_restore_asset_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 

@@ -318,5 +318,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <?php
 // Ensure this nonce is available for SNESTX.ajax
-echo '<script>var SNESTX51RequestNonce = "' . wp_create_nonce('SNESTX51_request_action') . '";</script>';
+echo '<script>var snestx51RequestNonce = "' . wp_create_nonce('snestx51_request_action') . '";</script>';
 ?>

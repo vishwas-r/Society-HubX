@@ -20,20 +20,20 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 		$this->db    = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_upload_doc', array( $this, 'handle_upload' ) );
-		add_action( 'wp_ajax_SNESTX51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'admin_post_snestx51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'wp_ajax_snestx51_upload_doc', array( $this, 'handle_upload' ) );
 		
-		add_action( 'admin_post_SNESTX51_approve_doc', array( $this, 'handle_approve' ) );
-		add_action( 'wp_ajax_SNESTX51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'admin_post_snestx51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'wp_ajax_snestx51_approve_doc', array( $this, 'handle_approve' ) );
 
-		add_action( 'admin_post_SNESTX51_reject_doc', array( $this, 'handle_reject' ) );
-		add_action( 'wp_ajax_SNESTX51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'admin_post_snestx51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'wp_ajax_snestx51_reject_doc', array( $this, 'handle_reject' ) );
 
-		add_action( 'admin_post_SNESTX51_delete_doc', array( $this, 'handle_delete' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'admin_post_snestx51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'wp_ajax_snestx51_delete_doc', array( $this, 'handle_delete' ) );
 
         // Module Registration
-        add_filter( 'SNESTX51_get_module_documents', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_documents', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -80,7 +80,7 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 		if ( ! is_user_logged_in() ) wp_die('Authentication required');
 		
 		// Use check_ajax_referer for both Admin & Frontend AJAX
-		check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_document_nonce', '_wpnonce' );
 
 		$user_id = get_current_user_id();
 		$is_admin = current_user_can('manage_options');
@@ -154,9 +154,9 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 
 	public function handle_approve() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'snestx51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
@@ -177,9 +177,9 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 
 	public function handle_reject() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'snestx51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
@@ -217,9 +217,9 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 	private function update_status( $status ) {
 		// Use check_ajax_referer if AJAX, else check_admin_referer
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'snestx51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
@@ -279,11 +279,11 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_delete() {
-		// Nonce check: JS uses Config.nonce (SNESTX51_document_nonce)
+		// Nonce check: JS uses Config.nonce (snestx51_document_nonce)
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'SNESTX51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'snestx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['flat'] ) ) : '';

@@ -22,11 +22,11 @@ class SNESTX51_Notice_Board {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 
         // AJAX Handlers
-        add_action( 'wp_ajax_SNESTX51_add_notice', array( $this, 'ajax_save_notice' ) );
-        add_action( 'wp_ajax_SNESTX51_update_notice', array( $this, 'ajax_save_notice' ) );
-        add_action( 'wp_ajax_SNESTX51_delete_notice', array( $this, 'ajax_delete_notice' ) );
-        add_action( 'wp_ajax_SNESTX51_toggle_pin', array( $this, 'ajax_toggle_pin' ) );
-        add_action( 'wp_ajax_SNESTX51_get_notice', array( $this, 'ajax_get_notice' ) );
+        add_action( 'wp_ajax_snestx51_add_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_snestx51_update_notice', array( $this, 'ajax_save_notice' ) );
+        add_action( 'wp_ajax_snestx51_delete_notice', array( $this, 'ajax_delete_notice' ) );
+        add_action( 'wp_ajax_snestx51_toggle_pin', array( $this, 'ajax_toggle_pin' ) );
+        add_action( 'wp_ajax_snestx51_get_notice', array( $this, 'ajax_get_notice' ) );
 	}
 
 	public function register_menu() {
@@ -52,7 +52,7 @@ class SNESTX51_Notice_Board {
      * AJAX: Get Single Notice.
      */
     public function ajax_get_notice() {
-        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
+        check_ajax_referer('snestx51_notice_nonce', '_wpnonce');
         
         $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
         $notices = $this->db->get('notices');
@@ -70,7 +70,7 @@ class SNESTX51_Notice_Board {
      * AJAX: Save/Update Notice.
      */
     public function ajax_save_notice() {
-        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
+        check_ajax_referer('snestx51_notice_nonce', '_wpnonce');
 
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
@@ -128,7 +128,7 @@ class SNESTX51_Notice_Board {
      * AJAX: Delete Notice.
      */
     public function ajax_delete_notice() {
-        check_ajax_referer('SNESTX51_delete_notice_nonce', '_wpnonce');
+        check_ajax_referer('snestx51_delete_notice_nonce', '_wpnonce');
         
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {
@@ -145,7 +145,7 @@ class SNESTX51_Notice_Board {
      * AJAX: Toggle Pin Status.
      */
     public function ajax_toggle_pin() {
-        check_ajax_referer('SNESTX51_notice_nonce', '_wpnonce');
+        check_ajax_referer('snestx51_notice_nonce', '_wpnonce');
         
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'notices_manage' ) ) {

@@ -334,16 +334,16 @@ if (!isset($flats)) $flats = array();
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($flats) {
+add_action('snestx51_admin_modals', function() use ($flats) {
 ?>
 <!-- Modal Refactor to Bootstrap structure -->
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
             <form id="add-resident-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="SNESTX51_add_resident">
+                <input type="hidden" name="action" value="snestx51_add_resident">
                 <input type="hidden" name="resident_id" value="">
-                <?php wp_nonce_field( 'SNESTX51_resident_nonce' ); ?>
+                <?php wp_nonce_field( 'snestx51_resident_nonce' ); ?>
                 
                 <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
                     <h5 class="fw-bold m-0" id="modal-title">Add New Resident</h5>

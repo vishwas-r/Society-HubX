@@ -24,15 +24,15 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
         add_action('admin_menu', array($this, 'register_menu'), 200);
 
         // AJAX
-        add_action('wp_ajax_SNESTX51_add_staff', array($this, 'handle_add_staff'));
-        add_action('wp_ajax_SNESTX51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('wp_ajax_SNESTX51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('wp_ajax_SNESTX51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('wp_ajax_snestx51_add_staff', array($this, 'handle_add_staff'));
+        add_action('wp_ajax_snestx51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('wp_ajax_snestx51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('wp_ajax_snestx51_restore_staff', array($this, 'handle_restore_staff'));
 
-        add_action('admin_post_SNESTX51_add_staff', array($this, 'handle_add_staff'));
-        add_action('admin_post_SNESTX51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('admin_post_SNESTX51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('admin_post_SNESTX51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('admin_post_snestx51_add_staff', array($this, 'handle_add_staff'));
+        add_action('admin_post_snestx51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('admin_post_snestx51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('admin_post_snestx51_restore_staff', array($this, 'handle_restore_staff'));
 
         // Self-Heal Schema (Ensure columns exist)
         if (is_admin()) {
@@ -45,7 +45,7 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
         }
 
         // Register Module
-        add_filter('SNESTX51_get_module_daily_help', array($this, 'get_instance'));
+        add_filter('snestx51_get_module_daily_help', array($this, 'get_instance'));
     }
 
     public function get_instance()
@@ -218,10 +218,10 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     public function handle_restore_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('SNESTX51_staff_nonce');
+            check_ajax_referer('snestx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('SNESTX51_staff_nonce'))
+            if (!check_admin_referer('snestx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
@@ -286,10 +286,10 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('SNESTX51_staff_nonce');
+            check_ajax_referer('snestx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('SNESTX51_staff_nonce'))
+            if (!check_admin_referer('snestx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
@@ -348,10 +348,10 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('SNESTX51_staff_nonce');
+            check_ajax_referer('snestx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('SNESTX51_staff_nonce'))
+            if (!check_admin_referer('snestx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
@@ -426,10 +426,10 @@ class SNESTX51_Staff_Manager implements SNESTX51_Module
     public function handle_delete_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('SNESTX51_staff_nonce');
+            check_ajax_referer('snestx51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('SNESTX51_staff_nonce'))
+            if (!check_admin_referer('snestx51_staff_nonce'))
                 wp_die('Security check failed');
         }
 

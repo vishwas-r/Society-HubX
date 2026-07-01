@@ -110,7 +110,7 @@ class SNESTX51_Privacy_Manager {
 	 * Helper: Mask PII for UI Display.
 	 */
 	public static function mask_data( $data, $type = 'phone' ) {
-		if ( ! get_option( 'SNESTX51_privacy_masking', 1 ) ) {
+		if ( ! get_option( 'snestx51_privacy_masking', 1 ) ) {
 			return $data;
 		}
 

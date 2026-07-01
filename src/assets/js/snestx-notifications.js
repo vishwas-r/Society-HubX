@@ -18,7 +18,7 @@
 
         // Fetch current config via SNESTX.ajax
         SNESTX.ajax({
-            action: 'SNESTX51_get_channel_config',
+            action: 'snestx51_get_channel_config',
             data: {
                 channel: channel,
                 _ajax_nonce: snestx51RequestNonce
@@ -68,7 +68,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Authorized Redirect URI</label>
-                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=SNESTX51_gmail_oauth_callback" readonly>
+                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=snestx51_gmail_oauth_callback" readonly>
                     </div>
                 </div>
 
@@ -151,7 +151,7 @@
         const formData = Object.fromEntries(new FormData(this));
 
         SNESTX.ajax({
-            action: 'SNESTX51_save_channel_config',
+            action: 'snestx51_save_channel_config',
             data: formData,
             successMessage: 'Channel configuration saved!',
             reload: true,
@@ -167,7 +167,7 @@
         const active = $(this).is(':checked') ? 1 : 0;
 
         SNESTX.ajax({
-            action: 'SNESTX51_toggle_channel',
+            action: 'snestx51_toggle_channel',
             data: {
                 channel: channel,
                 active: active,
@@ -182,7 +182,7 @@
         const channel = $(this).data('channel');
 
         SNESTX.ajax({
-            action: 'SNESTX51_update_event_mapping',
+            action: 'snestx51_update_event_mapping',
             data: {
                 event: event,
                 channel: channel,
@@ -197,7 +197,7 @@
         const id = $(this).data('id');
 
         SNESTX.ajax({
-            action: 'SNESTX51_get_template',
+            action: 'snestx51_get_template',
             data: {
                 id: id,
                 _ajax_nonce: snestx51RequestNonce
@@ -227,7 +227,7 @@
         const formData = Object.fromEntries(new FormData(this));
 
         SNESTX.ajax({
-            action: 'SNESTX51_save_template',
+            action: 'snestx51_save_template',
             data: formData,
             successMessage: 'Notification template saved!',
             reload: true,

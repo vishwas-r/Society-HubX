@@ -65,9 +65,9 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                 </div>
                 <div class="p-4">
                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="facility-form">
-                        <input type="hidden" name="action" value="SNESTX51_add_facility">
+                        <input type="hidden" name="action" value="snestx51_add_facility">
                         <input type="hidden" name="facility_id" value="">
-                        <?php wp_nonce_field( 'SNESTX51_facility_nonce' ); ?>
+                        <?php wp_nonce_field( 'snestx51_facility_nonce' ); ?>
                         
                         <div class="mb-4">
                             <label class="form-label small fw-bold text-secondary">Facility Name <span class="text-danger">*</span></label>
@@ -288,7 +288,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($facilities, $residents) {
+add_action('snestx51_admin_modals', function() use ($facilities, $residents) {
 ?>
 <!-- Booking Modal -->
 <div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
@@ -300,9 +300,9 @@ add_action('SNESTX51_admin_modals', function() use ($facilities, $residents) {
             </div>
             <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="booking-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_book_facility">
+                    <input type="hidden" name="action" value="snestx51_book_facility">
                     <input type="hidden" name="booking_id" value="">
-                    <?php wp_nonce_field( 'SNESTX51_facility_nonce' ); ?>
+                    <?php wp_nonce_field( 'snestx51_facility_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Pick Amenity <span class="text-danger">*</span></label>

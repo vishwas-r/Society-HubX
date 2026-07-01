@@ -17,7 +17,7 @@ class SNESTX51_Drive_Manager {
 	private $local_root;
 
 	public function __construct() {
-		$this->is_connected = (bool) get_option( 'SNESTX51_google_refresh_token' );
+		$this->is_connected = (bool) get_option( 'snestx51_google_refresh_token' );
 		
 		$upload_dir = wp_upload_dir();
 		$this->local_root = $upload_dir['basedir'] . '/society-nestx/docs/';
@@ -32,7 +32,7 @@ class SNESTX51_Drive_Manager {
 	 */
 	public function get_system_folder( $name ) {
 		if ( $this->is_connected ) {
-			$root_id = get_option( 'SNESTX51_drive_root_id' );
+			$root_id = get_option( 'snestx51_drive_root_id' );
 			if ( ! $root_id ) return new WP_Error( 'no_root', 'System Root not found.' );
 
 			// Search for folder in Root
@@ -74,7 +74,7 @@ class SNESTX51_Drive_Manager {
 
 		if ( $this->is_connected ) {
 			// Remote Drive Logic.
-			$root_id = get_option( 'SNESTX51_drive_root_id' );
+			$root_id = get_option( 'snestx51_drive_root_id' );
 			if ( ! $root_id ) {
 				return new WP_Error( 'no_root', 'System Root Folder not found. Run Setup.' );
 			}

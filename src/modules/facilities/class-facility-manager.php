@@ -18,30 +18,30 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		$this->db = new SNESTX51_DB_Router();
         
         // Ensure Schema Update (Run Once)
-        if ( class_exists( 'SNESTX51_DB_Schema' ) && ! get_option( 'SNESTX51_schema_access_facility_v1' ) ) {
+        if ( class_exists( 'SNESTX51_DB_Schema' ) && ! get_option( 'snestx51_schema_access_facility_v1' ) ) {
             SNESTX51_DB_Schema::create_tables();
-            update_option( 'SNESTX51_schema_access_facility_v1', true );
+            update_option( 'snestx51_schema_access_facility_v1', true );
         }
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_add_facility', array( $this, 'handle_add_facility' ) );
-		add_action( 'admin_post_SNESTX51_edit_facility', array( $this, 'handle_edit_facility' ) );
-		add_action( 'admin_post_SNESTX51_delete_facility', array( $this, 'handle_delete_facility' ) );
-		add_action( 'admin_post_SNESTX51_book_facility', array( $this, 'handle_book_facility' ) );
-		add_action( 'admin_post_SNESTX51_edit_booking', array( $this, 'handle_edit_booking' ) );
-		add_action( 'admin_post_SNESTX51_delete_booking', array( $this, 'handle_delete_booking' ) );
+		add_action( 'admin_post_snestx51_add_facility', array( $this, 'handle_add_facility' ) );
+		add_action( 'admin_post_snestx51_edit_facility', array( $this, 'handle_edit_facility' ) );
+		add_action( 'admin_post_snestx51_delete_facility', array( $this, 'handle_delete_facility' ) );
+		add_action( 'admin_post_snestx51_book_facility', array( $this, 'handle_book_facility' ) );
+		add_action( 'admin_post_snestx51_edit_booking', array( $this, 'handle_edit_booking' ) );
+		add_action( 'admin_post_snestx51_delete_booking', array( $this, 'handle_delete_booking' ) );
 
         // AJAX
-        add_action( 'wp_ajax_SNESTX51_add_facility', array( $this, 'handle_add_facility' ) );
-        add_action( 'wp_ajax_SNESTX51_edit_facility', array( $this, 'handle_edit_facility' ) );
-        add_action( 'wp_ajax_SNESTX51_delete_facility', array( $this, 'handle_delete_facility' ) );
-        add_action( 'wp_ajax_SNESTX51_book_facility', array( $this, 'handle_book_facility' ) );
-        add_action( 'wp_ajax_SNESTX51_edit_booking', array( $this, 'handle_edit_booking' ) );
-        add_action( 'wp_ajax_SNESTX51_delete_booking', array( $this, 'handle_delete_booking' ) );
-        add_action( 'wp_ajax_SNESTX51_get_facility_bookings', array( $this, 'handle_get_facility_bookings' ) ); // New Endpoint
+        add_action( 'wp_ajax_snestx51_add_facility', array( $this, 'handle_add_facility' ) );
+        add_action( 'wp_ajax_snestx51_edit_facility', array( $this, 'handle_edit_facility' ) );
+        add_action( 'wp_ajax_snestx51_delete_facility', array( $this, 'handle_delete_facility' ) );
+        add_action( 'wp_ajax_snestx51_book_facility', array( $this, 'handle_book_facility' ) );
+        add_action( 'wp_ajax_snestx51_edit_booking', array( $this, 'handle_edit_booking' ) );
+        add_action( 'wp_ajax_snestx51_delete_booking', array( $this, 'handle_delete_booking' ) );
+        add_action( 'wp_ajax_snestx51_get_facility_bookings', array( $this, 'handle_get_facility_bookings' ) ); // New Endpoint
 
         // Module Registration
-        add_filter( 'SNESTX51_get_module_facilities', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_facilities', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -77,9 +77,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'snestx51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -122,9 +122,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'snestx51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -176,9 +176,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_facility_nonce' );
+            check_ajax_referer( 'snestx51_delete_facility_nonce' );
         } else {
-            if ( ! check_admin_referer( 'SNESTX51_delete_facility_nonce' ) ) {
+            if ( ! check_admin_referer( 'snestx51_delete_facility_nonce' ) ) {
                 wp_die( 'Security check failed' );
             }
         }
@@ -201,9 +201,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! is_user_logged_in() ) wp_die( 'Login Required' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'snestx51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -268,7 +268,7 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
         $request_id = $rm->create_request( 'facilities', 'book', $data, $data['id'] );
 
         // Check for Auto-Approval
-        $approval_mode = get_option( 'SNESTX51_approval_facility', 'manual' );
+        $approval_mode = get_option( 'snestx51_approval_facility', 'manual' );
         $is_admin_booking = current_user_can( 'manage_options' );
 
         if ( $approval_mode === 'auto' || $is_admin_booking ) {
@@ -304,9 +304,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'snestx51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -387,9 +387,9 @@ class SNESTX51_Facility_Manager implements SNESTX51_Module {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'snestx51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'snestx51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}

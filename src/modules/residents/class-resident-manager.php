@@ -23,21 +23,21 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		// AJAX Actions
-		add_action( 'wp_ajax_SNESTX51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'wp_ajax_SNESTX51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'wp_ajax_SNESTX51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'wp_ajax_SNESTX51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'wp_ajax_snestx51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'wp_ajax_snestx51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'wp_ajax_snestx51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'wp_ajax_snestx51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'wp_ajax_snestx51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'wp_ajax_snestx51_delete_history', array( $this, 'handle_delete_history' ) );
 
 		// Legacy Admin Post Actions (optional cleanup if no longer used)
-		add_action( 'admin_post_SNESTX51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'admin_post_SNESTX51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'admin_post_SNESTX51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'admin_post_SNESTX51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'admin_post_SNESTX51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'admin_post_SNESTX51_delete_history', array( $this, 'handle_delete_history' ) );
-		add_action( 'admin_post_SNESTX51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_snestx51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'admin_post_snestx51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'admin_post_snestx51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'admin_post_snestx51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'admin_post_snestx51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'admin_post_snestx51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'admin_post_snestx51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
 
 
 		// Self-Heal Schema (Ensure columns exist)
@@ -50,8 +50,8 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 		}
         
         // Register Module
-        add_filter( 'SNESTX51_get_module_residents', array( $this, 'get_instance' ) );
-        add_filter( 'SNESTX51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
+        add_filter( 'snestx51_get_module_residents', array( $this, 'get_instance' ) );
+        add_filter( 'snestx51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
 	}
 
     public function get_instance() {
@@ -95,7 +95,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
                 }
                 if ( $user && ! is_wp_error( $user ) ) {
                     $this->db->update('residents', ['wp_user_id' => $user->ID], ['id' => $id]);
-                    update_user_meta( $user->ID, 'SNESTX51_flat_no', $updated_resident['flat_no'] );
+                    update_user_meta( $user->ID, 'snestx51_flat_no', $updated_resident['flat_no'] );
                     $this->sync_wp_user_roles( $user->ID, $id );
                 }
             }
@@ -128,9 +128,9 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 	public function handle_add_resident() {
 		if ( wp_doing_ajax() ) {
             ob_start();
-            check_ajax_referer( 'SNESTX51_resident_nonce' );
+            check_ajax_referer( 'snestx51_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 	
     // IF ADMIN: Immediate
@@ -178,7 +178,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 		if ( wp_doing_ajax() ) {
             ob_start();
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce($nonce, 'SNESTX51_resident_nonce') && ! wp_verify_nonce($nonce, 'SNESTX51_frontend_nonce') ) {
+            if ( ! wp_verify_nonce($nonce, 'snestx51_resident_nonce') && ! wp_verify_nonce($nonce, 'snestx51_frontend_nonce') ) {
                 ob_get_clean(); // Clean before error
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -187,7 +187,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
                 exit;
             }
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
     
     $id = isset($_POST['resident_id']) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -418,7 +418,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
              
              if ( $user && ! is_wp_error( $user ) ) {
                  $update_data['wp_user_id'] = $user->ID;
-                 update_user_meta( $user->ID, 'SNESTX51_flat_no', $update_data['flat_no'] );
+                 update_user_meta( $user->ID, 'snestx51_flat_no', $update_data['flat_no'] );
 
                  // Sync Profile Changes to WP User
                  $wp_user_data = [
@@ -442,9 +442,9 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 	 */
 	public function handle_delete_resident() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_resident_nonce' );
+            check_ajax_referer( 'snestx51_delete_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -473,9 +473,9 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
      */
     public function handle_move_to_history() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_move_to_history_nonce' );
+            check_ajax_referer( 'snestx51_move_to_history_nonce' );
         } else {
-            if ( ! check_admin_referer( 'SNESTX51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! check_admin_referer( 'snestx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $rbac = Society_NestX::get_instance()->rbac;
@@ -514,9 +514,9 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'SNESTX51_restore_resident_nonce' );
+			check_ajax_referer( 'snestx51_restore_resident_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'SNESTX51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'snestx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
 		}
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -615,9 +615,9 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
     if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
     if ( wp_doing_ajax() ) {
-        check_ajax_referer( 'SNESTX51_delete_history_nonce' );
+        check_ajax_referer( 'snestx51_delete_history_nonce' );
     } else {
-	    if ( ! check_admin_referer( 'SNESTX51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
+	    if ( ! check_admin_referer( 'snestx51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
     }
 
 	$history_id = isset( $_POST['history_id'] ) ? sanitize_text_field( wp_unslash( $_POST['history_id'] ) ) : '';
@@ -644,7 +644,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
         $rbac = Society_NestX::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
-		if ( ! check_admin_referer( 'SNESTX51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -765,7 +765,7 @@ class SNESTX51_Resident_Manager implements SNESTX51_Module {
 			
 			if ( $user && ! is_wp_error( $user ) ) {
 				$data['wp_user_id'] = $user->ID;
-				update_user_meta( $user->ID, 'SNESTX51_flat_no', $data['flat_no'] );
+				update_user_meta( $user->ID, 'snestx51_flat_no', $data['flat_no'] );
 
                 // Sync Roles immediately
                 $this->sync_wp_user_roles( $user->ID, $data['id'] );

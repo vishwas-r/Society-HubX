@@ -18,14 +18,14 @@ class SNESTX51_Log_Manager {
 		$this->db = $db ?: Society_NestX::get_instance()->db;
         
         // Hook into Action Scheduler for daily cleanup
-		add_action( 'SNESTX51_daily_log_purge', array( $this, 'purge_old_logs' ) );
+		add_action( 'snestx51_daily_log_purge', array( $this, 'purge_old_logs' ) );
 	}
 
 	/**
 	 * Purge logs older than the retention period.
 	 */
 	public function purge_old_logs() {
-		$retention_days = (int) get_option( 'SNESTX51_log_retention', 30 );
+		$retention_days = (int) get_option( 'snestx51_log_retention', 30 );
 		
 		if ( $retention_days <= 0 ) {
 			return; // Unlimited retention

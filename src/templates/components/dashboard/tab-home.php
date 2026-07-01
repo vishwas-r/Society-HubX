@@ -111,7 +111,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <li>
                                                 <a class="dropdown-item small d-flex align-items-center gap-2 text-danger js-delete-family-frontend" href="#" 
                                                    data-id="<?php echo esc_attr($fam['id']); ?>" 
-                                                   data-nonce="<?php echo wp_create_nonce('SNESTX51_delete_family_nonce'); ?>">
+                                                   data-nonce="<?php echo wp_create_nonce('snestx51_delete_family_nonce'); ?>">
                                                     <i class="bi bi-trash3"></i> Remove
                                                 </a>
                                             </li>
@@ -188,7 +188,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 <li>
                                                      <button class="dropdown-item text-danger small js-delete-help-frontend" 
                                                         data-id="<?php echo esc_attr($help['id']); ?>"
-                                                        data-nonce="<?php echo wp_create_nonce('SNESTX51_delete_help_nonce'); ?>">
+                                                        data-nonce="<?php echo wp_create_nonce('snestx51_delete_help_nonce'); ?>">
                                                         <i class="bi bi-trash3 me-2"></i> Remove
                                                      </button>
                                                 </li>
@@ -266,7 +266,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                     <li>
                                                         <button class="dropdown-item text-danger small js-delete-vehicle-frontend" 
                                                                 data-id="<?php echo esc_attr($v['id']); ?>" 
-                                                                data-nonce="<?php echo wp_create_nonce('SNESTX51_delete_vehicle_frontend_nonce'); ?>">
+                                                                data-nonce="<?php echo wp_create_nonce('snestx51_delete_vehicle_frontend_nonce'); ?>">
                                                             <i class="bi bi-trash3 me-2"></i> Remove
                                                         </button>
                                                     </li>
@@ -335,13 +335,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <?php endif; ?>
 
                                     <?php if ( isset( $d['status'] ) && $d['status'] === 'pending' ) : ?>
-                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=SNESTX51_delete_doc&doc_id='.$d['id']), 'SNESTX51_document_nonce' ); ?>" 
+                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=snestx51_delete_doc&doc_id='.$d['id']), 'snestx51_document_nonce' ); ?>" 
                                            class="small text-danger fw-medium text-decoration-none"
                                            onclick="return confirm('Delete this pending document?')">Delete</a>
                                     <?php elseif(isset($d['status']) && $d['status'] === 'deletion_pending'): ?>
                                         <span class="small text-warning fw-medium">Deleting...</span>
                                     <?php else: ?>
-                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=SNESTX51_delete_doc&doc_id='.$d['id']), 'SNESTX51_document_nonce' ); ?>" 
+                                         <a href="<?php echo wp_nonce_url( admin_url('admin-ajax.php?action=snestx51_delete_doc&doc_id='.$d['id']), 'snestx51_document_nonce' ); ?>" 
                                            class="small text-danger fw-medium text-decoration-none"
                                            onclick="return confirm('Request Admin to delete this document?')">Delete</a>
                                     <?php endif; ?>

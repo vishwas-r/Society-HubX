@@ -361,7 +361,7 @@
             if (!confirm('Approve this request?')) return;
 
             SNESTX.ajax({
-                action: 'SNESTX51_approve_request',
+                action: 'snestx51_approve_request',
                 data: {
                     id: id,
                     _wpnonce: typeof snestx51RequestNonce !== 'undefined' ? snestx51RequestNonce : ''
@@ -379,7 +379,7 @@
             if (reason === null) return; // Cancelled prompt
 
             SNESTX.ajax({
-                action: 'SNESTX51_reject_request',
+                action: 'snestx51_reject_request',
                 data: {
                     id: id,
                     admin_note: reason,
@@ -412,7 +412,7 @@
         }
 
         SNESTX.ajax({
-            action: 'SNESTX51_bulk_process_requests',
+            action: 'snestx51_bulk_process_requests',
             data: {
                 ids: ids,
                 bulk_action: action,

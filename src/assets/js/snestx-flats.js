@@ -21,7 +21,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'flats' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -111,7 +111,7 @@
         $form.find('[name="parking_slot"]').val(flat.parking_slot || '');
         $form.find('[name="status"]').val(flat.status || 'vacant');
         $form.find('[name="parking_status"]').val(flat.parking_status || 'available');
-        $form.find('[name="action"]').val('SNESTX51_edit_flat');
+        $form.find('[name="action"]').val('snestx51_edit_flat');
         $form.find('[name="flat_id"]').val(flat.id || '');
 
         $('#flatModalTitle').text('Edit Unit: ' + flat.id);
@@ -121,7 +121,7 @@
     function resetFlatForm() {
         const $form = $('#add-flat-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('SNESTX51_add_flat');
+        $form.find('[name="action"]').val('snestx51_add_flat');
         $('#flatModalTitle').text('Add New Unit');
     }
 
@@ -148,7 +148,7 @@
 
         newConfirmBtn.addEventListener('click', function () {
             SNESTX.ajax({
-                action: 'SNESTX51_delete_flat',
+                action: 'snestx51_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.deleteNonce
@@ -186,7 +186,7 @@
 
         newConfirmBtn.addEventListener('click', function () {
             SNESTX.ajax({
-                action: 'SNESTX51_hard_delete_flat',
+                action: 'snestx51_hard_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.hardDeleteNonce
@@ -203,7 +203,7 @@
 
     window.restoreFlat = function (id) {
         SNESTX.ajax({
-            action: 'SNESTX51_restore_flat',
+            action: 'snestx51_restore_flat',
             data: {
                 flat_id: id,
                 _wpnonce: Config.nonce
@@ -264,7 +264,7 @@
                         onSuccess: function (resp) {
                             const rows = resp && (typeof resp.rows_affected !== 'undefined') ? resp.rows_affected : null;
 
-                            if (action === 'SNESTX51_edit_flat' && rows === 0) {
+                            if (action === 'snestx51_edit_flat' && rows === 0) {
                                 SNESTX.toast.info('Save completed: No changes detected.');
                             } else {
                                 closeFlatModal();

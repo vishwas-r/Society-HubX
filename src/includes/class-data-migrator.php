@@ -23,7 +23,7 @@ class SNESTX51_Data_Migrator {
 		self::migrate_staff_flats();
 		self::migrate_payments();
 		
-		update_option( 'SNESTX51_storage_migrated', '1.0.2' );
+		update_option( 'snestx51_storage_migrated', '1.0.2' );
 	}
 
 	/**

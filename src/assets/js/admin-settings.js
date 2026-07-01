@@ -45,7 +45,7 @@
         // --- 2. QR Upload (Media Library) ---
         const $btnUpload = $('#btn-upload-qr');
         const $btnRemove = $('#btn-remove-qr');
-        const $inputQr = $('#SNESTX51_bank_qr');
+        const $inputQr = $('#snestx51_bank_qr');
         const $preview = $('#qr-preview-container');
 
         if ($btnUpload.length) {

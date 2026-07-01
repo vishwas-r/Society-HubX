@@ -26,7 +26,7 @@ class SNESTX51_Google_API_Handler {
 	 * Get the OAuth2 Authorization URL.
 	 */
 	public static function get_auth_url() {
-		$client_id = get_option( 'SNESTX51_google_client_id' );
+		$client_id = get_option( 'snestx51_google_client_id' );
 		if ( ! $client_id ) {
 			return false;
 		}
@@ -50,8 +50,8 @@ class SNESTX51_Google_API_Handler {
 	 * @return bool|WP_Error True on success, WP_Error on failure.
 	 */
 	public static function exchange_code_for_token( $code ) {
-		$client_id     = get_option( 'SNESTX51_google_client_id' );
-		$client_secret = get_option( 'SNESTX51_google_client_secret' );
+		$client_id     = get_option( 'snestx51_google_client_id' );
+		$client_secret = get_option( 'snestx51_google_client_secret' );
 
 		if ( ! $client_id || ! $client_secret ) {
 			return new WP_Error( 'missing_creds', 'Client ID or Secret missing.' );
@@ -93,9 +93,9 @@ class SNESTX51_Google_API_Handler {
 	 * @return string|bool Access token or false.
 	 */
 	public static function refresh_access_token() {
-		$refresh_token = get_option( 'SNESTX51_google_refresh_token' );
-		$client_id     = get_option( 'SNESTX51_google_client_id' );
-		$client_secret = get_option( 'SNESTX51_google_client_secret' );
+		$refresh_token = get_option( 'snestx51_google_refresh_token' );
+		$client_id     = get_option( 'snestx51_google_client_id' );
+		$client_secret = get_option( 'snestx51_google_client_secret' );
 
 		if ( ! $refresh_token || ! $client_id || ! $client_secret ) {
 			return false;
@@ -134,11 +134,11 @@ class SNESTX51_Google_API_Handler {
 	 */
 	private static function save_token_data( $data ) {
 		if ( isset( $data['access_token'] ) ) {
-			update_option( 'SNESTX51_google_access_token', $data['access_token'] );
-			update_option( 'SNESTX51_token_expires_at', time() + $data['expires_in'] );
+			update_option( 'snestx51_google_access_token', $data['access_token'] );
+			update_option( 'snestx51_token_expires_at', time() + $data['expires_in'] );
 		}
 		if ( isset( $data['refresh_token'] ) ) {
-			update_option( 'SNESTX51_google_refresh_token', $data['refresh_token'] );
+			update_option( 'snestx51_google_refresh_token', $data['refresh_token'] );
 		}
 	}
 
@@ -146,8 +146,8 @@ class SNESTX51_Google_API_Handler {
 	 * Get a valid Access Token (Refreshes if needed).
 	 */
 	public static function get_valid_token() {
-		$token      = get_option( 'SNESTX51_google_access_token' );
-		$expires_at = get_option( 'SNESTX51_token_expires_at' );
+		$token      = get_option( 'snestx51_google_access_token' );
+		$expires_at = get_option( 'snestx51_token_expires_at' );
 
 		if ( $token && $expires_at > time() + 30 ) {
 			return $token;

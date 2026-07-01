@@ -228,7 +228,7 @@ function getUrgencyIcon($urgency) {
 }
 
 // Modals
-add_action('SNESTX51_admin_modals', function() {
+add_action('snestx51_admin_modals', function() {
 ?>
 <!-- Notice Creator/Editor Modal -->
 <div class="modal fade" id="noticeModal" tabindex="-1" aria-hidden="true">

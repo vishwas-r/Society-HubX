@@ -313,8 +313,8 @@ if(!empty($expenses)) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() {
-    $add_nonce = wp_create_nonce( 'SNESTX51_add_expense_nonce' );
+add_action('snestx51_admin_modals', function() {
+    $add_nonce = wp_create_nonce( 'snestx51_add_expense_nonce' );
 ?>
 <!-- Add/Edit Expense Modal (Bootstrap) -->
 <div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
@@ -327,11 +327,11 @@ add_action('SNESTX51_admin_modals', function() {
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" id="expense-form">
                 <div class="modal-body p-4">
                     <?php 
-                    $edit_nonce = wp_create_nonce( 'SNESTX51_edit_expense_nonce' );
+                    $edit_nonce = wp_create_nonce( 'snestx51_edit_expense_nonce' );
                     ?>
                     <input type="hidden" id="raw_add_nonce" value="<?php echo esc_attr($add_nonce); ?>">
                     <input type="hidden" id="raw_edit_nonce" value="<?php echo esc_attr($edit_nonce); ?>">
-                    <input type="hidden" name="action" value="SNESTX51_add_expense">
+                    <input type="hidden" name="action" value="snestx51_add_expense">
                     <input type="hidden" name="expense_id" value="">
                     <input type="hidden" name="existing_receipt_url" value="">
                     <input type="hidden" name="_wpnonce" id="active_nonce_field" value="<?php echo esc_attr($add_nonce); ?>">
@@ -438,7 +438,7 @@ function editExpense(btn) {
     form.querySelector('[name="existing_receipt_url"]').value = data.receipt_url || '';
     if(form.querySelector('[name="account_type"]')) form.querySelector('[name="account_type"]').value = data.account_type || 'bank';
     
-    form.querySelector('[name="action"]').value = 'SNESTX51_edit_expense';
+    form.querySelector('[name="action"]').value = 'snestx51_edit_expense';
     form.querySelector('[name="expense_id"]').value = data.id || ''; 
     document.getElementById('active_nonce_field').value = document.getElementById('raw_edit_nonce').value;
     
@@ -449,7 +449,7 @@ function editExpense(btn) {
 function resetExpenseForm() {
     const form = document.getElementById('expense-form');
     form.reset();
-    form.querySelector('[name="action"]').value = 'SNESTX51_add_expense';
+    form.querySelector('[name="action"]').value = 'snestx51_add_expense';
     form.querySelector('[name="expense_id"]').value = '';
     document.getElementById('active_nonce_field').value = document.getElementById('raw_add_nonce').value;
     document.getElementById('expenseModalTitle').textContent = 'Record New Expense';

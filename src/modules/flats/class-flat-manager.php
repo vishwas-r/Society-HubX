@@ -20,17 +20,17 @@ class SNESTX51_Flat_Manager {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// AJAX
-		add_action( 'wp_ajax_SNESTX51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'wp_ajax_SNESTX51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'wp_ajax_SNESTX51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'wp_ajax_SNESTX51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
+		add_action( 'wp_ajax_snestx51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'wp_ajax_snestx51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'wp_ajax_snestx51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'wp_ajax_snestx51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'wp_ajax_snestx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
 
-		add_action( 'admin_post_SNESTX51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'admin_post_SNESTX51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'admin_post_SNESTX51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'admin_post_SNESTX51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'admin_post_SNESTX51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_snestx51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'admin_post_snestx51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'admin_post_snestx51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'admin_post_snestx51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'admin_post_snestx51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
 	}
 
 	public function register_menu() {
@@ -49,9 +49,9 @@ class SNESTX51_Flat_Manager {
 	 */
 	public function handle_add_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_add_flat_nonce' );
+            check_ajax_referer( 'snestx51_add_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$res = $this->process_add_flat( $_POST );
@@ -72,7 +72,7 @@ class SNESTX51_Flat_Manager {
 	 * Handle Edit.
 	 */
 	public function handle_hard_delete_flat() {
-		check_ajax_referer( 'SNESTX51_hard_delete_flat_nonce' );
+		check_ajax_referer( 'snestx51_hard_delete_flat_nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) && ! (new SNESTX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
@@ -90,12 +90,12 @@ class SNESTX51_Flat_Manager {
 
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
-            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_add_flat_nonce') ) {
+            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_flat_nonce') ) {
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$data = array(
@@ -149,9 +149,9 @@ class SNESTX51_Flat_Manager {
 
 	public function handle_delete_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_flat_nonce' );
+            check_ajax_referer( 'snestx51_delete_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $rbac = new SNESTX51_RBAC_Manager();
@@ -174,9 +174,9 @@ class SNESTX51_Flat_Manager {
 
 	public function handle_restore_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_add_flat_nonce' );
+            check_ajax_referer( 'snestx51_add_flat_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'SNESTX51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'snestx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$id = isset($_POST['flat_id']) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
@@ -198,7 +198,7 @@ class SNESTX51_Flat_Manager {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-		if ( ! check_admin_referer( 'SNESTX51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 

@@ -16,7 +16,7 @@ $total_steps = 4;
 $progress = ($step / $total_steps) * 100;
 
 // Get current options if any
-$society_name = get_option('SNESTX51_society_name', '');
+$society_name = get_option('snestx51_society_name', '');
 ?>
 <div class="setup-wizard-wrapper d-flex align-items-center justify-content-center min-vh-100 bg-light">
     <div class="setup-card bg-white shadow-lg rounded-4 overflow-hidden" style="max-width: 800px; width: 100%;">
@@ -57,11 +57,11 @@ $society_name = get_option('SNESTX51_society_name', '');
             <!-- Content Area -->
             <div class="col-md-8 p-5">
                 <form method="post" action="admin-post.php" enctype="multipart/form-data">
-                    <?php wp_nonce_field('SNESTX51_setup_nonce'); ?>
-                    <input type="hidden" name="action" value="SNESTX51_setup_action">
+                    <?php wp_nonce_field('snestx51_setup_nonce'); ?>
+                    <input type="hidden" name="action" value="snestx51_setup_action">
                     
                     <?php if($step == 1): ?>
-                        <input type="hidden" name="SNESTX51_setup_step" value="identity">
+                        <input type="hidden" name="snestx51_setup_step" value="identity">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 1 of 4</span>
                             <h2 class="fw-bold text-dark">Society Identity</h2>
@@ -91,7 +91,7 @@ $society_name = get_option('SNESTX51_society_name', '');
                         </div>
 
                     <?php elseif($step == 2): ?>
-                        <input type="hidden" name="SNESTX51_setup_step" value="property">
+                        <input type="hidden" name="snestx51_setup_step" value="property">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 2 of 4</span>
                             <h2 class="fw-bold text-dark">Property Structure</h2>
@@ -120,7 +120,7 @@ $society_name = get_option('SNESTX51_society_name', '');
                         </div>
 
                     <?php elseif($step == 3): ?>
-                        <input type="hidden" name="SNESTX51_setup_step" value="financials">
+                        <input type="hidden" name="snestx51_setup_step" value="financials">
                         <div class="mb-4">
                             <span class="badge bg-primary-subtle text-primary mb-2">Step 3 of 4</span>
                             <h2 class="fw-bold text-dark">Financial Base</h2>
@@ -155,7 +155,7 @@ $society_name = get_option('SNESTX51_society_name', '');
                         </div>
 
                     <?php elseif($step == 4): ?>
-                        <input type="hidden" name="SNESTX51_setup_step" value="finalize">
+                        <input type="hidden" name="snestx51_setup_step" value="finalize">
                         <input type="hidden" name="finalize" value="1">
                         <div class="text-center py-4">
                             <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">

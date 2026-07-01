@@ -40,31 +40,31 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// Admin AJAX Actions
-		add_action( 'wp_ajax_SNESTX51_add_rule', array( $this, 'handle_add_rule' ) );
-		add_action( 'wp_ajax_SNESTX51_edit_rule', array( $this, 'handle_edit_rule' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_rule', array( $this, 'handle_delete_rule' ) );
-		add_action( 'wp_ajax_SNESTX51_publish_rule', array( $this, 'handle_publish_rule' ) );
-		add_action( 'wp_ajax_SNESTX51_get_version_history', array( $this, 'handle_get_version_history' ) );
-		add_action( 'wp_ajax_SNESTX51_restore_version', array( $this, 'handle_restore_version' ) );
-		add_action( 'wp_ajax_SNESTX51_add_violation', array( $this, 'handle_submit_violation' ) );
-		add_action( 'wp_ajax_SNESTX51_resolve_violation', array( $this, 'handle_resolve_violation' ) );
-		add_action( 'wp_ajax_SNESTX51_send_acknowledgment_reminders', array( $this, 'handle_send_reminders' ) );
-		add_action( 'wp_ajax_SNESTX51_manage_category', array( $this, 'handle_manage_category' ) );
+		add_action( 'wp_ajax_snestx51_add_rule', array( $this, 'handle_add_rule' ) );
+		add_action( 'wp_ajax_snestx51_edit_rule', array( $this, 'handle_edit_rule' ) );
+		add_action( 'wp_ajax_snestx51_delete_rule', array( $this, 'handle_delete_rule' ) );
+		add_action( 'wp_ajax_snestx51_publish_rule', array( $this, 'handle_publish_rule' ) );
+		add_action( 'wp_ajax_snestx51_get_version_history', array( $this, 'handle_get_version_history' ) );
+		add_action( 'wp_ajax_snestx51_restore_version', array( $this, 'handle_restore_version' ) );
+		add_action( 'wp_ajax_snestx51_add_violation', array( $this, 'handle_submit_violation' ) );
+		add_action( 'wp_ajax_snestx51_resolve_violation', array( $this, 'handle_resolve_violation' ) );
+		add_action( 'wp_ajax_snestx51_send_acknowledgment_reminders', array( $this, 'handle_send_reminders' ) );
+		add_action( 'wp_ajax_snestx51_manage_category', array( $this, 'handle_manage_category' ) );
 		
 		// Resident AJAX Actions
-		add_action( 'wp_ajax_SNESTX51_acknowledge_rule', array( $this, 'handle_acknowledge_rule' ) );
-		add_action( 'wp_ajax_SNESTX51_appeal_violation', array( $this, 'handle_appeal_violation' ) );
-		add_action( 'wp_ajax_SNESTX51_get_pending_acknowledgments', array( $this, 'handle_get_pending_acknowledgments' ) );
-		add_action( 'wp_ajax_SNESTX51_search_rules', array( $this, 'handle_search_rules' ) );
+		add_action( 'wp_ajax_snestx51_acknowledge_rule', array( $this, 'handle_acknowledge_rule' ) );
+		add_action( 'wp_ajax_snestx51_appeal_violation', array( $this, 'handle_appeal_violation' ) );
+		add_action( 'wp_ajax_snestx51_get_pending_acknowledgments', array( $this, 'handle_get_pending_acknowledgments' ) );
+		add_action( 'wp_ajax_snestx51_search_rules', array( $this, 'handle_search_rules' ) );
 		
 		// Scheduled Actions
-		add_action( 'SNESTX51_daily_acknowledgment_reminders', array( $this, 'send_daily_reminders' ) );
-		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('SNESTX51_daily_acknowledgment_reminders') ) {
-			as_schedule_recurring_action( strtotime('09:00:00'), DAY_IN_SECONDS, 'SNESTX51_daily_acknowledgment_reminders' );
+		add_action( 'snestx51_daily_acknowledgment_reminders', array( $this, 'send_daily_reminders' ) );
+		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('snestx51_daily_acknowledgment_reminders') ) {
+			as_schedule_recurring_action( strtotime('09:00:00'), DAY_IN_SECONDS, 'snestx51_daily_acknowledgment_reminders' );
 		}
 		
 		// Register Module
-		add_filter( 'SNESTX51_get_module_rules', array( $this, 'get_instance' ) );
+		add_filter( 'snestx51_get_module_rules', array( $this, 'get_instance' ) );
 	}
 
 	public function get_instance() {
@@ -121,7 +121,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 */
 	public function handle_add_rule() {
 		ob_start(); // Capture any stray output so it doesn't corrupt the JSON response
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			ob_end_clean();
@@ -244,7 +244,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_delete_rule() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -268,7 +268,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_publish_rule() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -345,7 +345,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_get_version_history() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
 		$rule_id = isset($_POST['rule_id']) ? sanitize_text_field( wp_unslash( $_POST['rule_id'] ) ) : '';
 		
@@ -364,7 +364,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_restore_version() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -414,7 +414,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Acknowledgments
 	 */
 	public function handle_acknowledge_rule() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
 			error_log('SNESTX51_Rule_Manager: Acknowledgment failed - user not logged in'); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
@@ -433,7 +433,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 		
 		// Get resident details
 		$user_id = get_current_user_id();
-		$flat_no = get_user_meta($user_id, 'SNESTX51_flat_no', true);
+		$flat_no = get_user_meta($user_id, 'snestx51_flat_no', true);
 		$residents = $this->db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 		$resident_id = !empty($residents) ? $residents[0]['id'] : '';
 		
@@ -504,7 +504,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_get_pending_acknowledgments() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Please login' ), 403 );
@@ -543,7 +543,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Violations
 	 */
 	public function handle_submit_violation() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -616,7 +616,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_resolve_violation() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -652,7 +652,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_appeal_violation() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
 		
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Please login' ), 403 );
@@ -681,7 +681,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	 * Category Management
 	 */
 	public function handle_manage_category() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) ) {
@@ -770,7 +770,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	* Search Rules
 	*/
 	public function handle_search_rules() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_frontend_nonce', '_wpnonce' );
 		
 		$query = isset($_POST['query']) ? sanitize_text_field( wp_unslash( $_POST['query'] ) ) : '';
 		$category = isset($_POST['category']) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
@@ -895,7 +895,7 @@ class SNESTX51_Rule_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_send_reminders() {
-		check_ajax_referer( 'SNESTX51_rule_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_rule_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );

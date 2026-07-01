@@ -18,8 +18,8 @@ class SNESTX51_Admin_Requests {
 		$this->db = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_approve_request', array( $this, 'handle_approve' ) );
-		add_action( 'admin_post_SNESTX51_reject_request', array( $this, 'handle_reject' ) );
+		add_action( 'admin_post_snestx51_approve_request', array( $this, 'handle_approve' ) );
+		add_action( 'admin_post_snestx51_reject_request', array( $this, 'handle_reject' ) );
 	}
 
 	public function register_menu() {
@@ -52,7 +52,7 @@ class SNESTX51_Admin_Requests {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can('manage_options') ) {
 			wp_die( 'Unauthorized' );
 		}
-		check_admin_referer( 'SNESTX51_request_action' );
+		check_admin_referer( 'snestx51_request_action' );
 
 		$request_id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
 		$redirect   = isset( $_GET['redirect_to'] ) ? esc_url_raw( wp_unslash( $_GET['redirect_to'] ) ) : '';
@@ -80,7 +80,7 @@ class SNESTX51_Admin_Requests {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can('manage_options') ) {
 			wp_die( 'Unauthorized' );
 		}
-		check_admin_referer( 'SNESTX51_request_action' );
+		check_admin_referer( 'snestx51_request_action' );
 
 		$request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$note       = isset( $_POST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['admin_note'] ) ) : '';

@@ -221,8 +221,8 @@ final class Society_NestX {
 		add_action( 'admin_init', array( $this, 'maybe_update_db' ) );
 
 		// 6. Maintenance Tasks
-		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('SNESTX51_daily_log_purge') ) {
-			as_schedule_recurring_action( strtotime('midnight'), DAY_IN_SECONDS, 'SNESTX51_daily_log_purge' );
+		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('snestx51_daily_log_purge') ) {
+			as_schedule_recurring_action( strtotime('midnight'), DAY_IN_SECONDS, 'snestx51_daily_log_purge' );
 		}
 	}
 
@@ -230,18 +230,18 @@ final class Society_NestX {
 	 * Run DB Update if version changes.
 	 */
 	public function maybe_update_db() {
-		if ( get_option( 'SNESTX51_version' ) !== SNESTX51_VERSION ) {
+		if ( get_option( 'snestx51_version' ) !== SNESTX51_VERSION ) {
 			// Ensure tables are created first
 			SNESTX51_DB_Schema::create_tables();
-			update_option( 'SNESTX51_version', SNESTX51_VERSION );
+			update_option( 'snestx51_version', SNESTX51_VERSION );
 		}
 
 		// Ensure data migration is triggered after tables exist
-		if ( is_admin() && get_option( 'SNESTX51_storage_migrated' ) !== SNESTX51_VERSION ) {
+		if ( is_admin() && get_option( 'snestx51_storage_migrated' ) !== SNESTX51_VERSION ) {
 			// Double check dependencies are loaded
 			if ( class_exists( 'SNESTX51_Data_Migrator' ) ) {
 				SNESTX51_Data_Migrator::run_all();
-				update_option( 'SNESTX51_storage_migrated', SNESTX51_VERSION );
+				update_option( 'snestx51_storage_migrated', SNESTX51_VERSION );
 			}
 		}
 	}
@@ -343,24 +343,24 @@ final class Society_NestX {
         }
 
         // 0. WP Reset Shim (Load first to clear the path)
-        //wp_enqueue_style( 'SNESTX51_wp_reset_shim', SNESTX51_PLUGIN_URL . 'assets/css/wp-reset-shim.css', array(), SNESTX51_VERSION );
+        //wp_enqueue_style( 'snestx51_wp_reset_shim', SNESTX51_PLUGIN_URL . 'assets/css/wp-reset-shim.css', array(), SNESTX51_VERSION );
 
 		// 1. Google Fonts (Inter) - Local
-        wp_enqueue_style( 'SNESTX51_fonts', SNESTX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), SNESTX51_VERSION );
+        wp_enqueue_style( 'snestx51_fonts', SNESTX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), SNESTX51_VERSION );
 
 		// 2. Bootstrap 5 (Local) - Load late to naturally override WP styles
-		wp_enqueue_style( 'SNESTX51_bootstrap_css', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_script( 'SNESTX51_bootstrap_js', SNESTX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
+		wp_enqueue_style( 'snestx51_bootstrap_css', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
+		wp_enqueue_script( 'snestx51_bootstrap_js', SNESTX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
 
         // 3. Bootstrap Icons (Local)
-        wp_enqueue_style( 'SNESTX51_bootstrap_icons', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('SNESTX51_bootstrap_css'), '1.11.3' );
+        wp_enqueue_style( 'snestx51_bootstrap_icons', SNESTX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('snestx51_bootstrap_css'), '1.11.3' );
 
         // 4. Custom Admin Styles (Final Overrides)
-		wp_enqueue_style( 'SNESTX51_admin_layout', SNESTX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('SNESTX51_bootstrap_css', 'SNESTX51_bootstrap_icons'), SNESTX51_VERSION );
-		wp_enqueue_style( 'SNESTX51_admin_premium', SNESTX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('SNESTX51_bootstrap_css', 'SNESTX51_admin_layout'), SNESTX51_VERSION );
+		wp_enqueue_style( 'snestx51_admin_layout', SNESTX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('snestx51_bootstrap_css', 'snestx51_bootstrap_icons'), SNESTX51_VERSION );
+		wp_enqueue_style( 'snestx51_admin_premium', SNESTX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('snestx51_bootstrap_css', 'snestx51_admin_layout'), SNESTX51_VERSION );
 
 		// 5. Receipt Styling
-		wp_enqueue_style( 'SNESTX51_receipt_css', SNESTX51_PLUGIN_URL . 'assets/css/receipt.css', array(), SNESTX51_VERSION );
+		wp_enqueue_style( 'snestx51_receipt_css', SNESTX51_PLUGIN_URL . 'assets/css/receipt.css', array(), SNESTX51_VERSION );
 
 		// Core utilities
         wp_enqueue_script( 'snestx51-core', SNESTX51_PLUGIN_URL . 'assets/js/snestx-core.js', array('jquery'), SNESTX51_VERSION, true );
@@ -393,10 +393,10 @@ final class Society_NestX {
 
         // Standard Nonces for global actions
         wp_localize_script( 'snestx51-admin-app', 'snestx51_vars', array(
-            'request_nonce' => wp_create_nonce( 'SNESTX51_request_action' )
+            'request_nonce' => wp_create_nonce( 'snestx51_request_action' )
         ));
         // Add global JS variable for convenience
-        wp_add_inline_script( 'snestx51-admin-app', 'var snestx51RequestNonce = "' . wp_create_nonce( 'SNESTX51_request_action' ) . '";', 'before' );
+        wp_add_inline_script( 'snestx51-admin-app', 'var snestx51RequestNonce = "' . wp_create_nonce( 'snestx51_request_action' ) . '";', 'before' );
 
         // Residents View Specific JS
         if ( $page === 'snestx51-residents' ) {
@@ -567,7 +567,7 @@ final class Society_NestX {
 /**
  * Initialize the plugin.
  */
-function SNESTX51_init() {
+function snestx51_init() {
 	return Society_NestX::get_instance();
 }
-add_action( 'plugins_loaded', 'SNESTX51_init' );
+add_action( 'plugins_loaded', 'snestx51_init' );

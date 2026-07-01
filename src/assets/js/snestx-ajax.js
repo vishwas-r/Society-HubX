@@ -4,7 +4,7 @@
  * 
  * Usage:
  * SNESTX.ajax({
- *     action: 'SNESTX51_some_action',
+ *     action: 'snestx51_some_action',
  *     data: { key: 'value' },
  *     loadingButton: '#saveBtn',
  *     successMessage: 'Saved successfully!',

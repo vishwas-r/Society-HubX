@@ -20,19 +20,19 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// Handlers
-		add_action( 'admin_post_SNESTX51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
-		add_action( 'admin_post_SNESTX51_record_payment', array( $this, 'handle_record_payment' ) );
-		add_action( 'admin_post_SNESTX51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
-		add_action( 'admin_post_SNESTX51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
-		add_action( 'admin_post_SNESTX51_delete_payment', array( $this, 'handle_delete_payment' ) );
-		add_action( 'admin_post_SNESTX51_print_receipt', array( $this, 'handle_print_receipt' ) );
+		add_action( 'admin_post_snestx51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
+		add_action( 'admin_post_snestx51_record_payment', array( $this, 'handle_record_payment' ) );
+		add_action( 'admin_post_snestx51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
+		add_action( 'admin_post_snestx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
+		add_action( 'admin_post_snestx51_delete_payment', array( $this, 'handle_delete_payment' ) );
+		add_action( 'admin_post_snestx51_print_receipt', array( $this, 'handle_print_receipt' ) );
 
 		// AJAX for Residents
-		add_action( 'wp_ajax_SNESTX51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
+		add_action( 'wp_ajax_snestx51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
 
 		// Register Module
-		add_filter( 'SNESTX51_get_module_accounts', array( $this, 'get_instance' ) );
-		add_filter( 'SNESTX51_get_module_account', array( $this, 'get_instance' ) );
+		add_filter( 'snestx51_get_module_accounts', array( $this, 'get_instance' ) );
+		add_filter( 'snestx51_get_module_account', array( $this, 'get_instance' ) );
 	}
 
 	public function get_instance() {
@@ -80,7 +80,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	 * Generate Monthly Invoices (Bulk or Single)
 	 */
 	public function handle_generate_invoices() {
-		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_account_action' ) ) wp_die( 'Security check failed' );
         
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
@@ -94,7 +94,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 		if ( ! $month || ! $amount ) wp_die( 'Invalid Data' );
 
         // Check if job already running
-        $job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
+        $job_key = "snestx51_job_bulk_invoice_{$month}_{$type}";
         $existing_job = get_option( $job_key );
         if ( $existing_job && $existing_job['status'] === 'running' ) {
             wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&error=job_running' ) );
@@ -181,7 +181,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	 * Record a Payment manually.
 	 */
 	public function handle_record_payment() {
-		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_account_action' ) ) wp_die( 'Security check failed' );
 		
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
@@ -369,7 +369,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	 * Handle Payment Request from Resident (Frontend)
 	 */
 	public function handle_submit_payment_request() {
-		check_ajax_referer( 'SNESTX51_frontend_nonce' );
+		check_ajax_referer( 'snestx51_frontend_nonce' );
 		
 		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 		$amount = isset( $_POST['amount'] ) ? floatval( wp_unslash( $_POST['amount'] ) ) : 0;
@@ -422,7 +422,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 
 
 	public function handle_delete_payment() {
-		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_account_action' ) ) wp_die( 'Security check failed' );
 
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
@@ -453,7 +453,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_edit_invoice() {
-		if ( ! check_admin_referer( 'SNESTX51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_account_action' ) ) wp_die( 'Security check failed' );
 
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
@@ -489,7 +489,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_delete_invoice() {
-		if ( ! check_admin_referer( 'SNESTX51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
 
         $rbac = new SNESTX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
@@ -502,7 +502,7 @@ class SNESTX51_Account_Manager implements SNESTX51_Module {
 	}
 
 	public function handle_print_receipt() {
-		if ( ! check_admin_referer( 'SNESTX51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
 
 		$invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
 		$invoices = $this->db->get( 'invoices' );

@@ -21,7 +21,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'documents' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -39,7 +39,7 @@
 
     function approveDoc(docId) {
         SNESTX.ajax({
-            action: 'SNESTX51_approve_doc',
+            action: 'snestx51_approve_doc',
             data: { doc_id: docId, _wpnonce: Config.nonce },
             successMessage: 'Document approved!',
             reload: true
@@ -63,7 +63,7 @@
             if (payload.id) data.doc_id = payload.id;
 
             SNESTX.ajax({
-                action: 'SNESTX51_delete_doc',
+                action: 'snestx51_delete_doc',
                 data: data,
                 successMessage: 'Document deleted',
                 onSuccess: function () {
@@ -90,13 +90,13 @@
                 uploadForm.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const formData = new FormData(uploadForm);
-                    formData.set('action', 'SNESTX51_upload_doc');
+                    formData.set('action', 'snestx51_upload_doc');
                     if (Config.nonce) {
                         formData.set('_wpnonce', Config.nonce);
                     }
 
                     SNESTX.ajax({
-                        action: 'SNESTX51_upload_doc',
+                        action: 'snestx51_upload_doc',
                         data: formData,
                         loadingButton: $(uploadForm).find('button[type="submit"]'),
                         successMessage: 'Document uploaded successfully!',

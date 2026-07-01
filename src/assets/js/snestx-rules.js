@@ -19,7 +19,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'rules' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -110,7 +110,7 @@
         const isEdit = formData.get('rule_id') !== '';
 
         SNESTX.ajax({
-            action: isEdit ? 'SNESTX51_edit_rule' : 'SNESTX51_add_rule',
+            action: isEdit ? 'snestx51_edit_rule' : 'snestx51_add_rule',
             data: Object.fromEntries(formData),
             loadingButton: $(e.target).find('button[type="submit"]'),
             successMessage: 'Rule saved successfully!',
@@ -126,7 +126,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_publish_rule',
+            action: 'snestx51_publish_rule',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -141,7 +141,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_delete_rule',
+            action: 'snestx51_delete_rule',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -158,7 +158,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_get_version_history',
+            action: 'snestx51_get_version_history',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -215,7 +215,7 @@
         const formData = new FormData(e.target);
 
         SNESTX.ajax({
-            action: 'SNESTX51_manage_category',
+            action: 'snestx51_manage_category',
             data: Object.fromEntries(formData),
             loadingButton: $(e.target).find('button[type="submit"]'),
             successMessage: 'Category saved successfully!',
@@ -231,7 +231,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_manage_category',
+            action: 'snestx51_manage_category',
             data: {
                 category_action: 'delete',
                 category_id: catId,
@@ -277,7 +277,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_resolve_violation',
+            action: 'snestx51_resolve_violation',
             data: {
                 violation_id: violationId,
                 status: 'resolved',
@@ -294,7 +294,7 @@
         await fetchModuleConfig();
 
         SNESTX.ajax({
-            action: 'SNESTX51_send_acknowledgment_reminders',
+            action: 'snestx51_send_acknowledgment_reminders',
             data: {
                 _wpnonce: Config.nonce
             },

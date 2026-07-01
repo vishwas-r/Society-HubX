@@ -17,12 +17,12 @@ class SNESTX51_Admin_Settings {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_init', array( $this, 'handle_setup_actions' ) );
 		add_action( 'admin_init', array( $this, 'handle_oauth_callback' ) );
-		add_action( 'admin_post_SNESTX51_reset_db', array( $this, 'handle_reset_db' ) );
+		add_action( 'admin_post_snestx51_reset_db', array( $this, 'handle_reset_db' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-		add_action( 'admin_post_SNESTX51_setup_action', array( $this, 'handle_setup_actions' ) );
-		add_action( 'admin_post_SNESTX51_relaunch_wizard', array( $this, 'handle_relaunch_wizard' ) );
-		add_action( 'admin_post_SNESTX51_save_role', array( $this, 'handle_save_role' ) );
-		add_action( 'admin_post_SNESTX51_delete_role', array( $this, 'handle_delete_role' ) );
+		add_action( 'admin_post_snestx51_setup_action', array( $this, 'handle_setup_actions' ) );
+		add_action( 'admin_post_snestx51_relaunch_wizard', array( $this, 'handle_relaunch_wizard' ) );
+		add_action( 'admin_post_snestx51_save_role', array( $this, 'handle_save_role' ) );
+		add_action( 'admin_post_snestx51_delete_role', array( $this, 'handle_delete_role' ) );
 		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
 		add_action( 'admin_notices', array( $this, 'render_setup_notice' ) );
 	}
@@ -31,7 +31,7 @@ class SNESTX51_Admin_Settings {
 		if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) return;
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
-		$is_setup = get_option( 'SNESTX51_is_setup_complete' );
+		$is_setup = get_option( 'snestx51_is_setup_complete' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
@@ -131,50 +131,50 @@ class SNESTX51_Admin_Settings {
 
 	public function register_settings() {
 		// General Options
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_google_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_google_client_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_sync_frequency', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_maintenance_amount', array( 'sanitize_callback' => 'floatval' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_opening_bank', array( 'sanitize_callback' => 'floatval' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_opening_cash', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_google_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_google_client_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_sync_frequency', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_maintenance_amount', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_opening_bank', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_opening_cash', array( 'sanitize_callback' => 'floatval' ) );
 
 		// Society Details
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_address_line1', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_address_line2', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_city', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_pincode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_society_contact', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_address_line1', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_address_line2', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_city', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_pincode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_society_contact', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Bank Details
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_bank_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_bank_account', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_bank_ifsc', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_bank_upi', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_bank_qr', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_bank_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_bank_account', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_bank_ifsc', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_bank_upi', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_bank_qr', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
         // Approval Settings (manual/auto)
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_approval_family', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_approval_help', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_approval_vehicle', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_approval_facility', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_approval_family', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_approval_help', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_approval_vehicle', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_approval_facility', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Log Governance
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_enable_audit', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_log_retention', array( 'sanitize_callback' => 'intval' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_enable_audit', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_log_retention', array( 'sanitize_callback' => 'intval' ) );
 		
 		// Privacy & DPDP
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'SNESTX51_options_group', 'SNESTX51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'snestx51_options_group', 'snestx51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 	}
 
 	public function handle_setup_actions() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
 		// 1. Setup Wizard Steps
-		if ( isset( $_POST['SNESTX51_setup_step'] ) && check_admin_referer( 'SNESTX51_setup_nonce' ) ) {
+		if ( isset( $_POST['snestx51_setup_step'] ) && check_admin_referer( 'snestx51_setup_nonce' ) ) {
 			require_once SNESTX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
-			$step = sanitize_text_field( wp_unslash( $_POST['SNESTX51_setup_step'] ) );
+			$step = sanitize_text_field( wp_unslash( $_POST['snestx51_setup_step'] ) );
 			$results = SNESTX51_Setup_Wizard::save_step( $step, wp_unslash( $_POST ) );
 			
 			if ( $step === 'finalize' ) {
@@ -191,11 +191,11 @@ class SNESTX51_Admin_Settings {
 		}
 
 		// 2. Legacy Setup Wizard (Google Sync)
-		if ( isset( $_POST['SNESTX51_action'] ) && check_admin_referer( 'SNESTX51_setup', 'SNESTX51_nonce' ) ) {
+		if ( isset( $_POST['snestx51_action'] ) && check_admin_referer( 'snestx51_setup', 'snestx51_nonce' ) ) {
 			require_once SNESTX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
-			if ( 'run_setup' === $_POST['SNESTX51_action'] || 'run_setup_offline' === $_POST['SNESTX51_action'] ) {
+			if ( 'run_setup' === $_POST['snestx51_action'] || 'run_setup_offline' === $_POST['snestx51_action'] ) {
 				// $results = SNESTX51_Setup_Wizard::run_setup();
-				// add_settings_error( 'SNESTX51_messages', 'SNESTX51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
+				// add_settings_error( 'snestx51_messages', 'snestx51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
 			}
 		}
 	}
@@ -206,7 +206,7 @@ class SNESTX51_Admin_Settings {
 	 */
 	public function handle_reset_db() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'SNESTX51_reset_nonce' );
+		check_admin_referer( 'snestx51_reset_nonce' );
 
 		require_once SNESTX51_PLUGIN_DIR . 'includes/class-db-schema.php';
 		
@@ -219,16 +219,16 @@ class SNESTX51_Admin_Settings {
 
 	public function handle_relaunch_wizard() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'SNESTX51_relaunch_nonce' );
+		check_admin_referer( 'snestx51_relaunch_nonce' );
 
-		update_option( 'SNESTX51_is_setup_complete', false );
+		update_option( 'snestx51_is_setup_complete', false );
 		wp_safe_redirect( admin_url( 'admin.php?page=snestx51-setup' ) );
 		exit;
 	}
 
 	public function handle_save_role() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'SNESTX51_role_nonce' );
+		check_admin_referer( 'snestx51_role_nonce' );
 
 		$rbac = new SNESTX51_RBAC_Manager();
 		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
@@ -248,7 +248,7 @@ class SNESTX51_Admin_Settings {
 
 	public function handle_delete_role() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'SNESTX51_role_nonce' );
+		check_admin_referer( 'snestx51_role_nonce' );
 
 		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
 		$rbac = new SNESTX51_RBAC_Manager();
@@ -308,9 +308,9 @@ class SNESTX51_Admin_Settings {
 			$result = SNESTX51_Google_API_Handler::exchange_code_for_token( $code );
 
 			if ( is_wp_error( $result ) ) {
-				add_settings_error( 'SNESTX51_messages', 'SNESTX51_auth_error', 'Auth Failed: ' . $result->get_error_message(), 'error' );
+				add_settings_error( 'snestx51_messages', 'snestx51_auth_error', 'Auth Failed: ' . $result->get_error_message(), 'error' );
 			} else {
-				add_settings_error( 'SNESTX51_messages', 'SNESTX51_auth_success', 'Successfully connected to Google!', 'success' );
+				add_settings_error( 'snestx51_messages', 'snestx51_auth_success', 'Successfully connected to Google!', 'success' );
 				// Redirect to remove 'code' from URL.
 				wp_safe_redirect( admin_url( 'admin.php?page=snestx51-settings&success=1' ) );
 				exit;
@@ -368,7 +368,7 @@ class SNESTX51_Admin_Settings {
 
 	public function render_setup_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
-		if ( get_option( 'SNESTX51_is_setup_complete' ) ) return;
+		if ( get_option( 'snestx51_is_setup_complete' ) ) return;
 
 		// Don't show notice on the setup page itself
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';

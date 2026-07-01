@@ -40,12 +40,12 @@ class SNESTX51_Setup_Wizard {
 		
 		switch ( $step ) {
 			case 'identity':
-				update_option( 'SNESTX51_society_name', sanitize_text_field( $data['society_name'] ) );
-				update_option( 'SNESTX51_society_address_line1', sanitize_text_field( $data['address_line1'] ) );
-				update_option( 'SNESTX51_society_address_line2', sanitize_text_field( $data['address_line2'] ) );
-				update_option( 'SNESTX51_society_city', sanitize_text_field( $data['city'] ) );
-				update_option( 'SNESTX51_society_pincode', sanitize_text_field( $data['pincode'] ) );
-				update_option( 'SNESTX51_society_contact', sanitize_text_field( $data['contact'] ) );
+				update_option( 'snestx51_society_name', sanitize_text_field( $data['society_name'] ) );
+				update_option( 'snestx51_society_address_line1', sanitize_text_field( $data['address_line1'] ) );
+				update_option( 'snestx51_society_address_line2', sanitize_text_field( $data['address_line2'] ) );
+				update_option( 'snestx51_society_city', sanitize_text_field( $data['city'] ) );
+				update_option( 'snestx51_society_pincode', sanitize_text_field( $data['pincode'] ) );
+				update_option( 'snestx51_society_contact', sanitize_text_field( $data['contact'] ) );
 				$log[] = 'Society identity saved.';
 				break;
 
@@ -54,17 +54,17 @@ class SNESTX51_Setup_Wizard {
 				break;
 
 			case 'financials':
-				update_option( 'SNESTX51_maintenance_amount', floatval( $data['maintenance_amount'] ) );
-				update_option( 'SNESTX51_bank_name', sanitize_text_field( $data['bank_name'] ) );
-				update_option( 'SNESTX51_bank_account', sanitize_text_field( $data['bank_account'] ) );
-				update_option( 'SNESTX51_bank_ifsc', sanitize_text_field( $data['bank_ifsc'] ) );
-				update_option( 'SNESTX51_bank_upi', sanitize_text_field( $data['bank_upi'] ) );
+				update_option( 'snestx51_maintenance_amount', floatval( $data['maintenance_amount'] ) );
+				update_option( 'snestx51_bank_name', sanitize_text_field( $data['bank_name'] ) );
+				update_option( 'snestx51_bank_account', sanitize_text_field( $data['bank_account'] ) );
+				update_option( 'snestx51_bank_ifsc', sanitize_text_field( $data['bank_ifsc'] ) );
+				update_option( 'snestx51_bank_upi', sanitize_text_field( $data['bank_upi'] ) );
 				$log[] = 'Financial settings updated.';
 				break;
 
 			case 'finalize':
 				self::create_frontend_pages();
-				update_option( 'SNESTX51_is_setup_complete', true );
+				update_option( 'snestx51_is_setup_complete', true );
 				$log[] = 'Setup finalized successfully!';
 				break;
 		}
@@ -158,7 +158,7 @@ class SNESTX51_Setup_Wizard {
 	 */
 	private static function setup_google_workspace() {
 		// 1. Check if Spreadsheet ID already exists.
-		$sheet_id = get_option( 'SNESTX51_master_sheet_id' );
+		$sheet_id = get_option( 'snestx51_master_sheet_id' );
 		if ( $sheet_id ) {
 			return 'Spreadsheet already linked: ' . $sheet_id;
 		}
@@ -177,8 +177,8 @@ class SNESTX51_Setup_Wizard {
 		}
 
 		$sheet_id = $response['spreadsheetId'];
-		update_option( 'SNESTX51_master_sheet_id', $sheet_id );
-		update_option( 'SNESTX51_master_sheet_url', $response['spreadsheetUrl'] );
+		update_option( 'snestx51_master_sheet_id', $sheet_id );
+		update_option( 'snestx51_master_sheet_url', $response['spreadsheetUrl'] );
 
 		// 3. Add Tabs and Headers.
 		self::initialize_sheet_headers( $sheet_id );
@@ -250,7 +250,7 @@ class SNESTX51_Setup_Wizard {
 		$root = SNESTX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $root_meta );
 		
 		if ( ! is_wp_error( $root ) && isset( $root['id'] ) ) {
-			update_option( 'SNESTX51_drive_root_id', $root['id'] );
+			update_option( 'snestx51_drive_root_id', $root['id'] );
 			
 			// Subfolders.
 			$subs = array( 'Notices', 'Receipts', 'Assets', 'Resident_Docs' );

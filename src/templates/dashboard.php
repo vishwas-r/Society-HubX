@@ -75,7 +75,7 @@ if ( ! function_exists( 'SNESTX_in_fmt' ) ) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var SNESTX51_nonce = '<?php echo wp_create_nonce( 'SNESTX51_frontend_nonce' ); ?>';
+    var snestx51_nonce = '<?php echo wp_create_nonce( 'snestx51_frontend_nonce' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
 </script>
 
@@ -128,11 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.innerText = 'Submitting...';
 
             const formData = new FormData(this);
-            formData.append('action', 'SNESTX51_submit_general_request');
-            formData.append('_wpnonce', '<?php echo wp_create_nonce("SNESTX51_frontend_nonce"); ?>');
+            formData.append('action', 'snestx51_submit_general_request');
+            formData.append('_wpnonce', '<?php echo wp_create_nonce("snestx51_frontend_nonce"); ?>');
 
             SNESTX.ajax({
-                action: 'SNESTX51_submit_general_request',
+                action: 'snestx51_submit_general_request',
                 data: formData,
                 loadingButton: btn,
                 reload: true

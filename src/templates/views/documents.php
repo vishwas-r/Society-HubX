@@ -241,7 +241,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($selected_flat) {
+add_action('snestx51_admin_modals', function() use ($selected_flat) {
 ?>
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
@@ -253,9 +253,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_flat) {
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" id="upload-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_upload_doc">
+                    <input type="hidden" name="action" value="snestx51_upload_doc">
                     <input type="hidden" name="flat_no" value="<?php echo esc_attr( $selected_flat ); ?>">
-                    <?php wp_nonce_field( 'SNESTX51_upload_doc_nonce' ); ?>
+                    <?php wp_nonce_field( 'snestx51_upload_doc_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Target Folder</label>

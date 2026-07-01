@@ -242,7 +242,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($flats) {
+add_action('snestx51_admin_modals', function() use ($flats) {
 ?>
 <!-- Vehicle Modal -->
 <div class="modal fade" id="vehicleModal" tabindex="-1" aria-hidden="true">
@@ -254,9 +254,9 @@ add_action('SNESTX51_admin_modals', function() use ($flats) {
             </div>
             <form id="add-vehicle-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_add_vehicle" id="v-action">
+                    <input type="hidden" name="action" value="snestx51_add_vehicle" id="v-action">
                     <input type="hidden" name="vehicle_id" id="v-id">
-                    <?php wp_nonce_field( 'SNESTX51_add_vehicle_nonce' ); ?>
+                    <?php wp_nonce_field( 'snestx51_add_vehicle_nonce' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Number Plate <span class="text-danger">*</span></label>

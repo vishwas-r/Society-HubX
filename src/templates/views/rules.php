@@ -543,8 +543,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
 <?php
 // Modals
-add_action('SNESTX51_admin_modals', function() use ($categories) {
-    $nonce = wp_create_nonce('SNESTX51_rule_nonce');
+add_action('snestx51_admin_modals', function() use ($categories) {
+    $nonce = wp_create_nonce('snestx51_rule_nonce');
 ?>
 
 <!-- Add/Edit Rule Modal -->

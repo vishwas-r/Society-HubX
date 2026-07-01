@@ -25,47 +25,47 @@ class SNESTX51_Frontend_Dashboard {
 		add_shortcode( 'society_nestx_notices', array( $this, 'render_notices' ) );
 		add_shortcode( 'society_nestx_directory', array( $this, 'render_directory' ) );
 		// Form Handlers
-		add_action( 'admin_post_SNESTX51_update_profile', array( $this, 'handle_profile_update' ) );
-		add_action( 'admin_post_SNESTX51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
-		add_action( 'admin_post_SNESTX51_frontend_delete_doc', array( $this, 'handle_doc_delete' ) );
-		add_action( 'admin_post_SNESTX51_add_family', array( $this, 'handle_add_family' ) );
-		add_action( 'admin_post_SNESTX51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
-		add_action( 'admin_post_SNESTX51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
-		add_action( 'admin_post_SNESTX51_update_utilities', array( $this, 'handle_update_utilities' ) );
-		add_action( 'admin_post_SNESTX51_request_delete_doc', array( $this, 'handle_request_delete_doc' ) );
+		add_action( 'admin_post_snestx51_update_profile', array( $this, 'handle_profile_update' ) );
+		add_action( 'admin_post_snestx51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
+		add_action( 'admin_post_snestx51_frontend_delete_doc', array( $this, 'handle_doc_delete' ) );
+		add_action( 'admin_post_snestx51_add_family', array( $this, 'handle_add_family' ) );
+		add_action( 'admin_post_snestx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
+		add_action( 'admin_post_snestx51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
+		add_action( 'admin_post_snestx51_update_utilities', array( $this, 'handle_update_utilities' ) );
+		add_action( 'admin_post_snestx51_request_delete_doc', array( $this, 'handle_request_delete_doc' ) );
 		
-		add_action( 'admin_post_SNESTX51_edit_family', array( $this, 'handle_edit_family' ) );
-		add_action( 'admin_post_SNESTX51_edit_daily_help', array( $this, 'handle_edit_daily_help' ) );
-		add_action( 'admin_post_SNESTX51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) );
-		// Compatibility: accept older action name so frontend posts with `SNESTX51_edit_vehicle` also work
-		add_action( 'admin_post_SNESTX51_edit_vehicle', array( $this, 'handle_edit_vehicle' ), 1 );
+		add_action( 'admin_post_snestx51_edit_family', array( $this, 'handle_edit_family' ) );
+		add_action( 'admin_post_snestx51_edit_daily_help', array( $this, 'handle_edit_daily_help' ) );
+		add_action( 'admin_post_snestx51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) );
+		// Compatibility: accept older action name so frontend posts with `snestx51_edit_vehicle` also work
+		add_action( 'admin_post_snestx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ), 1 );
 
         // Delete Handlers
-        add_action( 'admin_post_SNESTX51_delete_family', array( $this, 'handle_delete_family' ) );
-        add_action( 'admin_post_SNESTX51_delete_daily_help', array( $this, 'handle_delete_daily_help' ) );
-		add_action( 'admin_post_SNESTX51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
+        add_action( 'admin_post_snestx51_delete_family', array( $this, 'handle_delete_family' ) );
+        add_action( 'admin_post_snestx51_delete_daily_help', array( $this, 'handle_delete_daily_help' ) );
+		add_action( 'admin_post_snestx51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
         
         // AJAX Handlers for Resident Dashboard
-        add_action( 'wp_ajax_SNESTX51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
-        add_action( 'wp_ajax_SNESTX51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) ); 
-        add_action( 'wp_ajax_SNESTX51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
+        add_action( 'wp_ajax_snestx51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
+        add_action( 'wp_ajax_snestx51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) ); 
+        add_action( 'wp_ajax_snestx51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
 
-        add_action( 'wp_ajax_SNESTX51_add_family_frontend', array( $this, 'handle_add_family' ) );
-        add_action( 'wp_ajax_SNESTX51_add_family', array( $this, 'handle_add_family' ) ); // Fix: Alias for frontend value
-        add_action( 'wp_ajax_SNESTX51_edit_family_frontend', array( $this, 'handle_edit_family' ) );
-        add_action( 'wp_ajax_SNESTX51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
-        add_action( 'wp_ajax_SNESTX51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
+        add_action( 'wp_ajax_snestx51_add_family_frontend', array( $this, 'handle_add_family' ) );
+        add_action( 'wp_ajax_snestx51_add_family', array( $this, 'handle_add_family' ) ); // Fix: Alias for frontend value
+        add_action( 'wp_ajax_snestx51_edit_family_frontend', array( $this, 'handle_edit_family' ) );
+        add_action( 'wp_ajax_snestx51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
+        add_action( 'wp_ajax_snestx51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
 
-        add_action( 'wp_ajax_SNESTX51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
-        add_action( 'wp_ajax_SNESTX51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
-        add_action( 'wp_ajax_SNESTX51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
+        add_action( 'wp_ajax_snestx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
+        add_action( 'wp_ajax_snestx51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
+        add_action( 'wp_ajax_snestx51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
 		
         // Payment Submission Handler
-        add_action( 'wp_ajax_SNESTX51_submit_payment_request', array( $this, 'handle_submit_payment' ) );
+        add_action( 'wp_ajax_snestx51_submit_payment_request', array( $this, 'handle_submit_payment' ) );
 
 		// Login & Access Control
-		add_action( 'wp_ajax_SNESTX51_resident_login', array( $this, 'handle_resident_login' ) );
-		add_action( 'wp_ajax_nopriv_SNESTX51_resident_login', array( $this, 'handle_resident_login' ) );
+		add_action( 'wp_ajax_snestx51_resident_login', array( $this, 'handle_resident_login' ) );
+		add_action( 'wp_ajax_nopriv_snestx51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_filter( 'show_admin_bar', array( $this, 'hide_admin_bar_for_residents' ) );
 	}
 
@@ -73,7 +73,7 @@ class SNESTX51_Frontend_Dashboard {
 	 * Handle Profile Update (Frontend)
 	 */
 	public function handle_profile_update() {
-		if ( ! is_user_logged_in() || ! check_admin_referer( 'SNESTX51_update_profile_nonce' ) ) {
+		if ( ! is_user_logged_in() || ! check_admin_referer( 'snestx51_update_profile_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -128,7 +128,7 @@ class SNESTX51_Frontend_Dashboard {
 	 * Handle Payment Confirmation (Frontend)
 	 */
 	public function handle_submit_payment() {
-		check_ajax_referer( 'SNESTX51_admin_nonce', '_ajax_nonce' );
+		check_ajax_referer( 'snestx51_admin_nonce', '_ajax_nonce' );
 		if ( ! is_user_logged_in() ) wp_send_json_error( ['message' => 'Unauthorized'] );
 
 		$user_id = get_current_user_id();
@@ -187,11 +187,11 @@ class SNESTX51_Frontend_Dashboard {
 	public function render_dashboard( $atts ) {
 		if ( ! is_user_logged_in() ) {
 			$society_info = array(
-				'name'     => get_option( 'SNESTX51_society_name', 'Our Society' ),
-				'address1' => get_option( 'SNESTX51_society_address_line1', '' ),
-				'address2' => get_option( 'SNESTX51_society_address_line2', '' ),
-				'city'     => get_option( 'SNESTX51_society_city', '' ),
-				'contact'  => get_option( 'SNESTX51_society_contact', '' )
+				'name'     => get_option( 'snestx51_society_name', 'Our Society' ),
+				'address1' => get_option( 'snestx51_society_address_line1', '' ),
+				'address2' => get_option( 'snestx51_society_address_line2', '' ),
+				'city'     => get_option( 'snestx51_society_city', '' ),
+				'contact'  => get_option( 'snestx51_society_contact', '' )
 			);
 			ob_start();
 			include SNESTX51_PLUGIN_DIR . 'templates/resident-login.php';
@@ -233,7 +233,7 @@ class SNESTX51_Frontend_Dashboard {
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
             'my_requests'      => array_values($my_requests), // Pass resident requests
-            'nonce'            => wp_create_nonce('SNESTX51_frontend_nonce'),
+            'nonce'            => wp_create_nonce('snestx51_frontend_nonce'),
             'rest_url'         => esc_url_raw( rest_url( 'SNESTX/v1/' ) ),
             'rest_nonce'       => wp_create_nonce( 'wp_rest' )
          ));
@@ -609,15 +609,15 @@ class SNESTX51_Frontend_Dashboard {
 	public function handle_add_family() {
 
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_add_family_nonce' );
+            check_ajax_referer( 'snestx51_add_family_nonce' );
         } else {
             // Robust Nonce Check
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_family'] ) ), 'SNESTX51_add_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_family'] ) ), 'snestx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_add_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( check_admin_referer( 'SNESTX51_add_family_nonce' ) ) {
+            } elseif ( check_admin_referer( 'snestx51_add_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
@@ -685,7 +685,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_family', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member added successfully']);
             wp_safe_redirect( wp_get_referer() . '?family_added=1' );
@@ -701,13 +701,13 @@ class SNESTX51_Frontend_Dashboard {
         if ( wp_doing_ajax() ) {
             // JS sends _wpnonce from the form
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'SNESTX51_add_help_nonce' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'snestx51_add_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_help'] ) ), 'SNESTX51_add_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_help'] ) ), 'snestx51_add_help_nonce' ) ) {
                 // Success
-            } else if ( ! check_admin_referer( 'SNESTX51_add_help_nonce' ) ) {
+            } else if ( ! check_admin_referer( 'snestx51_add_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
             }
         }
@@ -765,7 +765,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_help', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help added successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_added=1' );
@@ -778,9 +778,9 @@ class SNESTX51_Frontend_Dashboard {
 
 	public function handle_add_vehicle_frontend() {
 		// Use request nonce or standard nonce
-		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_add_vehicle_frontend_nonce' ) ) {
+		if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_add_vehicle_frontend_nonce' ) ) {
 			// OK
-		} else if ( ! check_admin_referer( 'SNESTX51_add_vehicle_frontend_nonce' ) ) {
+		} else if ( ! check_admin_referer( 'snestx51_add_vehicle_frontend_nonce' ) ) {
 			wp_send_json_error( 'Security check failed' );
 		}
 		
@@ -820,7 +820,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Vehicle added successfully', 'auto_approved' => true] );
         } else {
@@ -832,15 +832,15 @@ class SNESTX51_Frontend_Dashboard {
 	public function handle_edit_family() {
         
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_edit_family_nonce' );
+            check_ajax_referer( 'snestx51_edit_family_nonce' );
         } else {
              // Verify nonce: accept either `_wpnonce` or `_wpnonce_edit_family`
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_edit_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_family'] ) ), 'SNESTX51_edit_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_family'] ) ), 'snestx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( check_admin_referer( 'SNESTX51_edit_family_nonce' ) ) {
+            } elseif ( check_admin_referer( 'snestx51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
@@ -897,7 +897,7 @@ class SNESTX51_Frontend_Dashboard {
             }
 
             // Check for Auto-Approval
-            if (get_option('SNESTX51_approval_family', 'manual') === 'auto') {
+            if (get_option('snestx51_approval_family', 'manual') === 'auto') {
                 $res = $rm->approve_request($request_id);
                 if ( is_wp_error( $res ) ) {
                      if(wp_doing_ajax()) wp_send_json_error( $res->get_error_message() );
@@ -920,15 +920,15 @@ class SNESTX51_Frontend_Dashboard {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'SNESTX51_edit_help_nonce' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'snestx51_edit_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_help'] ) ), 'SNESTX51_edit_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_help'] ) ), 'snestx51_edit_help_nonce' ) ) {
                 // Success
-            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_edit_help_nonce' ) ) {
+            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_edit_help_nonce' ) ) {
                 // Success
-            } else if ( ! check_admin_referer( 'SNESTX51_edit_help_nonce' ) ) {
+            } else if ( ! check_admin_referer( 'snestx51_edit_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
             }
         }
@@ -974,7 +974,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_help', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help updated successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_updated=1' );
@@ -989,22 +989,22 @@ class SNESTX51_Frontend_Dashboard {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'SNESTX51_edit_vehicle_action' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'snestx51_edit_vehicle_action' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
             // Use explicit nonce verification to avoid conflict with other forms
             $nonce_ok = false;
-            if ( ! empty( $_POST['SNESTX51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['SNESTX51_edit_vehicle_token'] ) ), 'SNESTX51_edit_vehicle_action' ) ) {
+            if ( ! empty( $_POST['snestx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['snestx51_edit_vehicle_token'] ) ), 'snestx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             // Also accept canonical _wpnonce if JS did not set the custom token
-            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) {
                  // Try standard check as fallback
-                 if(check_admin_referer('SNESTX51_edit_vehicle_action')) {
+                 if(check_admin_referer('snestx51_edit_vehicle_action')) {
                      $nonce_ok = true;
                  }
             }
@@ -1038,7 +1038,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             wp_send_json_success( ['message' => 'Vehicle updated successfully'] );
         } else {
@@ -1049,9 +1049,9 @@ class SNESTX51_Frontend_Dashboard {
 
     public function handle_delete_family() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_family_nonce' );
+            check_ajax_referer( 'snestx51_delete_family_nonce' );
         } else {
-             if ( ! check_admin_referer( 'SNESTX51_delete_family_nonce' ) ) wp_die( 'Security check failed' );
+             if ( ! check_admin_referer( 'snestx51_delete_family_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$flat_no = $this->get_my_flat_number();
@@ -1071,7 +1071,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_family', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member removed successfully']);
             wp_safe_redirect( wp_get_referer() . '?deleted=1' );
@@ -1084,9 +1084,9 @@ class SNESTX51_Frontend_Dashboard {
 
     public function handle_delete_daily_help() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'SNESTX51_delete_help_nonce' );
+            check_ajax_referer( 'snestx51_delete_help_nonce' );
         } else {
-            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $flat_no = $this->get_my_flat_number();
@@ -1106,7 +1106,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_help', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help deleted successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_deleted=1' );
@@ -1118,7 +1118,7 @@ class SNESTX51_Frontend_Dashboard {
     }
 
     public function handle_delete_family_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_delete_family_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_delete_family_nonce' ) ) {
              wp_send_json_error( 'Security check failed' ); 
         }
 
@@ -1139,7 +1139,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_family', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Family member removed successfully'] );
         } else {
@@ -1149,7 +1149,7 @@ class SNESTX51_Frontend_Dashboard {
     }
 
     public function handle_delete_vehicle_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'SNESTX51_delete_vehicle_frontend_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'snestx51_delete_vehicle_frontend_nonce' ) ) {
              // For AJAX calls, sometimes it might come as distinct param or in header? Standard POST param is _wpnonce.
              wp_send_json_error( 'Security check failed' ); 
         }
@@ -1169,7 +1169,7 @@ class SNESTX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('SNESTX51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('snestx51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Vehicle deleted successfully'] );
         } else {
@@ -1179,7 +1179,7 @@ class SNESTX51_Frontend_Dashboard {
     }
 
 	public function handle_request_delete_doc() {
-		if ( ! check_admin_referer( 'SNESTX51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'snestx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		
 		$doc_id = isset( $_GET['doc_id'] ) ? sanitize_text_field( wp_unslash( $_GET['doc_id'] ) ) : '';
 		$flat_no = $this->get_my_flat_number();
@@ -1289,11 +1289,11 @@ class SNESTX51_Frontend_Dashboard {
 	 * Called by frontend template footer.
 	 */
 	public static function render_payment_modal() {
-		$bank_name = get_option('SNESTX51_bank_name', 'HDFC Bank');
-		$acct_no   = get_option('SNESTX51_bank_account', '501000123456');
-		$ifsc      = get_option('SNESTX51_bank_ifsc', 'HDFC0001234');
-		$upi       = get_option('SNESTX51_bank_upi', 'society@bank');
-		$qr_url    = get_option('SNESTX51_bank_qr');
+		$bank_name = get_option('snestx51_bank_name', 'HDFC Bank');
+		$acct_no   = get_option('snestx51_bank_account', '501000123456');
+		$ifsc      = get_option('snestx51_bank_ifsc', 'HDFC0001234');
+		$upi       = get_option('snestx51_bank_upi', 'society@bank');
+		$qr_url    = get_option('snestx51_bank_qr');
 		?>
 		<div class="modal fade" id="SNESTX51PaymentModal" tabindex="-1">
 			<div class="modal-dialog">
@@ -1931,7 +1931,7 @@ class SNESTX51_Frontend_Dashboard {
 	 * Handle Resident Login AJAX.
 	 */
 	public function handle_resident_login() {
-		check_ajax_referer( 'SNESTX51_login_nonce', 'login_nonce' );
+		check_ajax_referer( 'snestx51_login_nonce', 'login_nonce' );
 
 		$creds = array(
 			'user_login' => isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : '',

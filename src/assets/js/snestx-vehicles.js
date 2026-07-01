@@ -20,7 +20,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'vehicles' },
                 showOverlay: false, // Silent fetch for config
                 suppressErrorToast: true
@@ -109,7 +109,7 @@
         $form.find('[name="sticker"]').val(vehicle.sticker || '');
         $form.find('[name="flat_no"]').val(vehicle.flat_no || '');
         $form.find('[name="vehicle_id"]').val(vehicle.id);
-        $form.find('[name="action"]').val('SNESTX51_edit_vehicle');
+        $form.find('[name="action"]').val('snestx51_edit_vehicle');
 
         $('#vehicleModalTitle').text('Edit Vehicle: ' + vehicle.number);
         vehicleModal.show();
@@ -118,7 +118,7 @@
     function resetVehicleForm() {
         const $form = $('#add-vehicle-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('SNESTX51_add_vehicle');
+        $form.find('[name="action"]').val('snestx51_add_vehicle');
         $('#vehicleModalTitle').text('Add New Vehicle');
     }
 
@@ -136,7 +136,7 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             SNESTX.ajax({
-                action: 'SNESTX51_delete_vehicle',
+                action: 'snestx51_delete_vehicle',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -162,7 +162,7 @@
 
     window.restoreVehicle = async function (id) {
         SNESTX.ajax({
-            action: 'SNESTX51_restore_vehicle',
+            action: 'snestx51_restore_vehicle',
             data: {
                 id: id,
                 _wpnonce: Config.nonce

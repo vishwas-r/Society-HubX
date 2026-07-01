@@ -147,7 +147,7 @@ class SNESTX51_Receipt_Manager {
 			'balance_due'      => $balance_due,
 			'status'           => $this->get_payment_status( $invoice_amount, $total_paid ),
 			'payments'         => $payments,
-			'society_name'     => get_option( 'SNESTX51_society_name', 'Society' ),
+			'society_name'     => get_option( 'snestx51_society_name', 'Society' ),
 		);
 	}
 

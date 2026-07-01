@@ -20,7 +20,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'expenses' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -38,7 +38,7 @@
 
     function approveExpense(id) {
         SNESTX.ajax({
-            action: 'SNESTX51_approve_expense',
+            action: 'snestx51_approve_expense',
             data: { expense_id: id, _wpnonce: Config.nonce },
             successMessage: 'Expense approved successfully',
             reload: true
@@ -52,7 +52,7 @@
         if (!modalEl || !confirmBtn) {
             if (!confirm('Delete this expense?')) return;
             SNESTX.ajax({
-                action: 'SNESTX51_delete_expense',
+                action: 'snestx51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 reload: true
             });
@@ -65,7 +65,7 @@
 
         newConfirmBtn.addEventListener('click', function () {
             SNESTX.ajax({
-                action: 'SNESTX51_delete_expense',
+                action: 'snestx51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 successMessage: 'Expense deleted',
                 onSuccess: function () {
@@ -92,7 +92,7 @@
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const formData = new FormData(form);
-                    if (!formData.get('action')) formData.append('action', 'SNESTX51_add_expense');
+                    if (!formData.get('action')) formData.append('action', 'snestx51_add_expense');
 
                     SNESTX.ajax({
                         action: formData.get('action'),

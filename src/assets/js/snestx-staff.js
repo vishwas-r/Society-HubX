@@ -20,7 +20,7 @@
 
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'staff' },
                 showOverlay: false,
                 suppressErrorToast: true // Silent fetch for config
@@ -177,7 +177,7 @@
 
         $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
-        $form.find('[name="action"]').val('SNESTX51_edit_staff');
+        $form.find('[name="action"]').val('snestx51_edit_staff');
 
         $('#staffModalTitle').text('Edit Staff: ' + staff.name);
         staffModal.show();
@@ -186,7 +186,7 @@
     function resetStaffForm() {
         const $form = $('#add-staff-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('SNESTX51_add_staff');
+        $form.find('[name="action"]').val('snestx51_add_staff');
         $form.find('[name="flats_served[]"]').val([]); // Clear multi-select
         $form.find('[name="staff_id"]').val('');
 
@@ -213,7 +213,7 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             SNESTX.ajax({
-                action: 'SNESTX51_delete_staff',
+                action: 'snestx51_delete_staff',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -239,7 +239,7 @@
 
     window.restoreStaff = async function (id) {
         SNESTX.ajax({
-            action: 'SNESTX51_restore_staff',
+            action: 'snestx51_restore_staff',
             data: {
                 id: id,
                 _wpnonce: Config.nonce

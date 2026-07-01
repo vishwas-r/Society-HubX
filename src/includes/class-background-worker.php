@@ -18,9 +18,9 @@ class SNESTX51_Background_Worker {
 	public function __construct() {
 		// Hook into Action Scheduler events
         if ( $this->is_available() ) {
-            add_action( 'SNESTX51_process_bulk_invoices', array( $this, 'process_bulk_invoices' ), 10, 4 );
-            add_action( 'SNESTX51_process_notification_blast', array( $this, 'process_notification_blast' ), 10, 2 );
-            add_action( 'SNESTX51_process_data_purge', array( $this, 'process_data_purge' ) );
+            add_action( 'snestx51_process_bulk_invoices', array( $this, 'process_bulk_invoices' ), 10, 4 );
+            add_action( 'snestx51_process_notification_blast', array( $this, 'process_notification_blast' ), 10, 2 );
+            add_action( 'snestx51_process_data_purge', array( $this, 'process_data_purge' ) );
         }
 	}
 
@@ -43,7 +43,7 @@ class SNESTX51_Background_Worker {
 		$residents = $db->get( 'residents' );
 		$total = count( $residents );
 		
-		$job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
+		$job_key = "snestx51_job_bulk_invoice_{$month}_{$type}";
 		$status = array(
 			'total'      => $total,
 			'processed'  => 0,
@@ -56,7 +56,7 @@ class SNESTX51_Background_Worker {
 
 		if ( ! $this->is_available() ) return false;
 
-		as_enqueue_async_action( 'SNESTX51_process_bulk_invoices', array( 'month' => $month, 'amount' => $amount, 'type' => $type, 'offset' => 0 ) );
+		as_enqueue_async_action( 'snestx51_process_bulk_invoices', array( 'month' => $month, 'amount' => $amount, 'type' => $type, 'offset' => 0 ) );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class SNESTX51_Background_Worker {
 		}
 
 		// Update Job Status
-		$job_key = "SNESTX51_job_bulk_invoice_{$month}_{$type}";
+		$job_key = "snestx51_job_bulk_invoice_{$month}_{$type}";
 		$status_opt = get_option( $job_key );
 		if ( $status_opt ) {
 			$status_opt['processed'] += count( $residents );
@@ -129,7 +129,7 @@ class SNESTX51_Background_Worker {
 		// Schedule next batch or Recursively process if in synchronous mode
 		if ( count( $residents ) === $limit ) {
             if ( $this->is_available() ) {
-                as_enqueue_async_action( 'SNESTX51_process_bulk_invoices', array( 
+                as_enqueue_async_action( 'snestx51_process_bulk_invoices', array( 
                     'month'  => $month, 
                     'amount' => $amount, 
                     'type'   => $type, 

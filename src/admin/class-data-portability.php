@@ -14,8 +14,8 @@ class SNESTX51_Data_Portability {
 
 	public function __construct() {
 		// Admin POST actions for Export/Import
-		add_action( 'admin_post_SNESTX51_export_data', array( $this, 'handle_export_request' ) );
-		add_action( 'admin_post_SNESTX51_import_data', array( $this, 'handle_import_request' ) );
+		add_action( 'admin_post_snestx51_export_data', array( $this, 'handle_export_request' ) );
+		add_action( 'admin_post_snestx51_import_data', array( $this, 'handle_import_request' ) );
 	}
 
 	/**
@@ -25,7 +25,7 @@ class SNESTX51_Data_Portability {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized Access' );
 		}
-		check_admin_referer( 'SNESTX51_export_nonce' );
+		check_admin_referer( 'snestx51_export_nonce' );
 
 		// 1. Prepare Environment
 		$upload_dir = wp_upload_dir();
@@ -145,7 +145,7 @@ class SNESTX51_Data_Portability {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized Access' );
 		}
-		check_admin_referer( 'SNESTX51_import_nonce' );
+		check_admin_referer( 'snestx51_import_nonce' );
 
 		if ( empty( $_FILES['import_file']['tmp_name'] ) ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-global-settings&tab=portability&error=no_file' ) );

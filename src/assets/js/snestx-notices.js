@@ -15,7 +15,7 @@
         if (Config.initialized) return;
         try {
             const result = await SNESTX.ajax({
-                action: 'SNESTX51_get_module_config',
+                action: 'snestx51_get_module_config',
                 data: { module: 'notices' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -81,7 +81,7 @@
 
         const formData = new FormData(form);
         const isUpdate = formData.get('id');
-        const action = isUpdate ? 'SNESTX51_update_notice' : 'SNESTX51_add_notice';
+        const action = isUpdate ? 'snestx51_update_notice' : 'snestx51_add_notice';
 
         SNESTX.ajax({
             action: action,
@@ -98,7 +98,7 @@
     function deleteNotice(id) {
         if (!confirm('Permanently remove this announcement? This cannot be undone.')) return;
         SNESTX.ajax({
-            action: 'SNESTX51_delete_notice',
+            action: 'snestx51_delete_notice',
             data: { id, _wpnonce: Config.deleteNonce },
             successMessage: 'Notice removed',
             onSuccess: function () {
@@ -109,7 +109,7 @@
 
     function togglePin(id, pinned) {
         SNESTX.ajax({
-            action: 'SNESTX51_toggle_pin',
+            action: 'snestx51_toggle_pin',
             data: { id, pinned, _wpnonce: Config.nonce },
             successMessage: pinned ? 'Notice pinned to top' : 'Notice unpinned',
             reload: true
@@ -134,7 +134,7 @@
             const id = $(this).data('id');
 
             SNESTX.ajax({
-                action: 'SNESTX51_get_notice',
+                action: 'snestx51_get_notice',
                 data: { id, _wpnonce: Config.nonce },
                 onSuccess: function (data) {
                     openNoticeModal(data);

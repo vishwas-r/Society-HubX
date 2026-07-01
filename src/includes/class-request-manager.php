@@ -19,9 +19,9 @@ class SNESTX51_Request_Manager {
 		$this->db = new SNESTX51_DB_Router();
         
         // Register AJAX Actions for Approvals
-        add_action( 'wp_ajax_SNESTX51_approve_request', array( $this, 'handle_ajax_approve' ) );
-        add_action( 'wp_ajax_SNESTX51_reject_request', array( $this, 'handle_ajax_reject' ) );
-        add_action( 'wp_ajax_SNESTX51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
+        add_action( 'wp_ajax_snestx51_approve_request', array( $this, 'handle_ajax_approve' ) );
+        add_action( 'wp_ajax_snestx51_reject_request', array( $this, 'handle_ajax_reject' ) );
+        add_action( 'wp_ajax_snestx51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -66,7 +66,7 @@ class SNESTX51_Request_Manager {
      * AJAX: Approve Request
      */
     public function handle_ajax_approve() {
-        check_ajax_referer( 'SNESTX51_request_action' );
+        check_ajax_referer( 'snestx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -83,7 +83,7 @@ class SNESTX51_Request_Manager {
      * AJAX: Reject Request
      */
     public function handle_ajax_reject() {
-        check_ajax_referer( 'SNESTX51_request_action' );
+        check_ajax_referer( 'snestx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -102,7 +102,7 @@ class SNESTX51_Request_Manager {
      * AJAX: Bulk Process
      */
     public function handle_bulk_process() {
-        check_ajax_referer( 'SNESTX51_request_action' );
+        check_ajax_referer( 'snestx51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $ids = isset($_POST['ids']) ? array_map('sanitize_text_field', wp_unslash($_POST['ids'])) : [];
@@ -218,7 +218,7 @@ class SNESTX51_Request_Manager {
 		$action      = $target_request['request_type']; 
 		$payload     = is_array($target_request['payload'] ?? null) ? $target_request['payload'] : json_decode( $target_request['payload'], true );
 		
-        $module_instance = apply_filters( 'SNESTX51_get_module_' . $module_slug, null );
+        $module_instance = apply_filters( 'snestx51_get_module_' . $module_slug, null );
 
         if ( ! empty( $target_request['entity_id'] ) ) {
             $payload['id'] = $target_request['entity_id'];

@@ -321,7 +321,7 @@ $all_flats = $flats;
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($all_flats) {
+add_action('snestx51_admin_modals', function() use ($all_flats) {
 ?>
 <!-- Staff Modal -->
 <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
@@ -332,10 +332,10 @@ add_action('SNESTX51_admin_modals', function() use ($all_flats) {
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="add-staff-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="SNESTX51_add_staff">
+                <input type="hidden" name="action" value="snestx51_add_staff">
                 <input type="hidden" name="staff_id" value="">
                 <input type="hidden" name="profile_photo" value="">
-                <?php wp_nonce_field( 'SNESTX51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'snestx51_staff_nonce' ); ?>
 
                 <div class="modal-body p-4">
                     <!-- Profile Photo Selection -->

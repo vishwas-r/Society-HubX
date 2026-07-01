@@ -24,7 +24,7 @@ class SNESTX51_Notification_Dispatcher {
         $this->load_providers();
         
         // Hook into Action Scheduler for background processing
-        add_action('SNESTX51_async_notification', [$this, 'dispatch_now'], 10, 4);
+        add_action('snestx51_async_notification', [$this, 'dispatch_now'], 10, 4);
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -61,7 +61,7 @@ class SNESTX51_Notification_Dispatcher {
         }
 
         if ($async && function_exists('as_enqueue_async_action')) {
-            as_enqueue_async_action('SNESTX51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
+            as_enqueue_async_action('snestx51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
             return true;
         }
 

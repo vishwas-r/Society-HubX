@@ -88,8 +88,8 @@ function SNESTX_in_fmt($num, $decimals = 2) {
 
 // New Consolidated Stats
 $total_credit = 0; $total_debit = 0;
-$opening_bank = floatval(get_option('SNESTX51_opening_bank_' . $selected_year, 0));
-$opening_cash = floatval(get_option('SNESTX51_opening_cash_' . $selected_year, 0));
+$opening_bank = floatval(get_option('snestx51_opening_bank_' . $selected_year, 0));
+$opening_cash = floatval(get_option('snestx51_opening_cash_' . $selected_year, 0));
 
 foreach($ledger_entries as $e) {
     if(($e['type'] ?? '') === 'Credit') $total_credit += $e['amount'];
@@ -99,8 +99,8 @@ foreach($ledger_entries as $e) {
 $last_entry = end($ledger_entries);
 $net_balance = ($last_entry['bank_balance'] ?? 0) + ($last_entry['cash_balance'] ?? 0);
 
-$actual_bank = floatval(get_option('SNESTX51_actual_bank_' . $selected_year, 0));
-$actual_cash = floatval(get_option('SNESTX51_actual_cash_' . $selected_year, 0));
+$actual_bank = floatval(get_option('snestx51_actual_bank_' . $selected_year, 0));
+$actual_cash = floatval(get_option('snestx51_actual_cash_' . $selected_year, 0));
 $actual_total = $actual_bank + $actual_cash;
 $variance = $actual_total - $net_balance;
 
@@ -192,8 +192,8 @@ if ( isset( $_GET['success'] ) ) {
 
 <!-- Nonce for AJAX Requests -->
 <script>
-    var SNESTX51AdminNonce = '<?php echo wp_create_nonce( 'SNESTX51_nonce' ); ?>';
-    var SNESTX51RequestNonce = '<?php echo wp_create_nonce( 'SNESTX51_request_action' ); ?>';
+    var SNESTX51AdminNonce = '<?php echo wp_create_nonce( 'snestx51_nonce' ); ?>';
+    var snestx51RequestNonce = '<?php echo wp_create_nonce( 'snestx51_request_action' ); ?>';
     var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
     
     // Chart Data
@@ -256,7 +256,7 @@ if ( isset( $_GET['success'] ) ) {
     $all_options = wp_load_alloptions();
     $running_jobs = array();
     foreach ( $all_options as $key => $val ) {
-        if ( strpos( $key, 'SNESTX51_job_bulk_invoice_' ) === 0 ) {
+        if ( strpos( $key, 'snestx51_job_bulk_invoice_' ) === 0 ) {
             $job = maybe_unserialize( $val );
             if ( $job && $job['status'] === 'running' ) {
                 $running_jobs[] = $job;
@@ -645,7 +645,7 @@ if ( isset( $_GET['success'] ) ) {
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
+add_action('snestx51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
 ?>
 <!-- Reconcile Modal -->
 <div class="modal fade" id="reconcileModal" tabindex="-1" aria-hidden="true">
@@ -657,9 +657,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_reconcile_balance">
+                    <input type="hidden" name="action" value="snestx51_reconcile_balance">
                     <input type="hidden" name="year" value="<?php echo $selected_year; ?>">
-                    <?php wp_nonce_field('SNESTX51_reconcile_nonce'); ?>
+                    <?php wp_nonce_field('snestx51_reconcile_nonce'); ?>
                     
                     <h6 class="fw-bold text-primary small text-uppercase mb-3">Actual Physical Funds (Now)</h6>
                     <div class="mb-3">
@@ -702,9 +702,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_generate_invoices">
+                    <input type="hidden" name="action" value="snestx51_generate_invoices">
                     <input type="hidden" name="type" value="maintenance">
-                    <?php wp_nonce_field( 'SNESTX51_account_action' ); ?>
+                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
@@ -719,7 +719,7 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Amount (₹)</label>
-                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('SNESTX51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('snestx51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
@@ -750,9 +750,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_generate_invoices">
+                    <input type="hidden" name="action" value="snestx51_generate_invoices">
                     <input type="hidden" name="type" value="adhoc">
-                    <?php wp_nonce_field( 'SNESTX51_account_action' ); ?>
+                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Title / Reason</label>
@@ -794,9 +794,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="edit-invoice-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_edit_invoice">
+                    <input type="hidden" name="action" value="snestx51_edit_invoice">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'SNESTX51_account_action' ); ?>
+                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Description</label>
@@ -850,9 +850,9 @@ add_action('SNESTX51_admin_modals', function() use ($selected_year, $actual_bank
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="payment-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="SNESTX51_record_payment">
+                    <input type="hidden" name="action" value="snestx51_record_payment">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'SNESTX51_account_action' ); ?>
+                    <?php wp_nonce_field( 'snestx51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Amount Received (₹)</label>
@@ -958,7 +958,7 @@ window.openAdminReceipt = function (btn) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'action=SNESTX51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + SNESTX51AdminNonce
+        body: 'action=snestx51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + SNESTX51AdminNonce
     })
         .then(response => response.json())
         .then(data => {
@@ -1448,7 +1448,7 @@ function initAdminPaymentSync() {
         
         try {
             const formData = new URLSearchParams();
-            formData.append('action', 'SNESTX51_poll_state_hash');
+            formData.append('action', 'snestx51_poll_state_hash');
             formData.append('_wpnonce', window.snestx51_admin_nonce);
             
             const req = await fetch(window.ajaxurl, {

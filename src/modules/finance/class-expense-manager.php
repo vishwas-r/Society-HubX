@@ -20,16 +20,16 @@ class SNESTX51_Expense_Manager {
 		$this->drive = new SNESTX51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_add_expense', array( $this, 'handle_add_expense' ) );
-		add_action( 'admin_post_SNESTX51_edit_expense', array( $this, 'handle_edit_expense' ) );
-		add_action( 'admin_post_SNESTX51_delete_expense', array( $this, 'handle_delete_expense' ) );
-		add_action( 'admin_post_SNESTX51_approve_expense', array( $this, 'handle_approve_expense' ) );
+		add_action( 'admin_post_snestx51_add_expense', array( $this, 'handle_add_expense' ) );
+		add_action( 'admin_post_snestx51_edit_expense', array( $this, 'handle_edit_expense' ) );
+		add_action( 'admin_post_snestx51_delete_expense', array( $this, 'handle_delete_expense' ) );
+		add_action( 'admin_post_snestx51_approve_expense', array( $this, 'handle_approve_expense' ) );
 		
 		// AJAX Handlers
-		add_action( 'wp_ajax_SNESTX51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
-		add_action( 'wp_ajax_SNESTX51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
-		add_action( 'wp_ajax_SNESTX51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
-		add_action( 'wp_ajax_SNESTX51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
+		add_action( 'wp_ajax_snestx51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
+		add_action( 'wp_ajax_snestx51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
+		add_action( 'wp_ajax_snestx51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
+		add_action( 'wp_ajax_snestx51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
 	}
 
 	public function register_menu() {
@@ -44,7 +44,7 @@ class SNESTX51_Expense_Manager {
 	}
 
 	public function handle_add_expense() {
-		if ( ! check_admin_referer( 'SNESTX51_add_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_add_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -93,7 +93,7 @@ class SNESTX51_Expense_Manager {
 	}
 
 	public function handle_edit_expense() {
-		if ( ! check_admin_referer( 'SNESTX51_edit_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_edit_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -132,7 +132,7 @@ class SNESTX51_Expense_Manager {
 	}
 
 	public function handle_delete_expense() {
-		if ( ! check_admin_referer( 'SNESTX51_delete_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_delete_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -153,7 +153,7 @@ class SNESTX51_Expense_Manager {
 	}
 
 	public function handle_approve_expense() {
-		if ( ! check_admin_referer( 'SNESTX51_approve_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'snestx51_approve_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -187,7 +187,7 @@ class SNESTX51_Expense_Manager {
 	 * AJAX Handler for Adding Expense
 	 */
 	public function handle_add_expense_ajax() {
-		check_ajax_referer( 'SNESTX51_add_expense_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_add_expense_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -251,7 +251,7 @@ class SNESTX51_Expense_Manager {
 	 * AJAX Handler for Editing Expense
 	 */
 	public function handle_edit_expense_ajax() {
-		check_ajax_referer( 'SNESTX51_edit_expense_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_edit_expense_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -297,7 +297,7 @@ class SNESTX51_Expense_Manager {
 	 * AJAX Handler for Deleting Expense
 	 */
 	public function handle_delete_expense_ajax() {
-		check_ajax_referer( 'SNESTX51_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -322,7 +322,7 @@ class SNESTX51_Expense_Manager {
 	 * AJAX Handler for Approving Expense
 	 */
 	public function handle_approve_expense_ajax() {
-		check_ajax_referer( 'SNESTX51_nonce', '_wpnonce' );
+		check_ajax_referer( 'snestx51_nonce', '_wpnonce' );
 		
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );

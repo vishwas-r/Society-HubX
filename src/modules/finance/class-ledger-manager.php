@@ -18,11 +18,11 @@ class SNESTX51_Ledger_Manager {
 		$this->db = new SNESTX51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_SNESTX51_reconcile_balance', array( $this, 'handle_reconcile_balance' ) );
+		add_action( 'admin_post_snestx51_reconcile_balance', array( $this, 'handle_reconcile_balance' ) );
 	}
 
 	    public function handle_reconcile_balance() {
-        if ( ! check_admin_referer( 'SNESTX51_reconcile_nonce' ) ) wp_die( 'Security check failed' );
+        if ( ! check_admin_referer( 'snestx51_reconcile_nonce' ) ) wp_die( 'Security check failed' );
         if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
 
         $year = isset( $_POST['year'] ) ? sanitize_text_field( wp_unslash( $_POST['year'] ) ) : '';
@@ -31,10 +31,10 @@ class SNESTX51_Ledger_Manager {
         $opening_bank = isset( $_POST['opening_bank'] ) ? floatval( wp_unslash( $_POST['opening_bank'] ) ) : 0;
         $opening_cash = isset( $_POST['opening_cash'] ) ? floatval( wp_unslash( $_POST['opening_cash'] ) ) : 0;
 
-        update_option( 'SNESTX51_actual_bank_' . $year, $bank );
-        update_option( 'SNESTX51_actual_cash_' . $year, $cash );
-        update_option( 'SNESTX51_opening_bank_' . $year, $opening_bank );
-        update_option( 'SNESTX51_opening_cash_' . $year, $opening_cash );
+        update_option( 'snestx51_actual_bank_' . $year, $bank );
+        update_option( 'snestx51_actual_cash_' . $year, $cash );
+        update_option( 'snestx51_opening_bank_' . $year, $opening_bank );
+        update_option( 'snestx51_opening_cash_' . $year, $opening_cash );
 
         wp_safe_redirect( admin_url( 'admin.php?page=snestx51-accounts&tab=ledger&year=' . $year . '&success=reconciled' ) );
         exit;
@@ -170,8 +170,8 @@ class SNESTX51_Ledger_Manager {
 			return strtotime( $a['date'] ) - strtotime( $b['date'] );
 		});
 
-		$opening_bank = floatval( get_option( 'SNESTX51_opening_bank_' . $year, get_option( 'SNESTX51_opening_bank', 0 ) ) );
-		$opening_cash = floatval( get_option( 'SNESTX51_opening_cash_' . $year, get_option( 'SNESTX51_opening_cash', 0 ) ) );
+		$opening_bank = floatval( get_option( 'snestx51_opening_bank_' . $year, get_option( 'snestx51_opening_bank', 0 ) ) );
+		$opening_cash = floatval( get_option( 'snestx51_opening_cash_' . $year, get_option( 'snestx51_opening_cash', 0 ) ) );
 		
 		// Prepend Opening Balance Entry
 		array_unshift($entries, array(

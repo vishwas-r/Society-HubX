@@ -262,7 +262,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
 
 <!-- Global Modals Container (Outside Root for z-index) -->
 <div id="snestx51-modals-root">
-    <?php do_action('SNESTX51_admin_modals'); ?>
+    <?php do_action('snestx51_admin_modals'); ?>
 </div>
 
 <?php 

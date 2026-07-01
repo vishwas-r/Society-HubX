@@ -49,8 +49,8 @@ SNESTX51_Data_Migrator::run_all();
 echo "<span style='color:green'>Done.</span></li>";
 
 // 4. Update Version Option
-update_option('SNESTX51_version', '1.0.2');
-update_option('SNESTX51_storage_migrated', '1.0.2');
+update_option('snestx51_version', '1.0.2');
+update_option('snestx51_storage_migrated', '1.0.2');
 
 echo "<p style='color:green; font-weight:bold; font-size:1.2rem;'>Success: Database is now at version 1.0.2 and fully relational.</p>";
 echo "<p>You can now delete this file from your server for security.</p>";
