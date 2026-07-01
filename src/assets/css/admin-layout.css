@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * SocietyNestX - Admin Layout (Bootstrap Migration)
  * Replacing Tailwind utilities with custom classes + Bootstrap 5
  */
@@ -826,3 +826,7 @@ input:checked+.snestx-toggle-sm .snestx-toggle-slider:before {
 }
 
 /* Note: CSS doesn't support @extend, but keeping for reference if I need to find/replace */
+
+.hidden {
+    display: none !important;
+}

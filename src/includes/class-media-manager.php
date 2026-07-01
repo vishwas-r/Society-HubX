@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
@@ -56,12 +56,33 @@ class SNESTX51_Media_Manager {
 		$filename = strtolower( sprintf( '%s-%s.%s', $flat_clean, $name_clean, $ext ) );
 		$destination = $target_dir . $filename;
 
-		// Move file
-		// phpcs:ignore Generic.PHP.ForbiddenFunctions.Found -- Custom destination filesystem path naming structure is required.
-		if ( move_uploaded_file( $file['tmp_name'], $destination ) ) {
-			return $this->base_url . $subfolder . '/' . $filename;
+		// Move file using WordPress standard wp_handle_upload
+		$upload_dir_filter = function( $uploads ) use ( $subfolder, $filename ) {
+			$uploads['path']   = $uploads['basedir'] . '/society-nestx/profile-pics/' . $subfolder;
+			$uploads['url']    = $uploads['baseurl'] . '/society-nestx/profile-pics/' . $subfolder;
+			$uploads['subdir'] = '/society-nestx/profile-pics/' . $subfolder;
+			return $uploads;
+		};
+		add_filter( 'upload_dir', $upload_dir_filter );
+
+		$overrides = array(
+			'test_form' => false,
+			'unique_filename_callback' => function( $dir, $name, $ext ) use ( $filename ) {
+				return $filename;
+			}
+		);
+
+		if ( ! function_exists( 'wp_handle_upload' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
+		$uploaded = wp_handle_upload( $file, $overrides );
+
+		remove_filter( 'upload_dir', $upload_dir_filter );
+
+		if ( isset( $uploaded['error'] ) ) {
+			return new WP_Error( 'upload_failed', $uploaded['error'] );
 		}
 
-		return new WP_Error( 'upload_failed', 'Failed to save profile photo.' );
+		return $uploaded['url'];
 	}
 }

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals -- Template files define local variables.
  */
@@ -813,51 +813,7 @@ $templates = $db->get('notification_templates');
             </div>
         </div>
     </div>
-</div>
-
-<style>
-    .hidden {
-        display: none !important;
-    }
-</style>
-
-<script>
-// Tab Persistence or initial setup if needed (Bootstrap Tab API is native)
-document.addEventListener('DOMContentLoaded', () => {
-    // Media Uploader for QR Code (Uses WordPress Media Library)
-    const btnUpload = document.getElementById('btn-upload-qr');
-    if(btnUpload) {
-        btnUpload.addEventListener('click', (e) => {
-            e.preventDefault();
-            const frame = wp.media({
-                title: 'Select Society Payment QR Code',
-                button: { text: 'Use this Image' },
-                multiple: false
-            });
-            frame.on('select', () => {
-                const attachment = frame.state().get('selection').first().toJSON();
-                document.getElementById('SNESTX51_bank_qr').value = attachment.url;
-                const preview = document.getElementById('qr-preview-container');
-                preview.innerHTML = `<img src="${attachment.url}" class="img-fluid rounded">`;
-                location.reload(); // Reload to show remove button or update state simply
-            });
-            frame.open();
-        });
-    }
-
-    const btnRemove = document.getElementById('btn-remove-qr');
-    if(btnRemove) {
-        btnRemove.addEventListener('click', () => {
-            if(confirm('Remove QR code image?')) {
-                document.getElementById('SNESTX51_bank_qr').value = '';
-                location.reload();
-            }
-        });
-    }
-});
-</script>
-
-<?php
+</div><?php
 // Hook modals into SNESTX51_admin_modals
 add_action('SNESTX51_admin_modals', function() {
 ?>

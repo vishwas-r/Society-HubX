@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * View: Vehicles (Bootstrap Migration)
  * Integrates directly with SNESTX51_DB_Router for data.
@@ -44,7 +44,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                 <!-- Smart Search -->
                 <div class="flex-grow-1 position-relative">
                     <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                    <input type="text" id="vehicle-search" placeholder="Search by number, owner, or flat..." 
+                    <input type="text" id="filter-search" placeholder="Search by number, owner, or flat..." 
                            class="form-control ps-5 bg-light border-0 shadow-none rounded-3 fw-medium" 
                            style="height: 48px; font-size: 0.95rem;">
                 </div>
@@ -321,60 +321,6 @@ add_action('SNESTX51_admin_modals', function() use ($flats) {
 </div>
 <?php }); ?>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('vehicle-search');
-    const tabBtns = document.querySelectorAll('#vehicleTabs button');
-    const rows = document.querySelectorAll('.vehicle-row');
-
-    let currentTab = 'all';
-
-    function applyFilters() {
-        const query = (searchInput.value || '').toLowerCase();
-
-        rows.forEach(row => {
-            const searchData = (row.dataset.search || '').toLowerCase();
-            const rowStatus = row.dataset.status;
-
-            const matchesSearch = searchData.includes(query);
-            const matchesTab = (currentTab === 'all' || rowStatus === currentTab);
-
-            if (matchesSearch && matchesTab) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    if(searchInput) searchInput.addEventListener('keyup', applyFilters);
-
-    window.switchTab = function(tab) {
-        currentTab = tab;
-        tabBtns.forEach(btn => {
-            if(btn.dataset.tab === tab) {
-                btn.classList.add('active', 'text-primary', 'border-primary', 'fw-bold');
-                btn.classList.remove('text-muted', 'border-transparent', 'fw-semibold');
-            } else {
-                btn.classList.remove('active', 'text-primary', 'border-primary', 'fw-bold');
-                btn.classList.add('text-muted', 'border-transparent', 'fw-semibold');
-            }
-        });
-        applyFilters();
-    };
-
-    window.restoreVehicle = async function(id) {
-        if(!confirm('Are you sure you want to restore this vehicle?')) return;
-        try {
-            await window.SNESTXApiRequest('SNESTX51_restore_vehicle', {
-                id: id,
-                _wpnonce: '<?php echo esc_js( wp_create_nonce("SNESTX51_add_vehicle_nonce") ); ?>'
-            });
-            window.location.reload();
-        } catch(e) {}
-    };
-});
-</script>
             </div>
         </div>
     </div>

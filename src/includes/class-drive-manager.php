@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Drive Manager
  * Handles File Operations: Folders, Uploads, List.
@@ -207,15 +207,37 @@ class SNESTX51_Drive_Manager {
 			return $body['webViewLink'] ?? true; // Return URL or True
 
 		} else {
-			$destination = $folder . '/' . $file_array['name'];
-			// phpcs:ignore Generic.PHP.ForbiddenFunctions.Found -- Custom destination filesystem path naming structure is required.
-			move_uploaded_file( $file_array['tmp_name'], $destination );
-			
-			$upload_url = wp_upload_dir();
-			$rel = str_replace( $this->local_root, '', $folder );
-			// Fix slashes
-			$rel = trim( str_replace( '\\', '/', $rel ), '/' );
-			return $upload_url['baseurl'] . '/society-nestx/docs/' . $rel . '/' . $file_array['name'];
+			// Move file using WordPress standard wp_handle_upload
+			$upload_dir_filter = function( $uploads ) use ( $folder ) {
+				$base_uploads = wp_upload_dir();
+				$rel = str_replace( $base_uploads['basedir'], '', $folder );
+				$rel = trim( str_replace( '\\', '/', $rel ), '/' );
+
+				$uploads['path']   = $folder;
+				$uploads['url']    = $base_uploads['baseurl'] . '/' . $rel;
+				$uploads['subdir'] = '/' . $rel;
+				return $uploads;
+			};
+			add_filter( 'upload_dir', $upload_dir_filter );
+
+			$overrides = array(
+				'test_form' => false,
+				'unique_filename_callback' => function( $dir, $name, $ext ) use ( $file_array ) {
+					return $file_array['name'];
+				}
+			);
+
+			if ( ! function_exists( 'wp_handle_upload' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+			$uploaded = wp_handle_upload( $file_array, $overrides );
+
+			remove_filter( 'upload_dir', $upload_dir_filter );
+
+			if ( isset( $uploaded['error'] ) ) {
+				return new WP_Error( 'upload_failed', $uploaded['error'] );
+			}
+			return $uploaded['url'];
 		}
 	}
 

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: Admin Settings
  * Renders the Plugin Settings Page.
@@ -49,7 +49,7 @@ class SNESTX51_Admin_Settings {
 			'snestx51-settings',
 			array( $this, 'render_settings_page' ),
 			'dashicons-building',
-			25
+			25.5
 		);
 
 		// Rename first subcommand to "Dashboard" to better reflect the new UI

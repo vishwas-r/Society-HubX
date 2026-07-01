@@ -1,9 +1,9 @@
-﻿=== SocietyNestX ===
+=== SocietyNestX ===
 Contributors: vishwas-r
 Tags: society, management, portal, billing, ledger, notices, polls, resident-directory, staff-management, facility-booking, rules-regulations, flat-management
 Requires at least: 6.0
 Tested up to: 7.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,13 @@ The plugin provides the following shortcodes to render portal elements on fronte
 * `[society_nestx_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == Changelog ==
+
+= 1.0.4 =
+* Migrated from CanvasJS to responsive Chart.js v4.4.3.
+* Updated Bootstrap to v5.3.3 and Fuse.js to v7.1.0 assets.
+* Secured REST API controllers with explicit permission callbacks.
+* Gated WordPress user registration to approved residents/admin actions.
+* Standardized file uploads from raw move_uploaded_file to wp_handle_upload.
 
 = 1.0.3 =
 * Localized all external CDN stylesheets and font enqueues.

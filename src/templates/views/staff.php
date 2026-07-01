@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * View: Staff & Help Management (Bootstrap Migration)
  *
@@ -458,11 +458,6 @@ add_action('SNESTX51_admin_modals', function() use ($all_flats) {
     </div>
 </div>
 <?php }); ?>
-
-<script>
-    // Expose request nonce for admin-app.js global handlers
-    window.SNESTX51RequestNonce = '<?php echo esc_js( wp_create_nonce("SNESTX51_request_action") ); ?>';
-</script>
 <?php 
 /* Redundant inline script removed in favor of snestx-staff.js */
 ?>

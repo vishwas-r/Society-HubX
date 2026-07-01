@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SNESTX51_VERSION', '1.0.3' );
+define( 'SNESTX51_VERSION', '1.0.4' );
 define( 'SNESTX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SNESTX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SNESTX51_PREFIX', 'SNESTX51' );
@@ -439,6 +439,11 @@ final class Society_NestX {
             wp_enqueue_script( 'snestx51-staff-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-staff.js', array('jquery'), time(), true );
             // Config fetched dynamically via AJAX
         }
+
+		// Rules View Specific JS
+		if ( $page === 'snestx51-rules' ) {
+			wp_enqueue_script( 'snestx51-rules-js', SNESTX51_PLUGIN_URL . 'assets/js/snestx-rules.js', array('jquery', 'snestx51-admin-app'), time(), true );
+		}
 
 		// Notices View Specific JS
 		if ( $page === 'snestx51-notices' ) {

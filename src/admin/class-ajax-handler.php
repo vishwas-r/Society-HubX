@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Class: AJAX Handler
  * Handles AJAX endpoints for module configuration and other dynamic requests.
@@ -136,6 +136,11 @@ class SNESTX51_AJAX_Handler {
 				);
 				break;
 
+			case 'rules':
+				$config = array(
+					'nonce' => wp_create_nonce( 'SNESTX51_rule_nonce' ),
+				);
+				break;
 
 			default:
 				return false;
