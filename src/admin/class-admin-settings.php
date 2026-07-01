@@ -24,6 +24,7 @@ class SNESTX51_Admin_Settings {
 		add_action( 'admin_post_SNESTX51_save_role', array( $this, 'handle_save_role' ) );
 		add_action( 'admin_post_SNESTX51_delete_role', array( $this, 'handle_delete_role' ) );
 		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
+		add_action( 'admin_notices', array( $this, 'render_setup_notice' ) );
 	}
 
 	public function maybe_redirect_to_setup() {
@@ -34,7 +35,8 @@ class SNESTX51_Admin_Settings {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		if ( ! $is_setup && $page !== 'snestx51-setup' ) {
+		// Only redirect if setup is not complete, they are not already on the setup page, and they are trying to access a SocietyNestX page
+		if ( ! $is_setup && $page !== 'snestx51-setup' && strpos( $page, 'snestx51-' ) === 0 ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=snestx51-setup' ) );
 			exit;
 		}
@@ -362,5 +364,22 @@ class SNESTX51_Admin_Settings {
 	public function render_setup_page() {
 		require_once SNESTX51_PLUGIN_DIR . 'admin/class-admin-app.php';
         SNESTX51_Admin_App::render_view( 'setup' );
+	}
+
+	public function render_setup_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) return;
+		if ( get_option( 'SNESTX51_is_setup_complete' ) ) return;
+
+		// Don't show notice on the setup page itself
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		if ( $page === 'snestx51-setup' ) return;
+
+		echo '<div class="notice notice-warning is-dismissible">';
+		echo '<p>' . sprintf(
+			esc_html__( 'SocietyNestX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-nestx' ),
+			'<a href="' . esc_url( admin_url( 'admin.php?page=snestx51-setup' ) ) . '"><strong>',
+			'</strong></a>'
+		) . '</p>';
+		echo '</div>';
 	}
 }
