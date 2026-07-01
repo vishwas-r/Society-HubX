@@ -393,10 +393,10 @@ final class Society_NestX {
 
         // Standard Nonces for global actions
         wp_localize_script( 'snestx51-admin-app', 'snestx51_vars', array(
-            'request_nonce' => wp_create_nonce( 'snestx51_request_action' )
+            'request_nonce' => wp_create_nonce( 'SNESTX51_request_action' )
         ));
         // Add global JS variable for convenience
-        wp_add_inline_script( 'snestx51-admin-app', 'var snestx51RequestNonce = "' . wp_create_nonce( 'snestx51_request_action' ) . '";', 'before' );
+        wp_add_inline_script( 'snestx51-admin-app', 'var snestx51RequestNonce = "' . wp_create_nonce( 'SNESTX51_request_action' ) . '";', 'before' );
 
         // Residents View Specific JS
         if ( $page === 'snestx51-residents' ) {
