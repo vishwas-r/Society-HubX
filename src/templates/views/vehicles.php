@@ -212,7 +212,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                     <?php if ($is_request && !empty($v['request_id'])): ?>
                                         <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
                                     <?php elseif ($status === 'rejected'): ?>
-                                        <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(json_encode($v)); ?>">
+                                        <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(wp_json_encode($v)); ?>">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light js-delete-vehicle text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo esc_attr($v['id']); ?>">
@@ -221,7 +221,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                     <?php elseif ($status === 'archived'): ?>
                                         <button onclick="restoreVehicle('<?php echo esc_js($v['id']); ?>')" class="btn btn-sm btn-success px-3 fw-bold shadow-none rounded-3" style="font-size: 10px;">RESTORE</button>
                                     <?php else: ?>
-                                        <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(json_encode($v)); ?>">
+                                        <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(wp_json_encode($v)); ?>">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light js-delete-vehicle text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo esc_attr($v['id']); ?>">

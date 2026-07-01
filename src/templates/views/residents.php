@@ -302,14 +302,14 @@ if (!isset($flats)) $flats = array();
                                     <?php if ( $is_request ) : ?>
                                         <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
-                                        <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(json_encode($row)); ?>">
+                                        <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>">
                                             <i class="bi bi-trash fs-6"></i>
                                         </button>
                                     <?php elseif ( ! $is_archived ) : ?>
-                                        <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(json_encode($row)); ?>">
+                                        <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
                                         </button>
                                         <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>">

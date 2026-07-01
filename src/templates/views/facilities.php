@@ -155,7 +155,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                         <?php foreach ( $facilities as $f ) : 
                             $rate_unit = $f['rate_unit'] ?? 'Hour';
                             $rate = $f['rate'] ?? ($f['rate_per_hour'] ?? 0);
-                            $payload = esc_attr(json_encode(array_merge($f, ['rate' => $rate, 'rate_unit' => $rate_unit])));
+                            $payload = esc_attr(wp_json_encode(array_merge($f, ['rate' => $rate, 'rate_unit' => $rate_unit])));
                             $search_text = esc_attr(strtolower(($f['name'] ?? '') . ' ' . ($f['rate'] ?? '') . ' ' . ($f['max_hours'] ?? '')));
                         ?>
                             <div class="list-group-item px-4 py-4 border-light d-flex justify-content-between align-items-center group" data-search="<?php echo $search_text; ?>">
@@ -266,7 +266,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                                 <span class="badge <?php echo $status_class; ?> bg-opacity-10 border border-current border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px; --bs-border-color: currentColor;">
                                                     <?php echo esc_html( $b['status'] ); ?>
                                                 </span>
-                                                <button data-booking='<?php echo esc_attr(json_encode($b)); ?>' type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-booking rounded-3 shadow-none">
+                                                <button data-booking='<?php echo esc_attr(wp_json_encode($b)); ?>' type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-booking rounded-3 shadow-none">
                                                     <i class="bi bi-pencil-square text-primary"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger js-delete-booking rounded-3 shadow-none" data-id="<?php echo esc_attr($b['id']); ?>">

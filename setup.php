@@ -1,6 +1,6 @@
 <?php
 /**
- * Single-Shot Webapp Setup Wizard for SocietyNestX
+ * Single-Shot Webapp Setup Wizard for Society HubX
  *
  * Automates WordPress installation, configures database credentials,
  * activates the society management plugin, and sets up pretty permalinks.
@@ -56,7 +56,7 @@ if (file_exists($config_path)) {
 }
 
 // Helper: Standalone salt generator
-function snestx_generate_salt() {
+function shubx_generate_salt() {
     $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_ []{}<>~`+=,.;:/?|';
     $salt = '';
     $len = strlen($chars);
@@ -89,10 +89,10 @@ if (isset($_POST['action']) && $_POST['action'] === 'reset_reinstall') {
                     $wpdb->query("DROP TABLE IF EXISTS `{$wpdb->prefix}{$tbl}`");
                 }
 
-                // Drop SocietyNestX custom tables matching Prefix + 'society_nestx_'
-                $snestx_tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}society_nestx_%'");
-                if (is_array($snestx_tables)) {
-                    foreach ($snestx_tables as $table) {
+                // Drop Society HubX custom tables matching Prefix + 'society_hubx_'
+                $shubx_tables = $wpdb->get_col("SHOW TABLES LIKE '{$wpdb->prefix}society_hubx_%'");
+                if (is_array($shubx_tables)) {
+                    foreach ($shubx_tables as $table) {
                         $wpdb->query("DROP TABLE IF EXISTS `$table`");
                     }
                 }
@@ -121,7 +121,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'run_install') {
     $db_pass = $_POST['db_pass'] ?? '';
     $db_prefix = sanitize_input($_POST['db_prefix'] ?? 'wp_');
     
-    $site_title = sanitize_input($_POST['site_title'] ?? 'SocietyNestX Community');
+    $site_title = sanitize_input($_POST['site_title'] ?? 'Society HubX Community');
     $admin_user = sanitize_input($_POST['admin_user'] ?? 'admin');
     $admin_pass = $_POST['admin_pass'] ?? '';
     $admin_email = filter_var($_POST['admin_email'] ?? '', FILTER_VALIDATE_EMAIL);
@@ -166,14 +166,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'run_install') {
                     $config_content = str_replace("\$table_prefix = 'wp_';", "\$table_prefix = '$db_prefix';", $config_content);
                     
                     // Replace security keys and salts
-                    $config_content = preg_replace("/define\(\s*'AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_KEY', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_KEY', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_KEY', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'NONCE_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_KEY', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_SALT', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_SALT', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_SALT', '" . snestx_generate_salt() . "' );", $config_content);
-                    $config_content = preg_replace("/define\(\s*'NONCE_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_SALT', '" . snestx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_KEY', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_KEY', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_KEY', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'NONCE_KEY',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_KEY', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'AUTH_SALT', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'SECURE_AUTH_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'SECURE_AUTH_SALT', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'LOGGED_IN_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'LOGGED_IN_SALT', '" . shubx_generate_salt() . "' );", $config_content);
+                    $config_content = preg_replace("/define\(\s*'NONCE_SALT',\s*'put your unique phrase here'\s*\);/", "define( 'NONCE_SALT', '" . shubx_generate_salt() . "' );", $config_content);
                     
                     // Write the config file
                     $written = @file_put_contents($config_path, $config_content);
@@ -197,9 +197,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'run_install') {
                                 // Install site
                                 $result = wp_install($site_title, $admin_user, $admin_email, true, '', $admin_pass);
                                 
-                                // Activate SocietyNestX plugin
+                                // Activate Society HubX plugin
                                 require_once ABSPATH . 'wp-admin/includes/plugin.php';
-                                $plugin_path = 'society-nestx/society-nestx.php';
+                                $plugin_path = 'society-hubx/society-hubx.php';
                                 if (file_exists(WP_PLUGIN_DIR . '/' . $plugin_path)) {
                                     activate_plugin($plugin_path);
                                 }
@@ -236,7 +236,7 @@ function sanitize_input($val) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SocietyNestX — Webapp Setup Wizard</title>
+    <title>Society HubX — Webapp Setup Wizard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -244,8 +244,8 @@ function sanitize_input($val) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root {
-            --snestx-primary-grad: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
-            --snestx-bg-grad: radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.18) 0%, rgba(217, 70, 239, 0.05) 50%, #05050a 100%);
+            --shubx-primary-grad: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+            --shubx-bg-grad: radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.18) 0%, rgba(217, 70, 239, 0.05) 50%, #05050a 100%);
             --bs-body-bg: #05050a;
             --bs-body-color: #f8fafc;
             --bs-card-bg: rgba(17, 20, 39, 0.55);
@@ -258,7 +258,7 @@ function sanitize_input($val) {
         }
 
         body {
-            background: var(--snestx-bg-grad);
+            background: var(--shubx-bg-grad);
             color: var(--bs-body-color);
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
@@ -268,12 +268,12 @@ function sanitize_input($val) {
             padding: 40px 20px;
         }
 
-        .snestx-setup-container {
+        .shubx-setup-container {
             width: 100%;
             max-width: 800px;
         }
 
-        .snestx-setup-card {
+        .shubx-setup-card {
             background: var(--bs-card-bg) !important;
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
@@ -283,13 +283,13 @@ function sanitize_input($val) {
             padding: 40px !important;
         }
 
-        .snestx-brand-header {
+        .shubx-brand-header {
             text-align: center;
             margin-bottom: 35px;
         }
 
-        .snestx-brand-title {
-            background: var(--snestx-primary-grad);
+        .shubx-brand-title {
+            background: var(--shubx-primary-grad);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
@@ -298,7 +298,7 @@ function sanitize_input($val) {
             margin-top: 15px;
         }
 
-        .snestx-setup-icon {
+        .shubx-setup-icon {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -311,7 +311,7 @@ function sanitize_input($val) {
             animation: bounce 2s infinite ease-in-out;
         }
 
-        .snestx-input {
+        .shubx-input {
             background-color: var(--bs-form-control-bg) !important;
             border: 1px solid var(--bs-form-control-border-color) !important;
             color: var(--bs-form-control-color) !important;
@@ -320,7 +320,7 @@ function sanitize_input($val) {
             transition: all 0.25s ease !important;
         }
 
-        .snestx-input:focus {
+        .shubx-input:focus {
             background-color: rgba(7, 8, 20, 0.98) !important;
             border-color: #d946ef !important;
             box-shadow: 0 0 0 3px rgba(217, 70, 239, 0.35) !important;
@@ -335,7 +335,7 @@ function sanitize_input($val) {
             color: #94a3b8;
         }
 
-        .snestx-section-title {
+        .shubx-section-title {
             font-weight: 700;
             font-size: 1.15rem;
             margin-bottom: 20px;
@@ -344,8 +344,8 @@ function sanitize_input($val) {
             color: #f1f5f9;
         }
 
-        .snestx-btn-primary {
-            background: var(--snestx-primary-grad) !important;
+        .shubx-btn-primary {
+            background: var(--shubx-primary-grad) !important;
             color: #fff !important;
             border: none !important;
             border-radius: 12px !important;
@@ -355,13 +355,13 @@ function sanitize_input($val) {
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
 
-        .snestx-btn-primary:hover {
+        .shubx-btn-primary:hover {
             transform: translateY(-2px);
             filter: brightness(1.1);
             box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
         }
 
-        .snestx-btn-secondary {
+        .shubx-btn-secondary {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid var(--bs-border-color) !important;
             color: #f1f5f9 !important;
@@ -371,11 +371,11 @@ function sanitize_input($val) {
             transition: all 0.2s ease !important;
         }
 
-        .snestx-btn-secondary:hover {
+        .shubx-btn-secondary:hover {
             background: rgba(255, 255, 255, 0.12) !important;
         }
 
-        .snestx-btn-danger {
+        .shubx-btn-danger {
             background: rgba(239, 68, 68, 0.15) !important;
             border: 1px solid rgba(239, 68, 68, 0.3) !important;
             color: #f87171 !important;
@@ -385,7 +385,7 @@ function sanitize_input($val) {
             transition: all 0.2s ease !important;
         }
 
-        .snestx-btn-danger:hover {
+        .shubx-btn-danger:hover {
             background: #ef4444 !important;
             color: #fff !important;
             box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25) !important;
@@ -399,15 +399,15 @@ function sanitize_input($val) {
 </head>
 <body>
 
-<div class="snestx-setup-container">
-    <div class="card snestx-setup-card border-0">
+<div class="shubx-setup-container">
+    <div class="card shubx-setup-card border-0">
         
         <!-- Header Section -->
-        <div class="snestx-brand-header">
-            <div class="snestx-setup-icon">
+        <div class="shubx-brand-header">
+            <div class="shubx-setup-icon">
                 <i class="fa-solid fa-building-shield text-primary display-5"></i>
             </div>
-            <h1 class="snestx-brand-title">SocietyNestX</h1>
+            <h1 class="shubx-brand-title">Society HubX</h1>
             <p class="text-muted mb-0">Single-Shot Webapp Setup Wizard</p>
         </div>
 
@@ -418,12 +418,12 @@ function sanitize_input($val) {
                     <i class="fa-solid fa-circle-check display-1"></i>
                 </div>
                 <h3 class="fw-bold">Configuration Complete!</h3>
-                <p class="text-muted px-md-5">WordPress has been installed successfully and the SocietyNestX management engine is activated. To secure your site, this setup file has self-deleted.</p>
+                <p class="text-muted px-md-5">WordPress has been installed successfully and the Society HubX management engine is activated. To secure your site, this setup file has self-deleted.</p>
                 <div class="d-flex justify-content-center gap-3 mt-4">
-                    <a href="<?php echo htmlspecialchars(admin_url('admin.php?page=snestx51-setup')); ?>" class="btn snestx-btn-primary">
+                    <a href="<?php echo htmlspecialchars(admin_url('admin.php?page=shubx51-setup')); ?>" class="btn shubx-btn-primary">
                         <i class="fa-solid fa-building-circle-check me-2"></i>Configure Society Settings
                     </a>
-                    <a href="<?php echo htmlspecialchars(admin_url()); ?>" class="btn snestx-btn-secondary">
+                    <a href="<?php echo htmlspecialchars(admin_url()); ?>" class="btn shubx-btn-secondary">
                         <i class="fa-solid fa-gauge-high me-2"></i>Open Admin Panel
                     </a>
                 </div>
@@ -436,24 +436,24 @@ function sanitize_input($val) {
                     <i class="fa-solid fa-shield-halved display-2"></i>
                 </div>
                 <h3 class="fw-bold">Webapp Already Installed</h3>
-                <p class="text-muted px-md-5 mb-5">WordPress and the SocietyNestX plugin are already configured on this server. Running this installer again is blocked to prevent data loss.</p>
+                <p class="text-muted px-md-5 mb-5">WordPress and the Society HubX plugin are already configured on this server. Running this installer again is blocked to prevent data loss.</p>
                 
                 <div class="card bg-danger bg-opacity-10 border-danger border-opacity-20 p-4 mb-4 rounded-4 text-start">
                     <h5 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Destructive Reset</h5>
                     <p class="small text-danger-emphasis mb-4">If you want to start over from scratch, clicking the button below will drop all database tables, delete the configuration file, and allow you to configure the webapp again. This will delete all resident, flats, and financial logs permanently.</p>
                     <form method="post" action="" onsubmit="return confirm('WARNING: Are you sure you want to delete all database tables and configuration? This action is permanent and cannot be undone!');">
                         <input type="hidden" name="action" value="reset_reinstall" />
-                        <button type="submit" class="btn snestx-btn-danger px-4 py-2.5">
+                        <button type="submit" class="btn shubx-btn-danger px-4 py-2.5">
                             <i class="fa-solid fa-trash-can me-2"></i>Re-install From Scratch
                         </button>
                     </form>
                 </div>
 
                 <div class="d-flex justify-content-center gap-3">
-                    <a href="./" class="btn snestx-btn-primary">
+                    <a href="./" class="btn shubx-btn-primary">
                         <i class="fa-solid fa-house me-2"></i>Visit Website
                     </a>
-                    <a href="./wp-admin/" class="btn snestx-btn-secondary">
+                    <a href="./wp-admin/" class="btn shubx-btn-secondary">
                         <i class="fa-solid fa-gauge me-2"></i>Go to Dashboard
                     </a>
                 </div>
@@ -476,57 +476,57 @@ function sanitize_input($val) {
                 <input type="hidden" name="action" value="run_install" />
 
                 <!-- Section 1: DB Credentials -->
-                <div class="snestx-section-title">
+                <div class="shubx-section-title">
                     <i class="fa-solid fa-database text-primary me-2"></i>1. Database Configuration
                 </div>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <label for="db_host" class="form-label">Database Host</label>
-                        <input type="text" name="db_host" id="db_host" class="form-control snestx-input" value="<?php echo htmlspecialchars($_POST['db_host'] ?? 'localhost'); ?>" required />
+                        <input type="text" name="db_host" id="db_host" class="form-control shubx-input" value="<?php echo htmlspecialchars($_POST['db_host'] ?? 'localhost'); ?>" required />
                     </div>
                     <div class="col-md-6">
                         <label for="db_name" class="form-label">Database Name</label>
-                        <input type="text" name="db_name" id="db_name" class="form-control snestx-input" placeholder="e.g. societydb" value="<?php echo htmlspecialchars($_POST['db_name'] ?? ''); ?>" required />
+                        <input type="text" name="db_name" id="db_name" class="form-control shubx-input" placeholder="e.g. societydb" value="<?php echo htmlspecialchars($_POST['db_name'] ?? ''); ?>" required />
                     </div>
                     <div class="col-md-6">
                         <label for="db_user" class="form-label">Database Username</label>
-                        <input type="text" name="db_user" id="db_user" class="form-control snestx-input" placeholder="e.g. root" value="<?php echo htmlspecialchars($_POST['db_user'] ?? ''); ?>" required />
+                        <input type="text" name="db_user" id="db_user" class="form-control shubx-input" placeholder="e.g. root" value="<?php echo htmlspecialchars($_POST['db_user'] ?? ''); ?>" required />
                     </div>
                     <div class="col-md-6">
                         <label for="db_pass" class="form-label">Database Password</label>
-                        <input type="password" name="db_pass" id="db_pass" class="form-control snestx-input" placeholder="••••••••" />
+                        <input type="password" name="db_pass" id="db_pass" class="form-control shubx-input" placeholder="••••••••" />
                     </div>
                     <div class="col-md-6">
                         <label for="db_prefix" class="form-label">Table Prefix</label>
-                        <input type="text" name="db_prefix" id="db_prefix" class="form-control snestx-input" value="<?php echo htmlspecialchars($_POST['db_prefix'] ?? 'wp_'); ?>" required />
+                        <input type="text" name="db_prefix" id="db_prefix" class="form-control shubx-input" value="<?php echo htmlspecialchars($_POST['db_prefix'] ?? 'wp_'); ?>" required />
                     </div>
                 </div>
 
                 <!-- Section 2: Admin Site Setup -->
-                <div class="snestx-section-title mt-4">
+                <div class="shubx-section-title mt-4">
                     <i class="fa-solid fa-user-gear text-primary me-2"></i>2. Administrator & Site Setup
                 </div>
                 <div class="row g-3 mb-4">
                     <div class="col-md-12">
                         <label for="site_title" class="form-label">Site Title</label>
-                        <input type="text" name="site_title" id="site_title" class="form-control snestx-input" value="<?php echo htmlspecialchars($_POST['site_title'] ?? 'SocietyNestX Community'); ?>" required />
+                        <input type="text" name="site_title" id="site_title" class="form-control shubx-input" value="<?php echo htmlspecialchars($_POST['site_title'] ?? 'Society HubX Community'); ?>" required />
                     </div>
                     <div class="col-md-6">
                         <label for="admin_user" class="form-label">Admin Username</label>
-                        <input type="text" name="admin_user" id="admin_user" class="form-control snestx-input" value="<?php echo htmlspecialchars($_POST['admin_user'] ?? 'admin'); ?>" required />
+                        <input type="text" name="admin_user" id="admin_user" class="form-control shubx-input" value="<?php echo htmlspecialchars($_POST['admin_user'] ?? 'admin'); ?>" required />
                     </div>
                     <div class="col-md-6">
                         <label for="admin_pass" class="form-label">Admin Password</label>
-                        <input type="password" name="admin_pass" id="admin_pass" class="form-control snestx-input" placeholder="Choose a strong password" required />
+                        <input type="password" name="admin_pass" id="admin_pass" class="form-control shubx-input" placeholder="Choose a strong password" required />
                     </div>
                     <div class="col-md-12">
                         <label for="admin_email" class="form-label">Admin Email Address</label>
-                        <input type="email" name="admin_email" id="admin_email" class="form-control snestx-input" placeholder="admin@yoursite.com" value="<?php echo htmlspecialchars($_POST['admin_email'] ?? ''); ?>" required />
+                        <input type="email" name="admin_email" id="admin_email" class="form-control shubx-input" placeholder="admin@yoursite.com" value="<?php echo htmlspecialchars($_POST['admin_email'] ?? ''); ?>" required />
                     </div>
                 </div>
 
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn snestx-btn-primary btn-lg fs-5 py-3">
+                    <button type="submit" class="btn shubx-btn-primary btn-lg fs-5 py-3">
                         <i class="fa-solid fa-rocket me-2"></i>Install & Run Setup
                     </button>
                 </div>

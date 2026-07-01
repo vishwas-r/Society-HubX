@@ -175,7 +175,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         </td>
                         <td class="pe-3 pe-md-5 py-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(json_encode($f)); ?>" title="Edit Unit">
+                                <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(wp_json_encode($f)); ?>" title="Edit Unit">
                                     <i class="bi bi-pencil-square fs-6"></i>
                                 </button>
                                 <?php if ($status === 'archived'): ?>

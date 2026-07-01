@@ -290,7 +290,7 @@ $all_flats = $flats;
                                         <?php if ($is_request && !empty($s['request_id'])): ?>
                                             <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
                                         <?php elseif ($status === 'rejected'): ?>
-                                            <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(json_encode($s)); ?>" title="Edit">
+                                            <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>
                                             </button>
                                             <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 p-2 js-delete-staff" data-id="<?php echo esc_attr($s['id']); ?>" title="Archive">
@@ -299,7 +299,7 @@ $all_flats = $flats;
                                         <?php elseif ( $status === 'archived' ): ?>
                                             <button onclick="restoreStaff('<?php echo esc_js($s['id']); ?>')" class="btn btn-sm btn-success px-3 fw-bold shadow-none rounded-3" style="font-size: 10px;">RESTORE</button>
                                         <?php else: ?>
-                                            <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(json_encode($s)); ?>" title="Edit">
+                                            <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>
                                             </button>
                                             <button type="button" class="btn btn-sm btn-light text-danger border shadow-sm rounded-3 p-2 js-delete-staff" data-id="<?php echo esc_attr($s['id']); ?>" title="Archive">
