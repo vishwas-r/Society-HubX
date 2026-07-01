@@ -40,10 +40,66 @@ class SHUBX51_REST_Payments_Controller {
 		return is_user_logged_in();
 	}
 
-	public function webhook_permissions_check() {
-		// Webhook requests are received from external payment gateways (Stripe/Razorpay) 
-		// without a WordPress user session, so they must be publicly accessible.
-		return true;
+	public function webhook_permissions_check( WP_REST_Request $request ) {
+		$gateway = sanitize_text_field( $request->get_param( 'gateway' ) );
+		
+		if ( $gateway === 'stripe' ) {
+			$secret = get_option( 'shubx51_stripe_webhook_secret' );
+			if ( empty( $secret ) ) {
+				return false;
+			}
+			
+			$signature = $request->get_header( 'stripe-signature' );
+			if ( empty( $signature ) ) {
+				return false;
+			}
+			
+			$sig_parts = explode( ',', $signature );
+			$timestamp = '';
+			$v1 = '';
+			foreach ( $sig_parts as $part ) {
+				$sub_parts = explode( '=', $part, 2 );
+				if ( count( $sub_parts ) === 2 ) {
+					if ( trim( $sub_parts[0] ) === 't' ) {
+						$timestamp = trim( $sub_parts[1] );
+					} elseif ( trim( $sub_parts[0] ) === 'v1' ) {
+						$v1 = trim( $sub_parts[1] );
+					}
+				}
+			}
+			
+			if ( empty( $timestamp ) || empty( $v1 ) ) {
+				return false;
+			}
+			
+			if ( abs( time() - intval( $timestamp ) ) > 300 ) {
+				return false;
+			}
+			
+			$signed_payload = $timestamp . '.' . $request->get_body();
+			$expected_signature = hash_hmac( 'sha256', $signed_payload, $secret );
+			
+			return hash_equals( $expected_signature, $v1 );
+		}
+		
+		if ( $gateway === 'razorpay' ) {
+			$secret = get_option( 'shubx51_razorpay_webhook_secret' );
+			if ( empty( $secret ) ) {
+				return false;
+			}
+			
+			$signature = $request->get_header( 'x-razorpay-signature' );
+			if ( empty( $signature ) ) {
+				return false;
+			}
+			
+			$body = $request->get_body();
+			$expected_signature = hash_hmac( 'sha256', $body, $secret );
+			
+			return hash_equals( $expected_signature, $signature );
+		}
+		
+		return false;
 	}
 
 	public function get_state_hash( $request ) {
