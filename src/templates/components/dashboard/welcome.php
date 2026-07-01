@@ -19,9 +19,9 @@ $r = $data['resident'] ?? [];
         <?php echo SHUBX51_Admin_UI::render_avatar( $r['name'] ?? 'Resident', $r['email'] ?? '', $r['profile_photo'] ?? '', 60 ); ?>
         <div>
             <h1 class="h4 fw-bold text-dark mb-1">Hello, <?php echo esc_html( $r['name'] ?? 'Resident' ); ?> 👋</h1>
-            <p class="text-secondary d-flex align-items-center gap-2 small">
+            <div class="text-secondary d-flex align-items-center gap-2 small">
                 <?php if ( ! empty( $data['my_flats'] ) && count( $data['my_flats'] ) > 1 ) : ?>
-                    <span class="dropdown d-inline-block">
+                    <div class="dropdown d-inline-block">
                         <button class="btn btn-sm btn-outline-primary dropdown-toggle px-2.5 py-1 rounded fw-bold text-uppercase tracking-wide shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
                             Flat <?php echo esc_html( Society_HubX::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? '' ) ); ?>
                         </button>
@@ -45,7 +45,7 @@ $r = $data['resident'] ?? [];
                                 </li>
                             <?php endforeach; ?>
                         </ul>
-                    </span>
+                    </div>
                 <?php else: ?>
                     <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( Society_HubX::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? $r['flat_no'] ?? '' ) ); ?></span>
                 <?php endif; ?>
@@ -55,7 +55,7 @@ $r = $data['resident'] ?? [];
                     <span class="text-muted">•</span>
                     <span class="text-secondary"><?php echo esc_html($r['email']); ?></span>
                 <?php endif; ?>
-            </p>
+            </div>
         </div>
     </div>
     <div class="d-flex gap-2">
