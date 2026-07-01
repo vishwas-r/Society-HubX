@@ -131,8 +131,21 @@ class SHUBX51_DB_Router {
 		// 1. WHERE Clause
 		if ( ! empty( $args['where'] ) && is_array( $args['where'] ) ) {
 			foreach ( $args['where'] as $col => $val ) {
-				$where_clauses[] = "`$col` = %s";
-				$values[] = $val;
+				// Automatically expand flat_no / flat_id strings to all possible identifiers for query robustness
+				if ( ( $col === 'flat_no' || $col === 'flat_id' ) && is_string( $val ) && ! empty( $val ) ) {
+					$val = $this->get_flat_identifiers( $val );
+				}
+
+				if ( is_array( $val ) ) {
+					$placeholders = implode( ',', array_fill( 0, count( $val ), '%s' ) );
+					$where_clauses[] = "`$col` IN ($placeholders)";
+					foreach ( $val as $item ) {
+						$values[] = $item;
+					}
+				} else {
+					$where_clauses[] = "`$col` = %s";
+					$values[] = $val;
+				}
 			}
 		}
 
@@ -407,6 +420,61 @@ class SHUBX51_DB_Router {
 
 		// 4. Keep residents.flat_no in sync with primary flat
 		$this->update( 'residents', array( 'flat_no' => $primary_flat_id ), array( 'id' => $resident_id ) );
+	}
+
+	/**
+	 * Get all possible database representations (identifiers) of a flat.
+	 *
+	 * @param string $flat_id Flat ID/number (e.g., 'flat_A_101', 'A-101', '101').
+	 * @return array Array of matching flat representations.
+	 */
+	public function get_flat_identifiers( $flat_id ) {
+		if ( empty( $flat_id ) ) {
+			return array();
+		}
+
+		$ids = array( $flat_id );
+
+		// 1. Try to find the flat by ID
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+		$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+			"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE id = %s",
+			$flat_id
+		), ARRAY_A );
+
+		// 2. If not found by ID, try parsing hyphenated name e.g. "A-101"
+		if ( ! $flat && strpos( $flat_id, '-' ) !== false ) {
+			$parts = explode( '-', $flat_id, 2 );
+			$block = trim( $parts[0] );
+			$num = trim( $parts[1] );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE block = %s AND flat_number = %s",
+				$block,
+				$num
+			), ARRAY_A );
+		}
+
+		// 3. If still not found, try searching by flat_number = $flat_id
+		if ( ! $flat ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is dynamic.
+			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE flat_number = %s",
+				$flat_id
+			), ARRAY_A );
+		}
+
+		if ( $flat ) {
+			$ids[] = $flat['id'];
+			if ( ! empty( $flat['flat_number'] ) ) {
+				$ids[] = $flat['flat_number'];
+				if ( ! empty( $flat['block'] ) ) {
+					$ids[] = $flat['block'] . '-' . $flat['flat_number'];
+				}
+			}
+		}
+
+		return array_values( array_unique( array_filter( $ids ) ) );
 	}
 
 	/**

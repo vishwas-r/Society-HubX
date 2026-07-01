@@ -358,18 +358,22 @@ class SHUBX51_Frontend_Dashboard {
        
 		// Fetch relevant payment requests for this resident (Pending + Approved)
 		$all_requests = $this->db->get('requests');
-		$pending_payment_requests = array_filter($all_requests, function($r) use ($active_flat_no, $active_block) {
+		$flat_identifiers = $this->db->get_flat_identifiers( $active_flat_no );
+
+		$pending_payment_requests = array_filter($all_requests, function($r) use ($flat_identifiers, $active_block) {
 			$status = $r['status'] ?? 'pending';
 			$is_relevant = in_array( $status, array( 'pending', 'pending_secretary', 'pending_treasurer', 'approved' ) );
+			$flat_matches = in_array( (string)($r['flat_no'] ?? ''), $flat_identifiers, true );
 			return (($r['module'] ?? '') === 'accounts' || ($r['entity_type'] ?? '') === 'accounts') 
 				&& $is_relevant
 				&& isset($r['payload'])
-				&& (string)($r['flat_no'] ?? '') === (string)$active_flat_no
+				&& $flat_matches
                 && (string)($r['block'] ?? '') === (string)$active_block;
 		});
 
-		$my_requests = array_filter($all_requests, function($r) use ($active_flat_no, $active_block, $user_id) {
-			return ((string)$r['flat_no'] === (string)$active_flat_no && (string)($r['block'] ?? '') === (string)$active_block) || ((int)$r['created_by'] === (int)$user_id);
+		$my_requests = array_filter($all_requests, function($r) use ($flat_identifiers, $active_block, $user_id) {
+			$flat_matches = in_array( (string)($r['flat_no'] ?? ''), $flat_identifiers, true );
+			return ($flat_matches && (string)($r['block'] ?? '') === (string)$active_block) || ((int)$r['created_by'] === (int)$user_id);
 		});
 		
 		// Sort Newest First
@@ -552,69 +556,78 @@ class SHUBX51_Frontend_Dashboard {
 
 	private function get_my_family( $flat_no, $block = '' ) {
 		// 1. Approved Residents (only)
-	$all = $this->db->get( 'residents' );
-	$mine = array();
-	foreach ( $all as $r ) {
-		if ( (string)$r['flat_no'] === (string)$flat_no && (string)($r['block'] ?? '') === (string)$block && isset($r['type']) && $r['type'] === 'family' ) {
-            $status = $r['status'] ?? 'approved';
-            if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
-			    $mine[] = $r;
-            }
+		$all = $this->db->get( 'residents' );
+		$mine = array();
+		$flat_identifiers = $this->db->get_flat_identifiers( $flat_no );
+		foreach ( $all as $r ) {
+			$r_flat = (string)$r['flat_no'];
+			$r_block = (string)($r['block'] ?? '');
+			
+			$flat_matches = in_array( $r_flat, $flat_identifiers, true );
+			$block_matches = empty( $block ) || empty( $r_block ) || $r_block === $block;
+			
+			if ( $flat_matches && $block_matches && isset($r['type']) && $r['type'] === 'family' ) {
+				$status = $r['status'] ?? 'approved';
+				if ($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
+					$mine[] = $r;
+				}
+			}
 		}
-	}
 
 		// 2. Pending Requests
 		$requests = $this->db->get('requests');
-        $approved_ids = array_column( $mine, 'id' );
 
 		foreach($requests as $req) {
-            $e_type = $req['entity_type'] ?? '';
-            $is_family_req = ($e_type === 'family');
-            
-            $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
-            if ( ! $payload ) continue;
-            $req_flat_no = !empty($req['flat_no']) ? $req['flat_no'] : ($payload['flat_no'] ?? '');
-            $req_block = !empty($req['block']) ? $req['block'] : ($payload['block'] ?? '');
+			$e_type = $req['entity_type'] ?? '';
+			$is_family_req = ($e_type === 'family');
+			
+			$payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
+			if ( ! $payload ) continue;
+			$req_flat_no = !empty($req['flat_no']) ? $req['flat_no'] : ($payload['flat_no'] ?? '');
+			$req_block = !empty($req['block']) ? $req['block'] : ($payload['block'] ?? '');
 
-			if($is_family_req && (string)$req_flat_no === (string)$flat_no && (string)$req_block === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
+			$req_flat_matches = in_array( (string)$req_flat_no, $flat_identifiers, true );
+			$req_block_matches = empty( $block ) || empty( $req_block ) || $req_block === $block;
+
+			if($is_family_req && $req_flat_matches && $req_block_matches && in_array($req['status'], ['pending', 'rejected'])) {
 				if($payload && $req['request_type'] !== 'delete') {
-                    $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
+					$payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
 					$item = array_merge($payload, [
-                        'id' => $payload_id,
+						'id' => $payload_id,
 						'status' => $req['status'],
 						'request_id' => $req['id']
 					]);
 
-                    // Deduplicate
-                    $found = false;
-                    foreach($mine as $k => $existing) {
-                        if(isset($existing['id']) && $existing['id'] == $payload_id) {
-                             $item['original_data'] = $existing; // Keep original for comparison
-                             $item['request_type'] = $req['request_type'];
-                             $item['is_pending'] = true;
-                             $mine[$k] = $item; 
-                             $found = true;
-                             break;
-                        }
-                    }
+					// Deduplicate
+					$found = false;
+					foreach($mine as $k => $existing) {
+						if(isset($existing['id']) && $existing['id'] == $payload_id) {
+							 $item['original_data'] = $existing; // Keep original for comparison
+							 $item['request_type'] = $req['request_type'];
+							 $item['is_pending'] = true;
+							 $mine[$k] = $item; 
+							 $found = true;
+							 break;
+						}
+					}
 
-                    // If not found (Add new), append
-                    if(!$found) {
-                        $mine[] = $item;
-                    }
+					// If not found (Add new), append
+					if(!$found) {
+						$mine[] = $item;
+					}
 				}
 			}
 
-			if ($is_family_req && $req_flat_no === $flat_no && $req['status'] === 'pending' && $req['request_type'] === 'delete') {
-                // Handle Pending Deletion
-                foreach($mine as $k => $existing) {
-                    if(isset($existing['id']) && $existing['id'] == $req['entity_id']) {
-                            $mine[$k]['status'] = 'deletion_pending';
-                            break;
-                    }
-                }
-            }
+			if ($is_family_req && $req_flat_matches && $req['status'] === 'pending' && $req['request_type'] === 'delete') {
+				// Handle Pending Deletion
+				foreach($mine as $k => $existing) {
+					if(isset($existing['id']) && $existing['id'] == $req['entity_id']) {
+							$mine[$k]['status'] = 'deletion_pending';
+							break;
+					}
+				}
+			}
 		}
 		
 		return $mine;
@@ -624,13 +637,21 @@ class SHUBX51_Frontend_Dashboard {
 		// 1. Approved help
 		$all_help = $this->db->get( 'daily_help' );
 		$mine = [];
+		$flat_identifiers = $this->db->get_flat_identifiers( $flat_no );
 		foreach ( $all_help as $h ) {
 			if ( ! empty($h['flat_no']) ) {
                 $h_flats = is_string($h['flat_no']) ? explode( ',', $h['flat_no'] ) : (is_array($h['flat_no']) ? $h['flat_no'] : []);
                 foreach($h_flats as $f) {
                     $f = trim($f);
-                    // Match Block-Flat specifically
-                    if ( (string)$f === (string)$flat_no || (string)$f === (string)($block . '-' . $flat_no) ) {
+                    
+                    $matched = false;
+                    foreach ( $flat_identifiers as $ident ) {
+                        if ( (string)$f === (string)$ident || (string)$f === (string)($block . '-' . $ident) ) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                    if ( $matched ) {
                         $mine[] = $h; break;
                     }
                 }
@@ -640,7 +661,11 @@ class SHUBX51_Frontend_Dashboard {
         // 2. Pending Requests
         $requests = $this->db->get('requests');
         foreach($requests as $req) {
-            if(($req['entity_type'] === 'daily_help') && (string)$req['flat_no'] === (string)$flat_no && (string)($req['block'] ?? '') === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
+            $req_flat_no = (string)($req['flat_no'] ?? '');
+            $req_flat_matches = in_array( $req_flat_no, $flat_identifiers, true );
+            $req_block_matches = empty( $block ) || empty( $req['block'] ?? '' ) || ($req['block'] ?? '') === $block;
+
+            if(($req['entity_type'] === 'daily_help') && $req_flat_matches && $req_block_matches && in_array($req['status'], ['pending', 'rejected'])) {
                 
                 if($req['request_type'] === 'delete' && $req['status'] === 'pending') {
                      // Handle Pending Deletion
@@ -653,9 +678,9 @@ class SHUBX51_Frontend_Dashboard {
                     }
                 } else if ($req['request_type'] !== 'delete') {
                     // Add/Edit
-                        $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
+                    $payload = is_array($req['payload'] ?? null) ? $req['payload'] : json_decode($req['payload'] ?? '{}', true);
                     if ( ! $payload ) continue;
-                        if($payload) {
+                    if($payload) {
                         $payload_id = $req['entity_id'] ?: ($payload['id'] ?? '');
 
                         $item = array_merge($payload, [
@@ -1717,8 +1742,15 @@ class SHUBX51_Frontend_Dashboard {
         // 1. Approved
         $all = $this->db->get( 'vehicles' );
         $mine = array();
+        $flat_identifiers = $this->db->get_flat_identifiers( $flat_no );
         foreach ( $all as $v ) {
-            if ( (string)$v['flat_no'] === (string)$flat_no && (string)($v['block'] ?? '') === (string)$block ) {
+            $v_flat = (string)$v['flat_no'];
+            $v_block = (string)($v['block'] ?? '');
+            
+            $flat_matches = in_array( $v_flat, $flat_identifiers, true );
+            $block_matches = empty( $block ) || empty( $v_block ) || $v_block === $block;
+
+            if ( $flat_matches && $block_matches ) {
                 $status = isset($v['status']) ? $v['status'] : 'approved';
                 // Include approved and deletion_pending
                 if($status === 'approved' || $status === 'deletion_pending' || $status === 'pending') {
@@ -1730,7 +1762,11 @@ class SHUBX51_Frontend_Dashboard {
         // 2. Pending Requests
         $requests = $this->db->get('requests');
         foreach($requests as $req) {
-            if(in_array($req['entity_type'], ['vehicle', 'vehicles']) && (string)$req['flat_no'] === (string)$flat_no && (string)($req['block'] ?? '') === (string)$block && in_array($req['status'], ['pending', 'rejected'])) {
+            $req_flat_no = (string)($req['flat_no'] ?? '');
+            $req_flat_matches = in_array( $req_flat_no, $flat_identifiers, true );
+            $req_block_matches = empty( $block ) || empty( $req['block'] ?? '' ) || ($req['block'] ?? '') === $block;
+
+            if(in_array($req['entity_type'], ['vehicle', 'vehicles']) && $req_flat_matches && $req_block_matches && in_array($req['status'], ['pending', 'rejected'])) {
                 
                 if($req['request_type'] === 'delete' && $req['status'] === 'pending') {
                      // Handle Pending Deletion
@@ -1941,52 +1977,45 @@ class SHUBX51_Frontend_Dashboard {
             $fid = $f['id']; 
             $fnum = $f['flat_number'];
             
-            $processed_keys[$fid] = true;
-            $processed_keys[$fnum] = true;
+            $flat_identifiers = $this->db->get_flat_identifiers( $fid );
+            foreach ( $flat_identifiers as $ident ) {
+                $processed_keys[$ident] = true;
+            }
             
             // Resident Data Match
             $res_data = null;
-            if(isset($flat_analyzed[$fid])) $res_data = $flat_analyzed[$fid];
-            elseif(isset($flat_analyzed[$fnum])) {
-                $res_data = $flat_analyzed[$fnum];
-                $processed_keys[$fnum] = true; 
+            foreach ( $flat_identifiers as $ident ) {
+                if ( isset( $flat_analyzed[ $ident ] ) ) {
+                    $res_data = $flat_analyzed[ $ident ];
+                    break;
+                }
             }
             if(!$res_data) $res_data = ['owner' => 'Unoccupied', 'count' => 0, 'occupied' => false];
             
             // Invoice Data Match
             $inv_data = ['maintenance' => 'Paid', 'adhoc' => 'None'];
-            if(isset($flat_invoices[$fid])) $inv_data = $flat_invoices[$fid];
-            elseif(isset($flat_invoices[$fnum])) $inv_data = $flat_invoices[$fnum];
+            foreach ( $flat_identifiers as $ident ) {
+                if ( isset( $flat_invoices[ $ident ] ) ) {
+                    $inv_data = $flat_invoices[ $ident ];
+                    break;
+                }
+            }
             
+            // Vehicle Match
+            $my_vehicles = [];
+            foreach ( $flat_identifiers as $ident ) {
+                if ( isset( $flat_vehicles[ $ident ] ) ) {
+                    $my_vehicles = $flat_vehicles[ $ident ];
+                    break;
+                }
+            }
             
-            // Vehicle & Help Match - try multiple keys
-            $my_vehicles = isset($flat_vehicles[$fid]) ? $flat_vehicles[$fid] : (isset($flat_vehicles[$fnum]) ? $flat_vehicles[$fnum] : []);
-            
-            // For help, try multiple format combinations
+            // Help Match
             $my_help = [];
-            
-            // Try 1: Direct flat ID match
-            if(isset($flat_help[$fid])) {
-                $my_help = $flat_help[$fid];
-            } 
-            // Try 2: Direct flat number match
-            elseif(isset($flat_help[$fnum])) {
-                $my_help = $flat_help[$fnum];
-            } 
-            // Try 3: Block-Number format (A-101)
-            else {
-                $block_flat = $f['block'] . '-' . $fnum;
-                if(isset($flat_help[$block_flat])) {
-                    $my_help = $flat_help[$block_flat];
-                } else {
-                    // Try 4: Check if fid or fnum contains block prefix and try without it
-                    // In case fid is "A-101" and maid is registered for "101"
-                    if(isset($f['block']) && !empty($f['block'])) {
-                        $just_number = str_replace($f['block'] . '-', '', $fid);
-                        if(isset($flat_help[$just_number])) {
-                            $my_help = $flat_help[$just_number];
-                        }
-                    }
+            foreach ( $flat_identifiers as $ident ) {
+                if ( isset( $flat_help[ $ident ] ) ) {
+                    $my_help = $flat_help[ $ident ];
+                    break;
                 }
             }
 
