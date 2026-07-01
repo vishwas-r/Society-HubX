@@ -11,17 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 
 // Load WordPress
-$SNESTX51_wp_load = __DIR__ . '/../../wp-load.php';
-if (!file_exists($SNESTX51_wp_load)) {
+$snestx51_wp_load = __DIR__ . '/../../wp-load.php';
+if (!file_exists($snestx51_wp_load)) {
     // Try root search if not in standard wp-content/plugins/x location
-    $SNESTX51_wp_load = dirname(__FILE__, 4) . '/wp-load.php';
+    $snestx51_wp_load = dirname(__FILE__, 4) . '/wp-load.php';
 }
 
-if (!file_exists($SNESTX51_wp_load)) {
+if (!file_exists($snestx51_wp_load)) {
     die("Error: Could not find wp-load.php. Please ensure this script is inside the 'society-nestx/src/' directory on your WordPress installation.");
 }
 
-require_once $SNESTX51_wp_load;
+require_once $snestx51_wp_load;
 
 // Verify Admin or Command Line
 if (!is_admin() && php_sapi_name() !== 'cli') {

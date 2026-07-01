@@ -373,8 +373,8 @@ final class Society_NestX {
 
 		// Google API (placeholder)
 		if ( $page === 'snestx51-google-drive' ) {
-			$SNESTX51_Google_API_Handler = new SNESTX51_Google_API_Handler();
-			$SNESTX51_Google_API_Handler->enqueue_google_api_scripts();
+			$snestx51_Google_API_Handler = new SNESTX51_Google_API_Handler();
+			$snestx51_Google_API_Handler->enqueue_google_api_scripts();
 		}
 
 		// Inline setup for ajaxurl

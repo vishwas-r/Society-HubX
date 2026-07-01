@@ -378,7 +378,7 @@ class SNESTX51_Request_Manager {
 
             // Trigger Resident Notification
             if ( class_exists('Society_NestX') && !empty($target_request['created_by']) ) {
-                $SNESTX = Society_NestX::get_instance();
+                $snestx = Society_NestX::get_instance();
                 if ( isset($snestx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
@@ -488,7 +488,7 @@ class SNESTX51_Request_Manager {
 
             // Trigger Resident Notification
             if ( class_exists('Society_NestX') && !empty($target_request['created_by']) ) {
-                $SNESTX = Society_NestX::get_instance();
+                $snestx = Society_NestX::get_instance();
                 if ( isset($snestx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');

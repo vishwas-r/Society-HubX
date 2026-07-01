@@ -118,7 +118,7 @@ class SNESTX51_Privacy_Manager {
 			return $data;
 		}
 		// If current user has high privileges, don't mask
-		$SNESTX = Society_NestX::get_instance();
+		$snestx = Society_NestX::get_instance();
 		if ( $snestx->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			return $data;
 		}

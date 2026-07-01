@@ -150,7 +150,7 @@ class SNESTX51_Background_Worker {
 	public function process_notification_blast( $event_slug, $data ) {
 		if ( ! class_exists( 'Society_NestX' ) ) return;
 		
-		$SNESTX = Society_NestX::get_instance();
+		$snestx = Society_NestX::get_instance();
 		if ( isset( $snestx->notifications ) ) {
 			// Trigger for all relevant users (e.g., all residents)
 			$db = new SNESTX51_DB_Router();

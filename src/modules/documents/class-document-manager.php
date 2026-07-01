@@ -254,7 +254,7 @@ class SNESTX51_Document_Manager implements SNESTX51_Module {
             foreach($docs as $d) { if($d['id'] === $doc_id) { $doc = $d; break; } }
             
             if ( $doc && !empty($doc['uploaded_by']) && in_array($status, ['approved', 'rejected']) ) {
-                $SNESTX = Society_NestX::get_instance();
+                $snestx = Society_NestX::get_instance();
                 $event = ($status === 'approved') ? 'request_approved' : 'request_rejected';
                 
                 $admin_user = wp_get_current_user();

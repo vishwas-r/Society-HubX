@@ -39,7 +39,7 @@ foreach ( $requests as $req ) {
 }
 
 // RBAC Integration
-$SNESTX = Society_NestX::get_instance();
+$snestx = Society_NestX::get_instance();
 $user_id = get_current_user_id();
 
 // Navigation Menu Config
