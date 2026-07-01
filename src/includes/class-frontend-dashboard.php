@@ -180,8 +180,8 @@ class SHUBX51_Frontend_Dashboard {
 	 * Handle Switch Flat Context (Frontend AJAX)
 	 */
 	public function handle_switch_flat() {
-		// Verify frontend nonce
-		check_ajax_referer( 'shubx51_frontend_nonce', '_ajax_nonce' );
+		// Verify frontend nonce (JS sends as _wpnonce)
+		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
 
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
@@ -217,9 +217,9 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( array( 'message' => 'You do not have access to this flat.' ) );
 		}
 
-		// Set in session
+		// Set in session (session is already started by our early init hook)
 		if ( ! session_id() ) {
-			session_start();
+			session_start(); // Fallback if session wasn't started yet
 		}
 		$_SESSION['shubx51_active_flat_id'] = $flat_id;
 
@@ -1328,12 +1328,11 @@ class SHUBX51_Frontend_Dashboard {
 		}
 
 		// Save validation back to session
-		if ( ! headers_sent() ) {
-			if ( ! session_id() ) {
-				session_start();
-			}
-			$_SESSION['shubx51_active_flat_id'] = $active_flat_id;
+		// Session is already started by our early init hook; just write directly.
+		if ( ! session_id() ) {
+			session_start(); // Fallback if session wasn't started yet
 		}
+		$_SESSION['shubx51_active_flat_id'] = $active_flat_id;
 
 		// Fetch flat details
 		$flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $active_flat_id ) ) );

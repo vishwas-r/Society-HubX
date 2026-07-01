@@ -89,39 +89,13 @@
             activateTab('expenses');
         }
 
-        // Sub-Tab and Switch Flat Switching
+        // Sub-Tab Switching
         document.addEventListener('click', function (e) {
             const subTabBtn = e.target.closest('[data-subtab-target]');
             if (subTabBtn) {
                 e.preventDefault();
                 const subTabId = subTabBtn.getAttribute('data-subtab-target');
                 switchSubTab(subTabId);
-            }
-
-            const switchFlatBtn = e.target.closest('.js-switch-flat-btn');
-            if (switchFlatBtn) {
-                e.preventDefault();
-                const flatId = switchFlatBtn.dataset.flatId;
-                if (!flatId) return;
-
-                const originalHtml = switchFlatBtn.innerHTML;
-                switchFlatBtn.innerHTML = 'Switching...';
-                switchFlatBtn.style.pointerEvents = 'none';
-
-                SHUBX.ajax({
-                    action: 'shubx51_switch_flat',
-                    data: {
-                        flat_id: flatId,
-                        _wpnonce: shubx51_nonce
-                    },
-                    onSuccess: function() {
-                        window.location.reload();
-                    },
-                    onError: function(err) {
-                        switchFlatBtn.innerHTML = originalHtml;
-                        switchFlatBtn.style.pointerEvents = '';
-                    }
-                });
             }
         });
 
@@ -1832,5 +1806,49 @@
 
         setTimeout(pollStateHash, 2000);
     }
+
+    // --- Flat Context Switcher ---
+    // Top-level delegation so it works regardless of initCharts() being called.
+    document.addEventListener('click', function (e) {
+        var switchFlatBtn = e.target.closest('.js-switch-flat-btn');
+        if (!switchFlatBtn) return;
+
+        e.preventDefault();
+        e.stopPropagation(); // prevent Bootstrap dropdown from re-opening
+
+        var flatId = switchFlatBtn.dataset.flatId;
+        if (!flatId) return;
+
+        var originalHtml = switchFlatBtn.innerHTML;
+        switchFlatBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Switching...';
+        switchFlatBtn.style.pointerEvents = 'none';
+
+        var nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+
+        window.jQuery.ajax({
+            url: (typeof ajaxurl !== 'undefined') ? ajaxurl : '/wp-admin/admin-ajax.php',
+            type: 'POST',
+            data: {
+                action: 'shubx51_switch_flat',
+                flat_id: flatId,
+                _wpnonce: nonce
+            },
+            success: function (response) {
+                if (response && response.success) {
+                    window.location.reload();
+                } else {
+                    var msg = (response && response.data && response.data.message) ? response.data.message : 'Could not switch flat.';
+                    alert(msg);
+                    switchFlatBtn.innerHTML = originalHtml;
+                    switchFlatBtn.style.pointerEvents = '';
+                }
+            },
+            error: function () {
+                alert('Network error while switching flat. Please try again.');
+                switchFlatBtn.innerHTML = originalHtml;
+                switchFlatBtn.style.pointerEvents = '';
+            }
+        });
+    });
 
 })(jQuery);
