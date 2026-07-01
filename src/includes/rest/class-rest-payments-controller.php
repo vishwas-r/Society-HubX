@@ -43,63 +43,9 @@ class SHUBX51_REST_Payments_Controller {
 	public function webhook_permissions_check( WP_REST_Request $request ) {
 		$gateway = sanitize_text_field( $request->get_param( 'gateway' ) );
 		
-		if ( $gateway === 'stripe' ) {
-			$secret = get_option( 'shubx51_stripe_webhook_secret' );
-			if ( empty( $secret ) ) {
-				return false;
-			}
-			
-			$signature = $request->get_header( 'stripe-signature' );
-			if ( empty( $signature ) ) {
-				return false;
-			}
-			
-			$sig_parts = explode( ',', $signature );
-			$timestamp = '';
-			$v1 = '';
-			foreach ( $sig_parts as $part ) {
-				$sub_parts = explode( '=', $part, 2 );
-				if ( count( $sub_parts ) === 2 ) {
-					if ( trim( $sub_parts[0] ) === 't' ) {
-						$timestamp = trim( $sub_parts[1] );
-					} elseif ( trim( $sub_parts[0] ) === 'v1' ) {
-						$v1 = trim( $sub_parts[1] );
-					}
-				}
-			}
-			
-			if ( empty( $timestamp ) || empty( $v1 ) ) {
-				return false;
-			}
-			
-			if ( abs( time() - intval( $timestamp ) ) > 300 ) {
-				return false;
-			}
-			
-			$signed_payload = $timestamp . '.' . $request->get_body();
-			$expected_signature = hash_hmac( 'sha256', $signed_payload, $secret );
-			
-			return hash_equals( $expected_signature, $v1 );
-		}
-		
-		if ( $gateway === 'razorpay' ) {
-			$secret = get_option( 'shubx51_razorpay_webhook_secret' );
-			if ( empty( $secret ) ) {
-				return false;
-			}
-			
-			$signature = $request->get_header( 'x-razorpay-signature' );
-			if ( empty( $signature ) ) {
-				return false;
-			}
-			
-			$body = $request->get_body();
-			$expected_signature = hash_hmac( 'sha256', $body, $secret );
-			
-			return hash_equals( $expected_signature, $signature );
-		}
-		
-		return false;
+		// Delegate webhook signature verification and permissions check to the specific gateway addon.
+		// Addon plugins must filter this value to true (after validating signatures) or return false.
+		return apply_filters( "shubx51_webhook_permissions_check_{$gateway}", false, $request );
 	}
 
 	public function get_state_hash( $request ) {
@@ -133,50 +79,10 @@ class SHUBX51_REST_Payments_Controller {
 
 	public function handle_webhook( WP_REST_Request $request ) {
 		$gateway = sanitize_text_field( $request->get_param( 'gateway' ) );
-		$payload = $request->get_json_params();
 		
-		// Verify Webhook Signature (Future: Gateway-specific verification logic here)
+		// Trigger action for the gateway addon to handle webhook payload processing and record the payment
+		do_action( "shubx51_handle_webhook_{$gateway}", $request );
 		
-		// Map payload based on gateway (e.g., Stripe `payment_intent.succeeded` or Razorpay `payment.captured`)
-		$invoice_id = '';
-		$amount = 0;
-		$reference = '';
-		$status = '';
-		
-		if ( $gateway === 'stripe' ) {
-			if ( ($payload['type'] ?? '') === 'payment_intent.succeeded' ) {
-				$obj = $payload['data']['object'] ?? [];
-				$invoice_id = $obj['metadata']['invoice_id'] ?? '';
-				$amount = ($obj['amount_received'] ?? 0) / 100;
-				$reference = $obj['id'] ?? '';
-				$status = 'success';
-			}
-		} elseif ( $gateway === 'razorpay' ) {
-			if ( ($payload['event'] ?? '') === 'payment.captured' ) {
-				$obj = $payload['payload']['payment']['entity'] ?? [];
-				$invoice_id = $obj['notes']['invoice_id'] ?? '';
-				$amount = ($obj['amount'] ?? 0) / 100;
-				$reference = $obj['id'] ?? '';
-				$status = 'success';
-			}
-		}
-
-		if ( $status === 'success' && !empty($invoice_id) && $amount > 0 ) {
-			$result = SHUBX51_Payment_Service::process_payment( 
-				$invoice_id, 
-				$amount, 
-				ucfirst($gateway), 
-				$reference, 
-				current_time('mysql'), 
-				'Automated webhook capture' 
-			);
-			
-			if ( is_wp_error($result) ) {
-				return new WP_REST_Response( ['error' => $result->get_error_message()], 400 );
-			}
-			return rest_ensure_response( ['status' => 'processed'] );
-		}
-		
-		return new WP_REST_Response( ['status' => 'ignored or pending'], 200 );
+		return rest_ensure_response( array( 'status' => 'received' ) );
 	}
 }
