@@ -44,6 +44,7 @@ class SHUBX51_DB_Router {
 		'roles',
 		'staff_flats',
 		'resident_role_map',
+		'resident_flat_map',
 		'payments',
 	);
 
@@ -93,6 +94,7 @@ class SHUBX51_DB_Router {
             'roles'                   => $wpdb->prefix . 'society_hubx_roles',
             'staff_flats'             => $wpdb->prefix . 'society_hubx_staff_flats',
             'resident_role_map'       => $wpdb->prefix . 'society_hubx_resident_role_map',
+            'resident_flat_map'       => $wpdb->prefix . 'society_hubx_resident_flat_map',
             'payments'                => $wpdb->prefix . 'society_hubx_payments',
         );
 		return $tables[ $slug ] ?? $wpdb->prefix . 'society_hubx_' . $slug;
@@ -199,6 +201,9 @@ class SHUBX51_DB_Router {
 				if ( $table === 'residents' ) {
 					$results[ $key ]['roles'] = $this->wpdb->get_col( $this->wpdb->prepare( 
 						"SELECT role_id FROM " . $this->get_table_name('resident_role_map') . " WHERE resident_id = %s", $id 
+					) );
+					$results[ $key ]['flat_ids'] = $this->wpdb->get_col( $this->wpdb->prepare(
+						"SELECT flat_id FROM " . $this->get_table_name('resident_flat_map') . " WHERE resident_id = %s ORDER BY is_primary DESC", $id
 					) );
 				}
 				
@@ -349,6 +354,59 @@ class SHUBX51_DB_Router {
 	public function get_resident_by_wp_id( $wp_id ) {
 		$results = $this->get( 'residents', array( 'where' => array( 'wp_user_id' => $wp_id ) ) );
 		return ! empty( $results ) ? $results[0] : false;
+	}
+
+	/**
+	 * Get all flat IDs assigned to a resident.
+	 *
+	 * @param string $resident_id Resident ID.
+	 * @return array Array of flat IDs, primary first.
+	 */
+	public function get_resident_flats( $resident_id ) {
+		$map_table = $this->get_table_name( 'resident_flat_map' );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Dynamic table name via get_table_name.
+		$flat_ids = $this->wpdb->get_col( $this->wpdb->prepare(
+			"SELECT flat_id FROM {$map_table} WHERE resident_id = %s ORDER BY is_primary DESC",
+			$resident_id
+		) );
+		return $flat_ids ?: array();
+	}
+
+	/**
+	 * Save flat assignments for a resident.
+	 * Replaces all existing entries. Also updates residents.flat_no to the primary flat.
+	 *
+	 * @param string $resident_id    Resident ID.
+	 * @param array  $flat_ids       Array of flat IDs to assign.
+	 * @param string $primary_flat_id Primary flat ID (defaults to first element).
+	 */
+	public function save_resident_flats( $resident_id, array $flat_ids, $primary_flat_id = '' ) {
+		$map_table = $this->get_table_name( 'resident_flat_map' );
+
+		// 1. Clear existing
+		$this->wpdb->delete( $map_table, array( 'resident_id' => $resident_id ) );
+
+		if ( empty( $flat_ids ) ) {
+			return;
+		}
+
+		// 2. Determine primary
+		if ( empty( $primary_flat_id ) || ! in_array( $primary_flat_id, $flat_ids, true ) ) {
+			$primary_flat_id = $flat_ids[0];
+		}
+
+		// 3. Insert rows
+		foreach ( $flat_ids as $flat_id ) {
+			if ( empty( $flat_id ) ) continue;
+			$this->wpdb->insert( $map_table, array(
+				'resident_id' => $resident_id,
+				'flat_id'     => $flat_id,
+				'is_primary'  => ( $flat_id === $primary_flat_id ) ? 1 : 0,
+			) );
+		}
+
+		// 4. Keep residents.flat_no in sync with primary flat
+		$this->update( 'residents', array( 'flat_no' => $primary_flat_id ), array( 'id' => $resident_id ) );
 	}
 
 	/**

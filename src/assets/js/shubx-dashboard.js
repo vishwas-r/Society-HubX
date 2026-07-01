@@ -89,13 +89,39 @@
             activateTab('expenses');
         }
 
-        // Sub-Tab Switching
+        // Sub-Tab and Switch Flat Switching
         document.addEventListener('click', function (e) {
             const subTabBtn = e.target.closest('[data-subtab-target]');
             if (subTabBtn) {
                 e.preventDefault();
                 const subTabId = subTabBtn.getAttribute('data-subtab-target');
                 switchSubTab(subTabId);
+            }
+
+            const switchFlatBtn = e.target.closest('.js-switch-flat-btn');
+            if (switchFlatBtn) {
+                e.preventDefault();
+                const flatId = switchFlatBtn.dataset.flatId;
+                if (!flatId) return;
+
+                const originalHtml = switchFlatBtn.innerHTML;
+                switchFlatBtn.innerHTML = 'Switching...';
+                switchFlatBtn.style.pointerEvents = 'none';
+
+                SHUBX.ajax({
+                    action: 'shubx51_switch_flat',
+                    data: {
+                        flat_id: flatId,
+                        _wpnonce: shubx51_nonce
+                    },
+                    onSuccess: function() {
+                        window.location.reload();
+                    },
+                    onError: function(err) {
+                        switchFlatBtn.innerHTML = originalHtml;
+                        switchFlatBtn.style.pointerEvents = '';
+                    }
+                });
             }
         });
 

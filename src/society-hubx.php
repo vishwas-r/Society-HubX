@@ -224,6 +224,13 @@ final class Society_HubX {
 		if ( function_exists('as_next_scheduled_action') && !as_next_scheduled_action('shubx51_daily_log_purge') ) {
 			as_schedule_recurring_action( strtotime('midnight'), DAY_IN_SECONDS, 'shubx51_daily_log_purge' );
 		}
+
+		// 7. Session Bootstrap (for flat-switcher state)
+		add_action( 'init', function() {
+			if ( ! session_id() && ! headers_sent() ) {
+				session_start();
+			}
+		}, 1 );
 	}
 
 	/**
@@ -244,6 +251,9 @@ final class Society_HubX {
 				update_option( 'shubx51_storage_migrated', SHUBX51_VERSION );
 			}
 		}
+
+		// Seed resident_flat_map for any existing residents not yet seeded
+		add_action( 'admin_init', array( $this, 'seed_resident_flat_map' ), 20 );
 	}
 
 	/**
@@ -558,6 +568,50 @@ final class Society_HubX {
 		}
 
 		return $template;
+	}
+
+	/**
+	 * Seed resident_flat_map table for existing residents.
+	 */
+	public function seed_resident_flat_map() {
+		$table_name = $this->db->get_table_name( 'resident_flat_map' );
+		
+		// Check if we've already done this migration
+		if ( get_option( 'shubx51_flat_map_seeded' ) === SHUBX51_VERSION ) {
+			return;
+		}
+
+		$residents = $this->db->get( 'residents' );
+		if ( empty( $residents ) ) {
+			update_option( 'shubx51_flat_map_seeded', SHUBX51_VERSION );
+			return;
+		}
+
+		foreach ( $residents as $r ) {
+			$resident_id = $r['id'] ?? '';
+			$flat_no = $r['flat_no'] ?? '';
+			if ( empty( $resident_id ) || empty( $flat_no ) ) {
+				continue;
+			}
+
+			// Check if already mapped
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name is fully controlled and sanitized.
+			$exists = $this->db->wpdb->get_var( $this->db->wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table_name} WHERE resident_id = %s",
+				$resident_id
+			) );
+
+			if ( ! $exists ) {
+				// Map it as primary
+				$this->db->wpdb->insert( $table_name, array(
+					'resident_id' => $resident_id,
+					'flat_id'     => $flat_no,
+					'is_primary'  => 1
+				) );
+			}
+		}
+
+		update_option( 'shubx51_flat_map_seeded', SHUBX51_VERSION );
 	}
 }
 

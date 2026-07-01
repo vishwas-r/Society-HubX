@@ -258,10 +258,12 @@ if (!isset($flats)) $flats = array();
                             <td class="px-4 py-4">
                                 <div class="d-flex align-items-center gap-2">
                                     <?php 
-                                        $f_id = $row['flat_no'] ?? '-';
-                                        $display_f = $flat_map[$f_id] ?? $f_id;
+                                        $f_ids = ! empty( $row['flat_ids'] ) ? (array) $row['flat_ids'] : ( ! empty( $row['flat_no'] ) ? array( $row['flat_no'] ) : array( '-' ) );
+                                        foreach ( $f_ids as $f_id ) {
+                                            $display_f = $flat_map[$f_id] ?? $f_id;
+                                            echo '<span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px; margin-right: 2px;">' . esc_html( $display_f ) . '</span>';
+                                        }
                                     ?>
-                                    <span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px;"><?php echo esc_html( $display_f ); ?></span>
                                     <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo $type_label; ?></span>
                                 </div>
                             </td>

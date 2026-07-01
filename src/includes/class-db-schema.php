@@ -538,7 +538,19 @@ class SHUBX51_DB_Schema {
 			KEY role_id (role_id)
 		) $charset_collate;";
 
-		// 27. Detailed Payments Table
+		// 27. Resident-Flat Mapping Table (Multi-Flat Ownership)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_resident_flat_map (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			resident_id varchar(50) NOT NULL,
+			flat_id varchar(50) NOT NULL,
+			is_primary tinyint(1) DEFAULT 0 NOT NULL,
+			PRIMARY KEY  (id),
+			KEY resident_id (resident_id),
+			KEY flat_id (flat_id),
+			UNIQUE KEY unique_resident_flat (resident_id, flat_id)
+		) $charset_collate;";
+
+		// 28. Detailed Payments Table
 		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_payments (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,

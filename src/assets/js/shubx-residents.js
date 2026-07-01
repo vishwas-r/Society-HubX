@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
 
     // Module configuration (fetched at runtime)
@@ -187,44 +187,28 @@
 
             setVal('name', r.name);
 
-            // Smart Flat matching
-            const flatSelect = form.querySelector('[name="flat_no"]');
-            if (flatSelect) {
-                const targetVal = String(r.flat_no || '').trim();
+            // Checkbox flat matching
+            const flatChecks = form.querySelectorAll('input[name="flat_ids[]"]');
+            if (flatChecks.length) {
+                // Clear existing
+                flatChecks.forEach(cb => cb.checked = false);
+                
+                const targetFlats = Array.isArray(r.flat_ids) ? r.flat_ids : (r.flat_no ? [r.flat_no] : []);
+                targetFlats.forEach(fid => {
+                    const cb = form.querySelector(`input[name="flat_ids[]"][value="${fid}"]`);
+                    if (cb) cb.checked = true;
+                });
 
-                // Try direct value match first
-                flatSelect.value = targetVal;
+                // Update primary dropdown and hidden input by triggering change event on first checkbox
+                const event = new Event('change', { bubbles: true });
+                flatChecks[0].dispatchEvent(event);
 
-                // If direct value match failed, try matching against data-number or partial ID
-                if (!flatSelect.value && targetVal) {
-                    const options = Array.from(flatSelect.options);
-                    const normalize = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const nTarget = normalize(targetVal);
-
-                    const match = options.find(opt => {
-                        const optVal = String(opt.value || '').trim();
-                        const optNum = String(opt.dataset.number || '').trim();
-                        const optId = String(opt.dataset.id || '').trim();
-
-                        const nOptVal = normalize(optVal);
-                        const nOptNum = normalize(optNum);
-                        const nOptId = normalize(optId);
-
-                        return (
-                            optVal === targetVal ||
-                            optNum === targetVal ||
-                            optId === targetVal ||
-                            (nOptVal && nTarget === nOptVal) ||
-                            (nOptNum && nTarget === nOptNum) ||
-                            (nOptId && nTarget === nOptId) ||
-                            (nOptVal && nTarget.includes(nOptVal)) ||
-                            (nTarget && nOptVal.includes(nTarget)) ||
-                            (nOptNum && nTarget.includes(nOptNum))
-                        );
-                    });
-                    if (match) {
-                        flatSelect.value = match.value;
-                    }
+                // Set primary flat dropdown selection
+                const primarySelect = form.querySelector('[name="primary_flat_id"]');
+                if (primarySelect && r.flat_no) {
+                    primarySelect.value = r.flat_no;
+                    // Trigger change so hidden input gets updated
+                    primarySelect.dispatchEvent(event);
                 }
             }
 

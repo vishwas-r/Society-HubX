@@ -63,6 +63,9 @@ class SHUBX51_Frontend_Dashboard {
         // Payment Submission Handler
         add_action( 'wp_ajax_shubx51_submit_payment_request', array( $this, 'handle_submit_payment' ) );
 
+		// Switch Flat Handler
+		add_action( 'wp_ajax_shubx51_switch_flat', array( $this, 'handle_switch_flat' ) );
+
 		// Login & Access Control
 		add_action( 'wp_ajax_shubx51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_action( 'wp_ajax_nopriv_shubx51_resident_login', array( $this, 'handle_resident_login' ) );
@@ -174,6 +177,56 @@ class SHUBX51_Frontend_Dashboard {
 	}
 
 	/**
+	 * Handle Switch Flat Context (Frontend AJAX)
+	 */
+	public function handle_switch_flat() {
+		// Verify frontend nonce
+		check_ajax_referer( 'shubx51_frontend_nonce', '_ajax_nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
+		}
+
+		$flat_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
+		if ( empty( $flat_id ) ) {
+			wp_send_json_error( array( 'message' => 'No flat ID provided.' ) );
+		}
+
+		$user_id = get_current_user_id();
+		$residents = $this->db->get( 'residents' );
+		$resident = null;
+		foreach ( $residents as $r ) {
+			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
+				$resident = $r;
+				break;
+			}
+		}
+
+		if ( ! $resident ) {
+			wp_send_json_error( array( 'message' => 'Resident profile not found.' ) );
+		}
+
+		// Get all flats for this resident
+		$flat_ids = $this->db->get_resident_flats( $resident['id'] );
+		if ( empty( $flat_ids ) && ! empty( $resident['flat_no'] ) ) {
+			$flat_ids[] = $resident['flat_no'];
+		}
+
+		// Validate requested flat belongs to resident
+		if ( ! in_array( $flat_id, $flat_ids, true ) ) {
+			wp_send_json_error( array( 'message' => 'You do not have access to this flat.' ) );
+		}
+
+		// Set in session
+		if ( ! session_id() ) {
+			session_start();
+		}
+		$_SESSION['shubx51_active_flat_id'] = $flat_id;
+
+		wp_send_json_success( array( 'message' => 'Switched to flat context successfully.' ) );
+	}
+
+	/**
 	 * Handle Document Upload (Frontend)
 	 */
 	public function handle_doc_upload() {
@@ -235,7 +288,9 @@ class SHUBX51_Frontend_Dashboard {
             'my_requests'      => array_values($my_requests), // Pass resident requests
             'nonce'            => wp_create_nonce('shubx51_frontend_nonce'),
             'rest_url'         => esc_url_raw( rest_url( 'society-hubx/v1/' ) ),
-            'rest_nonce'       => wp_create_nonce( 'wp_rest' )
+            'rest_nonce'       => wp_create_nonce( 'wp_rest' ),
+            'my_flats'         => $data['my_flats'] ?? array(),
+            'active_flat_no'   => $data['active_flat_no'] ?? ''
          ));
         
 		ob_start();
@@ -258,17 +313,44 @@ class SHUBX51_Frontend_Dashboard {
 			return new WP_Error('no_resident', 'No resident profile linked to your account.');
 		}
 
-		// 2. Fetch Module Data.
+		// Load all flats owned by this resident
+		$my_flat_ids = $this->db->get_resident_flats( $resident['id'] );
+		// If map is empty, default to their primary flat_no
+		if ( empty( $my_flat_ids ) && ! empty( $resident['flat_no'] ) ) {
+			$my_flat_ids[] = $resident['flat_no'];
+		}
+
 		$all_flats = $this->db->get( 'flats' );
-		$my_flat = null;
+		$my_flats = array();
+		foreach ( $my_flat_ids as $fid ) {
+			$found_flat = null;
+			foreach ( $all_flats as $f ) {
+				if ( $f['id'] === $fid ) {
+					$found_flat = $f;
+					break;
+				}
+			}
+			$my_flats[] = array(
+				'id'          => $fid,
+				'flat_number' => $found_flat ? ( ! empty( $found_flat['flat_number'] ) ? $found_flat['flat_number'] : $found_flat['id'] ) : $fid,
+				'block'       => $found_flat ? ( $found_flat['block'] ?? '' ) : ''
+			);
+		}
+
+		// 2. Determine Active Flat Context
+		$active_flat_info = $this->get_my_flat_info();
+		$active_flat_no = $active_flat_info ? $active_flat_info['flat_no'] : $resident['flat_no'];
+		$active_block = $active_flat_info ? $active_flat_info['block'] : ($resident['block'] ?? '');
+
 		$my_flat = null;
 		foreach($all_flats as $f) {
-            if((string)$f['flat_number'] === (string)$resident['flat_no'] && (string)($f['block'] ?? '') === (string)($resident['block'] ?? '')) {
-                $my_flat = $f; break;
+            if((string)$f['id'] === (string)$active_flat_no) {
+                $my_flat = $f;
+				break;
             }
         }
 
-        $my_vehicles = $this->get_my_vehicles( $resident['flat_no'], $resident['block'] ?? '' );
+        $my_vehicles = $this->get_my_vehicles( $active_flat_no, $active_block );
 
 		$ledger_mgr = new SHUBX51_Ledger_Manager();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
@@ -276,18 +358,18 @@ class SHUBX51_Frontend_Dashboard {
        
 		// Fetch relevant payment requests for this resident (Pending + Approved)
 		$all_requests = $this->db->get('requests');
-		$pending_payment_requests = array_filter($all_requests, function($r) use ($resident) {
+		$pending_payment_requests = array_filter($all_requests, function($r) use ($active_flat_no, $active_block) {
 			$status = $r['status'] ?? 'pending';
 			$is_relevant = in_array( $status, array( 'pending', 'pending_secretary', 'pending_treasurer', 'approved' ) );
 			return (($r['module'] ?? '') === 'accounts' || ($r['entity_type'] ?? '') === 'accounts') 
 				&& $is_relevant
 				&& isset($r['payload'])
-				&& (string)($r['flat_no'] ?? '') === (string)($resident['flat_no'] ?? '')
-                && (string)($r['block'] ?? '') === (string)($resident['block'] ?? '');
+				&& (string)($r['flat_no'] ?? '') === (string)$active_flat_no
+                && (string)($r['block'] ?? '') === (string)$active_block;
 		});
 
-		$my_requests = array_filter($all_requests, function($r) use ($resident, $user_id) {
-			return ((string)$r['flat_no'] === (string)$resident['flat_no'] && (string)($r['block'] ?? '') === (string)($resident['block'] ?? '')) || ((int)$r['created_by'] === (int)$user_id);
+		$my_requests = array_filter($all_requests, function($r) use ($active_flat_no, $active_block, $user_id) {
+			return ((string)$r['flat_no'] === (string)$active_flat_no && (string)($r['block'] ?? '') === (string)$active_block) || ((int)$r['created_by'] === (int)$user_id);
 		});
 		
 		// Sort Newest First
@@ -299,15 +381,15 @@ class SHUBX51_Frontend_Dashboard {
 			'resident'   => $resident,
 			'flat'       => $my_flat,
 			'vehicles'   => $my_vehicles,
-			'family'     => $this->get_my_family( $resident['flat_no'], $resident['block'] ?? '' ),
-			'daily_help' => $this->get_my_daily_help( $resident['flat_no'], $resident['block'] ?? '' ),
+			'family'     => $this->get_my_family( $active_flat_no, $active_block ),
+			'daily_help' => $this->get_my_daily_help( $active_flat_no, $active_block ),
 			'notices'    => $this->get_my_notices( $resident['type'] ),
-			'my_docs'    => $this->get_my_documents( $resident['flat_no'], $resident['block'] ?? '' ),
+			'my_docs'    => $this->get_my_documents( $active_flat_no, $active_block ),
 			'facilities' => $this->db->get( 'facilities' ),
             'assets'     => $this->db->get( 'assets' ),
-			'my_bookings'=> $this->get_my_bookings( $resident['flat_no'], $resident['block'] ?? '' ),
+			'my_bookings'=> $this->get_my_bookings( $active_flat_no, $active_block ),
 			'expenses'   => $this->db->get( 'expenses' ),
-			'invoices'   => $this->get_my_invoices( isset($my_flat['flat_number']) ? $my_flat['flat_number'] : $resident['flat_no'], $resident['block'] ?? '' ),
+			'invoices'   => $this->get_my_invoices( $active_flat_no, $active_block ),
 			'detailed_expenses' => $this->get_expenses_filtered(),
             'current_balance'   => $ledger_mgr->get_current_balance(),
             'monthly_summary'   => $ledger_mgr->get_monthly_summary($summary_month),
@@ -316,6 +398,8 @@ class SHUBX51_Frontend_Dashboard {
 			'pending_payment_requests' => $pending_payment_requests,
             'my_requests'       => $my_requests,
             'notifications'     => $this->get_my_notifications( $user_id ),
+			'my_flats'          => $my_flats,
+			'active_flat_no'    => $active_flat_no,
 		);
 
 		// Prepare Chart Data
@@ -1221,15 +1305,44 @@ class SHUBX51_Frontend_Dashboard {
 	private function get_my_flat_info() {
 		$user_id = get_current_user_id();
 		$residents = $this->db->get('residents');
+		$target_resident = null;
 		foreach($residents as $r) {
 			if(isset($r['wp_user_id']) && (int)$r['wp_user_id'] === $user_id) {
-                return array(
-                    'block' => $r['block'] ?? '',
-                    'flat_no' => $r['flat_no'] ?? ''
-                );
+                $target_resident = $r;
+                break;
             }
 		}
-		return null;
+
+		if ( ! $target_resident ) {
+			return null;
+		}
+
+		$flat_ids = $this->db->get_resident_flats( $target_resident['id'] );
+
+		// Determine which flat is active
+		$active_flat_id = isset( $_SESSION['shubx51_active_flat_id'] ) ? $_SESSION['shubx51_active_flat_id'] : '';
+
+		// Validate active flat belongs to the user
+		if ( empty( $active_flat_id ) || ! in_array( $active_flat_id, $flat_ids, true ) ) {
+			$active_flat_id = ! empty( $flat_ids ) ? $flat_ids[0] : $target_resident['flat_no'];
+		}
+
+		// Save validation back to session
+		if ( ! headers_sent() ) {
+			if ( ! session_id() ) {
+				session_start();
+			}
+			$_SESSION['shubx51_active_flat_id'] = $active_flat_id;
+		}
+
+		// Fetch flat details
+		$flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $active_flat_id ) ) );
+		$flat = ! empty( $flats ) ? $flats[0] : null;
+
+		return array(
+			'block'   => $flat ? ( $flat['block'] ?? '' ) : ( $target_resident['block'] ?? '' ),
+			'flat_no' => $active_flat_id
+		);
 	}
 
 	public function get_my_flat_number() {

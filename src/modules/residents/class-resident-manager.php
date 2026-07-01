@@ -342,8 +342,16 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             return new WP_Error( 'not_found', 'Resident not found for update.' );
         }
 
+		// Handle multi flats
+		$flat_ids = isset( $data['flat_ids'] ) ? (array) $data['flat_ids'] : array();
+		if ( empty( $flat_ids ) && ! empty( $flat_no ) ) {
+			$flat_ids[] = $flat_no;
+		}
+
+		$primary_flat_id = ! empty( $data['primary_flat_id'] ) ? $data['primary_flat_id'] : ( ! empty( $flat_ids ) ? $flat_ids[0] : ( $existing_resident['flat_no'] ?? '' ) );
+
 		$update_data = array(
-			'flat_no'       => !empty($flat_no) ? $flat_no : ($existing_resident['flat_no'] ?? ''),
+			'flat_no'       => !empty($primary_flat_id) ? $primary_flat_id : ($existing_resident['flat_no'] ?? ''),
 			'name'          => isset($data['name']) ? sanitize_text_field( $data['name'] ) : ($existing_resident['name'] ?? ''),
 			'email'         => isset($data['email']) ? sanitize_email( $data['email'] ) : ($existing_resident['email'] ?? ''),
 			'phone'         => isset($data['phone']) ? sanitize_text_field( $data['phone'] ) : ($existing_resident['phone'] ?? ''),
@@ -382,8 +390,8 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             }
         }
 
-		// 1. Maintain 1 owner/tenant per flat rule during edits
-		if ( in_array( $update_data['type'], array( 'owner', 'tenant' ) ) ) {
+		// 1. Maintain 1 tenant per flat rule during edits (owner skipped for multi flats)
+		if ( $update_data['type'] === 'tenant' ) {
 			foreach ( $all_residents as $i => $r ) {
 				$is_self = false;
 				if ( isset($r['id']) && $r['id'] == $resident_id ) {
@@ -392,7 +400,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 				if ( ! $is_self && 
 					 $r['flat_no'] === $update_data['flat_no'] && 
-					 strtolower($r['type']) === strtolower($update_data['type']) ) {
+					 strtolower($r['type']) === 'tenant' ) {
 					
 					$this->archive_to_history( $r );
 					if ( isset($r['id']) ) {
@@ -448,23 +456,26 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                  }
                  
                  if ( $user && ! is_wp_error( $user ) ) {
-                     $update_data['wp_user_id'] = $user->ID;
-                     update_user_meta( $user->ID, 'shubx51_flat_no', $update_data['flat_no'] );
+                      $update_data['wp_user_id'] = $user->ID;
+                      update_user_meta( $user->ID, 'shubx51_flat_no', $update_data['flat_no'] );
 
-                     // Sync Profile Changes to WP User
-                     $wp_user_data = [
-                         'ID'           => $user->ID,
-                         'display_name' => $update_data['name'],
-                         'user_email'   => $update_data['email'],
-                         'first_name'   => $update_data['name'],
-                     ];
-                     wp_update_user($wp_user_data);
+                      // Sync Profile Changes to WP User
+                      $wp_user_data = [
+                          'ID'           => $user->ID,
+                          'display_name' => $update_data['name'],
+                          'user_email'   => $update_data['email'],
+                          'first_name'   => $update_data['name'],
+                      ];
+                      wp_update_user($wp_user_data);
 
-                     // Sync Society Roles to WP Roles
-                     $this->sync_wp_user_roles( $user->ID, $resident_id );
+                      // Sync Society Roles to WP Roles
+                      $this->sync_wp_user_roles( $user->ID, $resident_id );
                  }
             }
         }
+
+		// Save flat maps
+		$this->db->save_resident_flats( $resident_id, $flat_ids, $primary_flat_id );
 
 		return $this->db->update('residents', $update_data, ['id' => $resident_id]);
     }
@@ -716,9 +727,16 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Core Logic to Add Resident.
 	 */
 	private function process_add_resident( $post_data ) {
+		$flat_ids = isset( $post_data['flat_ids'] ) ? (array) $post_data['flat_ids'] : array();
+		if ( empty( $flat_ids ) && ! empty( $post_data['flat_no'] ) ) {
+			$flat_ids[] = $post_data['flat_no'];
+		}
+		
+		$primary_flat_id = ! empty( $post_data['primary_flat_id'] ) ? $post_data['primary_flat_id'] : ( ! empty( $flat_ids ) ? $flat_ids[0] : '' );
+
 		$data = array(
-			'flat_no'       => $post_data['flat_no'],
-			'name'          => $post_data['name'],
+			'flat_no' => $primary_flat_id,
+			'name'    => $post_data['name'],
 		);
 
 		// Handle Photo Upload
@@ -733,16 +751,23 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 		// 0. Server-Side Validation: Flat Existence
 		$flats = $this->db->get( 'flats' );
-		$valid_flat = false;
-		foreach ( $flats as $f ) {
-			if ( $f['id'] === $data['flat_no'] ) {
-				$valid_flat = true;
+		$valid_flats = true;
+		foreach ( $flat_ids as $flat_id ) {
+			$found = false;
+			foreach ( $flats as $f ) {
+				if ( $f['id'] === $flat_id ) {
+					$found = true;
+					break;
+				}
+			}
+			if ( ! $found ) {
+				$valid_flats = false;
 				break;
 			}
 		}
 
-		if ( ! $valid_flat && ! empty( $data['flat_no'] ) ) {
-			return new WP_Error( 'invalid_flat', 'Flat ' . $data['flat_no'] . ' does not exist.' );
+		if ( ! $valid_flats && ! empty( $flat_ids ) ) {
+			return new WP_Error( 'invalid_flat', 'One or more of the selected flats do not exist.' );
 		}
 
 		$data = array_merge( $data, array(
@@ -753,11 +778,11 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 			'blood_group'   => isset($post_data['blood_group']) ? sanitize_text_field( $post_data['blood_group'] ) : '',
 			'relation'      => isset($post_data['relation']) ? sanitize_text_field( $post_data['relation'] ) : '',
 			'dob'           => isset($post_data['dob']) ? sanitize_text_field( $post_data['dob'] ) : '',
-		'status'        => isset($post_data['status']) ? $post_data['status'] : 'approved',
-		'wp_user_id'    => '', 
-		'id'            => isset($post_data['id']) ? $post_data['id'] : uniqid('res_'), 
-		'created_at'    => current_time( 'mysql' ),
-	) );
+			'status'        => isset($post_data['status']) ? $post_data['status'] : 'approved',
+			'wp_user_id'    => '', 
+			'id'            => isset($post_data['id']) ? $post_data['id'] : uniqid('res_'), 
+			'created_at'    => current_time( 'mysql' ),
+		) );
 
         // Add Relational Roles (Multi-Role Support)
         $roles = isset($post_data['role']) ? $post_data['role'] : (isset($post_data['roles']) ? $post_data['roles'] : array());
@@ -768,12 +793,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         $this->db->save_relations( 'resident_role_map', 'resident_id', $data['id'], 'role_id', $roles );
         $data['roles'] = implode( ',', $roles );
 
-		// 0.1 Auto-Archive existing occupant (Owner/Tenant) if new one added for same flat.
-		if ( in_array( $data['type'], array( 'owner', 'tenant' ) ) ) {
+		// 0.1 Auto-Archive existing occupant (Tenant only) if new one added for same flat.
+		// Skip for Owner to allow multiple flats and multiple co-owners per flat.
+		if ( $data['type'] === 'tenant' ) {
 			$residents = $this->db->get( 'residents' );
 			foreach ( $residents as $i => $r ) {
-				if ( $r['flat_no'] === $data['flat_no'] && strtolower($r['type']) === strtolower($data['type']) ) {
-					// Found existing owner/tenant. Archive them first.
+				if ( $r['flat_no'] === $data['flat_no'] && strtolower($r['type']) === 'tenant' ) {
+					// Found existing tenant. Archive them first.
 					$this->archive_to_history( $r );
 					if(isset($r['id'])) {
 						$this->db->delete('residents', ['id' => $r['id']]);
@@ -805,6 +831,9 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                 $this->sync_wp_user_roles( $user->ID, $data['id'] );
 			}
 		}
+
+		// Save flat maps
+		$this->db->save_resident_flats( $data['id'], $flat_ids, $primary_flat_id );
 
 		// 2. Insert into DB (Local/Sheet).
 		return $this->db->insert( 'residents', $data );

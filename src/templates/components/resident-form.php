@@ -75,26 +75,39 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
 
     <!-- Admin: Flat & Type -->
     <?php if($is_admin): ?>
-        <div class="col-md-6 text-start">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Flat / Unit <span class="text-danger">*</span></label>
-             <select name="flat_no" class="form-select rounded-3 border-light shadow-none" required>
-                <option value="">Select Flat</option>
-                <?php if(!empty($args['flats'])): ?>
-                    <?php foreach($args['flats'] as $f): 
-                        $val = $f['id']; 
-                        $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                        $label = $f_num;
-                        $is_sel = ($flat_no == $val || $flat_no == $f_num);
-                    ?>
-                        <option value="<?php echo esc_attr($val); ?>" 
-                                data-number="<?php echo esc_attr($f_num); ?>"
-                                data-id="<?php echo esc_attr($val); ?>"
-                                <?php echo $is_sel ? 'selected' : ''; ?>>
-                            <?php echo esc_html($label); ?>
-                        </option>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-             </select>
+        <div class="col-12 text-start">
+             <label class="form-label small fw-bold text-secondary text-uppercase">Flat / Unit(s) Owned <span class="text-danger">*</span></label>
+             <?php
+             $selected_flat_ids = isset($r['flat_ids']) ? $r['flat_ids'] : ( !empty($flat_no) ? array($flat_no) : array() );
+             ?>
+             <div class="row g-2 px-1 mb-2">
+                 <?php if(!empty($args['flats'])): ?>
+                     <?php foreach($args['flats'] as $f): 
+                         $val = $f['id']; 
+                         $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                         $is_sel = in_array($val, $selected_flat_ids) || in_array($f_num, $selected_flat_ids);
+                     ?>
+                         <div class="col-md-4 col-6">
+                             <div class="form-check">
+                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" type="checkbox" name="flat_ids[]" value="<?php echo esc_attr($val); ?>" id="flat-<?php echo esc_attr($val); ?>-<?php echo $context; ?>" data-number="<?php echo esc_attr($f_num); ?>" <?php checked($is_sel); ?>>
+                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo $context; ?>">
+                                     <?php echo esc_html($f_num); ?>
+                                 </label>
+                             </div>
+                         </div>
+                     <?php endforeach; ?>
+                 <?php endif; ?>
+             </div>
+             <!-- Hidden input to stay in sync with legacy flat_no for simple form post fallbacks -->
+             <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo $context; ?>" value="<?php echo esc_attr($flat_no); ?>">
+             
+             <!-- Primary Flat Selection (Shown only when multiple selected) -->
+             <div class="mb-3" id="primary-flat-wrapper-<?php echo $context; ?>" style="display: none;">
+                 <label class="form-label small fw-bold text-secondary text-uppercase">Primary Flat <span class="text-danger">*</span></label>
+                 <select name="primary_flat_id" id="primary-flat-select-<?php echo $context; ?>" class="form-select rounded-3 border-light shadow-none">
+                     <!-- Options populated dynamically by JS -->
+                 </select>
+             </div>
         </div>
         <div class="col-md-6 text-start">
              <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
@@ -221,8 +234,71 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
             }
         });
     });
+    // 2. Multi-Flat Checkbox Selection Logic
+    function initFlatSelector(context) {
+        const checkboxes = document.querySelectorAll(`.js-flat-checkbox-${context}`);
+        const primaryWrapper = document.getElementById(`primary-flat-wrapper-${context}`);
+        const primarySelect = document.getElementById(`primary-flat-select-${context}`);
+        const hiddenFlatNo = document.getElementById(`flat-no-hidden-${context}`);
 
-    // 2. Relationship/Role Toggle Logic
+        if (!checkboxes.length || !primarySelect) return;
+
+        function updatePrimarySelect() {
+            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+            const selectedVal = primarySelect.value;
+            
+            primarySelect.innerHTML = '';
+            
+            if (checkedBoxes.length > 1) {
+                if (primaryWrapper) primaryWrapper.style.display = 'block';
+                primarySelect.removeAttribute('disabled');
+                primarySelect.setAttribute('required', 'required');
+                
+                checkedBoxes.forEach(cb => {
+                    const opt = document.createElement('option');
+                    opt.value = cb.value;
+                    opt.textContent = cb.dataset.number || cb.value;
+                    if (cb.value === selectedVal) {
+                        opt.selected = true;
+                    }
+                    primarySelect.appendChild(opt);
+                });
+
+                // Update hidden input to match the chosen primary flat
+                if (hiddenFlatNo) {
+                    hiddenFlatNo.value = primarySelect.value;
+                }
+            } else {
+                if (primaryWrapper) primaryWrapper.style.display = 'none';
+                primarySelect.setAttribute('disabled', 'disabled');
+                primarySelect.removeAttribute('required');
+                
+                if (checkedBoxes.length === 1) {
+                    if (hiddenFlatNo) hiddenFlatNo.value = checkedBoxes[0].value;
+                } else {
+                    if (hiddenFlatNo) hiddenFlatNo.value = '';
+                }
+            }
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updatePrimarySelect);
+        });
+
+        if (primarySelect) {
+            primarySelect.addEventListener('change', function() {
+                if (hiddenFlatNo) hiddenFlatNo.value = this.value;
+            });
+        }
+
+        // Run once on load to populate primary options if pre-checked
+        updatePrimarySelect();
+    }
+
+    // Initialize flat selectors for each possible form context (admin, profile, family)
+    ['admin', 'frontend_profile', 'frontend_family'].forEach(initFlatSelector);
+
+    // 3. Relationship/Role Toggle Logic
     const typeToggles = document.querySelectorAll('.js-resident-type-toggle');
     typeToggles.forEach(toggle => {
         if (toggle.dataset.toggleHandled) return;
