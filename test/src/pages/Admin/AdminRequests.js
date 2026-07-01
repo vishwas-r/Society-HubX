@@ -12,7 +12,7 @@ class AdminRequests {
     }
 
     async navigateTo() {
-        await this.page.goto('/wp-admin/admin.php?page=sgvx51-requests');
+        await this.page.goto('/wp-admin/admin.php?page=snestx51-requests');
     }
 
     async approveRequest(identifier, moduleSlug = '') {

@@ -1,5 +1,5 @@
 /**
- * Auth utility for Society GoVernX - Test
+ * Auth utility for SocietyNestX - Test
  */
 const { expect } = require('@playwright/test');
 const users = require('../fixtures/users.json');

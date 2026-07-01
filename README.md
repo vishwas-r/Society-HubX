@@ -1,8 +1,8 @@
-# Society GoVernX — Single-Shot Webapp
+# SocietyNestX — Single-Shot Webapp
 
-Society GoVernX is a premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vaults, community polls, and resident community engagement.
+SocietyNestX is a premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vaults, community polls, and resident community engagement.
 
-This repository packages the **Society GoVernX WordPress Plugin** alongside a dedicated, self-deleting setup wizard (`setup.php`) to create a "Single-Shot Webapp" bundle. Developers and administrators can deploy this bundle on any standard hosting environment to get a fully configured society management system up and running instantly.
+This repository packages the **SocietyNestX WordPress Plugin** alongside a dedicated, self-deleting setup wizard (`setup.php`) to create a "Single-Shot Webapp" bundle. Developers and administrators can deploy this bundle on any standard hosting environment to get a fully configured society management system up and running instantly.
 
 ---
 
@@ -16,12 +16,12 @@ This repository packages the **Society GoVernX WordPress Plugin** alongside a de
 
 ```mermaid
 graph TD
-    A[society-governx-webapp.zip] -->|Extract to Web Root| B(Web Server)
+    A[society-nestx-webapp.zip] -->|Extract to Web Root| B(Web Server)
     B -->|Access /setup.php| C(Premium Setup Wizard)
     C -->|Input DB & Admin Credentials| D{Run Setup}
     D -->|1. Generate wp-config.php| E[WordPress Core]
     D -->|2. Run wp_install migrations| F[WordPress Database]
-    D -->|3. Activate Plugin & Enable Permalinks| G[Society GoVernX Plugin]
+    D -->|3. Activate Plugin & Enable Permalinks| G[SocietyNestX Plugin]
     G -->|Initialize Custom Tables| F
     D -->|4. Self-Delete setup.php| H(Secure Site)
     H -->|Redirect| I[Society Settings Wizard]
@@ -29,13 +29,13 @@ graph TD
 
 1. **WordPress Core**: Automatically bundled from the latest official WordPress release.
 2. **Setup Wizard (`setup.php`)**: A standalone Obsidian Nebula dark-themed installer that automates database creation, salt generation, `wp-config.php` creation, WordPress setup, plugin activation, and pretty permalinks configuration.
-3. **Society GoVernX Plugin**: Pre-installed and auto-activated inside the `wp-content/plugins/society-governx/` folder.
+3. **SocietyNestX Plugin**: Pre-installed and auto-activated inside the `wp-content/plugins/society-nestx/` folder.
 
 ---
 
 ## Plugin Features & Core Modules
 
-The **Society GoVernX** plugin delivers a full suite of administrative and community engagement tools:
+The **SocietyNestX** plugin delivers a full suite of administrative and community engagement tools:
 
 * **Flat Management:** Track flat details, block structure, occupancy types (Owner/Tenant), and allocation.
 * **Resident & Member Directory:** Register residents, manage member approvals, and search resident directory.
@@ -65,9 +65,9 @@ After setup, navigate to **GovernX > Settings** in the WordPress Admin Dashboard
 ## Frontend Shortcodes
 
 Render portal components on any frontend WordPress page using the following shortcodes:
-* `[Society_GoVernX_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
-* `[Society_GoVernX_notices]` - Renders a standalone public notice board.
-* `[Society_GoVernX_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
+* `[Society_NestX_dashboard]` - Renders the complete Resident Dashboard (Notice feed, billing log, requests, facility bookings, and rule acknowledgments).
+* `[Society_NestX_notices]` - Renders a standalone public notice board.
+* `[Society_NestX_directory]` - Renders a searchable resident directory (accessible only to authorized logged-in residents).
 
 ---
 
@@ -89,13 +89,13 @@ chmod +x build-bundle.sh
 ./build-bundle.sh
 ```
 
-**Output**: A clean `society-governx-webapp.zip` file will be generated in the root directory.
+**Output**: A clean `society-nestx-webapp.zip` file will be generated in the root directory.
 
 ---
 
 ## Deployment & Installation
 
-1. **Extract**: Upload and unzip the generated `society-governx-webapp.zip` into your web server's public document root (e.g. Apache, Nginx, LocalWP, Laragon, or XAMPP).
+1. **Extract**: Upload and unzip the generated `society-nestx-webapp.zip` into your web server's public document root (e.g. Apache, Nginx, LocalWP, Laragon, or XAMPP).
 2. **Launch Wizard**: Navigate to `http://your-site-url/setup.php` in a web browser.
 3. **Database Configuration**:
    - Provide your Database Host, Database Name, Database Username, Password, and Table Prefix.
@@ -105,10 +105,10 @@ chmod +x build-bundle.sh
 5. **Run Setup**: Click **Install & Run Setup**.
    - The installer creates `wp-config.php`.
    - Runs WordPress core migrations.
-   - Activates the `Society GoVernX` plugin.
+   - Activates the `SocietyNestX` plugin.
    - Flushes permalink rules for clean URLs.
    - Attempts to self-delete the `setup.php` file for security.
-6. **Finalize**: The page will redirect you to the admin panel setup screen (`wp-admin/admin.php?page=sgvx51-setup`) to configure your society identity, property structure (blocks, floors, flats), and financial details.
+6. **Finalize**: The page will redirect you to the admin panel setup screen (`wp-admin/admin.php?page=snestx51-setup`) to configure your society identity, property structure (blocks, floors, flats), and financial details.
 
 ---
 
