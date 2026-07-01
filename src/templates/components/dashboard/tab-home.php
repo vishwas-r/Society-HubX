@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             data-photo="<?php echo esc_attr($fam['profile_photo'] ?? ''); ?>"
                                             data-is-pending="<?php echo !empty($fam['is_pending']) ? '1' : '0'; ?>"
                                             data-request-type="<?php echo esc_attr($fam['request_type'] ?? ''); ?>"
-                                            data-original="<?php echo !empty($fam['original_data']) ? esc_attr(json_encode($fam['original_data'])) : ''; ?>"
+                                            data-original="<?php echo !empty($fam['original_data']) ? esc_attr(wp_json_encode($fam['original_data'])) : ''; ?>"
                                             class="cursor-pointer">
                                             <div class="fw-bold text-dark small lh-sm"><?php echo esc_html($fam['name']); ?></div>
                                             <div class="small text-secondary d-flex align-items-center gap-1 mt-1" style="font-size: 0.75rem;">
@@ -85,7 +85,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                    data-photo="<?php echo esc_attr($fam['profile_photo'] ?? ''); ?>"
                                                    data-is-pending="<?php echo !empty($fam['is_pending']) ? '1' : '0'; ?>"
                                                    data-request-type="<?php echo esc_attr($fam['request_type'] ?? ''); ?>"
-                                                   data-original="<?php echo !empty($fam['original_data']) ? esc_attr(json_encode($fam['original_data'])) : ''; ?>"
+                                                   data-original="<?php echo !empty($fam['original_data']) ? esc_attr(wp_json_encode($fam['original_data'])) : ''; ?>"
                                                 >
                                                     <i class="bi bi-eye text-info"></i> View
                                                 </a>
@@ -153,7 +153,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                          data-photo="<?php echo esc_attr($help['profile_photo'] ?? ''); ?>"
                                          data-is-pending="<?php echo !empty($help['is_pending']) ? '1' : '0'; ?>"
                                          data-request-type="<?php echo esc_attr($help['request_type'] ?? ''); ?>"
-                                         data-original="<?php echo !empty($help['original_data']) ? esc_attr(json_encode($help['original_data'])) : ''; ?>"
+                                         data-original="<?php echo !empty($help['original_data']) ? esc_attr(wp_json_encode($help['original_data'])) : ''; ?>"
                                     >
                                          <?php echo SHUBX51_Admin_UI::render_avatar($help['name'], '', $help['profile_photo'] ?? '', 40); ?>
                                          <div>
@@ -180,8 +180,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light rounded-3">
                                                 <li><button class="dropdown-item js-edit-help small" 
-                                                    data-payload="<?php echo esc_attr(json_encode($help)); ?>"
-                                                    data-original="<?php echo !empty($help['original_data']) ? esc_attr(json_encode($help['original_data'])) : ''; ?>"
+                                                    data-payload="<?php echo esc_attr(wp_json_encode($help)); ?>"
+                                                    data-original="<?php echo !empty($help['original_data']) ? esc_attr(wp_json_encode($help['original_data'])) : ''; ?>"
                                                     data-request-type="<?php echo esc_attr($help['request_type'] ?? ''); ?>"
                                                 ><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
                                                 <li><hr class="dropdown-divider my-1"></li>
@@ -234,7 +234,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                          data-model="<?php echo esc_attr($v['model']); ?>"
                                          data-is-pending="<?php echo !empty($v['is_pending']) ? '1' : '0'; ?>"
                                          data-request-type="<?php echo esc_attr($v['request_type'] ?? ''); ?>"
-                                         data-original="<?php echo !empty($v['original_data']) ? esc_attr(json_encode($v['original_data'])) : ''; ?>"
+                                         data-original="<?php echo !empty($v['original_data']) ? esc_attr(wp_json_encode($v['original_data'])) : ''; ?>"
                                     >
                                         <div class="fw-bold text-dark font-monospace tracking-wide small" style="letter-spacing: 0.05em;"><?php echo esc_html($v['number']); ?></div>
                                         <div class="small text-secondary d-flex align-items-center gap-2" style="font-size: 0.75rem;">
@@ -258,8 +258,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 <button class="btn btn-sm text-muted p-0 shadow-none border-0" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-light">
                                                     <li><button class="dropdown-item js-edit-vehicle small" 
-                                                        data-payload="<?php echo esc_attr(json_encode($v)); ?>"
-                                                        data-original="<?php echo !empty($v['original_data']) ? esc_attr(json_encode($v['original_data'])) : ''; ?>"
+                                                        data-payload="<?php echo esc_attr(wp_json_encode($v)); ?>"
+                                                        data-original="<?php echo !empty($v['original_data']) ? esc_attr(wp_json_encode($v['original_data'])) : ''; ?>"
                                                         data-request-type="<?php echo esc_attr($v['request_type'] ?? ''); ?>"
                                                     ><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
                                                     <li><hr class="dropdown-divider my-1"></li>

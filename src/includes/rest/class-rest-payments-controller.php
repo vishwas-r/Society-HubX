@@ -37,7 +37,10 @@ class SHUBX51_REST_Payments_Controller {
 	}
 	
 	public function check_frontend_auth() {
-		return is_user_logged_in();
+		if ( ! current_user_can( 'read' ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'You must be logged in to access this endpoint.', 'society-hubx' ), array( 'status' => 403 ) );
+		}
+		return true;
 	}
 
 	public function webhook_permissions_check( WP_REST_Request $request ) {

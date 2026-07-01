@@ -244,7 +244,7 @@ if(!empty($expenses)) {
                                                             <i class="bi bi-file-earmark-medical fs-6 text-muted"></i>
                                                         </a>
                                                     <?php endif; ?>
-                                                    <button onclick="editExpense(this)" data-expense="<?php echo esc_attr(json_encode($ex)); ?>" class="btn btn-sm btn-light border border-light p-2 rounded-3 shadow-none">
+                                                    <button onclick="editExpense(this)" data-expense="<?php echo esc_attr(wp_json_encode($ex)); ?>" class="btn btn-sm btn-light border border-light p-2 rounded-3 shadow-none">
                                                         <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger rounded-3 shadow-none js-delete-expense" data-id="<?php echo esc_attr($ex['id']); ?>" data-date="<?php echo esc_attr($ex['date']); ?>">
@@ -293,7 +293,7 @@ if(!empty($expenses)) {
                                             <td class="px-4 py-4 fw-bold text-dark text-end">₹<?php echo number_format( floatval( $ex['amount'] ), 2 ); ?></td>
                                             <td class="pe-5 py-4 text-end">
                                                 <div class="d-flex justify-content-end gap-2">
-                                                    <button onclick="editExpense(this)" data-expense="<?php echo esc_attr(json_encode($ex)); ?>" class="btn btn-sm btn-light border border-light px-3 py-2 fw-bold small rounded-3 shadow-none">Edit</button>
+                                                    <button onclick="editExpense(this)" data-expense="<?php echo esc_attr(wp_json_encode($ex)); ?>" class="btn btn-sm btn-light border border-light px-3 py-2 fw-bold small rounded-3 shadow-none">Edit</button>
                                                     
                                                     <button type="button" class="btn btn-success px-4 py-2 fw-bold small rounded-pill shadow-none js-approve-expense" data-id="<?php echo esc_attr($ex['id']); ?>">Verify & Approve</button>
                                                 </div>

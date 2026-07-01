@@ -54,7 +54,7 @@ $directory = $data['directory'] ?? [];
                 ?>
                     <div class="col-md-6 col-lg-4 dir-card" 
                          data-search="<?php echo esc_attr($search_blob); ?>"
-                         data-json="<?php echo htmlspecialchars(json_encode($d), ENT_QUOTES, 'UTF-8'); ?>"
+                         data-json="<?php echo htmlspecialchars(wp_json_encode($d), ENT_QUOTES, 'UTF-8'); ?>"
                          data-has-vehicle="<?php echo !empty($d['vehicles']) ? '1' : '0'; ?>"
                          data-has-help="<?php echo !empty($d['help']) ? '1' : '0'; ?>"
                          style="cursor: pointer;">

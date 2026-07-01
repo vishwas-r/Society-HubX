@@ -520,17 +520,17 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                                          </button>
                                                      </div>
                                                  <?php elseif ( ($inv['status'] ?? '') !== 'paid' ) : ?>
-                                                     <button type="button" class="btn btn-sm btn-primary px-3 fw-bold js-record-payment rounded-pill shadow-sm" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" style="font-size: 10px;">RECORD PAYMENT</button>
+                                                     <button type="button" class="btn btn-sm btn-primary px-3 fw-bold js-record-payment rounded-pill shadow-sm" data-invoice="<?php echo esc_attr(wp_json_encode($inv)); ?>" style="font-size: 10px;">RECORD PAYMENT</button>
                                                  <?php endif; ?>
                                                  
                                                  <div class="d-flex gap-1">
                                                      <?php if ( $paid == 0 && ($inv['status'] ?? '') !== 'pending_total' ) : ?>
-                                                         <button type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-invoice rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="Edit">
+                                                         <button type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-invoice rounded-3 shadow-none" data-invoice="<?php echo esc_attr(wp_json_encode($inv)); ?>" title="Edit">
                                                              <i class="bi bi-pencil-square fs-6 text-muted"></i>
                                                          </button>
                                                      <?php endif; ?>
                                                       <?php if( $paid > 0 && !$pending_request && ($inv['status'] ?? '') !== 'pending_total' ): ?>
-                                                          <button type="button" class="btn btn-sm btn-light border border-light p-2 js-open-receipt rounded-3 shadow-none" data-invoice="<?php echo esc_attr(json_encode($inv)); ?>" title="View Receipt">
+                                                          <button type="button" class="btn btn-sm btn-light border border-light p-2 js-open-receipt rounded-3 shadow-none" data-invoice="<?php echo esc_attr(wp_json_encode($inv)); ?>" title="View Receipt">
                                                               <i class="bi bi-file-earmark-medical fs-6 text-muted"></i>
                                                           </button>
                                                       <?php endif; ?>

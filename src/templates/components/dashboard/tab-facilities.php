@@ -143,7 +143,7 @@ $my_bookings = $data['my_bookings'] ?? [];
                                     $rate = floatval($f['rate'] ?? 0);
                                     $is_free = ($rate === 0.0);
                                     $type = $is_free ? 'free' : 'paid';
-                                    $f_json = htmlspecialchars(json_encode($f), ENT_QUOTES, 'UTF-8');
+                                    $f_json = htmlspecialchars(wp_json_encode($f), ENT_QUOTES, 'UTF-8');
                                 ?>
                                     <div class="col-md-6 col-xl-4 facility-item" data-type="<?php echo $type; ?>">
                                         <div class="card h-100 border border-light shadow-sm rounded-3 overflow-hidden hover-lift transition-all" role="button" onclick="openResidentFacilityModal('<?php echo $f_json; ?>')">
