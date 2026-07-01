@@ -180,8 +180,8 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                             data-id="<?php echo esc_attr($req['id']); ?>"
                                             data-module="<?php echo esc_attr($module); ?>"
                                             data-request-type="<?php echo esc_attr($action); ?>"
-                                            data-payload='<?php echo esc_attr($req['payload']); ?>'
-                                            data-original='<?php echo esc_attr(isset($req['original_data']) ? json_encode($req['original_data']) : "{}"); ?>'
+                                            data-payload='<?php echo esc_attr( is_array($req['payload']) ? wp_json_encode($req['payload']) : ($req['payload'] ?: '{}') ); ?>'
+                                            data-original='<?php echo esc_attr(isset($req['original_data']) ? ( is_array($req['original_data']) ? wp_json_encode($req['original_data']) : $req['original_data'] ) : "{}"); ?>'
                                             data-requester="<?php echo esc_attr($name); ?>"
                                             data-date="<?php echo esc_attr(wp_date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
                                         <i class="bi bi-eye me-1"></i> VIEW
