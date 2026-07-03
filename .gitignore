@@ -16,3 +16,8 @@ wordpress-temp.zip
 plugin-check/
 strip-bom.php
 society-governx-*.md
+
+# Playwright local test artifacts
+test/node_modules/
+test/playwright-report/
+test/test-results/

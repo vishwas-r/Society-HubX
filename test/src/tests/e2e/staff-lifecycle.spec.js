@@ -1,14 +1,14 @@
 /**
- * E2E: Resident Vehicle Module Lifecycle
+ * E2E: Resident Support Staff Module Lifecycle
  */
 const { test, expect } = require('@playwright/test');
 const { loginAsAdmin, loginAsResident } = require('../../utils/auth');
 const { ResidentDashboard } = require('../../pages/Resident/ResidentDashboard');
-const { VehicleModule } = require('../../pages/Resident/VehicleModule');
+const { HelpModule } = require('../../pages/Resident/HelpModule');
 const { AdminRequests } = require('../../pages/Admin/AdminRequests');
-const vehicleData = require('../../fixtures/vehicles.json');
+const helpData = require('../../fixtures/help.json');
 
-test.describe('Resident Vehicle Module Lifecycle Tests', () => {
+test.describe('Resident Support Staff Module Lifecycle Tests', () => {
     let adminContext;
     let residentContext;
     let adminPage;
@@ -47,88 +47,88 @@ test.describe('Resident Vehicle Module Lifecycle Tests', () => {
         await residentContext.close();
     });
 
-    test('vehicle-add: Add & Approve Vehicle', async () => {
+    test('staff-add: Add & Approve Staff', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const staff = new HelpModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await staff.addHelp(helpData.validHelp);
 
-        const row = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const row = await staff.getHelpRow(helpData.validHelp.name);
         await expect(row.locator('.badge.bg-warning')).toContainText('PENDING');
 
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number);
+        await adminReq.approveRequest(helpData.validHelp.name, 'daily_help');
 
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowApproved = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowApproved = await staff.getHelpRow(helpData.validHelp.name);
         await expect(rowApproved.locator('.status-badge')).not.toBeVisible();
-        await expect(rowApproved.locator('.dropdown button[data-bs-toggle="dropdown"]')).toBeVisible();
+        await expect(rowApproved.locator('a[href^="tel:"]')).toBeVisible();
     });
 
-    test('vehicle-edit: Edit & Approve Vehicle', async () => {
+    test('staff-edit: Edit & Approve Staff', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const staff = new HelpModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
-        // Setup: Add and Approve
+        // Setup
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await staff.addHelp(helpData.validHelp);
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number);
+        await adminReq.approveRequest(helpData.validHelp.name, 'daily_help');
 
         // Action: Edit
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const updatedBrand = 'Updated ' + vehicleData.validVehicle.brand;
-        await vehicles.editVehicle(vehicleData.validVehicle.number, { brand: updatedBrand });
+        const updatedName = 'Updated ' + helpData.validHelp.name;
+        await staff.editHelp(helpData.validHelp.name, { name: updatedName });
 
         // Verify Pending
-        const rowAfterEdit = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowAfterEdit = await staff.getHelpRow(updatedName);
         await expect(rowAfterEdit.locator('.badge.bg-warning')).toContainText('PENDING');
 
-        // Approve Edit
+        // Approve
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(updatedName, 'daily_help');
 
         // Final Verify
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowFinal = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
-        await expect(rowFinal).toContainText(updatedBrand);
+        const rowFinal = await staff.getHelpRow(updatedName);
+        await expect(rowFinal).toBeVisible();
         await expect(rowFinal.locator('.status-badge')).not.toBeVisible();
     });
 
-    test('vehicle-delete: Delete & Approve Vehicle', async () => {
+    test('staff-delete: Delete & Approve Staff', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const staff = new HelpModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
-        // Setup: Add and Approve
+        // Setup
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await staff.addHelp(helpData.validHelp);
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(helpData.validHelp.name, 'daily_help');
 
         // Action: Delete
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        await vehicles.deleteVehicle(vehicleData.validVehicle.number);
+        await staff.deleteHelp(helpData.validHelp.name);
 
-        // Verify Deletion Pending
-        const rowPending = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
-        await expect(rowPending.locator('.badge.bg-danger')).toContainText('DEL PENDING');
+        // Verify Pending
+        const rowPending = await staff.getHelpRow(helpData.validHelp.name);
+        await expect(rowPending.locator('.badge.bg-danger')).toContainText('DELETION PENDING');
 
-        // Approve Deletion (fallback will handle missing number in payload)
+        // Approve
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(helpData.validHelp.name, 'daily_help');
 
         // Final Verify
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowFinal = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowFinal = await staff.getHelpRow(helpData.validHelp.name);
         await expect(rowFinal).not.toBeVisible();
     });
 });

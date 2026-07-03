@@ -1,14 +1,14 @@
 /**
- * E2E: Resident Vehicle Module Lifecycle
+ * E2E: Resident Family Module Lifecycle
  */
 const { test, expect } = require('@playwright/test');
 const { loginAsAdmin, loginAsResident } = require('../../utils/auth');
 const { ResidentDashboard } = require('../../pages/Resident/ResidentDashboard');
-const { VehicleModule } = require('../../pages/Resident/VehicleModule');
+const { FamilyModule } = require('../../pages/Resident/FamilyModule');
 const { AdminRequests } = require('../../pages/Admin/AdminRequests');
-const vehicleData = require('../../fixtures/vehicles.json');
+const familyData = require('../../fixtures/family.json');
 
-test.describe('Resident Vehicle Module Lifecycle Tests', () => {
+test.describe('Resident Family Module Lifecycle Tests', () => {
     let adminContext;
     let residentContext;
     let adminPage;
@@ -47,88 +47,88 @@ test.describe('Resident Vehicle Module Lifecycle Tests', () => {
         await residentContext.close();
     });
 
-    test('vehicle-add: Add & Approve Vehicle', async () => {
+    test('family-add: Add & Approve Family Member', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const family = new FamilyModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await family.addMember(familyData.validMember);
 
-        const row = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const row = await family.getMemberRow(familyData.validMember.name);
         await expect(row.locator('.badge.bg-warning')).toContainText('PENDING');
 
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number);
+        await adminReq.approveRequest(familyData.validMember.name, 'residents');
 
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowApproved = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowApproved = await family.getMemberRow(familyData.validMember.name);
         await expect(rowApproved.locator('.status-badge')).not.toBeVisible();
         await expect(rowApproved.locator('.dropdown button[data-bs-toggle="dropdown"]')).toBeVisible();
     });
 
-    test('vehicle-edit: Edit & Approve Vehicle', async () => {
+    test('family-edit: Edit & Approve Family Member', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const family = new FamilyModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
-        // Setup: Add and Approve
+        // Setup
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await family.addMember(familyData.validMember);
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number);
+        await adminReq.approveRequest(familyData.validMember.name, 'residents');
 
         // Action: Edit
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const updatedBrand = 'Updated ' + vehicleData.validVehicle.brand;
-        await vehicles.editVehicle(vehicleData.validVehicle.number, { brand: updatedBrand });
+        const updatedName = 'Updated ' + familyData.validMember.name;
+        await family.editMember(familyData.validMember.name, { name: updatedName });
 
         // Verify Pending
-        const rowAfterEdit = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowAfterEdit = await family.getMemberRow(updatedName);
         await expect(rowAfterEdit.locator('.badge.bg-warning')).toContainText('PENDING');
 
-        // Approve Edit
+        // Approve
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(updatedName, 'residents');
 
         // Final Verify
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowFinal = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
-        await expect(rowFinal).toContainText(updatedBrand);
+        const rowFinal = await family.getMemberRow(updatedName);
+        await expect(rowFinal).toBeVisible();
         await expect(rowFinal.locator('.status-badge')).not.toBeVisible();
     });
 
-    test('vehicle-delete: Delete & Approve Vehicle', async () => {
+    test('family-delete: Delete & Approve Family Member', async () => {
         const dashboard = new ResidentDashboard(residentPage);
-        const vehicles = new VehicleModule(residentPage);
+        const family = new FamilyModule(residentPage);
         const adminReq = new AdminRequests(adminPage);
 
-        // Setup: Add and Approve
+        // Setup
         await dashboard.navigateTo('home');
-        await vehicles.addVehicle(vehicleData.validVehicle);
+        await family.addMember(familyData.validMember);
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(familyData.validMember.name, 'residents');
 
         // Action: Delete
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        await vehicles.deleteVehicle(vehicleData.validVehicle.number);
+        await family.deleteMember(familyData.validMember.name);
 
-        // Verify Deletion Pending
-        const rowPending = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        // Verify Pending
+        const rowPending = await family.getMemberRow(familyData.validMember.name);
         await expect(rowPending.locator('.badge.bg-danger')).toContainText('DEL PENDING');
 
-        // Approve Deletion (fallback will handle missing number in payload)
+        // Approve
         await adminReq.navigateTo();
-        await adminReq.approveRequest(vehicleData.validVehicle.number, 'vehicles');
+        await adminReq.approveRequest(familyData.validMember.name, 'residents');
 
         // Final Verify
         await residentPage.reload();
         await dashboard.navigateTo('home');
-        const rowFinal = await vehicles.getVehicleRow(vehicleData.validVehicle.number);
+        const rowFinal = await family.getMemberRow(familyData.validMember.name);
         await expect(rowFinal).not.toBeVisible();
     });
 });
