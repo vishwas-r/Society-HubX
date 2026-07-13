@@ -909,10 +909,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                     <i class="bi bi-download me-2"></i>Download Receipt
                 </button>
             </div>
-       }
-    }
-    
-    setTimeout(pollState, 2000);
-}
-
-</script>
+        </div>
+    </div>
+</div>
+<?php }); ?>
