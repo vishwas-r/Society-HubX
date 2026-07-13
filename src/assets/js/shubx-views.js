@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Society HubX – Admin Views JS
  *
  * Consolidated JS for all admin views that previously had inline <script> blocks.
@@ -140,7 +140,7 @@ function openPollModal() {
    ===================================================================== */
 let expenseModal = null;
 let expenseFuse = null;
-currentTab = 'verified';
+let currentExpenseTab = 'verified';
 
 function openExpenseModal() {
 	if (!expenseModal) expenseModal = new bootstrap.Modal(document.getElementById('expenseModal'));
@@ -197,7 +197,7 @@ window.applyExpenseSearch = function () {
 
 	document.querySelectorAll('.expense-row').forEach(row => {
 		const isPending = row.closest('#view-pending') !== null;
-		const belongsToActiveTab = (currentTab === 'pending' && isPending) || (currentTab === 'verified' && !isPending);
+		const belongsToActiveTab = (currentExpenseTab === 'pending' && isPending) || (currentExpenseTab === 'verified' && !isPending);
 
 		const matchesSearch = !query || (matches && matches.has(row));
 		row.style.display = (belongsToActiveTab && matchesSearch) ? '' : 'none';
@@ -205,7 +205,7 @@ window.applyExpenseSearch = function () {
 };
 
 function switchExpenseTab(tab) {
-	currentTab = tab;
+	currentExpenseTab = tab;
 	const v = document.getElementById('view-verified');
 	const p = document.getElementById('view-pending');
 	const btV = document.getElementById('tab-btn-verified');
@@ -272,11 +272,11 @@ function openUploadModal() {
    ASSETS VIEW
    ===================================================================== */
 let assetModalInstance = null;
-let currentTab = 'all';
+let currentAssetTab = 'all';
 let assetFuse = null;
 
 function switchTab(tab) {
-	currentTab = tab;
+	currentAssetTab = tab;
 	document.querySelectorAll('#assetTabs .nav-link').forEach(btn => {
 		if (btn.dataset.tab === tab) {
 			btn.classList.add('active', 'border-primary', 'text-primary');
@@ -302,14 +302,14 @@ function applyFilters() {
 	document.querySelectorAll('.asset-row').forEach(row => {
 		const status = row.dataset.status;
 		let matchTab = false;
-		if (currentTab === 'archived') {
+		if (currentAssetTab === 'archived') {
 			matchTab = (status === 'archived');
-		} else if (currentTab === 'active') {
+		} else if (currentAssetTab === 'active') {
 			matchTab = (status === 'active' || status === 'operational');
-		} else if (currentTab === 'all') {
+		} else if (currentAssetTab === 'all') {
 			matchTab = (status !== 'archived');
 		} else {
-			matchTab = (status === currentTab);
+			matchTab = (status === currentAssetTab);
 		}
 
 		const matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
