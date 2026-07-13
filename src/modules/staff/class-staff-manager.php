@@ -297,14 +297,15 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                 wp_die('Security check failed');
         }
 
-        $_POST['id'] = uniqid('staff_');
+        $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+        $post_data['id'] = uniqid('staff_');
 
         $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
         if ($has_manage) {
-            $res = $this->perform_add_staff($_POST);
+            $res = $this->perform_add_staff($post_data);
             if (wp_doing_ajax()) {
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -319,13 +320,12 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
         else {
-            $_POST['status'] = 'pending';
-            $this->perform_add_staff($_POST);
+            $post_data['status'] = 'pending';
+            $this->perform_add_staff($post_data);
 
             require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SHUBX51_Request_Manager();
-            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
-            $res = $rm->create_request('daily_help', 'add', $sanitized_post, $sanitized_post['id'], 'daily_help', $sanitized_post['flat_no'] ?? '');
+            $res = $rm->create_request('daily_help', 'add', $post_data, $post_data['id'], 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
@@ -359,7 +359,8 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                 wp_die('Security check failed');
         }
 
-        $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
+        $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+        $id = isset( $post_data['staff_id'] ) ? $post_data['staff_id'] : '';
 
         $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
@@ -386,7 +387,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                 exit;
             }
 
-            $res = $this->perform_edit_staff($_POST);
+            $res = $this->perform_edit_staff($post_data);
 
             if (wp_doing_ajax()) {
                 // Aggressive Clean
@@ -403,8 +404,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         }
         else {
             $rm = new SHUBX51_Request_Manager();
-            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
-            $res = $rm->create_request('daily_help', 'edit', $sanitized_post, $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
+            $res = $rm->create_request('daily_help', 'edit', $post_data, $id, 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
@@ -437,7 +437,8 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                 wp_die('Security check failed');
         }
 
-        $id = isset( $_POST['staff_id'] ) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : '';
+        $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+        $id = isset( $post_data['staff_id'] ) ? $post_data['staff_id'] : '';
 
         $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
@@ -468,8 +469,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         else {
             require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
             $rm = new SHUBX51_Request_Manager();
-            $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
-            $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $sanitized_post['flat_no'] ?? '');
+            $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 // Aggressive Clean
                 while (ob_get_level() > 0) {

@@ -53,8 +53,8 @@ class SHUBX51_Flat_Manager {
         } else {
 		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
         }
-
-		$res = $this->process_add_flat( $_POST );
+		$post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+		$res = $this->process_add_flat( $post_data );
 
         if ( wp_doing_ajax() ) {
             if ( is_wp_error( $res ) ) {

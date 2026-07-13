@@ -65,9 +65,9 @@ To configure the plugin, navigate to the **Society HubX > Settings** menu in the
 
 The plugin provides the following shortcodes to render portal elements on frontend pages:
 
-* `[society_hubx_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
-* `[society_hubx_notices]` - Renders a standalone public notice board feed.
-* `[society_hubx_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
+* `[shubx51_dashboard]` (or legacy alias `[society_hubx_dashboard]`) - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
+* `[shubx51_notices]` (or legacy alias `[society_hubx_notices]`) - Renders a standalone public notice board feed.
+* `[shubx51_directory]` (or legacy alias `[society_hubx_directory]`) - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == External Services ==
 
@@ -81,13 +81,12 @@ This plugin utilizes the following third-party / external services to facilitate
 2. **UI Avatars (ui-avatars.com)**:
    * **What the service is / does**: Used to generate clean, letter-based fallback profile pictures for residents who have not uploaded a custom profile photo.
    * **What data is sent**: The resident's name is sent as a query parameter in the image URL request. Sent only when rendering fallback profile images on the frontend dashboard or admin directory.
-   * **Links**: [UI Avatars Home & Info](https://ui-avatars.com).
+   * **Links**: [UI Avatars Home](https://ui-avatars.com), [Terms of Service](https://ui-avatars.com/tos), [Privacy Policy](https://ui-avatars.com/privacy).
 
 == Changelog ==
 
 = 1.0.4 =
-* Integrated responsive Chart.js v4.4.3 library for interactive dashboard charts.
-* Updated Bootstrap to v5.3.3 and Fuse.js to v7.1.0 assets.
+* Upgraded Bootstrap to v5.3.8 and Chart.js to v4.5.1 (latest stable; all bundled locally).
 * Secured REST API controllers with explicit permission callbacks.
 * Gated WordPress user registration to approved residents/admin actions.
 * Standardized file uploads from raw move_uploaded_file to wp_handle_upload.

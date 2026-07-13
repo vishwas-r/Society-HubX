@@ -1,4 +1,4 @@
-﻿jQuery(document).ready(function ($) {
+jQuery(document).ready(function ($) {
     // 1. Initialize Modals
     const channelModalNode = document.getElementById('shubx-channel-modal');
     const templateModalNode = document.getElementById('shubx-template-modal');
@@ -68,7 +68,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Authorized Redirect URI</label>
-                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${window.location.origin}/wp-admin/admin-ajax.php?action=shubx51_gmail_oauth_callback" readonly>
+                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${(typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : ajaxurl)}?action=shubx51_gmail_oauth_callback" readonly>
                     </div>
                 </div>
 

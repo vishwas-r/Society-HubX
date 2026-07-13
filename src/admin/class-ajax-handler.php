@@ -302,12 +302,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Get Channel Config
 	 */
 	public function handle_get_channel_config() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
 		$db = Society_HubX::get_instance()->db;
@@ -325,12 +325,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Save Channel Config
 	 */
 	public function handle_save_channel_config() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$slug = isset( $_POST['channel_slug'] ) ? sanitize_key( wp_unslash( $_POST['channel_slug'] ) ) : '';
 		$config = isset( $_POST['config'] ) ? map_deep( wp_unslash( $_POST['config'] ), 'sanitize_text_field' ) : [];
@@ -346,12 +346,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Toggle Channel
 	 */
 	public function handle_toggle_channel() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
 		$active = isset( $_POST['active'] ) ? intval( wp_unslash( $_POST['active'] ) ) : 0;
@@ -365,12 +365,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Update Event Mapping
 	 */
 	public function handle_update_event_mapping() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$slug = isset( $_POST['event'] ) ? sanitize_key( wp_unslash( $_POST['event'] ) ) : '';
 		$channel = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
@@ -399,12 +399,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Get Notification Template
 	 */
 	public function handle_get_template() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$db = Society_HubX::get_instance()->db;
@@ -422,12 +422,12 @@ class SHUBX51_AJAX_Handler {
 	 * AJAX: Save Notification Template
 	 */
 	public function handle_save_template() {
+		check_ajax_referer( 'shubx51_request_action' );
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 		}
-		check_ajax_referer( 'shubx51_request_action' );
 
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '';

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * REST API Controller for Payments (State Hash & Webhooks)
  */
@@ -38,7 +38,7 @@ class SHUBX51_REST_Payments_Controller {
 	
 	public function check_frontend_auth() {
 		if ( ! current_user_can( 'read' ) ) {
-			return new WP_Error( 'rest_forbidden', __( 'You must be logged in to access this endpoint.', 'society-hubx' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'You must be logged in to access this endpoint.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;
 	}

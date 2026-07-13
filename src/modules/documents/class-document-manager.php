@@ -159,6 +159,16 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 			if ( ! check_admin_referer( 'shubx51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			} else {
+				wp_die( 'Unauthorized' );
+			}
+		}
+
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
         if ( ! empty( $request_id ) ) {
             $rm = new SHUBX51_Request_Manager();
@@ -180,6 +190,16 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 			check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
 		} else {
 			if ( ! check_admin_referer( 'shubx51_doc_action' ) ) wp_die( 'Security check failed' );
+		}
+
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			} else {
+				wp_die( 'Unauthorized' );
+			}
 		}
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
@@ -288,6 +308,28 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		
 		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['flat'] ) ) : '';
 		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
+
+		$user_id = get_current_user_id();
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$is_admin = current_user_can( 'manage_options' ) || ( new SHUBX51_RBAC_Manager() )->has_capability( $user_id, 'documents_manage' );
+
+		if ( ! $is_admin ) {
+			$doc = null;
+			$docs = $this->db->get( 'documents' );
+			foreach ( $docs as $d ) {
+				if ( $d['id'] === $doc_id ) {
+					$doc = $d;
+					break;
+				}
+			}
+			if ( ! $doc || (int) $doc['uploaded_by'] !== $user_id ) {
+				if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+					wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+				} else {
+					wp_die( 'Unauthorized' );
+				}
+			}
+		}
 
 		if ( $doc_id ) {
 			$this->db->update( 'documents', array( 'status' => 'deleted' ), array( 'id' => $doc_id ) );

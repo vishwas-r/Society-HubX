@@ -1,4 +1,4 @@
-(function ($) {
+﻿(function ($) {
     'use strict';
 
     // State
@@ -11,8 +11,8 @@
 
     // --- Chart Logic ---
     function initCharts() {
-        if (!window.Chart || !window.SHUBXDashboardData) {
-            console.warn('SHUBX Dashboard: Chart.js or SHUBXDashboardData missing. Some features may not work.');
+        if (!window.Chart || !window.shubx51DashboardData) {
+            console.warn('SHUBX Dashboard: Chart.js or shubx51DashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -125,8 +125,8 @@
 
         // 1. Society Expense Trend
         const expenseContainer = document.getElementById('expensesChart');
-        if (expenseContainer && window.SHUBXDashboardData && window.SHUBXDashboardData.expenseChartData) {
-            const expenseData = window.SHUBXDashboardData.expenseChartData;
+        if (expenseContainer && window.shubx51DashboardData && window.shubx51DashboardData.expenseChartData) {
+            const expenseData = window.shubx51DashboardData.expenseChartData;
             const labels = [];
             const dataValues = [];
 
@@ -186,8 +186,8 @@
 
         // 2. Resident Payment History
         const paymentContainer = document.getElementById('paymentHistoryChart');
-        if (paymentContainer && window.SHUBXDashboardData && window.SHUBXDashboardData.paymentHistory) {
-            const paymentData = window.SHUBXDashboardData.paymentHistory;
+        if (paymentContainer && window.shubx51DashboardData && window.shubx51DashboardData.paymentHistory) {
+            const paymentData = window.shubx51DashboardData.paymentHistory;
             const labels = [];
             const dataValues = [];
 
@@ -1219,7 +1219,7 @@
                 return;
             }
 
-            const nonce = (window.SHUBXDashboardData && window.SHUBXDashboardData.nonce) ? window.SHUBXDashboardData.nonce : (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
+            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
 
             SHUBX.ajax({
                 action: 'shubx51_get_receipt',
@@ -1367,7 +1367,7 @@
             }
 
             const formData = new FormData(form);
-            const nonce = (window.SHUBXDashboardData && window.SHUBXDashboardData.nonce) ? window.SHUBXDashboardData.nonce : '';
+            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
             SHUBX.ajax({
@@ -1407,9 +1407,9 @@
         var profileModal = document.getElementById('editProfileModal');
         // console.log("SHUBX Debug: Profile Modal Reset Script Loaded", profileModal); 
 
-        if (profileModal && typeof SHUBXDashboardData !== 'undefined' && SHUBXDashboardData.resident) {
+        if (profileModal && typeof shubx51DashboardData !== 'undefined' && shubx51DashboardData.resident) {
             profileModal.addEventListener('show.bs.modal', function () {
-                var r = SHUBXDashboardData.resident;
+                var r = shubx51DashboardData.resident;
                 // console.log("SHUBX Debug: Populating Profile Modal", r);
 
                 var form = profileModal.querySelector('form');
@@ -1451,8 +1451,8 @@
             /*
             console.warn("SHUBX Debug: Missing Data or Modal", {
                modal: !!profileModal,
-               data: typeof SHUBXDashboardData,
-               resident: (SHUBXDashboardData || {}).resident
+               data: typeof shubx51DashboardData,
+               resident: (shubx51DashboardData || {}).resident
             });
             */
         }
@@ -1591,9 +1591,9 @@
 
     // --- Resident Request View Detail ---
     window.viewResidentRequestDetail = function(requestId) {
-        if (!window.SHUBXDashboardData || !window.SHUBXDashboardData.my_requests) return;
+        if (!window.shubx51DashboardData || !window.shubx51DashboardData.my_requests) return;
         
-        const req = window.SHUBXDashboardData.my_requests.find(r => r.id === requestId);
+        const req = window.shubx51DashboardData.my_requests.find(r => r.id === requestId);
         if (!req) return;
 
         const modalEl = document.getElementById('residentRequestDetailModal');
@@ -1655,15 +1655,15 @@
 
     // --- Real-time Payment Sync (Optimistic UI) ---
     function initPaymentSync() {
-        if (!window.SHUBXDashboardData || !window.SHUBXDashboardData.rest_url || !window.SHUBXDashboardData.rest_nonce) {
+        if (!window.shubx51DashboardData || !window.shubx51DashboardData.rest_url || !window.shubx51DashboardData.rest_nonce) {
             return;
         }
 
         let currentHash = null;
         let isPolling = false;
         const POLL_INTERVAL = 4000; // 4 seconds
-        const API_BASE = window.SHUBXDashboardData.rest_url;
-        const NONCE = window.SHUBXDashboardData.rest_nonce;
+        const API_BASE = window.shubx51DashboardData.rest_url;
+        const NONCE = window.shubx51DashboardData.rest_nonce;
 
         async function pollStateHash() {
             if (isPolling) return;
@@ -1706,8 +1706,8 @@
                 if (resJson.ok) {
                     const data = await resJson.json();
                     if (data.success && data.data) {
-                        window.SHUBXDashboardData.paymentHistory = data.data.paymentHistory;
-                        window.SHUBXDashboardData.expenseChartData = data.data.expenseChartData;
+                        window.shubx51DashboardData.paymentHistory = data.data.paymentHistory;
+                        window.shubx51DashboardData.expenseChartData = data.data.expenseChartData;
 
                         // Update Charts seamlessly
                         if (paymentChart && data.data.paymentHistory) {
@@ -1826,7 +1826,7 @@
         var nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
 
         window.jQuery.ajax({
-            url: (typeof ajaxurl !== 'undefined') ? ajaxurl : '/wp-admin/admin-ajax.php',
+            url: (typeof ajaxurl !== 'undefined') ? ajaxurl : '',
             type: 'POST',
             data: {
                 action: 'shubx51_switch_flat',

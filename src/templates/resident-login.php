@@ -37,7 +37,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                     
                     <div class="mt-4 pt-3 border-top border-light">
-                        <p class="small text-secondary m-0">&copy; <?php echo wp_date('Y'); ?> <?php echo esc_html( $society_info['name'] ); ?></p>
+                        <p class="small text-secondary m-0">&copy; <?php echo esc_html( wp_date('Y') ); ?> <?php echo esc_html( $society_info['name'] ); ?></p>
                     </div>
                 </div>
 
@@ -76,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     Remember me
                                 </label>
                             </div>
-                            <a href="<?php echo wp_lostpassword_url(); ?>" class="small text-primary text-decoration-none fw-medium">Forgot password?</a>
+                            <a href="<?php echo esc_url( wp_lostpassword_url() ); ?>" class="small text-primary text-decoration-none fw-medium">Forgot password?</a>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm" id="login-btn">

@@ -135,9 +135,10 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	
     // IF ADMIN: Immediate
    $rbac = Society_HubX::get_instance()->rbac;
+   $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
    if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
-       $_POST['status'] = 'approved';
-       $res = $this->process_add_resident( $_POST );
+       $post_data['status'] = 'approved';
+       $res = $this->process_add_resident( $post_data );
        
        if ( wp_doing_ajax() ) {
            // Aggressive Clean
@@ -148,14 +149,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
            exit;
        }
    } else {
-       $_POST['status'] = 'pending';
-       $_POST['id'] = uniqid('res_');
-       $this->process_add_resident( $_POST );
+       $post_data['status'] = 'pending';
+       $post_data['id'] = uniqid('res_');
+       $this->process_add_resident( $post_data );
 
        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
        $rm = new SHUBX51_Request_Manager();
-       $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
-       $res = $rm->create_request( 'residents', 'add', $sanitized_post, $sanitized_post['id'], 'residents', $sanitized_post['flat_no'] );
+       $res = $rm->create_request( 'residents', 'add', $post_data, $post_data['id'], 'residents', $post_data['flat_no'] );
        
         if ( wp_doing_ajax() ) {
            $debug = ob_get_clean();
@@ -190,13 +190,14 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		    if ( ! check_admin_referer( 'shubx51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
     
-    $id = isset($_POST['resident_id']) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
-    $flat_no = isset($_POST['flat_no']) ? sanitize_text_field( wp_unslash( $_POST['flat_no'] ) ) : '';
-    $name = isset($_POST['name']) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+    $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+    $id = isset($post_data['resident_id']) ? $post_data['resident_id'] : '';
+    $flat_no = isset($post_data['flat_no']) ? $post_data['flat_no'] : '';
+    $name = isset($post_data['name']) ? $post_data['name'] : '';
 
     // Track the WP User ID for the profile being edited (usually the current user)
-    if ( ! isset( $_POST['wp_user_id'] ) ) {
-        $_POST['wp_user_id'] = get_current_user_id();
+    if ( ! isset( $post_data['wp_user_id'] ) ) {
+        $post_data['wp_user_id'] = get_current_user_id();
     }
 
     // Handle Photo Upload (for both Admin and Resident requests)
@@ -212,7 +213,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                 exit;
             }
         } else {
-            $_POST['profile_photo'] = $photo_url;
+            $post_data['profile_photo'] = $photo_url;
             error_log("SHUBX51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         }
     }
@@ -235,7 +236,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         if ( ! $is_admin ) {
             $sensitive_fields = array( 'flat_no', 'type', 'role', 'roles', 'status', 'maintenance_balance', 'wp_user_id' );
             foreach ( $sensitive_fields as $field ) {
-                unset( $_POST[$field] );
+                unset( $post_data[$field] );
             }
         }
 
@@ -257,7 +258,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             exit;
         }
 
-        $res = $this->perform_edit_resident( $_POST );
+        $res = $this->perform_edit_resident( $post_data );
 
         if ( wp_doing_ajax() ) {
             // Aggressive Clean
@@ -272,8 +273,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
     } else {
         require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SHUBX51_Request_Manager();
-        $sanitized_post = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
-        $res = $rm->create_request( 'residents', 'edit', $sanitized_post, $id, 'residents', $sanitized_post['flat_no'] ?? '' );
+        $res = $rm->create_request( 'residents', 'edit', $post_data, $id, 'residents', $post_data['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
             $debug = ob_get_clean();
@@ -368,6 +368,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         if ( ! is_array( $roles ) ) {
             $roles = array_filter( explode( ',', (string)$roles ) );
         }
+        $roles = array_map( 'sanitize_text_field', $roles );
         
         $this->db->save_relations( 'resident_role_map', 'resident_id', $resident_id, 'role_id', $roles );
 

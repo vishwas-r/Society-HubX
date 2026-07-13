@@ -24,6 +24,11 @@ class SHUBX51_Frontend_Dashboard {
 		add_shortcode( 'society_hubx_dashboard', array( $this, 'render_dashboard' ) );
 		add_shortcode( 'society_hubx_notices', array( $this, 'render_notices' ) );
 		add_shortcode( 'society_hubx_directory', array( $this, 'render_directory' ) );
+
+		// Prefix compliance aliases
+		add_shortcode( 'shubx51_dashboard', array( $this, 'render_dashboard' ) );
+		add_shortcode( 'shubx51_notices', array( $this, 'render_notices' ) );
+		add_shortcode( 'shubx51_directory', array( $this, 'render_directory' ) );
 		// Form Handlers
 		add_action( 'admin_post_shubx51_update_profile', array( $this, 'handle_profile_update' ) );
 		add_action( 'admin_post_shubx51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
@@ -217,11 +222,7 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( array( 'message' => 'You do not have access to this flat.' ) );
 		}
 
-		// Set in session (session is already started by our early init hook)
-		if ( ! session_id() ) {
-			session_start(); // Fallback if session wasn't started yet
-		}
-		$_SESSION['shubx51_active_flat_id'] = $flat_id;
+		update_user_meta( get_current_user_id(), 'shubx51_active_flat_id', $flat_id );
 
 		wp_send_json_success( array( 'message' => 'Switched to flat context successfully.' ) );
 	}
@@ -285,7 +286,7 @@ class SHUBX51_Frontend_Dashboard {
          wp_enqueue_script( 'shubx51-dashboard-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-dashboard.js', array('jquery', 'shubx51-chartjs', 'shubx51-html2canvas'), current_time('U'), true );
          
          // Localize Data for Dashboard
-         wp_localize_script( 'shubx51-dashboard-js', 'SHUBXDashboardData', array(
+         wp_localize_script( 'shubx51-dashboard-js', 'shubx51DashboardData', array(
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
@@ -974,6 +975,13 @@ class SHUBX51_Frontend_Dashboard {
         try {
             $flat_no = $this->get_my_flat_number();
             $id = isset( $_POST['member_id'] ) ? sanitize_text_field( wp_unslash( $_POST['member_id'] ) ) : ( isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '' );
+            
+            // Verify ownership: Resident must belong to the active flat of the user
+            $resident_data = $this->db->get( 'residents', array( 'where' => array( 'id' => $id ) ) );
+            if ( empty( $resident_data ) || $resident_data[0]['flat_no'] !== $flat_no ) {
+                if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+                wp_die( 'Permission denied' );
+            }
             $name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
             
             // Handle Photo Upload
@@ -1057,6 +1065,20 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_no = $this->get_my_flat_number();
 		$id = isset( $_POST['help_id'] ) ? sanitize_text_field( wp_unslash( $_POST['help_id'] ) ) : '';
 		
+		// Verify ownership: Daily help must serve this flat
+		$help_data = $this->db->get( 'daily_help', array( 'where' => array( 'id' => $id ) ) );
+		if ( empty( $help_data ) ) {
+			if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+			wp_die( 'Permission denied' );
+		}
+		
+		$serves_flats = is_string( $help_data[0]['flat_no'] ) ? explode( ',', $help_data[0]['flat_no'] ) : ( is_array( $help_data[0]['flat_no'] ) ? $help_data[0]['flat_no'] : array() );
+		$serves_flats = array_map( 'trim', $serves_flats );
+		if ( ! in_array( $flat_no, $serves_flats, true ) ) {
+			if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+			wp_die( 'Permission denied' );
+		}
+		
         $category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
         $doc_url = isset( $_POST['document_url'] ) ? sanitize_text_field( wp_unslash( $_POST['document_url'] ) ) : ''; // retain existing if no new upload
         
@@ -1136,6 +1158,13 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_no = $this->get_my_flat_number();
 		$id = isset( $_POST['vehicle_id'] ) ? sanitize_text_field( wp_unslash( $_POST['vehicle_id'] ) ) : '';
         if(empty($id) && !empty($_POST['id'])) $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+        
+        // Verify ownership: Vehicle must belong to the active flat of the user
+        $vehicle_data = $this->db->get( 'vehicles', array( 'where' => array( 'id' => $id ) ) );
+        if ( empty( $vehicle_data ) || $vehicle_data[0]['flat_no'] !== $flat_no ) {
+            if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+            wp_die( 'Permission denied' );
+        }
 		
         $update_payload = array(
             'id'     => $id, // Critical: pass ID to ensure update
@@ -1178,6 +1207,13 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_no = $this->get_my_flat_number();
 		$id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '';
 
+		// Verify ownership: Resident must belong to the active flat of the user
+		$resident_data = $this->db->get( 'residents', array( 'where' => array( 'id' => $id ) ) );
+		if ( empty( $resident_data ) || $resident_data[0]['flat_no'] !== $flat_no ) {
+			if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+			wp_die( 'Permission denied' );
+		}
+
         require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SHUBX51_Request_Manager();
         
@@ -1213,6 +1249,20 @@ class SHUBX51_Frontend_Dashboard {
         $flat_no = $this->get_my_flat_number();
         $id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '';
 
+		// Verify ownership: Daily help must serve this flat
+		$help_data = $this->db->get( 'daily_help', array( 'where' => array( 'id' => $id ) ) );
+		if ( empty( $help_data ) ) {
+			if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+			wp_die( 'Permission denied' );
+		}
+		
+		$serves_flats = is_string( $help_data[0]['flat_no'] ) ? explode( ',', $help_data[0]['flat_no'] ) : ( is_array( $help_data[0]['flat_no'] ) ? $help_data[0]['flat_no'] : array() );
+		$serves_flats = array_map( 'trim', $serves_flats );
+		if ( ! in_array( $flat_no, $serves_flats, true ) ) {
+			if ( wp_doing_ajax() ) wp_send_json_error( 'Permission denied' );
+			wp_die( 'Permission denied' );
+		}
+
         require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SHUBX51_Request_Manager();
         
@@ -1246,6 +1296,12 @@ class SHUBX51_Frontend_Dashboard {
         $flat_no = $this->get_my_flat_number();
         $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 
+		// Verify ownership: Resident must belong to the active flat of the user
+		$resident_data = $this->db->get( 'residents', array( 'where' => array( 'id' => $id ) ) );
+		if ( empty( $resident_data ) || $resident_data[0]['flat_no'] !== $flat_no ) {
+			wp_send_json_error( 'Permission denied' );
+		}
+
         require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
         $rm = new SHUBX51_Request_Manager();
         
@@ -1277,6 +1333,12 @@ class SHUBX51_Frontend_Dashboard {
 
         $flat_no = $this->get_my_flat_number();
         $id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
+
+		// Verify ownership: Vehicle must belong to the active flat of the user
+		$vehicle_data = $this->db->get( 'vehicles', array( 'where' => array( 'id' => $id ) ) );
+		if ( empty( $vehicle_data ) || $vehicle_data[0]['flat_no'] !== $flat_no ) {
+			wp_send_json_error( 'Permission denied' );
+		}
 
         $rm = new SHUBX51_Request_Manager();
         
@@ -1349,19 +1411,14 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_ids = $this->db->get_resident_flats( $target_resident['id'] );
 
 		// Determine which flat is active
-		$active_flat_id = isset( $_SESSION['shubx51_active_flat_id'] ) ? sanitize_text_field( wp_unslash( $_SESSION['shubx51_active_flat_id'] ) ) : '';
+		$active_flat_id = get_user_meta( get_current_user_id(), 'shubx51_active_flat_id', true );
 
 		// Validate active flat belongs to the user
 		if ( empty( $active_flat_id ) || ! in_array( $active_flat_id, $flat_ids, true ) ) {
 			$active_flat_id = ! empty( $flat_ids ) ? $flat_ids[0] : $target_resident['flat_no'];
 		}
 
-		// Save validation back to session
-		// Session is already started by our early init hook; just write directly.
-		if ( ! session_id() ) {
-			session_start(); // Fallback if session wasn't started yet
-		}
-		$_SESSION['shubx51_active_flat_id'] = $active_flat_id;
+		update_user_meta( get_current_user_id(), 'shubx51_active_flat_id', $active_flat_id );
 
 		// Fetch flat details
 		$flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $active_flat_id ) ) );

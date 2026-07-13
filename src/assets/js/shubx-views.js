@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Society HubX – Admin Views JS
  *
  * Consolidated JS for all admin views that previously had inline <script> blocks.
@@ -38,13 +38,13 @@ function deleteRole(roleId) {
 
 	const form = document.createElement('form');
 	form.method = 'POST';
-	// shubxViewsConfig.adminPostUrl is set via wp_add_inline_script in society-hubx.php
-	form.action = (typeof shubxViewsConfig !== 'undefined') ? shubxViewsConfig.adminPostUrl : '';
+	// shubx51ViewsConfig.adminPostUrl is set via wp_add_inline_script in society-hubx.php
+	form.action = (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.adminPostUrl : '';
 
 	const fields = {
 		action: 'shubx51_delete_role',
 		role_id: roleId,
-		_wpnonce: (typeof shubxViewsConfig !== 'undefined') ? shubxViewsConfig.roleNonce : ''
+		_wpnonce: (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.roleNonce : ''
 	};
 
 	for (const key in fields) {

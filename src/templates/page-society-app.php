@@ -18,15 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php wp_head(); ?>
     
-    <?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Full-page template with standalone <head>. Cannot use wp_enqueue_style post wp_head(). ?>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
 </head>
 <body <?php body_class('bg-light text-dark shadow-none'); ?>>
 
@@ -84,7 +75,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </ul>
             </div>
             <?php else : ?>
-                <a href="<?php echo wp_login_url(); ?>" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Login</a>
+                <a href="<?php echo esc_url( wp_login_url() ); ?>" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Login</a>
             <?php endif; ?>
         </div>
     </header>

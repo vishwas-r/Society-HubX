@@ -186,7 +186,7 @@ class SHUBX51_Vehicle_Manager implements SHUBX51_Module {
 		    if ( ! check_admin_referer( 'shubx51_add_vehicle_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $payload = $_POST;
+        $payload = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
         if ( !isset($payload['id']) || empty($payload['id']) ) {
             $payload['id'] = uniqid('veh_');
         }
@@ -253,7 +253,8 @@ class SHUBX51_Vehicle_Manager implements SHUBX51_Module {
             if ( ! $nonce_ok ) wp_die( 'Security check failed' );
         }
 
-		$id = isset($_POST['vehicle_id']) ? sanitize_text_field( wp_unslash( $_POST['vehicle_id'] ) ) : '';
+        $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
+		$id = isset($post_data['vehicle_id']) ? $post_data['vehicle_id'] : '';
         
         $rbac = new SHUBX51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'vehicles_manage' );
@@ -277,7 +278,7 @@ class SHUBX51_Vehicle_Manager implements SHUBX51_Module {
                 exit;
             }
 
-            $res = $this->perform_save_vehicle( $_POST, true );
+            $res = $this->perform_save_vehicle( $post_data, true );
 
             if ( wp_doing_ajax() ) {
                 // Aggressive Clean
@@ -291,7 +292,7 @@ class SHUBX51_Vehicle_Manager implements SHUBX51_Module {
             }
         } else {
             $rm = new SHUBX51_Request_Manager();
-            $res = $rm->create_request( 'vehicles', 'edit', $_POST, $id );
+            $res = $rm->create_request( 'vehicles', 'edit', $post_data, $id );
             if ( wp_doing_ajax() ) {
                 $debug_output = ob_get_clean();
                 if ( ! empty( $debug_output ) ) error_log( 'SHUBX Vehicle Edit Request Output: ' . $debug_output ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.

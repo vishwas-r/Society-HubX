@@ -280,3 +280,9 @@ input:checked+.shubx-toggle-slider:before {
 .div-warning { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
 .div-danger  { background: linear-gradient(135deg, #dc3545, #b02a37); color: #fff; }
 .div-chronic { background: linear-gradient(135deg, #7f1d1d, #450a0a); color: #fff; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

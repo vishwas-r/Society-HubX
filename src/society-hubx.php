@@ -8,7 +8,7 @@
  * Requires PHP:      7.4
  * Author:            Vishwas R
  * Author URI:        https://www.vishwas.me
- * Text Domain:       society-hubx
+ * Text Domain:       society-governx
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -225,12 +225,6 @@ final class Society_HubX {
 			as_schedule_recurring_action( strtotime('midnight'), DAY_IN_SECONDS, 'shubx51_daily_log_purge' );
 		}
 
-		// 7. Session Bootstrap (for flat-switcher state)
-		add_action( 'init', function() {
-			if ( ! session_id() && ! headers_sent() ) {
-				session_start();
-			}
-		}, 1 );
 	}
 
 	/**
@@ -356,8 +350,8 @@ final class Society_HubX {
         wp_enqueue_style( 'shubx51_fonts', SHUBX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), SHUBX51_VERSION );
 
 		// 2. Bootstrap 5 (Local) - Load late to naturally override WP styles
-		wp_enqueue_style( 'shubx51_bootstrap_css', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_script( 'shubx51_bootstrap_js', SHUBX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.0', true );
+		wp_enqueue_style( 'shubx51_bootstrap_css', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.8' );
+		wp_enqueue_script( 'shubx51_bootstrap_js', SHUBX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.8', true );
 
         // 3. Bootstrap Icons (Local)
         wp_enqueue_style( 'shubx51_bootstrap_icons', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('shubx51_bootstrap_css'), '1.11.3' );
@@ -386,7 +380,7 @@ final class Society_HubX {
 
 		// Inline setup for ajaxurl
 		wp_add_inline_script( 'shubx51-core', "
-            var ajaxurl = '" . esc_url( admin_url( 'admin-ajax.php' ) ) . "';
+            var ajaxurl = '" . esc_js( admin_url( 'admin-ajax.php' ) ) . "';
             var shubx51_nonce = '" . esc_js( wp_create_nonce( 'shubx51_admin_nonce' ) ) . "';
             var shubx51_admin_nonce = '" . esc_js( wp_create_nonce( 'shubx51_admin_nonce' ) ) . "';
         " );
@@ -394,7 +388,7 @@ final class Society_HubX {
 		// Libraries (Chart.js for charts, html2canvas for screenshots)
         wp_enqueue_script( 'shubx51-html2canvas', SHUBX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );
         wp_enqueue_script( 'shubx51-fuse', SHUBX51_PLUGIN_URL . 'assets/js/lib/fuse.min.js', array(), '7.1.0', true );
-		wp_enqueue_script( 'shubx51-chartjs', SHUBX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.4.3', true );
+		wp_enqueue_script( 'shubx51-chartjs', SHUBX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.5.1', true );
         wp_enqueue_script( 'shubx51-search-init', SHUBX51_PLUGIN_URL . 'assets/js/shubx-search-init.js', array('shubx51-fuse'), SHUBX51_VERSION, true );
         wp_enqueue_script( 'shubx51-admin-app', SHUBX51_PLUGIN_URL . 'assets/js/admin-app.js', array('jquery', 'shubx51-core', 'shubx51-toast', 'shubx51-ajax', 'shubx51-html2canvas', 'shubx51-search-init'), SHUBX51_VERSION, true );
 
@@ -479,12 +473,15 @@ final class Society_HubX {
 		// Notifications View Specific JS (Now also on Settings for Communication tab)
 		if ( in_array($page, ['shubx51-activity-hub', 'shubx51-global-settings']) ) {
 			wp_enqueue_script( 'shubx51-notifications-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-notifications.js', array('jquery', 'shubx51-admin-app'), time(), true );
+			wp_localize_script( 'shubx51-notifications-js', 'shubx51NotificationsVars', array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			) );
 		}
 
 		// Views JS for roles, requests, polls, activity-hub, expenses, documents, assets
 		if ( in_array( $page, array( 'shubx51-roles', 'shubx51-requests', 'shubx51-polls', 'shubx51-activity-hub', 'shubx51-expenses', 'shubx51-documents', 'shubx51-assets' ) ) ) {
 			wp_enqueue_script( 'shubx-views', SHUBX51_PLUGIN_URL . 'assets/js/shubx-views.js', array( 'jquery', 'shubx51-admin-app' ), SHUBX51_VERSION, true );
-			wp_localize_script( 'shubx-views', 'shubxViewsConfig', array(
+			wp_localize_script( 'shubx-views', 'shubx51ViewsConfig', array(
 				'adminPostUrl' => admin_url( 'admin-post.php' ),
 				'roleNonce'    => wp_create_nonce( 'shubx51_role_nonce' ),
 			) );
@@ -501,8 +498,8 @@ final class Society_HubX {
 	 */
 	public function enqueue_frontend_assets() {
 		// Bootstrap 5 & jQuery (if needed, but we use Tailwind mostly - NOW MIGRATED TO BOOTSTRAP)
-        wp_enqueue_style( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.3' );
-		wp_enqueue_script( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.3', true );
+        wp_enqueue_style( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.8' );
+		wp_enqueue_script( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.8', true );
 
         // 0. Bootstrap Icons (Local)
         wp_enqueue_style( 'shubx51-bootstrap-icons', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('shubx51-bootstrap'), '1.11.3' );
@@ -517,7 +514,7 @@ final class Society_HubX {
         wp_enqueue_style( 'shubx51-fonts', SHUBX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
 
 		// 1. Chart.js for Charts (Local)
-		wp_enqueue_script( 'shubx51-chartjs', SHUBX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.4.3', true );
+		wp_enqueue_script( 'shubx51-chartjs', SHUBX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.5.1', true );
 
 		// HTML2Canvas for receipt screenshots
 		wp_enqueue_script( 'shubx51-html2canvas', SHUBX51_PLUGIN_URL . 'assets/js/html2canvas.min.js', array(), '1.4.1', true );

@@ -175,7 +175,7 @@ class SHUBX51_Admin_Settings {
 		if ( isset( $_POST['shubx51_setup_step'] ) && check_admin_referer( 'shubx51_setup_nonce' ) ) {
 			require_once SHUBX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
 			$step = sanitize_text_field( wp_unslash( $_POST['shubx51_setup_step'] ) );
-			$results = SHUBX51_Setup_Wizard::save_step( $step, wp_unslash( $_POST ) );
+			$results = SHUBX51_Setup_Wizard::save_step( $step, map_deep( wp_unslash( $_POST ), 'sanitize_text_field' ) );
 			
 			if ( $step === 'finalize' ) {
 				wp_safe_redirect( admin_url( 'admin.php?page=shubx51-settings&setup_complete=1' ) );
@@ -378,7 +378,7 @@ class SHUBX51_Admin_Settings {
 		echo '<div class="notice notice-warning is-dismissible">';
 		echo '<p>' . sprintf(
 			// translators: %1$s is an opening <a> tag, %2$s is the closing </a> tag.
-			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-hubx' ),
+			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-governx' ),
 			'<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-setup' ) ) . '"><strong>',
 			'</strong></a>'
 		) . '</p>';
