@@ -115,6 +115,9 @@ class SHUBX51_Payment_Service {
 	}
 
     public static function ajax_poll_state_hash() {
+        while ( ob_get_level() > 0 ) {
+            ob_end_clean();
+        }
         wp_send_json_success([ 'hash' => self::get_state_hash() ]);
     }
 

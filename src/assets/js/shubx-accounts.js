@@ -1,7 +1,7 @@
 /**
  * Accounts Page JS - Invoice & Ledger interactions
  */
-(function () {
+(function ($) {
     // Module configuration (fetched at runtime)
     const Config = {
         nonce: null,
@@ -351,7 +351,7 @@
         window.openEditInvoiceModal(btn);
     };
 
-})();
+})(jQuery);
 
 // ====== RECEIPT FUNCTIONS & SEARCH & CHARTS & POLL SYNC ======
 

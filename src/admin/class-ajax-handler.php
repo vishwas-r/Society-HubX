@@ -54,6 +54,11 @@ class SHUBX51_AJAX_Handler {
 
 		$config = $this->get_module_config( $module );
 
+		// Aggressive buffer cleaning to avoid JSON corruption from notices or whitespaces
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
+
 		if ( $config ) {
 			wp_send_json_success( $config );
 		} else {
