@@ -30,6 +30,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		// AJAX for Residents
 		add_action( 'wp_ajax_shubx51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
 
+		// AJAX for Admin
+		add_action( 'wp_ajax_shubx51_record_payment', array( $this, 'handle_record_payment' ) );
+		add_action( 'wp_ajax_shubx51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
+		add_action( 'wp_ajax_shubx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
+		add_action( 'wp_ajax_shubx51_delete_payment', array( $this, 'handle_delete_payment' ) );
+
 		// Register Module
 		add_filter( 'shubx51_get_module_accounts', array( $this, 'get_instance' ) );
 		add_filter( 'shubx51_get_module_account', array( $this, 'get_instance' ) );
@@ -181,10 +187,17 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 * Record a Payment manually.
 	 */
 	public function handle_record_payment() {
-		if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( wp_doing_ajax() ) {
+			check_ajax_referer( 'shubx51_account_action', '_wpnonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		}
 		
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+            wp_die( 'Unauthorized' );
+        }
 
         $invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
         
@@ -195,6 +208,10 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
             $sync_res = $rm->approve_request( $invoice_id );
             
             if ( ! is_wp_error( $sync_res ) ) {
+                if ( wp_doing_ajax() ) {
+                    while ( ob_get_level() > 0 ) ob_end_clean();
+                    wp_send_json_success( array( 'message' => 'Payment approved successfully' ) );
+                }
                 wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=payment_recorded' ) );
                 exit;
             }
@@ -204,9 +221,17 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		$res = $this->perform_record_payment( map_deep( wp_unslash( $_POST ), 'sanitize_text_field' ) );
 		
 		if ( is_wp_error( $res ) ) {
+            if ( wp_doing_ajax() ) {
+                while ( ob_get_level() > 0 ) ob_end_clean();
+                wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+            }
 			wp_die( esc_html( $res->get_error_message() ) );
 		}
 
+        if ( wp_doing_ajax() ) {
+            while ( ob_get_level() > 0 ) ob_end_clean();
+            wp_send_json_success( array( 'message' => 'Payment recorded successfully!' ) );
+        }
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=payment_recorded' ) );
 		exit;
 	}
@@ -422,13 +447,20 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 
 
 	public function handle_delete_payment() {
-		if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( wp_doing_ajax() ) {
+			check_ajax_referer( 'shubx51_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		}
 
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+            wp_die( 'Unauthorized' );
+        }
 
-		$invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
-		$txn_id = isset( $_GET['txn_id'] ) ? sanitize_text_field( wp_unslash( $_GET['txn_id'] ) ) : '';
+		$invoice_id = isset( $_REQUEST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['invoice_id'] ) ) : '';
+		$txn_id = isset( $_REQUEST['txn_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['txn_id'] ) ) : '';
 		
         // 1. Delete from payments table
         $this->db->delete( 'payments', array( 'id' => $txn_id ) );
@@ -445,18 +477,30 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
             $status = ( $paid >= floatval( $inv['amount'] ) ) ? 'paid' : ( ( $paid > 0 ) ? 'partial' : 'unpaid' );
             $this->db->update( 'invoices', array( 'status' => $status ), array( 'id' => $invoice_id ) );
             
+            if ( wp_doing_ajax() ) {
+                while ( ob_get_level() > 0 ) ob_end_clean();
+                wp_send_json_success( array( 'message' => 'Payment deleted successfully' ) );
+            }
             wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=updated' ) );
         } else {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Invoice not found' ), 404 );
             wp_die( 'Invoice not found' );
         }
 		exit;
 	}
 
 	public function handle_edit_invoice() {
-		if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( wp_doing_ajax() ) {
+			check_ajax_referer( 'shubx51_account_action', '_wpnonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		}
 
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+            wp_die( 'Unauthorized' );
+        }
 
 		$id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 		$data = array(
@@ -481,22 +525,38 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
             
 			$this->db->update( 'invoices', $update_data, array( 'id' => $id ) );
 			
+            if ( wp_doing_ajax() ) {
+                while ( ob_get_level() > 0 ) ob_end_clean();
+                wp_send_json_success( array( 'message' => 'Invoice updated successfully' ) );
+            }
 			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=updated' ) );
 		} else {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Invoice not found' ), 404 );
 			wp_die( 'Invoice not found' );
 		}
 		exit;
 	}
 
 	public function handle_delete_invoice() {
-		if ( ! check_admin_referer( 'shubx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+		if ( wp_doing_ajax() ) {
+			check_ajax_referer( 'shubx51_delete_invoice_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+		}
 
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
+        if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
+            if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+            wp_die( 'Unauthorized' );
+        }
 
-		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : ( isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '' );
 		$this->db->delete( 'invoices', array( 'id' => $id ) );
 
+		if ( wp_doing_ajax() ) {
+			while ( ob_get_level() > 0 ) ob_end_clean();
+			wp_send_json_success( array( 'message' => 'Invoice deleted successfully' ) );
+		}
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=deleted' ) );
 		exit;
 	}
