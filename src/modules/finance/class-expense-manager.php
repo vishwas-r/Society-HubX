@@ -241,11 +241,17 @@ class SHUBX51_Expense_Manager {
                 $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
             }
  
+			while ( ob_get_level() > 0 ) {
+				ob_end_clean();
+			}
 			wp_send_json_success( array( 
 				'message' => 'Expense added successfully and sent for approval',
 				'id' => $result
 			) );
 		} else {
+			while ( ob_get_level() > 0 ) {
+				ob_end_clean();
+			}
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		}
 	}
@@ -290,6 +296,9 @@ class SHUBX51_Expense_Manager {
 		
 		$result = $this->db->update( $table, $data, array( 'id' => $id ) );
 		
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		} else {
@@ -315,6 +324,9 @@ class SHUBX51_Expense_Manager {
 		$table = 'expenses';
 		$result = $this->db->update( $table, array( 'status' => 'archived' ), array( 'id' => $id ) );
 		
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		} else {
@@ -340,6 +352,9 @@ class SHUBX51_Expense_Manager {
 		$table = 'expenses';
 		$result = $this->db->update( $table, array( 'status' => 'approved' ), array( 'id' => $id ) );
 		
+		while ( ob_get_level() > 0 ) {
+			ob_end_clean();
+		}
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ), 500 );
 		} else {
