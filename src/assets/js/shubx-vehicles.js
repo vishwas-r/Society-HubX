@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SHUBX Vehicles Management JS
  */
 (function ($) {
@@ -65,9 +65,30 @@
         applyFilters();
     };
 
+    window.toggleVehicleFilters = function() {
+        const section = document.getElementById('vehicle-filter-section');
+        if (section) {
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(section);
+            bsCollapse.toggle();
+        }
+    };
+
+    window.clearVehicleFilters = function() {
+        const searchInput = document.getElementById('filter-search');
+        const typeFilter = document.getElementById('filter-vehicle-type');
+
+        if (searchInput) searchInput.value = '';
+        if (typeFilter) typeFilter.value = 'all';
+        
+        applyFilters();
+    };
+
     window.applyFilters = function () {
         const searchInput = document.getElementById('filter-search');
+        const typeFilter = document.getElementById('filter-vehicle-type');
+        
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const typeVal = typeFilter ? typeFilter.value : 'all';
 
         if (!fuse && window.SHUBXCreateFuse) {
             fuse = window.SHUBXCreateFuse('.vehicle-row');
@@ -77,7 +98,8 @@
 
         $('.vehicle-row').each(function () {
             const $row = $(this);
-            const status = $row.data('status');
+            const status = $row.data('status') || '';
+            const type = $row.data('type') || '';
 
             let matchTab = false;
             if (currentTab === 'archived') {
@@ -88,9 +110,10 @@
                 matchTab = (status === currentTab);
             }
 
+            let matchType = (typeVal === 'all') || (type === typeVal);
             let matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(this));
 
-            if (matchTab && matchSearch) {
+            if (matchTab && matchType && matchSearch) {
                 $row.show();
             } else {
                 $row.hide();
@@ -195,6 +218,21 @@
             $('#addVehicle').on('click', function (e) {
                 e.preventDefault();
                 window.openVehicleModal();
+            });
+
+            $(document).on('click', '.js-toggle-vehicle-filters', function (e) {
+                e.preventDefault();
+                window.toggleVehicleFilters();
+            });
+
+            $(document).on('click', '.js-apply-vehicle-filters', function (e) {
+                e.preventDefault();
+                window.applyFilters();
+            });
+
+            $(document).on('click', '.js-clear-vehicle-filters', function (e) {
+                e.preventDefault();
+                window.clearVehicleFilters();
             });
 
             const $form = $('#add-vehicle-form');

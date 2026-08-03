@@ -49,10 +49,14 @@
         const searchInput = document.getElementById('filter-search');
         const typeFilter = document.getElementById('filter-type');
         const statusFilter = document.getElementById('filter-status');
+        const blockFilter = document.getElementById('filter-block');
+        const bloodFilter = document.getElementById('filter-blood');
 
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
         const typeVal = typeFilter ? typeFilter.value : 'all';
         const statusVal = statusFilter ? statusFilter.value : 'all';
+        const blockVal = blockFilter ? blockFilter.value : 'all';
+        const bloodVal = bloodFilter ? bloodFilter.value : 'all';
 
         const rows = document.querySelectorAll('.resident-row');
 
@@ -84,6 +88,12 @@
 
             // 2. Advanced Filters (Dropdowns)
             let matchesType = (typeVal === 'all') || (type === typeVal);
+            
+            const block = row.dataset.block || '';
+            let matchesBlock = (blockVal === 'all') || (block === blockVal);
+            
+            const blood = row.dataset.blood || '';
+            let matchesBlood = (bloodVal === 'all') || (blood === bloodVal);
 
             // Status dropdown logic: 
             // If "all" selected, show what makes sense for the current tab.
@@ -97,7 +107,7 @@
             // 3. Search Matching
             let matchesSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
 
-            if (matchesTab && matchesType && matchesStatus && matchesSearch) {
+            if (matchesTab && matchesType && matchesStatus && matchesBlock && matchesBlood && matchesSearch) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -107,10 +117,18 @@
 
     function clearFilters() {
         const searchInput = document.getElementById('filter-search');
-        if (searchInput) {
-            searchInput.value = '';
-            applyFilters();
-        }
+        const typeFilter = document.getElementById('filter-type');
+        const statusFilter = document.getElementById('filter-status');
+        const blockFilter = document.getElementById('filter-block');
+        const bloodFilter = document.getElementById('filter-blood');
+
+        if (searchInput) searchInput.value = '';
+        if (typeFilter) typeFilter.value = 'all';
+        if (statusFilter) statusFilter.value = 'all';
+        if (blockFilter) blockFilter.value = 'all';
+        if (bloodFilter) bloodFilter.value = 'all';
+        
+        applyFilters();
     }
 
     function switchTab(btn) {

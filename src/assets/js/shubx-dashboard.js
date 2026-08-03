@@ -1130,7 +1130,13 @@
         // --- Consolidated Community Filter/Search ---
         window.applyCommunityFilters = function () {
             const searchInput = document.getElementById('dir-search');
+            const blockSelect = document.getElementById('dir-filter-block');
+            const typeSelect = document.getElementById('dir-filter-type');
+            
             const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const blockTerm = blockSelect ? blockSelect.value : 'all';
+            const typeTerm = typeSelect ? typeSelect.value : 'all';
+            
             const dirCards = document.querySelectorAll('.dir-card');
 
             if (!dirFuse && window.SHUBXCreateFuse) {
@@ -1159,7 +1165,14 @@
                     matchesFilter = (card.dataset.hasHelp === '1');
                 }
 
-                const finalMatch = !!(matchesSearch && matchesFilter);
+                // 3. Check Dropdown Match
+                const block = card.dataset.block || '';
+                const type = card.dataset.type || '';
+                
+                let matchesBlock = (blockTerm === 'all') || (block === blockTerm);
+                let matchesType = (typeTerm === 'all') || (type === typeTerm);
+
+                const finalMatch = !!(matchesSearch && matchesFilter && matchesBlock && matchesType);
 
                 // Apply visibility - Use Bootstrap d-none for consistency
                 if (finalMatch) {
@@ -1205,6 +1218,16 @@
                     filterDirFilter(filterBtn.dataset.filter);
                 }
             });
+            
+            const blockSelect = document.getElementById('dir-filter-block');
+            if (blockSelect) {
+                blockSelect.addEventListener('change', applyCommunityFilters);
+            }
+            
+            const typeSelect = document.getElementById('dir-filter-type');
+            if (typeSelect) {
+                typeSelect.addEventListener('change', applyCommunityFilters);
+            }
         }
 
         // --- Helper: Preview Image ---

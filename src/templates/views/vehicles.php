@@ -60,10 +60,34 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SHUBXBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
+                    <button class="js-toggle-vehicle-filters btn btn-light px-3 px-sm-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center gap-2" style="height: 48px;">
+                        <i class="bi bi-funnel"></i>
+                        <span class="d-none d-sm-inline">Filters</span>
+                    </button>
                     <button id="addVehicle" class="js-open-vehicle-modal btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                         <i class="bi bi-plus-lg"></i>
                         <span>Add Vehicle</span>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collapsible Filters Section -->
+        <div class="collapse" id="vehicle-filter-section">
+            <div class="p-4 px-md-5 bg-light border-bottom border-light">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-secondary">Vehicle Type</label>
+                        <select id="filter-vehicle-type" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Types</option>
+                            <option value="car">4-Wheeler (Car)</option>
+                            <option value="bike">2-Wheeler (Bike)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9 d-flex gap-2 justify-content-end">
+                        <button class="js-apply-vehicle-filters btn btn-primary px-4 fw-bold rounded-3 shadow-sm">Apply Filters</button>
+                        <button class="js-clear-vehicle-filters btn btn-light px-4 fw-semibold text-secondary rounded-3 border-light">Clear</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -176,6 +200,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                         ?>
                         <tr class="vehicle-row border-bottom border-light" 
                             data-status="<?php echo esc_attr($status); ?>" 
+                            data-type="<?php echo esc_attr($v_type); ?>"
                             data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??''))); ?>">
                             <td class="ps-5 py-4">
                                 <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input shubx-bulk-checkbox bg-light border-slate-200 shadow-none">

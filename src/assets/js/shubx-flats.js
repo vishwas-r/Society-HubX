@@ -67,9 +67,38 @@
         applyFilters();
     };
 
+    window.toggleFlatFilters = function() {
+        const section = document.getElementById('flat-filter-section');
+        if (section) {
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(section);
+            bsCollapse.toggle();
+        }
+    };
+
+    window.clearFlatFilters = function() {
+        const searchInput = document.getElementById('filter-search');
+        const blockFilter = document.getElementById('filter-flat-block');
+        const typeFilter = document.getElementById('filter-flat-type');
+        const parkingFilter = document.getElementById('filter-flat-parking');
+
+        if (searchInput) searchInput.value = '';
+        if (blockFilter) blockFilter.value = 'all';
+        if (typeFilter) typeFilter.value = 'all';
+        if (parkingFilter) parkingFilter.value = 'all';
+        
+        applyFilters();
+    };
+
     window.applyFilters = function () {
         const searchInput = document.getElementById('filter-search');
+        const blockFilter = document.getElementById('filter-flat-block');
+        const typeFilter = document.getElementById('filter-flat-type');
+        const parkingFilter = document.getElementById('filter-flat-parking');
+
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        const blockVal = blockFilter ? blockFilter.value : 'all';
+        const typeVal = typeFilter ? typeFilter.value : 'all';
+        const parkingVal = parkingFilter ? parkingFilter.value : 'all';
 
         if (!fuse && window.SHUBXCreateFuse) {
             fuse = window.SHUBXCreateFuse('.flat-row');
@@ -79,7 +108,10 @@
 
         $('.flat-row').each(function () {
             const $row = $(this);
-            const status = $row.data('status');
+            const status = $row.data('status') || '';
+            const block = $row.data('block') || '';
+            const type = $row.data('type') || '';
+            const parking = $row.data('parking') || '';
 
             let matchTab = false;
             if (currentTab === 'archived') {
@@ -90,9 +122,12 @@
                 matchTab = (status === currentTab);
             }
 
+            let matchBlock = (blockVal === 'all') || (block === blockVal);
+            let matchType = (typeVal === 'all') || (type === typeVal);
+            let matchParking = (parkingVal === 'all') || (parking === parkingVal);
             let matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(this));
 
-            if (matchTab && matchSearch) {
+            if (matchTab && matchBlock && matchType && matchParking && matchSearch) {
                 $row.show();
             } else {
                 $row.hide();
@@ -242,6 +277,21 @@
                 e.preventDefault();
                 const id = $(this).data('id');
                 if (id) window.hardDeleteFlat(id);
+            });
+
+            $(document).on('click', '.js-toggle-flat-filters', function (e) {
+                e.preventDefault();
+                window.toggleFlatFilters();
+            });
+
+            $(document).on('click', '.js-apply-flat-filters', function (e) {
+                e.preventDefault();
+                window.applyFilters();
+            });
+
+            $(document).on('click', '.js-clear-flat-filters', function (e) {
+                e.preventDefault();
+                window.clearFlatFilters();
             });
 
             // Real-time Search

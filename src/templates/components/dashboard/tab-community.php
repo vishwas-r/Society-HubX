@@ -12,6 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array $data Dashboard data.
  */
 $directory = $data['directory'] ?? [];
+
+// Extract unique blocks for filters
+$unique_blocks = array_unique(array_filter(array_column($directory, 'block')));
+sort($unique_blocks);
 ?>
 <!-- COMMUNITY TAB -->
 <div id="tab-community" class="tab-content d-none">
@@ -27,8 +31,19 @@ $directory = $data['directory'] ?? [];
                         <input type="text" id="dir-search" placeholder="Search Flat, Owner, Vehicle..." class="form-control ps-5 text-sm rounded-3 border-light shadow-none">
                     </div>
                 </div>
-                <div class="col-md-6">
-                     <div class="d-flex gap-2 justify-content-md-end overflow-auto" id="dir-filters">
+                <div class="col-md-7">
+                     <div class="d-flex flex-wrap gap-2 justify-content-md-end align-items-center" id="dir-filters">
+                        <select id="dir-filter-block" class="form-select form-select-sm rounded-pill border-light shadow-none" style="width: auto; min-width: 120px;">
+                            <option value="all">All Blocks</option>
+                            <?php foreach($unique_blocks as $b): ?>
+                                <option value="<?php echo esc_attr(strtolower($b)); ?>">Block <?php echo esc_html($b); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <select id="dir-filter-type" class="form-select form-select-sm rounded-pill border-light shadow-none" style="width: auto; min-width: 120px;">
+                            <option value="all">All Types</option>
+                            <option value="owner">Owner</option>
+                            <option value="tenant">Tenant</option>
+                        </select>
                         <button class="dir-filter-btn btn btn-sm btn-dark rounded-pill px-3 active" data-filter="all">All</button>
                         <button class="dir-filter-btn btn btn-sm btn-light text-secondary rounded-pill px-3" data-filter="vehicle">Has Vehicle</button>
                         <button class="dir-filter-btn btn btn-sm btn-light text-secondary rounded-pill px-3" data-filter="help">Has Help</button>
@@ -54,6 +69,8 @@ $directory = $data['directory'] ?? [];
                 ?>
                     <div class="col-md-6 col-lg-4 dir-card" 
                          data-search="<?php echo esc_attr($search_blob); ?>"
+                         data-block="<?php echo esc_attr(strtolower($d['block'])); ?>"
+                         data-type="<?php echo esc_attr(strtolower($d['type'] ?? 'owner')); ?>"
                          data-json="<?php echo htmlspecialchars(wp_json_encode($d), ENT_QUOTES, 'UTF-8'); ?>"
                          data-has-vehicle="<?php echo !empty($d['vehicles']) ? '1' : '0'; ?>"
                          data-has-help="<?php echo !empty($d['help']) ? '1' : '0'; ?>"

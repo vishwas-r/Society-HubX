@@ -19,6 +19,10 @@ if (!isset($residents)) $residents = array();
 if (!isset($pending)) $pending = array();
 if (!isset($history)) $history = array();
 if (!isset($flats)) $flats = array();
+
+// Extract unique blocks for filters
+$unique_blocks = array_unique(array_filter(array_column($flats, 'block')));
+sort($unique_blocks);
 ?>
 
 
@@ -71,8 +75,17 @@ if (!isset($flats)) $flats = array();
         <!-- Collapsible Filters Section -->
         <div class="collapse" id="filter-section">
             <div class="p-4 px-md-5 bg-light border-bottom border-light">
-                <div class="row g-3">
-                    <div class="col-md-3">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-secondary">Block</label>
+                        <select id="filter-block" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Blocks</option>
+                            <?php foreach ($unique_blocks as $b): ?>
+                                <option value="<?php echo esc_attr(strtolower($b)); ?>"><?php echo esc_html($b); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label small fw-bold text-secondary">Resident Type</label>
                         <select id="filter-type" class="form-select shadow-none rounded-3 border-light">
                             <option value="all">All Types</option>
@@ -80,7 +93,7 @@ if (!isset($flats)) $flats = array();
                             <option value="tenant">Tenant</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small fw-bold text-secondary">Status</label>
                         <select id="filter-status" class="form-select shadow-none rounded-3 border-light">
                             <option value="all">All Statuses</option>
@@ -89,8 +102,22 @@ if (!isset($flats)) $flats = array();
                             <option value="archived">Archived</option>
                         </select>
                     </div>
-                    <div class="col-md-6 d-flex align-items-end gap-2">
-                        <button class="js-apply-filters btn btn-primary px-4 fw-bold rounded-3 shadow-sm">Apply Filters</button>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-secondary">Blood Group</label>
+                        <select id="filter-blood" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Groups</option>
+                            <option value="a+">A+</option>
+                            <option value="a-">A-</option>
+                            <option value="b+">B+</option>
+                            <option value="b-">B-</option>
+                            <option value="o+">O+</option>
+                            <option value="o-">O-</option>
+                            <option value="ab+">AB+</option>
+                            <option value="ab-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex gap-2">
+                        <button class="js-apply-filters btn btn-primary px-4 fw-bold rounded-3 shadow-sm flex-grow-1">Apply Filters</button>
                         <button class="js-clear-filters btn btn-light px-4 fw-semibold text-secondary rounded-3 border-light">Clear</button>
                     </div>
                 </div>
@@ -235,13 +262,17 @@ if (!isset($flats)) $flats = array();
                              $type_label  = ucfirst($type);
                              $request_id  = !empty($row['request_id']) ? $row['request_id'] : $row['id'];
                              
-                             // Badge and class logic
+                              // Badge and class logic
                              $is_deletion_pending = ($status === 'deletion_pending');
                              $is_update_pending   = ($is_request && $status === 'pending' && !empty($row['entity_id']));
+                             $block               = strtolower($row['block'] ?? '');
+                             $blood               = strtolower($row['blood_group'] ?? '');
                         ?>
                         <tr class="resident-row border-bottom border-light" 
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-type="<?php echo esc_attr($type); ?>"
+                            data-block="<?php echo esc_attr($block); ?>"
+                            data-blood="<?php echo esc_attr($blood); ?>"
                             data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['name']??''))); ?>">
                             <td class="ps-3 ps-md-5 py-4">
                                 <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input shubx-bulk-checkbox shadow-none">

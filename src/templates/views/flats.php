@@ -50,6 +50,10 @@ usort($flats, function($a, $b) {
     return strcmp($a['block'] ?? '', $b['block'] ?? '');
 });
 
+// Extract unique blocks for filters
+$unique_blocks = array_unique(array_filter(array_column($flats, 'block')));
+sort($unique_blocks);
+
 $error_msg = isset( $_GET['error'] ) ? sanitize_text_field( urldecode( $_GET['error'] ) ) : '';
 $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.' : '';
 ?>
@@ -81,6 +85,10 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
+                    <button class="js-toggle-flat-filters btn btn-light px-3 px-sm-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center gap-2" style="height: 48px;">
+                        <i class="bi bi-funnel"></i>
+                        <span class="d-none d-sm-inline">Filters</span>
+                    </button>
                     <button id="addFlat" class="btn btn-primary px-3 px-sm-4 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2 shadow-sm flex-grow-1 flex-md-grow-0" style="height: 48px;" onclick="openFlatModal()">
                         <i class="bi bi-plus-circle-fill fs-5"></i>
                         <span>Add Unit</span>
@@ -90,16 +98,45 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
         </div>
 
         <!-- Collapsible Filters Section -->
-        <!-- <div id="filter-section" class="collapse border-bottom border-light bg-light p-4 px-5">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-9">
-                    <p class="small text-secondary mb-2 fw-bold">Advanced Search</p>
-                </div>
-                <div class="col-md-3 d-grid">
-                    <button onclick="applyFilters()" class="btn btn-primary fw-bold rounded-3" style="height: 44px;">Apply Search</button>
+        <div class="collapse" id="flat-filter-section">
+            <div class="p-4 px-md-5 bg-light border-bottom border-light">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-secondary">Block</label>
+                        <select id="filter-flat-block" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Blocks</option>
+                            <?php foreach ($unique_blocks as $b): ?>
+                                <option value="<?php echo esc_attr(strtolower($b)); ?>"><?php echo esc_html($b); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-secondary">Unit Type</label>
+                        <select id="filter-flat-type" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Types</option>
+                            <option value="1bhk">1BHK</option>
+                            <option value="2bhk">2BHK</option>
+                            <option value="3bhk">3BHK</option>
+                            <option value="4bhk">4BHK</option>
+                            <option value="penthouse">Penthouse</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-secondary">Parking Status</label>
+                        <select id="filter-flat-parking" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Statuses</option>
+                            <option value="available">Available</option>
+                            <option value="occupied">Occupied</option>
+                            <option value="reserved">Reserved</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button class="js-apply-flat-filters btn btn-primary px-4 fw-bold rounded-3 shadow-sm flex-grow-1">Apply</button>
+                        <button class="js-clear-flat-filters btn btn-light px-4 fw-semibold text-secondary rounded-3 border-light">Clear</button>
+                    </div>
                 </div>
             </div>
-        </div> -->
+        </div>
 
         <!-- Navigation Tabs (Integrated) -->
         <div class="border-bottom border-light px-3 px-md-5 bg-white overflow-x-auto no-scrollbar">
@@ -142,8 +179,16 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         
                         // Robust lookup: Try ID first (A-101), then Flat Number (101)
                         $owner_name = $flat_owners[$full_id] ?? ($flat_owners[$flat_no] ?? null);
+                        
+                        $f_block = strtolower($f['block'] ?? '');
+                        $f_type = strtolower($f['type'] ?? '');
                     ?>
-                    <tr class="flat-row border-bottom border-light" data-status="<?php echo esc_attr($status); ?>" data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
+                    <tr class="flat-row border-bottom border-light" 
+                        data-status="<?php echo esc_attr($status); ?>" 
+                        data-block="<?php echo esc_attr($f_block); ?>"
+                        data-type="<?php echo esc_attr($f_type); ?>"
+                        data-parking="<?php echo esc_attr($p_status); ?>"
+                        data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
                         <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $flat_no ); ?></td>
                         <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ?? '-' ); ?></td>
                         <td class="px-4 py-4 text-dark font-monospace small">
