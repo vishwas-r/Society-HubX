@@ -451,7 +451,7 @@ $qr_url    = get_option('shubx51_bank_qr');
             <input type="hidden" name="invoice_id" id="confirm-invoice-id">
             <div class="row g-3">
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Amount (₹) *</label><input type="number" name="amount" id="confirm-amount" class="form-control rounded-3" required></div>
-                <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Date *</label><input type="date" name="date" id="confirm-date" class="form-control rounded-3" value="<?php echo wp_date('Y-m-d'); ?>" required></div>
+                <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Date *</label><input type="date" name="date" id="confirm-date" class="form-control rounded-3" value="<?php echo esc_html( wp_date('Y-m-d') ); ?>" required></div>
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Method</label><select name="method" class="form-select rounded-3"><option value="UPI">UPI</option><option value="Bank Transfer">Bank Transfer</option><option value="Cash">Cash</option></select></div>
                 <div class="col-md-6"><label class="form-label small fw-bold text-secondary">Ref / Txn ID *</label><input type="text" name="reference" class="form-control rounded-3" placeholder="UTR/Ref" required></div>
             </div>
@@ -674,6 +674,65 @@ $qr_url    = get_option('shubx51_bank_qr');
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-light text-secondary rounded-3 px-4 w-100" data-bs-dismiss="modal">Close</button>
             </div>
+        </div>
+    </div>
+</div>
+<!-- Mark Attendance Modal (Resident) -->
+<div class="modal fade" id="residentAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold m-0 text-dark">Mark Attendance</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="resident-attendance-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
+                <input type="hidden" name="action" value="shubx51_mark_attendance">
+                <input type="hidden" name="staff_id" id="res-attendance-staff-id" value="">
+                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Status <span class="text-danger">*</span></label>
+                        <select name="status" class="form-select shadow-none rounded-3 border-light" required>
+                            <option value="present">Present (Check In)</option>
+                            <option value="absent">Absent</option>
+                            <option value="leave">On Leave</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm rounded-3 w-100">Save Attendance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Raise Concern Modal (Resident) -->
+<div class="modal fade" id="residentConcernModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold m-0 text-dark">Raise Staff Concern</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="resident-concern-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
+                <input type="hidden" name="action" value="shubx51_raise_concern">
+                <input type="hidden" name="staff_id" id="res-concern-staff-id" value="">
+                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Describe the concern/issue <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control shadow-none rounded-3 border-light" rows="4" required placeholder="Example: Needs new uniform, behaving unprofessionally..."></textarea>
+                    </div>
+                    <div class="alert alert-info py-2 px-3 small border-0 bg-primary bg-opacity-10 text-primary rounded-3 d-flex gap-2 mb-0">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>This will automatically alert you and any co-owners/family members.</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm rounded-3 w-100">Submit Concern</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

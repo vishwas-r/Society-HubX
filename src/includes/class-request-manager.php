@@ -3,7 +3,7 @@
  * Class: Request Manager
  * Processes resident requests (Add, Edit, Delete).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -377,8 +377,8 @@ class SHUBX51_Request_Manager {
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_HubX') && !empty($target_request['created_by']) ) {
-                $shubx = Society_HubX::get_instance();
+            if ( class_exists('SHUBX51_Plugin') && !empty($target_request['created_by']) ) {
+                $shubx = SHUBX51_Plugin::get_instance();
                 if ( isset($shubx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
@@ -487,8 +487,8 @@ class SHUBX51_Request_Manager {
 			$this->log_audit('request_rejected', $module_slug, $actual_request_id, "Action: $action, Target: $entity_id, Note: $note, Rejected by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('Society_HubX') && !empty($target_request['created_by']) ) {
-                $shubx = Society_HubX::get_instance();
+            if ( class_exists('SHUBX51_Plugin') && !empty($target_request['created_by']) ) {
+                $shubx = SHUBX51_Plugin::get_instance();
                 if ( isset($shubx->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');

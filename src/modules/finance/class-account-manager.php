@@ -3,7 +3,7 @@
  * Module: Account Manager
  * Handles Resident Invoices, Payments, and Maintenance Dues.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

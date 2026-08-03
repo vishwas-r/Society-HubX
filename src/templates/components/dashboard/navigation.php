@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         <button id="btn-tab-notifications" data-tab-target="#tab-notifications" class="tab-btn d-flex align-items-center gap-1">
             Notifications
              <?php if(!empty($data['notifications'])): ?>
-                <span class="badge bg-danger rounded-pill px-1 ms-1" style="font-size: 0.6rem;"><?php echo count($data['notifications']); ?></span>
+                <span class="badge bg-danger rounded-pill px-1 ms-1" style="font-size: 0.6rem;"><?php echo esc_html( count($data['notifications']) ); ?></span>
              <?php endif; ?>
         </button>
     </nav>

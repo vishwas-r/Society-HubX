@@ -151,7 +151,7 @@ if (!isset($flats)) $flats = array();
 
                     // 0.1 Build Role Mapping for display
                     $role_map = array();
-                    $all_rbac_roles = Society_HubX::get_instance()->rbac->get_all_roles();
+                    $all_rbac_roles = SHUBX51_Plugin::get_instance()->rbac->get_all_roles();
                     if ( ! empty( $all_rbac_roles ) ) {
                         foreach ( $all_rbac_roles as $role_def ) {
                             $role_map[$role_def['id']] = $role_def['name'];
@@ -264,7 +264,7 @@ if (!isset($flats)) $flats = array();
                                             echo '<span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px; margin-right: 2px;">' . esc_html( $display_f ) . '</span>';
                                         }
                                     ?>
-                                    <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo $type_label; ?></span>
+                                    <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo esc_html( $type_label ); ?></span>
                                 </div>
                             </td>
                             <td class="px-4 py-4">
@@ -300,26 +300,26 @@ if (!isset($flats)) $flats = array();
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <?php if ( $is_request ) : ?>
-                                        <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
+                                        <?php echo esc_html( SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ) ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>">
+                                        <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo esc_html( $row['id'] ); ?>">
                                             <i class="bi bi-trash fs-6"></i>
                                         </button>
                                     <?php elseif ( ! $is_archived ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>">
+                                        <button class="btn btn-sm btn-light js-delete-resident text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo esc_html( $row['id'] ); ?>">
                                             <i class="bi bi-trash fs-6"></i>
                                         </button>
                                     <?php else : ?>
-                                        <button class="btn btn-sm btn-light js-restore-resident text-success border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>" title="Restore">
+                                        <button class="btn btn-sm btn-light js-restore-resident text-success border shadow-sm rounded-3 p-2" data-id="<?php echo esc_html( $row['id'] ); ?>" title="Restore">
                                             <i class="bi bi-arrow-counterclockwise fs-6"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-light js-delete-permanent text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo $row['id']; ?>" data-source="<?php echo esc_attr($row['source'] ?? 'residents'); ?>" title="Delete Permanently">
+                                        <button class="btn btn-sm btn-light js-delete-permanent text-danger border shadow-sm rounded-3 p-2" data-id="<?php echo esc_html( $row['id'] ); ?>" data-source="<?php echo esc_attr($row['source'] ?? 'residents'); ?>" title="Delete Permanently">
                                             <i class="bi bi-x-circle fs-6"></i>
                                         </button>
                                     <?php endif; ?>
@@ -342,7 +342,7 @@ add_action('shubx51_admin_modals', function() use ($flats) {
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
-            <form id="add-resident-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
+            <form id="add-resident-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="shubx51_add_resident">
                 <input type="hidden" name="resident_id" value="">
                 <?php wp_nonce_field( 'shubx51_resident_nonce' ); ?>

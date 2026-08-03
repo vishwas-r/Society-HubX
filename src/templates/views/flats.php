@@ -213,7 +213,7 @@ add_action('shubx51_admin_modals', function() {
                 <h5 class="fw-bold m-0 text-dark" id="flatModalTitle">Add New Unit</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="add-flat-form">
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="add-flat-form">
                     <div class="modal-body p-4">
                     <input type="hidden" name="action" value="shubx51_add_flat">
                     <input type="hidden" name="flat_id" value="">

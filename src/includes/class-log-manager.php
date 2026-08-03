@@ -3,7 +3,7 @@
  * Class: Log Manager
  * Handles log governance, purging, and automated maintenance.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,7 +15,7 @@ class SHUBX51_Log_Manager {
 	private $db;
 
 	public function __construct($db = null) {
-		$this->db = $db ?: Society_HubX::get_instance()->db;
+		$this->db = $db ?: SHUBX51_Plugin::get_instance()->db;
         
         // Hook into Action Scheduler for daily cleanup
 		add_action( 'shubx51_daily_log_purge', array( $this, 'purge_old_logs' ) );
@@ -38,14 +38,14 @@ class SHUBX51_Log_Manager {
         // 1. Purge Audit Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}society_hubx_audit_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}shubx51_audit_logs WHERE created_at < %s",
             $cutoff_date
         ));
 
         // 2. Purge Notification Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}society_hubx_notification_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}shubx51_notification_logs WHERE created_at < %s",
             $cutoff_date
         ));
 

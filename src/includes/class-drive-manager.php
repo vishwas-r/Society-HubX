@@ -4,7 +4,7 @@
  * Handles File Operations: Folders, Uploads, List.
  * Switches between Google Drive (Connected) and Local Uploads (Offline).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

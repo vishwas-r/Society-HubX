@@ -197,7 +197,7 @@ $activities = array_slice($activities, 0, 10);
                     </div>
                     <div>
                         <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Total Income</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_income); ?></h2>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo esc_html( number_format($total_income) ); ?></h2>
                         <div class="text-muted mt-1" style="font-size: 10px;">FY <?php echo esc_html($current_year); ?> Collections</div>
                     </div>
                 </div>
@@ -213,7 +213,7 @@ $activities = array_slice($activities, 0, 10);
                     </div>
                     <div>
                         <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">YTD Expenses</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_expense); ?></h2>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo esc_html( number_format($total_expense) ); ?></h2>
                         <div class="text-muted mt-1" style="font-size: 10px;">FY <?php echo esc_html($current_year); ?> Payouts</div>
                     </div>
                 </div>
@@ -229,7 +229,7 @@ $activities = array_slice($activities, 0, 10);
                     </div>
                     <div>
                         <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Outstanding</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($total_arrears); ?></h2>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo esc_html( number_format($total_arrears) ); ?></h2>
                         <div class="text-warning mt-1 fw-bold" style="font-size: 10px;">Total Arrears</div>
                     </div>
                 </div>
@@ -243,14 +243,14 @@ $activities = array_slice($activities, 0, 10);
                 $flow_color = $cash_flow >= 0 ? 'primary' : 'danger';
                 $flow_icon  = $cash_flow >= 0 ? 'bi-cash-stack' : 'bi-arrow-down-right-circle';
             ?>
-            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-<?php echo $flow_color; ?> bg-opacity-10 border border-<?php echo $flow_color; ?> border-opacity-10 transition-all hover-translate-y">
+            <div class="card border-0 shadow-sm rounded-3 p-4 h-100 bg-<?php echo esc_html( $flow_color ); ?> bg-opacity-10 border border-<?php echo esc_html( $flow_color ); ?> border-opacity-10 transition-all hover-translate-y">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="flex-shrink-0 bg-<?php echo $flow_color; ?> rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 52px; height: 52px;">
-                        <i class="bi <?php echo $flow_icon; ?> fs-4"></i>
+                    <div class="flex-shrink-0 bg-<?php echo esc_html( $flow_color ); ?> rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 52px; height: 52px;">
+                        <i class="bi <?php echo esc_html( $flow_icon ); ?> fs-4"></i>
                     </div>
                     <div>
                         <div class="small fw-bold text-secondary text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em;">Net Cash Flow</div>
-                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo number_format($cash_flow); ?></h2>
+                        <h2 class="fw-bold text-dark m-0" style="font-size: 1.5rem; letter-spacing: -0.01em;">₹<?php echo esc_html( number_format($cash_flow) ); ?></h2>
                         <div class="text-muted mt-1" style="font-size: 10px;">Current Surplus/Deficit</div>
                     </div>
                 </div>
@@ -290,7 +290,7 @@ $activities = array_slice($activities, 0, 10);
                         <div class="h5 fw-bold mb-0 text-danger"><?php echo esc_html($active_violations); ?></div>
                     </div>
                     <div class="text-end">
-                         <span class="text-muted" style="font-size: 9px;">₹<?php echo number_format($total_fines); ?> Fine</span>
+                         <span class="text-muted" style="font-size: 9px;">₹<?php echo esc_html( number_format($total_fines) ); ?> Fine</span>
                     </div>
                 </div>
             </div>
@@ -325,15 +325,15 @@ $activities = array_slice($activities, 0, 10);
                         <div class="d-flex flex-column gap-2">
                             <?php foreach($activities as $act): ?>
                                 <div class="d-flex gap-3 align-items-center p-3 rounded-3 transition-all hover-bg-light">
-                                    <div class="flex-shrink-0 <?php echo $act['color']; ?> rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                        <i class="bi <?php echo $act['icon']; ?>" style="font-size: 18px;"></i>
+                                    <div class="flex-shrink-0 <?php echo esc_html( $act['color'] ); ?> rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="bi <?php echo esc_html( $act['icon'] ); ?>" style="font-size: 18px;"></i>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="fw-bold text-dark m-0 small"><?php echo esc_html($act['title']); ?></h6>
                                         <p class="text-secondary m-0 mt-1" style="font-size: 12px;"><?php echo esc_html($act['desc']); ?></p>
                                     </div>
                                     <div class="text-muted small d-none d-md-block" style="font-size: 11px;">
-                                        <?php echo human_time_diff($act['time'], current_time('timestamp')); ?> ago
+                                        <?php echo esc_html( human_time_diff($act['time'], current_time('timestamp')) ); ?> ago
                                     </div>
                                 </div>
                             <?php endforeach; ?>

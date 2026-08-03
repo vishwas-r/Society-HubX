@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = Society_HubX::get_instance()->db;
+$db = SHUBX51_Plugin::get_instance()->db;
 $audit_logs = $db->get('audit_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' => 'DESC', 'limit' => 100]);
 
@@ -86,21 +86,21 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                         <tr>
                             <td class="ps-4 py-3">
                                 <div class="d-flex align-items-center gap-2 mb-1">
-                                    <div class="rounded-circle bg-<?php echo $color; ?> bg-opacity-10 d-flex align-items-center justify-content-center text-<?php echo $color; ?> fw-bold border border-<?php echo $color; ?> border-opacity-10" style="width: 24px; height: 24px; font-size: 10px;">
-                                        <?php echo strtoupper(substr($actor_name, 0, 1)); ?>
+                                    <div class="rounded-circle bg-<?php echo esc_html( $color ); ?> bg-opacity-10 d-flex align-items-center justify-content-center text-<?php echo esc_html( $color ); ?> fw-bold border border-<?php echo esc_html( $color ); ?> border-opacity-10" style="width: 24px; height: 24px; font-size: 10px;">
+                                        <?php echo esc_html( strtoupper(substr($actor_name, 0, 1)) ); ?>
                                     </div>
                                     <span class="text-slate-700 small fw-bold"><?php echo esc_html($actor_name); ?></span>
                                 </div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <i class="bi <?php echo $icon; ?> text-<?php echo $color; ?> small"></i>
+                                    <i class="bi <?php echo esc_html( $icon ); ?> text-<?php echo esc_html( $color ); ?> small"></i>
                                     <span class="badge bg-slate-50 text-slate-600 border border-slate-200 rounded-pill px-2 py-1 x-small fw-medium">
-                                        <?php echo strtoupper($module); ?>
+                                        <?php echo esc_html( strtoupper($module) ); ?>
                                     </span>
-                                    <span class="text-slate-400 small">#<?php echo $log['entity_id']; ?></span>
+                                    <span class="text-slate-400 small">#<?php echo esc_html( $log['entity_id'] ); ?></span>
                                 </div>
-                                <div class="small text-slate-400 ms-1"><?php echo wp_date('M d, H:i:s', strtotime($log['created_at'])); ?></div>
+                                <div class="small text-slate-400 ms-1"><?php echo esc_html( wp_date('M d, H:i:s', strtotime($log['created_at'])) ); ?></div>
                             </td>
                             <td>
                                 <div class="fw-bold text-slate-800 small"><?php echo esc_html($log['action']); ?></div>
@@ -109,7 +109,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                                 </div>
                             </td>
                             <td class="pe-4 text-end">
-                                <span class="badge bg-light text-muted x-small border rounded-1">AUT-<?php echo substr($log['id'], -4); ?></span>
+                                <span class="badge bg-light text-muted x-small border rounded-1">AUT-<?php echo esc_html( substr($log['id'], -4) ); ?></span>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -149,7 +149,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                             <td class="ps-4 py-3">
                                 <div class="d-flex align-items-center gap-2 mb-1">
                                     <span class="text-slate-700 small fw-bold"><?php echo esc_html($recipient_name); ?></span>
-                                    <span class="badge bg-primary bg-opacity-10 text-primary x-small px-2 border border-primary-subtle rounded-pill"><?php echo strtoupper($log['channel']); ?></span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary x-small px-2 border border-primary-subtle rounded-pill"><?php echo esc_html( strtoupper($log['channel']) ); ?></span>
                                 </div>
                             </td>
                             <td>
@@ -159,7 +159,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                                         <?php echo esc_html(wp_trim_words(strip_tags($body), 12)); ?>
                                     </div>
                                 <?php endif; ?>
-                                <div class="small text-slate-400"><?php echo wp_date('M d, H:i', strtotime($log['created_at'])); ?></div>
+                                <div class="small text-slate-400"><?php echo esc_html( wp_date('M d, H:i', strtotime($log['created_at'])) ); ?></div>
                             </td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -171,7 +171,7 @@ $notif_logs = $db->get('notification_logs', ['orderby' => 'created_at', 'order' 
                                 <?php if($log['status'] === 'sent'): ?>
                                     <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle rounded-pill px-3 py-1 fw-bold x-small">SENT</span>
                                     <?php if($log['cost'] > 0): ?>
-                                        <div class="x-small text-slate-400 mt-1">₹<?php echo number_format($log['cost'], 2); ?></div>
+                                        <div class="x-small text-slate-400 mt-1">₹<?php echo esc_html( number_format($log['cost'], 2) ); ?></div>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill px-3 py-1 fw-bold x-small" data-bs-toggle="tooltip" title="<?php echo esc_attr($log['response']); ?>">ERROR</span>

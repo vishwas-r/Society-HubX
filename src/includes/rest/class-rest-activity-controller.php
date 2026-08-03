@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 /**
  * Class: REST Activity Controller
  * Endpoints for society activity logs.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,7 +26,7 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items( $request ) {
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$logs = $db->get( 'activity_logs' );
 
 		if ( empty( $logs ) ) {
@@ -37,7 +37,7 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		if ( ! Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
+		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view activity logs.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;

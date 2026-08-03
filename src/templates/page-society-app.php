@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 $user_avatar = get_avatar_url( $current_user->ID );
                 
                 // Fetch custom profile photo from resident records
-                $resident = Society_HubX::get_instance()->db->get_resident_by_wp_id( $current_user->ID );
+                $resident = SHUBX51_Plugin::get_instance()->db->get_resident_by_wp_id( $current_user->ID );
                 if ( $resident && ! empty( $resident['profile_photo'] ) ) {
                     $user_avatar = $resident['profile_photo'];
                 }
@@ -96,7 +96,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <!-- Simple Footer -->
     <footer class="bg-white border-top border-slate-200 py-4 mt-auto">
         <div class="container text-center text-muted small">
-            &copy; <?php echo wp_date('Y'); ?> <?php bloginfo('name'); ?>.
+            &copy; <?php echo esc_html( wp_date('Y') ); ?> <?php bloginfo('name'); ?>.
         </div>
     </footer>
 

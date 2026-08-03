@@ -3,7 +3,7 @@
  * Module: Notice Board
  * Handles Public/Private Notices with modern AJAX Support.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -166,7 +166,7 @@ class SHUBX51_Notice_Board {
     private function broadcast_notice($notice) {
         $residents = $this->db->get('residents');
         $audience = $notice['audience'];
-        $dispatcher = Society_HubX::get_instance()->notifications;
+        $dispatcher = SHUBX51_Plugin::get_instance()->notifications;
 
         if (!$dispatcher) return;
 

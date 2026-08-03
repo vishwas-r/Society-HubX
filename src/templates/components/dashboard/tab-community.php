@@ -66,7 +66,13 @@ $directory = $data['directory'] ?? [];
                                          <!-- Resident Display Picture -->
                                          <?php 
                                             // Handle potential empty owner_photo and fallback to initials
-                                            $dp_url = !empty($d['owner_photo']) ? $d['owner_photo'] : 'https://ui-avatars.com/api/?name=' . urlencode($d['owner']) . '&background=random&color=fff';
+                                            if ( !empty($d['owner_photo']) ) {
+                                                $dp_url = $d['owner_photo'];
+                                            } else {
+                                                $initial = strtoupper(substr($d['owner'] ?? 'U', 0, 1));
+                                                $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' . esc_html($initial) . '</text></svg>';
+                                                $dp_url = 'data:image/svg+xml;base64,' . base64_encode($svg);
+                                            }
                                          ?>
                                          <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
                                          
@@ -109,7 +115,7 @@ $directory = $data['directory'] ?? [];
                                                         $v_list = array_map(function($v){ return $v['number'] . ' (' . ($v['brand'] ?: 'Vehicle') . ')'; }, $d['vehicles']);
                                                         echo esc_attr(implode(', ', $v_list));
                                                     ?>">
-                                                 <i class="bi bi-car-front" style="font-size:12px;"></i> <?php echo count($d['vehicles']); ?>
+                                                 <i class="bi bi-car-front" style="font-size:12px;"></i> <?php echo esc_html( count($d['vehicles']) ); ?>
                                               </span>
                                          <?php endif; ?>
                                          <?php if(!empty($d['help'])): ?>
@@ -123,7 +129,7 @@ $directory = $data['directory'] ?? [];
                                                         }
                                                         echo implode(', ', $staff_details);
                                                     ?>">
-                                                 <i class="bi bi-person-badge" style="font-size:12px;"></i> <?php echo count($d['help']); ?>
+                                                 <i class="bi bi-person-badge" style="font-size:12px;"></i> <?php echo esc_html( count($d['help']) ); ?>
                                               </span>
                                          <?php endif; ?>
                                       </div>

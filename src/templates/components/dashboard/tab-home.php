@@ -53,7 +53,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <div class="small text-secondary d-flex align-items-center gap-1 mt-1" style="font-size: 0.75rem;">
                                                 <span class="fw-medium text-dark"><?php echo esc_html($fam['relation']); ?></span>
                                                 <?php if(!empty($fam['dob'])): ?>
-                                                    <span class="text-muted">• <?php echo wp_date('M d, Y', strtotime($fam['dob'])); ?></span>
+                                                    <span class="text-muted">• <?php echo esc_html( wp_date('M d, Y', strtotime($fam['dob'])) ); ?></span>
                                                 <?php endif; ?>
                                                 
                                                 <?php if(isset($fam['status']) && $fam['status'] === 'pending'): ?>
@@ -111,7 +111,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <li>
                                                 <a class="dropdown-item small d-flex align-items-center gap-2 text-danger js-delete-family-frontend" href="#" 
                                                    data-id="<?php echo esc_attr($fam['id']); ?>" 
-                                                   data-nonce="<?php echo wp_create_nonce('shubx51_delete_family_nonce'); ?>">
+                                                   data-nonce="<?php echo esc_html( wp_create_nonce('shubx51_delete_family_nonce') ); ?>">
                                                     <i class="bi bi-trash3"></i> Remove
                                                 </a>
                                             </li>
@@ -185,10 +185,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                     data-request-type="<?php echo esc_attr($help['request_type'] ?? ''); ?>"
                                                 ><i class="bi bi-pencil-square text-primary me-2"></i> Edit</button></li>
                                                 <li><hr class="dropdown-divider my-1"></li>
+                                                <li><button class="dropdown-item js-resident-mark-attendance small" data-id="<?php echo esc_attr($help['id']); ?>"><i class="bi bi-clock text-success me-2"></i> Mark Attendance</button></li>
+                                                <li><button class="dropdown-item js-resident-raise-concern small" data-id="<?php echo esc_attr($help['id']); ?>"><i class="bi bi-exclamation-triangle text-warning me-2"></i> Raise Concern</button></li>
+                                                <li><hr class="dropdown-divider my-1"></li>
                                                 <li>
                                                      <button class="dropdown-item text-danger small js-delete-help-frontend" 
                                                         data-id="<?php echo esc_attr($help['id']); ?>"
-                                                        data-nonce="<?php echo wp_create_nonce('shubx51_delete_help_nonce'); ?>">
+                                                        data-nonce="<?php echo esc_html( wp_create_nonce('shubx51_delete_help_nonce') ); ?>">
                                                         <i class="bi bi-trash3 me-2"></i> Remove
                                                      </button>
                                                 </li>
@@ -266,7 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                     <li>
                                                         <button class="dropdown-item text-danger small js-delete-vehicle-frontend" 
                                                                 data-id="<?php echo esc_attr($v['id']); ?>" 
-                                                                data-nonce="<?php echo wp_create_nonce('shubx51_delete_vehicle_frontend_nonce'); ?>">
+                                                                data-nonce="<?php echo esc_html( wp_create_nonce('shubx51_delete_vehicle_frontend_nonce') ); ?>">
                                                             <i class="bi bi-trash3 me-2"></i> Remove
                                                         </button>
                                                     </li>

@@ -3,7 +3,7 @@
  * Module: Flat Manager
  * Handles Flats/Units Master Data (Block, Number, Parking).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

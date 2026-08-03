@@ -50,7 +50,7 @@ $society_name = get_option('shubx51_society_name', '');
                     </ul>
                 </div>
                 <div class="small text-white-50">
-                    &copy; <?php echo wp_date('Y'); ?> Society HubX
+                    &copy; <?php echo esc_html( wp_date('Y') ); ?> Society HubX
                 </div>
             </div>
 
@@ -174,7 +174,7 @@ $society_name = get_option('shubx51_society_name', '');
 
                     <div class="mt-5 d-flex justify-content-between align-items-center pt-4 border-top border-light">
                         <?php if($step > 1 && $step < 4): ?>
-                            <a href="?page=shubx51-setup&step=<?php echo $step - 1; ?>" class="btn btn-link text-secondary text-decoration-none fw-semibold">
+                            <a href="?page=shubx51-setup&step=<?php echo esc_html( $step - 1 ); ?>" class="btn btn-link text-secondary text-decoration-none fw-semibold">
                                 <i class="bi bi-arrow-left me-2"></i> Back
                             </a>
                         <?php else: ?>

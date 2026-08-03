@@ -38,7 +38,7 @@ class SHUBX51_Email_Provider implements SHUBX51_Notification_Provider_Interface 
     }
 
     public function is_ready() {
-        $channels = Society_HubX::get_instance()->db->get('notification_channels');
+        $channels = SHUBX51_Plugin::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'email') return (bool) $c['is_active'];
         }

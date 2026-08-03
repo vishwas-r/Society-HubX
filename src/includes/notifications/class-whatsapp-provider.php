@@ -21,7 +21,7 @@ class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interfa
             return new WP_Error('budget_exceeded', 'WhatsApp monthly budget reached');
         }
 
-        $resident = Society_HubX::get_instance()->db->get_resident_by_wp_id($user_id);
+        $resident = SHUBX51_Plugin::get_instance()->db->get_resident_by_wp_id($user_id);
         if (!$resident || empty($resident['phone'])) {
             return new WP_Error('invalid_phone', 'Resident phone number not found');
         }
@@ -54,7 +54,7 @@ class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interfa
     }
 
     private function get_config() {
-        $channels = Society_HubX::get_instance()->db->get('notification_channels');
+        $channels = SHUBX51_Plugin::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'whatsapp') {
                 $settings = json_decode($c['config'], true) ?: [];

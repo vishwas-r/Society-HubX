@@ -3,7 +3,7 @@
  * Class: AJAX Handler
  * Handles AJAX endpoints for module configuration and other dynamic requests.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -190,7 +190,7 @@ class SHUBX51_AJAX_Handler {
 		$is_admin = current_user_can( 'manage_options' );
 
 		// Get invoice data
-		$plugin = Society_HubX::get_instance();
+		$plugin = SHUBX51_Plugin::get_instance();
 		$invoice = $plugin->db->get_invoice( $invoice_id );
 
 		if ( ! $invoice ) {
@@ -315,7 +315,7 @@ class SHUBX51_AJAX_Handler {
 		}
 
 		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$channels = $db->get('notification_channels');
 
 		foreach($channels as $c) {
@@ -340,7 +340,7 @@ class SHUBX51_AJAX_Handler {
 		$slug = isset( $_POST['channel_slug'] ) ? sanitize_key( wp_unslash( $_POST['channel_slug'] ) ) : '';
 		$config = isset( $_POST['config'] ) ? map_deep( wp_unslash( $_POST['config'] ), 'sanitize_text_field' ) : [];
 		
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$updated = $db->update('notification_channels', ['config' => json_encode($config)], ['channel_slug' => $slug]);
 
 		if(is_wp_error($updated)) wp_send_json_error(['message' => $updated->get_error_message()]);
@@ -361,7 +361,7 @@ class SHUBX51_AJAX_Handler {
 		$slug = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
 		$active = isset( $_POST['active'] ) ? intval( wp_unslash( $_POST['active'] ) ) : 0;
 
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$db->update('notification_channels', ['is_active' => $active], ['channel_slug' => $slug]);
 		wp_send_json_success();
 	}
@@ -381,7 +381,7 @@ class SHUBX51_AJAX_Handler {
 		$channel = isset( $_POST['channel'] ) ? sanitize_key( wp_unslash( $_POST['channel'] ) ) : '';
 		$enabled = isset( $_POST['enabled'] ) ? intval( wp_unslash( $_POST['enabled'] ) ) : 0;
 
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$events = $db->get('notification_events');
 		
 		foreach($events as $e) {
@@ -412,7 +412,7 @@ class SHUBX51_AJAX_Handler {
 		}
 
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$templates = $db->get('notification_templates');
 
 		foreach($templates as $t) {
@@ -438,7 +438,7 @@ class SHUBX51_AJAX_Handler {
 		$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '';
 		$content = isset( $_POST['content'] ) ? sanitize_textarea_field( wp_unslash( $_POST['content'] ) ) : '';
 		
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		
 		// Get current version to increment
 		$current = null;

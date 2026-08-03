@@ -104,7 +104,7 @@ $my_bookings = $data['my_bookings'] ?? [];
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="text-secondary small"><?php echo esc_html($a['category']); ?></td>
-                                                <td class="text-secondary small">₹<?php echo SHUBX_in_fmt($a['value']); ?></td>
+                                                <td class="text-secondary small">₹<?php echo esc_html( SHUBX_in_fmt($a['value']) ); ?></td>
                                                 <td class="pe-4 text-end">
                                                     <span class="badge bg-light text-dark border border-light rounded-pill px-2 border-opacity-10 small fw-normal"><?php echo esc_html($a['status']); ?></span>
                                                 </td>
@@ -145,8 +145,8 @@ $my_bookings = $data['my_bookings'] ?? [];
                                     $type = $is_free ? 'free' : 'paid';
                                     $f_json = htmlspecialchars(wp_json_encode($f), ENT_QUOTES, 'UTF-8');
                                 ?>
-                                    <div class="col-md-6 col-xl-4 facility-item" data-type="<?php echo $type; ?>">
-                                        <div class="card h-100 border border-light shadow-sm rounded-3 overflow-hidden hover-lift transition-all" role="button" onclick="openResidentFacilityModal('<?php echo $f_json; ?>')">
+                                    <div class="col-md-6 col-xl-4 facility-item" data-type="<?php echo esc_html( $type ); ?>">
+                                        <div class="card h-100 border border-light shadow-sm rounded-3 overflow-hidden hover-lift transition-all" role="button" onclick="openResidentFacilityModal('<?php echo esc_html( $f_json ); ?>')">
                                             <!-- Header Image Area -->
                                             <div class="bg-gradient-primary-soft d-flex align-items-center justify-content-center position-relative" style="height: 120px; background-color: #f8f9fa;">
                                                  <i class="bi bi-building fs-1 text-primary opacity-25"></i>
@@ -161,7 +161,7 @@ $my_bookings = $data['my_bookings'] ?? [];
                                                 <h6 class="fw-bold text-dark m-0 mb-1 text-truncate"><?php echo esc_html($f['name']); ?></h6>
                                                 <div class="d-flex align-items-center small text-muted mb-3">
                                                      <?php if(!$is_free): ?>
-                                                        <span class="fw-bold text-primary me-2">₹<?php echo $rate; ?>/<?php echo esc_html($f['rate_unit']??'hr'); ?></span>
+                                                        <span class="fw-bold text-primary me-2">₹<?php echo esc_html( $rate ); ?>/<?php echo esc_html($f['rate_unit']??'hr'); ?></span>
                                                      <?php endif; ?>
                                                      <span class="text-truncate"><i class="bi bi-clock me-1"></i>Max <?php echo esc_html($f['max_hours']); ?>h</span>
                                                 </div>
@@ -218,11 +218,11 @@ $my_bookings = $data['my_bookings'] ?? [];
                                             <tr>
                                                 <td class="ps-4 fw-bold text-dark"><?php echo esc_html($fac_name); ?></td>
                                                 <td class="text-secondary small">
-                                                    <div><?php echo wp_date('D, M j, Y', strtotime($b['start_time'])); ?></div>
-                                                    <div class="text-primary"><?php echo wp_date('h:i A', strtotime($b['start_time'])); ?> - <?php echo wp_date('h:i A', strtotime($b['end_time'])); ?></div>
+                                                    <div><?php echo esc_html( wp_date('D, M j, Y', strtotime($b['start_time'])) ); ?></div>
+                                                    <div class="text-primary"><?php echo esc_html( wp_date('h:i A', strtotime($b['start_time'])) ); ?> - <?php echo esc_html( wp_date('h:i A', strtotime($b['end_time'])) ); ?></div>
                                                 </td>
                                                 <td class="pe-4 text-end">
-                                                    <span class="badge <?php echo $s_class; ?> bg-opacity-10 border border-current border-opacity-10 rounded-pill px-2 small fw-normal"><?php echo esc_html($b['status']); ?></span>
+                                                    <span class="badge <?php echo esc_html( $s_class ); ?> bg-opacity-10 border border-current border-opacity-10 rounded-pill px-2 small fw-normal"><?php echo esc_html($b['status']); ?></span>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>
@@ -267,7 +267,7 @@ $my_bookings = $data['my_bookings'] ?? [];
                                 <input type="hidden" name="action" value="shubx51_book_facility">
                                 <input type="hidden" name="facility_id" id="bookingFacId">
                                 <!-- Secure Nonce for Resident Booking -->
-                                <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('shubx51_facility_nonce'); ?>">
+                                <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('shubx51_facility_nonce') ); ?>">
                                 <input type="hidden" name="resident_id" value="<?php echo esc_attr($data['resident']['flat_no'] ?? ''); ?>">
 
                                 <div class="mb-3">

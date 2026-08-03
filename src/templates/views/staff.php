@@ -134,8 +134,14 @@ $all_flats = $flats;
                 <li class="nav-item">
                     <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="archived" style="background:none;">Archive</button>
                 </li>
+                <li class="nav-item ms-auto">
+                    <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent tab-btn" data-tab="report" style="background:none;"><i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Attendance Report</button>
+                </li>
             </ul>
         </div>
+
+        <!-- STAFF DIRECTORY VIEW -->
+        <div id="staff-directory-view">
         <div id="staffContainer" class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light border-bottom border-light">
@@ -288,7 +294,7 @@ $all_flats = $flats;
                                 <td class="pe-3 pe-md-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2 text-nowrap">
                                         <?php if ($is_request && !empty($s['request_id'])): ?>
-                                            <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
+                                            <?php echo esc_html( SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ) ); ?>
                                         <?php elseif ($status === 'rejected'): ?>
                                             <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>
@@ -297,8 +303,14 @@ $all_flats = $flats;
                                                 <i class="bi bi-archive fs-6"></i>
                                             </button>
                                         <?php elseif ( $status === 'archived' ): ?>
-                                            <button onclick="restoreStaff('<?php echo esc_js($s['id']); ?>')" class="btn btn-sm btn-success px-3 fw-bold shadow-none rounded-3" style="font-size: 10px;">RESTORE</button>
+                                            <button onclick="restoreStaff('<?php echo esc_html( esc_js($s['id']) ); ?>')" class="btn btn-sm btn-success px-3 fw-bold shadow-none rounded-3" style="font-size: 10px;">RESTORE</button>
                                         <?php else: ?>
+                                            <button type="button" class="btn btn-sm btn-light text-success border shadow-sm rounded-3 p-2 js-mark-attendance" data-id="<?php echo esc_attr($s['id']); ?>" title="Mark Attendance">
+                                                <i class="bi bi-clock fs-6"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-light text-warning border shadow-sm rounded-3 p-2 js-raise-concern" data-id="<?php echo esc_attr($s['id']); ?>" title="Raise Concern">
+                                                <i class="bi bi-exclamation-triangle fs-6"></i>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>
                                             </button>
@@ -314,6 +326,43 @@ $all_flats = $flats;
                 </tbody>
             </table>
         </div>
+        </div> <!-- End staff-directory-view -->
+
+        <!-- STAFF REPORT VIEW -->
+        <div id="staff-report-view" class="d-none">
+            <div class="p-4 px-md-5 bg-light border-bottom border-light">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-secondary">Select Month</label>
+                        <input type="month" id="attendance-month" class="form-control shadow-none rounded-3 border-light" value="<?php echo esc_html( date('Y-m') ); ?>">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end mt-4 pt-2">
+                        <button class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm" onclick="fetchAttendanceReport()">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light border-bottom border-light">
+                        <tr>
+                            <th class="ps-3 ps-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Staff Name</th>
+                            <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider">Role/Category</th>
+                            <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-success">Days Present</th>
+                            <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-danger">Days Absent</th>
+                            <th class="px-3 px-md-4 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-warning">Days on Leave</th>
+                            <th class="pe-3 pe-md-5 py-4 text-uppercase small text-secondary fw-bold border-0 tracking-wider text-end">Est. Payable (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-report-body">
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">Select a month and click Generate Report.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- End staff-report-view -->
+
     </div>
 </div>
 
@@ -331,7 +380,7 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
                 <h5 class="fw-bold m-0 text-dark" id="staffModalTitle">Add Staff Member</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="add-staff-form" action="<?php echo admin_url( 'admin-post.php' ); ?>" method="POST" enctype="multipart/form-data">
+            <form id="add-staff-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="shubx51_add_staff">
                 <input type="hidden" name="staff_id" value="">
                 <input type="hidden" name="profile_photo" value="">
@@ -454,6 +503,68 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
                 <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2.5 shadow-none" data-bs-dismiss="modal">No, Keep</button>
                 <button type="button" id="confirm-delete-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2.5 shadow-none">Confirm Delete</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark Attendance Modal -->
+<div class="modal fade" id="attendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0 text-dark">Mark Attendance</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="attendance-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
+                <input type="hidden" name="action" value="shubx51_mark_attendance">
+                <input type="hidden" name="staff_id" id="attendance-staff-id" value="">
+                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Status <span class="text-danger">*</span></label>
+                        <select name="status" class="form-select shadow-none rounded-3 border-light" required>
+                            <option value="present">Present (Check In)</option>
+                            <option value="absent">Absent</option>
+                            <option value="leave">On Leave</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 bg-light px-4 py-3">
+                    <button type="button" class="btn btn-light text-secondary px-4 fw-medium shadow-none rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success px-4 fw-bold shadow-sm rounded-3">Save Attendance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Raise Concern Modal -->
+<div class="modal fade" id="concernModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0 text-dark">Raise Staff Concern</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="concern-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
+                <input type="hidden" name="action" value="shubx51_raise_concern">
+                <input type="hidden" name="staff_id" id="concern-staff-id" value="">
+                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Describe the concern/issue <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control shadow-none rounded-3 border-light" rows="4" required placeholder="Example: Needs new uniform, behaving unprofessionally, asking for advance..."></textarea>
+                    </div>
+                    <div class="alert alert-info py-2 px-3 small border-0 bg-primary bg-opacity-10 text-primary rounded-3 d-flex gap-2">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>This will alert the relevant members automatically.</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 bg-light px-4 py-3">
+                    <button type="button" class="btn btn-light text-secondary px-4 fw-medium shadow-none rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm rounded-3">Submit Concern</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

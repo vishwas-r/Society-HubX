@@ -57,16 +57,16 @@ $r = $data['resident'] ?? [];
                                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size: 8px;">Your Choice</span>
                                                     <?php endif; ?>
                                                 </span>
-                                                <span class="small text-muted"><?php echo $percent; ?>%</span>
+                                                <span class="small text-muted"><?php echo esc_html( $percent ); ?>%</span>
                                             </div>
                                             <div class="progress rounded-pill" style="height: 8px; background-color: #f0f2f5;">
-                                                <div class="progress-bar <?php echo $is_my_choice ? 'bg-primary' : 'bg-secondary'; ?> opacity-75 rounded-pill" role="progressbar" style="width: <?php echo $percent; ?>%" aria-valuenow="<?php echo $percent; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                                <div class="progress-bar <?php echo $is_my_choice ? 'bg-primary' : 'bg-secondary'; ?> opacity-75 rounded-pill" role="progressbar" style="width: <?php echo esc_html( $percent ); ?>%" aria-valuenow="<?php echo esc_html( $percent ); ?>" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-people me-1"></i><?php echo $total_votes; ?> votes total</span>
+                                    <span class="text-muted" style="font-size: 11px;"><i class="bi bi-people me-1"></i><?php echo esc_html( $total_votes ); ?> votes total</span>
                                     <?php if($p['status'] === 'open'): ?>
                                         <button class="btn btn-link btn-sm p-0 text-decoration-none fw-medium js-change-vote" style="font-size: 11px;">Change Vote</button>
                                     <?php endif; ?>
@@ -75,7 +75,7 @@ $r = $data['resident'] ?? [];
 
                             <!-- VOTE FORM -->
                             <div class="js-poll-form <?php echo $has_voted ? 'd-none' : ''; ?>">
-                                <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST" class="js-poll-vote-form" data-poll-id="<?php echo esc_attr($p['id']); ?>">
+                                <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" class="js-poll-vote-form" data-poll-id="<?php echo esc_attr($p['id']); ?>">
                                     <input type="hidden" name="action" value="shubx51_cast_vote">
                                     <input type="hidden" name="poll_id" value="<?php echo esc_attr($p['id']); ?>">
                                     <?php wp_nonce_field('shubx51_vote_nonce'); ?>
@@ -86,8 +86,8 @@ $r = $data['resident'] ?? [];
                                         ?>
                                             <div class="form-check p-0 border rounded border-light hover-bg-light position-relative <?php echo $is_my_choice ? 'border-primary bg-primary-subtle bg-opacity-10' : ''; ?>">
                                                 <div class="d-flex align-items-center p-2">
-                                                    <input class="form-check-input ms-2 me-3 shadow-none" type="radio" name="vote_option" id="<?php echo $opt_id; ?>" value="<?php echo esc_attr($opt); ?>" <?php checked($is_my_choice); ?> required>
-                                                    <label class="form-check-label w-100 stretched-link small fw-medium cursor-pointer" for="<?php echo $opt_id; ?>">
+                                                    <input class="form-check-input ms-2 me-3 shadow-none" type="radio" name="vote_option" id="<?php echo esc_html( $opt_id ); ?>" value="<?php echo esc_attr($opt); ?>" <?php checked($is_my_choice); ?> required>
+                                                    <label class="form-check-label w-100 stretched-link small fw-medium cursor-pointer" for="<?php echo esc_html( $opt_id ); ?>">
                                                         <?php echo esc_html($opt); ?>
                                                     </label>
                                                 </div>

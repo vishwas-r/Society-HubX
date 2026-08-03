@@ -23,7 +23,7 @@ $r = $data['resident'] ?? [];
                 <?php if ( ! empty( $data['my_flats'] ) && count( $data['my_flats'] ) > 1 ) : ?>
                     <div class="dropdown d-inline-block">
                         <button class="btn btn-sm btn-outline-primary dropdown-toggle px-2.5 py-1 rounded fw-bold text-uppercase tracking-wide shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
-                            Flat <?php echo esc_html( Society_HubX::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? '' ) ); ?>
+                            Flat <?php echo esc_html( SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? '' ) ); ?>
                         </button>
                         <ul class="dropdown-menu border-0 shadow-lg rounded-3 mt-1" style="font-size: 0.85rem;">
                             <li><h6 class="dropdown-header text-uppercase small text-muted">Switch Flat</h6></li>
@@ -47,7 +47,7 @@ $r = $data['resident'] ?? [];
                         </ul>
                     </div>
                 <?php else: ?>
-                    <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( Society_HubX::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? $r['flat_no'] ?? '' ) ); ?></span>
+                    <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? $r['flat_no'] ?? '' ) ); ?></span>
                 <?php endif; ?>
                 <span class="text-muted">•</span>
                 <span><?php echo esc_html( ucfirst( $r['type'] ?? 'Resident' ) ); ?></span>

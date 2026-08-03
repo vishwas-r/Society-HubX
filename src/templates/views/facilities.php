@@ -158,7 +158,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                             $payload = esc_attr(wp_json_encode(array_merge($f, ['rate' => $rate, 'rate_unit' => $rate_unit])));
                             $search_text = esc_attr(strtolower(($f['name'] ?? '') . ' ' . ($f['rate'] ?? '') . ' ' . ($f['max_hours'] ?? '')));
                         ?>
-                            <div class="list-group-item px-4 py-4 border-light d-flex justify-content-between align-items-center group" data-search="<?php echo $search_text; ?>">
+                            <div class="list-group-item px-4 py-4 border-light d-flex justify-content-between align-items-center group" data-search="<?php echo esc_html( $search_text ); ?>">
                                 <div class="overflow-hidden">
                                     <div class="fw-bold text-dark d-flex align-items-center gap-2">
                                         <div class="bg-primary bg-opacity-10 text-primary p-1.5 rounded-3" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
@@ -175,7 +175,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                     </div>
                                 </div>
                                  <div class="d-flex gap-2">
-                                    <button data-facility='<?php echo $payload; ?>' type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-facility rounded-3 shadow-none">
+                                    <button data-facility='<?php echo esc_html( $payload ); ?>' type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-facility rounded-3 shadow-none">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-light border border-light p-2 text-danger js-delete-facility rounded-3 shadow-none" data-id="<?php echo esc_attr($f['id']); ?>">
@@ -208,7 +208,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                         <!-- Action Group -->
                         <div class="d-flex gap-2">
                              <div class="bg-primary bg-opacity-10 px-3 py-2 rounded-3 border border-primary border-opacity-10 d-flex align-items-center">
-                                <span class="small fw-bold text-primary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Total Bookings: <?php echo count($bookings); ?></span>
+                                <span class="small fw-bold text-primary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Total Bookings: <?php echo esc_html( count($bookings) ); ?></span>
                             </div>
                         </div>
                     </div>
@@ -239,7 +239,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                     foreach($facilities as $f) { if($f['id'] == $b['facility_id']) $fac_name = $f['name']; }
                                     $search_text = esc_attr(strtolower($fac_name . ' ' . ($b['resident_id']??'')));
                                 ?>
-                                    <tr class="booking-row border-bottom border-light" data-search="<?php echo $search_text; ?>">
+                                    <tr class="booking-row border-bottom border-light" data-search="<?php echo esc_html( $search_text ); ?>">
                                         <td class="ps-5 py-4">
                                             <div class="fw-bold text-dark"><?php echo esc_html( $fac_name ); ?></div>
                                             <div class="small text-muted d-flex align-items-center gap-1" style="font-size: 10px;">
@@ -251,8 +251,8 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                             <div class="text-secondary small" style="font-size: 11px;">Identity Verified</div>
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="text-dark small fw-bold"><?php echo wp_date( 'D, d M, Y', strtotime( $b['start_time'] ) ); ?></div>
-                                            <div class="text-primary fw-medium" style="font-size: 11px;"><?php echo wp_date( 'H:i', strtotime( $b['start_time'] ) ); ?> to <?php echo wp_date( 'H:i', strtotime( $b['end_time'] ) ); ?></div>
+                                            <div class="text-dark small fw-bold"><?php echo esc_html( wp_date( 'D, d M, Y', strtotime( $b['start_time'] ) ) ); ?></div>
+                                            <div class="text-primary fw-medium" style="font-size: 11px;"><?php echo esc_html( wp_date( 'H:i', strtotime( $b['start_time'] ) ) ); ?> to <?php echo esc_html( wp_date( 'H:i', strtotime( $b['end_time'] ) ) ); ?></div>
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex align-items-center justify-content-end gap-2">
@@ -263,7 +263,7 @@ $error_msg = isset($_GET['error']) ? sanitize_text_field(urldecode($_GET['error'
                                                     if ( $status_raw === 'rejected' ) $status_class = 'bg-danger text-danger';
                                                     if ( $status_raw === 'cancelled' ) $status_class = 'bg-secondary text-secondary';
                                                 ?>
-                                                <span class="badge <?php echo $status_class; ?> bg-opacity-10 border border-current border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px; --bs-border-color: currentColor;">
+                                                <span class="badge <?php echo esc_html( $status_class ); ?> bg-opacity-10 border border-current border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px; --bs-border-color: currentColor;">
                                                     <?php echo esc_html( $b['status'] ); ?>
                                                 </span>
                                                 <button data-booking='<?php echo esc_attr(wp_json_encode($b)); ?>' type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-booking rounded-3 shadow-none">
@@ -298,7 +298,7 @@ add_action('shubx51_admin_modals', function() use ($facilities, $residents) {
                 <h5 class="fw-bold m-0 text-dark">Facility Booking</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="booking-form">
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="booking-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="shubx51_book_facility">
                     <input type="hidden" name="booking_id" value="">

@@ -3,7 +3,7 @@
  * Module: Expense Manager
  * Handles Expenses and Receipts.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

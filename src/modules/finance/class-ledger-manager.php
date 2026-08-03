@@ -3,7 +3,7 @@
  * Module: Ledger Manager
  * Aggregates Financial Data (Invoices & Expenses) for Audit.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

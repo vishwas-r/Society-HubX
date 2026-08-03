@@ -273,10 +273,10 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                 <div class="mb-3 last-child-mb-0">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="small fw-bold text-secondary">Generating <?php echo esc_html( ucfirst( $job['type'] ) ); ?> Invoices for <?php echo esc_html( wp_date( 'F Y', strtotime( $job['month'] ) ) ); ?></span>
-                        <span class="badge bg-info text-white fw-bold" style="font-size: 10px;"><?php echo $pct; ?>%</span>
+                        <span class="badge bg-info text-white fw-bold" style="font-size: 10px;"><?php echo esc_html( $pct ); ?>%</span>
                     </div>
                     <div class="progress" style="height: 10px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: <?php echo $pct; ?>%"></div>
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: <?php echo esc_html( $pct ); ?>%"></div>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -291,12 +291,12 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Revenue (Inflow)</p>
                     <i class="bi bi-graph-up-arrow text-success fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SHUBX_in_fmt($total_credit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( SHUBX_in_fmt($total_credit, 0) ); ?></h3>
                 <div class="progress mt-3" style="height: 4px;">
-                    <div class="progress-bar bg-success" style="width: <?php echo $collection_pct; ?>%"></div>
+                    <div class="progress-bar bg-success" style="width: <?php echo esc_html( $collection_pct ); ?>%"></div>
                 </div>
                 <div class="small text-muted mt-2" style="font-size: 10px;">
-                    COLLECTED: ₹<?php echo SHUBX_in_fmt($total_collected); ?> / DEMAND: ₹<?php echo SHUBX_in_fmt($total_demand); ?> (<?php echo $collection_pct; ?>%)
+                    COLLECTED: ₹<?php echo esc_html( SHUBX_in_fmt($total_collected) ); ?> / DEMAND: ₹<?php echo esc_html( SHUBX_in_fmt($total_demand) ); ?> (<?php echo esc_html( $collection_pct ); ?>%)
                 </div>
             </div>
         </div>
@@ -306,7 +306,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Expenses (Outflow)</p>
                     <i class="bi bi-graph-down-arrow text-danger fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo SHUBX_in_fmt($total_debit, 0); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( SHUBX_in_fmt($total_debit, 0) ); ?></h3>
                 <div class="small text-danger fw-bold mt-2" style="font-size: 10px;">TOTAL APPROVED COSTS</div>
             </div>
         </div>
@@ -317,7 +317,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <i class="bi bi-calculator fs-5"></i>
                 </div>
                 <!-- Yearly Balance -->
-                <h3 class="h2 fw-bold m-0">₹<?php echo SHUBX_in_fmt($net_balance, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( SHUBX_in_fmt($net_balance, 0) ); ?></h3>
                 <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">YEAR END POSITION</div>
                 
                 <!-- Overall Live Balance (Added) -->
@@ -341,14 +341,14 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-uppercase tracking-wider m-0">Physical Funds</p>
                     <i class="bi bi-safe2 fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold m-0">₹<?php echo SHUBX_in_fmt($actual_total, 0); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( SHUBX_in_fmt($actual_total, 0) ); ?></h3>
                 <div class="d-flex gap-2 mt-2">
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo SHUBX_in_fmt($actual_bank); ?></span>
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo SHUBX_in_fmt($actual_cash); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo esc_html( SHUBX_in_fmt($actual_bank) ); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo esc_html( SHUBX_in_fmt($actual_cash) ); ?></span>
                 </div>
                 <?php if(abs($variance) > 1): ?>
                     <div class="mt-2 small fw-bold text-white" style="font-size: 10px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo SHUBX_in_fmt($variance); ?>
+                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo esc_html( SHUBX_in_fmt($variance) ); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -477,7 +477,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                     ?>
                                     <tr class="border-bottom border-light invoice-row" data-search="<?php echo esc_attr($search_text); ?>">
                                         <td class="ps-5 py-4">
-                                            <div class="font-monospace fw-bold text-primary" style="font-size: 11px;">#INV-<?php echo substr($inv['id'], -6); ?></div>
+                                            <div class="font-monospace fw-bold text-primary" style="font-size: 11px;">#INV-<?php echo esc_html( substr($inv['id'], -6) ); ?></div>
                                             <div class="small text-muted font-monospace" style="font-size: 10px;"><?php echo esc_html($inv['date'] ?? $inv['created_at']); ?></div>
                                         </td>
                                         <td class="px-4 py-4">
@@ -489,9 +489,9 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                             <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
-                                            <div class="fw-bold text-dark">₹<?php echo SHUBX_in_fmt($inv['amount']); ?></div>
+                                            <div class="fw-bold text-dark">₹<?php echo esc_html( SHUBX_in_fmt($inv['amount']) ); ?></div>
                                             <?php if($paid > 0 && $paid < $inv['amount']): ?>
-                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo SHUBX_in_fmt($paid); ?></div>
+                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo esc_html( SHUBX_in_fmt($paid) ); ?></div>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -627,8 +627,8 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex flex-column align-items-end">
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo SHUBX_in_fmt($ln['bank_balance']); ?></span></span>
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo SHUBX_in_fmt($ln['cash_balance']); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo esc_html( SHUBX_in_fmt($ln['bank_balance']) ); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo esc_html( SHUBX_in_fmt($ln['cash_balance']) ); ?></span></span>
                                             </div>
                                         </td>
                                     </tr>
@@ -655,32 +655,32 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                 <h5 class="fw-bold m-0 text-dark">Reconcile Funds</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="shubx51_reconcile_balance">
-                    <input type="hidden" name="year" value="<?php echo $selected_year; ?>">
+                    <input type="hidden" name="year" value="<?php echo esc_html( $selected_year ); ?>">
                     <?php wp_nonce_field('shubx51_reconcile_nonce'); ?>
                     
                     <h6 class="fw-bold text-primary small text-uppercase mb-3">Actual Physical Funds (Now)</h6>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Bank Balance (₹)</label>
-                        <input type="number" step="0.01" name="actual_bank" value="<?php echo $actual_bank; ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="number" step="0.01" name="actual_bank" value="<?php echo esc_html( $actual_bank ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-secondary">Cash Balance (₹)</label>
-                        <input type="number" step="0.01" name="actual_cash" value="<?php echo $actual_cash; ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="number" step="0.01" name="actual_cash" value="<?php echo esc_html( $actual_cash ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
 
                     <h6 class="fw-bold text-primary small text-uppercase mb-3">Opening Balances (Jan 1st)</h6>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Opening Bank (₹)</label>
-                        <input type="number" step="0.01" name="opening_bank" value="<?php echo $opening_bank; ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="number" step="0.01" name="opening_bank" value="<?php echo esc_html( $opening_bank ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
 
                     <div class="mb-0">
                         <label class="form-label small fw-bold text-secondary">Opening Cash (₹)</label>
-                        <input type="number" step="0.01" name="opening_cash" value="<?php echo $opening_cash; ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="number" step="0.01" name="opening_cash" value="<?php echo esc_html( $opening_cash ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">
@@ -708,12 +708,12 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
-                        <input type="month" name="month" value="<?php echo wp_date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="month" name="month" value="<?php echo esc_html( wp_date('Y-m') ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Description</label>
-                        <input type="text" name="description" value="Monthly Maintenance - <?php echo wp_date('F Y'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="text" name="description" value="Monthly Maintenance - <?php echo esc_html( wp_date('F Y') ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="row g-3 mb-3">
@@ -723,7 +723,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
-                            <input type="date" name="due_date" value="<?php echo wp_date('Y-m-d', strtotime('+10 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="due_date" value="<?php echo esc_html( wp_date('Y-m-d', strtotime('+10 days')) ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                     </div>
                     
@@ -761,7 +761,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
 
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
-                        <input type="month" name="month" value="<?php echo wp_date('Y-m'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <input type="month" name="month" value="<?php echo esc_html( wp_date('Y-m') ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
                     
                     <div class="row g-3">
@@ -771,7 +771,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
-                            <input type="date" name="due_date" value="<?php echo wp_date('Y-m-d', strtotime('+7 days')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="due_date" value="<?php echo esc_html( wp_date('Y-m-d', strtotime('+7 days')) ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                     </div>
                 </div>
@@ -862,7 +862,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                     <div class="row g-3 mb-3">
                          <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Date</label>
-                            <input type="date" name="date" value="<?php echo wp_date('Y-m-d'); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="date" name="date" value="<?php echo esc_html( wp_date('Y-m-d') ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Method</label>

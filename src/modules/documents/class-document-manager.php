@@ -3,7 +3,7 @@
  * Module: Document Manager
  * Handles the "Document Vault".
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -268,13 +268,13 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		$this->db->update( 'documents', array( 'status' => $status ), array( 'id' => $doc_id ) );
 
         // Manual Notification Trigger (Backup for direct admin actions)
-        if ( class_exists('Society_HubX') ) {
+        if ( class_exists('SHUBX51_Plugin') ) {
             $docs = $this->db->get('documents');
             $doc = null;
             foreach($docs as $d) { if($d['id'] === $doc_id) { $doc = $d; break; } }
             
             if ( $doc && !empty($doc['uploaded_by']) && in_array($status, ['approved', 'rejected']) ) {
-                $shubx = Society_HubX::get_instance();
+                $shubx = SHUBX51_Plugin::get_instance();
                 $event = ($status === 'approved') ? 'request_approved' : 'request_rejected';
                 
                 $admin_user = wp_get_current_user();

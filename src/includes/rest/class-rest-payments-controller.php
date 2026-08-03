@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * REST API Controller for Payments (State Hash & Webhooks)
  */

@@ -138,7 +138,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                     foreach ( $unique_flats as $flat_no => $res ) : 
                         $is_active = $selected_flat === $flat_no;
                     ?>
-                         <a href="?page=shubx51-documents&flat=<?php echo urlencode( $flat_no ); ?>" 
+                         <a href="?page=shubx51-documents&flat=<?php echo esc_url( urlencode( $flat_no ) ); ?>" 
                             class="resident-item d-block px-4 py-3 border-bottom border-light text-decoration-none transition-all <?php echo $is_active ? 'bg-primary bg-opacity-10 border-start border-4 border-primary' : 'text-dark hover-bg-light'; ?>">
                              <div class="d-flex justify-content-between align-items-center">
                                  <span class="fw-bold small resident-flat <?php echo $is_active ? 'text-primary' : 'text-dark'; ?>"><?php echo esc_html( $flat_no ); ?></span>
@@ -160,7 +160,7 @@ if ( isset( $_GET['error'] ) ) $error_msg = sanitize_text_field( urldecode( $_GE
                             </div>
                             <div>
                                 <h5 class="fw-bold text-dark m-0">Unit Folder: <?php echo esc_html( $selected_flat ); ?></h5>
-                                <p class="small text-secondary m-0"><?php echo count($files); ?> items stored on cloud</p>
+                                <p class="small text-secondary m-0"><?php echo esc_html( count($files) ); ?> items stored on cloud</p>
                             </div>
                         </div>
                     </div>

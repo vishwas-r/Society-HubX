@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 /**
  * Class: REST Staff Controller
  * Endpoints for managing society staff and daily help.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,7 +26,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items( $request ) {
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$staff = $db->get( 'daily_help' );
 
 		if ( empty( $staff ) ) {
@@ -34,7 +34,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 		}
 
 		// Apply DPDP masking
-		$privileged = Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
+		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
 		
 		foreach ( $staff as &$s ) {
 			if ( ! $privileged ) {
@@ -46,7 +46,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		if ( ! Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_view' ) ) {
+		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_view' ) ) {
 			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view staff.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;

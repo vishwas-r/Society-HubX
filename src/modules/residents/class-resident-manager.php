@@ -3,7 +3,7 @@
  * Module: Resident Manager
  * Handles the "Residents" table and WP User Sync.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -134,7 +134,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         }
 	
     // IF ADMIN: Immediate
-   $rbac = Society_HubX::get_instance()->rbac;
+   $rbac = SHUBX51_Plugin::get_instance()->rbac;
    $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
    if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
        $post_data['status'] = 'approved';
@@ -219,7 +219,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
     }
     
     // IF ADMIN OR RESIDENT EDITING OWN BASIC PROFILE: Immediate
-    $rbac = Society_HubX::get_instance()->rbac;
+    $rbac = SHUBX51_Plugin::get_instance()->rbac;
     $is_admin = $rbac->has_capability( get_current_user_id(), 'residents_manage' );
     
     // Check if it's a self-profile edit (basic details only)
@@ -413,7 +413,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 		// FIX: Ensure WP User Linkage
         $current_user_id = get_current_user_id();
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         $is_admin = $rbac && $rbac->has_capability( $current_user_id, 'residents_manage' );
         $wp_user_id = ! empty( $existing_resident['wp_user_id'] ) ? intval( $existing_resident['wp_user_id'] ) : 0;
 
@@ -493,7 +493,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
         
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
             $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
         } else {
@@ -522,7 +522,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             if ( ! check_admin_referer( 'shubx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die('Unauthorized');
 
         $resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -554,7 +554,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Restore Resident from Archive.
 	 */
 	public function handle_restore_resident() {
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
@@ -655,7 +655,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Permanently Delete from History Archive.
 	 */
 	public function handle_delete_history() {
-    $rbac = Society_HubX::get_instance()->rbac;
+    $rbac = SHUBX51_Plugin::get_instance()->rbac;
     if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
     if ( wp_doing_ajax() ) {
@@ -685,7 +685,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( ! check_admin_referer( 'shubx51_bulk_import_nonce' ) ) {
@@ -811,7 +811,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		}
 
 		// 1. Create WP User (if email provided, status is approved, and current user can manage residents).
-		$rbac = Society_HubX::get_instance()->rbac;
+		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		$is_admin = $rbac && $rbac->has_capability( get_current_user_id(), 'residents_manage' );
 		if ( $data['email'] && $data['status'] === 'approved' && $is_admin ) {
 			$user = get_user_by( 'email', $data['email'] );
@@ -841,7 +841,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	}
 
 	public function render_page() {
-        $rbac = Society_HubX::get_instance()->rbac;
+        $rbac = SHUBX51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
             wp_die( 'You do not have permission to view the Residents Directory.' );
         }
@@ -863,7 +863,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Sync Society Roles to WordPress User Roles.
 	 */
 	public function sync_wp_user_roles( $user_id, $resident_id ) {
-		$rbac = Society_HubX::get_instance()->rbac;
+		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		$society_roles = $this->db->get_mysql( 'resident_role_map', array( 'where' => array( 'resident_id' => $resident_id ) ) );
 		
 		$wp_user = new WP_User( $user_id );

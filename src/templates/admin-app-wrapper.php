@@ -39,7 +39,7 @@ foreach ( $requests as $req ) {
 }
 
 // RBAC Integration
-$shubx = Society_HubX::get_instance();
+$shubx = SHUBX51_Plugin::get_instance();
 $user_id = get_current_user_id();
 
 // Navigation Menu Config
@@ -109,7 +109,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                         <a href="<?php echo esc_url($nav[1]); ?>" 
                            class="nav-link d-flex align-items-center gap-3 mb-2 py-2.5 px-3 transition-all <?php echo $current_view === $key ? 'active shadow-sm' : 'text-slate-500 hover-bg-slate-50'; ?>"
                            <?php echo $current_view === $key ? 'aria-current="page"' : ''; ?>>
-                            <i class="bi <?php echo $nav[2]; ?> <?php echo $current_view === $key ? 'text-custom-primary' : 'text-slate-400'; ?>" style="font-size: 1.25rem;"></i>
+                            <i class="bi <?php echo esc_html( $nav[2] ); ?> <?php echo $current_view === $key ? 'text-custom-primary' : 'text-slate-400'; ?>" style="font-size: 1.25rem;"></i>
                             <span class="small fw-semibold text-nowrap"><?php echo esc_html($nav[0]); ?></span>
                         </a>
                     </li>
@@ -118,7 +118,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
         </div>
         <hr class="mt-4 mb-4 opacity-5">
         <div class="mb-2 px-1">
-            <a href="<?php echo admin_url(); ?>" class="d-flex align-items-center text-slate-400 text-decoration-none hover-indigo transition-all small fw-bold px-3">
+            <a href="<?php echo esc_url( admin_url() ); ?>" class="d-flex align-items-center text-slate-400 text-decoration-none hover-indigo transition-all small fw-bold px-3">
                 <i class="bi bi-arrow-left-short fs-4 me-1"></i>
                 <span class="shubx-sidebar-footer-text">Exit to WordPress</span>
             </a>
@@ -140,7 +140,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                     <a href="<?php echo admin_url('admin.php?page=shubx51-requests'); ?>" class="position-relative text-decoration-none bg-warning bg-opacity-10 p-2 rounded-circle border border-warning border-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Pending Requests">
                         <i class="bi bi-patch-exclamation-fill text-warning"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 10px; padding: 0.35em 0.5em;">
-                            <?php echo $pending_count; ?>
+                            <?php echo esc_html( $pending_count ); ?>
                         </span>
                     </a>
                 <?php else: ?>
@@ -156,19 +156,19 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                             <div class="small text-secondary" style="font-size: 10px;">Administrator</div>
                         </div>
                         <div class="shubx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
-                            <?php echo get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ); ?>
+                            <?php echo esc_html( get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ) ); ?>
                         </div>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 py-2 px-2" style="min-width: 180px;">
                         <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2" href="<?php echo admin_url('profile.php'); ?>">
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2" href="<?php echo esc_url( admin_url('profile.php') ); ?>">
                                 <i class="bi bi-person-circle text-primary"></i>
                                 <span class="small fw-bold text-dark">Edit Profile</span>
                             </a>
                         </li>
                         <li><hr class="dropdown-divider opacity-5 my-1"></li>
                         <li>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2 text-danger" href="<?php echo wp_logout_url( admin_url() ); ?>">
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2 rounded-2 text-danger" href="<?php echo esc_url( wp_logout_url( admin_url() ) ); ?>">
                                 <i class="bi bi-box-arrow-right"></i>
                                 <span class="small fw-bold">Logout</span>
                             </a>

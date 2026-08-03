@@ -1,4 +1,4 @@
-﻿(function ($) {
+(function ($) {
     'use strict';
 
     // State
@@ -350,6 +350,25 @@
                 handleEditFamily(editFamilyBtn);
             }
 
+            // Resident Staff Actions
+            const resAttBtn = e.target.closest('.js-resident-mark-attendance');
+            if (resAttBtn) {
+                e.preventDefault();
+                let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('residentAttendanceModal'));
+                document.getElementById('res-attendance-staff-id').value = resAttBtn.dataset.id;
+                document.getElementById('resident-attendance-form').reset();
+                modal.show();
+            }
+
+            const resConBtn = e.target.closest('.js-resident-raise-concern');
+            if (resConBtn) {
+                e.preventDefault();
+                let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('residentConcernModal'));
+                document.getElementById('res-concern-staff-id').value = resConBtn.dataset.id;
+                document.getElementById('resident-concern-form').reset();
+                modal.show();
+            }
+
             // Delete Family
             // (Assumed handled by other listeners? Or I should add it if missing. 
             // Previous code had specific onclicks or jquery? No, I see no specific listener for delete in the snippet I viewed. 
@@ -532,6 +551,37 @@
                     data: formData,
                     loadingButton: $(vehicleForm).find('button[type="submit"]'),
                     successMessage: 'Vehicle request submitted!',
+                    reload: true
+                });
+            });
+        }
+
+        // 3.1 Resident Staff Actions Form Submit
+        const resAttForm = document.getElementById('resident-attendance-form');
+        if (resAttForm) {
+            resAttForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(resAttForm);
+                SHUBX.ajax({
+                    action: formData.get('action'),
+                    data: formData,
+                    loadingButton: $(resAttForm).find('button[type="submit"]'),
+                    successMessage: 'Attendance saved successfully',
+                    reload: true
+                });
+            });
+        }
+
+        const resConForm = document.getElementById('resident-concern-form');
+        if (resConForm) {
+            resConForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(resConForm);
+                SHUBX.ajax({
+                    action: formData.get('action'),
+                    data: formData,
+                    loadingButton: $(resConForm).find('button[type="submit"]'),
+                    successMessage: 'Concern submitted successfully',
                     reload: true
                 });
             });
@@ -970,7 +1020,12 @@
                         ownerPhotoEl.src = data.owner_photo;
                         ownerPhotoEl.style.display = 'block';
                     } else if (data.owner && data.owner !== 'Unoccupied') {
-                        ownerPhotoEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.owner) + '&background=random&color=fff';
+                        const getFallbackSvg = (name) => {
+                            const initial = name ? name.charAt(0).toUpperCase() : 'U';
+                            const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' + initial + '</text></svg>';
+                            return 'data:image/svg+xml;base64,' + btoa(svg);
+                        };
+                        ownerPhotoEl.src = getFallbackSvg(data.owner);
                         ownerPhotoEl.style.display = 'block';
                     } else {
                         ownerPhotoEl.style.display = 'none';
@@ -990,7 +1045,12 @@
                             const item = document.createElement('div');
                             item.className = 'd-flex align-items-center gap-3 border-bottom border-light pb-2';
                             
-                            const photoSrc = (m.photo && m.photo !== '') ? m.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(m.name) + '&background=random&color=fff';
+                            const getFallbackSvg = (name) => {
+                                const initial = name ? name.charAt(0).toUpperCase() : 'U';
+                                const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' + initial + '</text></svg>';
+                                return 'data:image/svg+xml;base64,' + btoa(svg);
+                            };
+                            const photoSrc = (m.photo && m.photo !== '') ? m.photo : getFallbackSvg(m.name);
                             
                             item.innerHTML = `
                                 <img src="${photoSrc}" class="rounded-circle border border-white shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">
@@ -1037,7 +1097,12 @@
                             const item = document.createElement('div');
                             item.className = 'd-flex align-items-center gap-3 bg-light rounded-2 p-2 border border-secondary border-opacity-10';
                             
-                            const photoSrc = (h.photo && h.photo !== '') ? h.photo : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(h.name) + '&background=E9ECEF&color=6C757D';
+                            const getFallbackSvg = (name) => {
+                                const initial = name ? name.charAt(0).toUpperCase() : 'U';
+                                const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#e9ecef"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#6c757d" text-anchor="middle">' + initial + '</text></svg>';
+                                return 'data:image/svg+xml;base64,' + btoa(svg);
+                            };
+                            const photoSrc = (h.photo && h.photo !== '') ? h.photo : getFallbackSvg(h.name);
 
                             item.innerHTML = `
                                 <img src="${photoSrc}" class="rounded-circle shadow-sm" style="width: 64px; height: 64px; object-fit: cover;">

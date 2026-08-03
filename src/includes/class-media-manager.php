@@ -3,7 +3,7 @@
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

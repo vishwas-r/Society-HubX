@@ -3,7 +3,7 @@
  * Class: Admin Requests
  * Handles the "Requests" admin page and generalized approval logic.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

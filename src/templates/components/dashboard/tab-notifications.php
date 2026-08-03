@@ -20,7 +20,7 @@ $notifications = $data['notifications'] ?? [];
             <i class="bi bi-bell me-2"></i>Notifications
         </h4>
         <?php if(!empty($notifications)): ?>
-            <span class="badge bg-primary rounded-pill"><?php echo count($notifications); ?></span>
+            <span class="badge bg-primary rounded-pill"><?php echo esc_html( count($notifications) ); ?></span>
         <?php endif; ?>
     </div>
 
@@ -44,13 +44,13 @@ $notifications = $data['notifications'] ?? [];
                     ?>
                     <div class="list-group-item p-4 d-flex gap-3 align-items-start <?php echo $is_unread ? 'bg-light' : ''; ?>">
                         <div class="fs-4 mt-1">
-                            <i class="bi <?php echo $icon; ?>"></i>
+                            <i class="bi <?php echo esc_html( $icon ); ?>"></i>
                         </div>
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <h6 class="mb-0 fw-bold text-dark"><?php echo esc_html($notif['title'] ?? 'Notification'); ?></h6>
                                 <small class="text-muted" style="font-size: 0.75rem;">
-                                    <?php echo human_time_diff( strtotime($notif['created_at']), current_time('timestamp') ) . ' ago'; ?>
+                                    <?php echo esc_html( human_time_diff( strtotime($notif['created_at']), current_time('timestamp') ) . ' ago' ); ?>
                                 </small>
                             </div>
                             <p class="mb-0 text-secondary small" style="line-height: 1.5;">

@@ -115,9 +115,9 @@ if(!empty($expenses)) {
                     <span class="badge bg-white bg-opacity-20 text-primary px-2 py-1 rounded-pill text-uppercase fw-bold" style="font-size: 8px; letter-spacing: 0.05em;">Audited</span>
                 </div>
                 <p class="small text-white opacity-75 fw-medium mb-1">Total Verified (<?php echo esc_html($selected_year); ?>)</p>
-                <h2 class="h2 fw-bold m-0" style="letter-spacing: -0.03em;">₹<?php echo number_format( $verified_total, 2 ); ?></h2>
+                <h2 class="h2 fw-bold m-0" style="letter-spacing: -0.03em;">₹<?php echo esc_html( number_format( $verified_total, 2 ) ); ?></h2>
                 <div class="mt-4 pt-4 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center small">
-                    <span class="opacity-75"><?php echo count($verified_expenses); ?> Total entries</span>
+                    <span class="opacity-75"><?php echo esc_html( count($verified_expenses) ); ?> Total entries</span>
                 </div>
             </div>
 
@@ -146,10 +146,10 @@ if(!empty($expenses)) {
                                 <div>
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span class="text-secondary fw-medium"><?php echo esc_html($cat); ?></span>
-                                        <span class="fw-bold text-dark">₹<?php echo number_format($amount); ?></span>
+                                        <span class="fw-bold text-dark">₹<?php echo esc_html( number_format($amount) ); ?></span>
                                     </div>
                                     <div class="progress bg-light" style="height: 6px;">
-                                        <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: <?php echo $pct; ?>%" aria-valuenow="<?php echo $pct; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div class="progress-bar bg-primary rounded-pill" role="progressbar" style="width: <?php echo esc_html( $pct ); ?>%" aria-valuenow="<?php echo esc_html( $pct ); ?>" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -195,7 +195,7 @@ if(!empty($expenses)) {
                             <button onclick="switchExpenseTab('pending')" id="tab-btn-pending" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent hover-text-dark d-flex align-items-center gap-2" style="background:none;">
                                 Pending Approval
                                 <?php if(count($pending_expenses) > 0): ?>
-                                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-dark px-2" style="font-size: 10px;"><?php echo count($pending_expenses); ?></span>
+                                    <span class="badge rounded-pill bg-warning bg-opacity-10 text-dark px-2" style="font-size: 10px;"><?php echo esc_html( count($pending_expenses) ); ?></span>
                                 <?php endif; ?>
                             </button>
                         </li>
@@ -236,7 +236,7 @@ if(!empty($expenses)) {
                                             <td class="px-4 py-4">
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html( $ex['category'] ); ?></span>
                                             </td>
-                                            <td class="px-4 py-4 fw-bold text-dark text-end">₹<?php echo number_format( floatval( $ex['amount'] ), 2 ); ?></td>
+                                            <td class="px-4 py-4 fw-bold text-dark text-end">₹<?php echo esc_html( number_format( floatval( $ex['amount'] ), 2 ) ); ?></td>
                                             <td class="pe-5 py-4 text-end">
                                                 <div class="d-flex justify-content-end gap-2">
                                                     <?php if ( ! empty( $ex['receipt_url'] ) ) : ?>
@@ -290,7 +290,7 @@ if(!empty($expenses)) {
                                                     <?php endif; ?>
                                                 </div>
                                             </td>
-                                            <td class="px-4 py-4 fw-bold text-dark text-end">₹<?php echo number_format( floatval( $ex['amount'] ), 2 ); ?></td>
+                                            <td class="px-4 py-4 fw-bold text-dark text-end">₹<?php echo esc_html( number_format( floatval( $ex['amount'] ), 2 ) ); ?></td>
                                             <td class="pe-5 py-4 text-end">
                                                 <div class="d-flex justify-content-end gap-2">
                                                     <button onclick="editExpense(this)" data-expense="<?php echo esc_attr(wp_json_encode($ex)); ?>" class="btn btn-sm btn-light border border-light px-3 py-2 fw-bold small rounded-3 shadow-none">Edit</button>
@@ -340,7 +340,7 @@ add_action('shubx51_admin_modals', function() {
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                              <label class="form-label small fw-bold text-secondary">Date <span class="text-danger">*</span></label>
-                             <input type="date" name="date" class="form-control shadow-none rounded-3 border-light" value="<?php echo wp_date('Y-m-d'); ?>" required>
+                             <input type="date" name="date" class="form-control shadow-none rounded-3 border-light" value="<?php echo esc_html( wp_date('Y-m-d') ); ?>" required>
                         </div>
                          <div class="col-6">
                              <label class="form-label small fw-bold text-secondary">Category <span class="text-danger">*</span></label>

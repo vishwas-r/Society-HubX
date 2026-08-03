@@ -3,7 +3,7 @@
  * Class: Admin Settings
  * Renders the Plugin Settings Page.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -260,7 +260,7 @@ class SHUBX51_Admin_Settings {
 
 	private function record_exists( $table, $row, $original_id = null ) {
 		global $wpdb;
-		$sql_table = $wpdb->prefix . 'society_hubx_' . $table;
+		$sql_table = $wpdb->prefix . 'shubx51_' . $table;
 		
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema check query requires dynamic table name.
 		// 1. Check by ID if available (and if the table uses this ID type)

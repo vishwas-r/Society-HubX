@@ -3,7 +3,7 @@
  * Class: RBAC Manager
  * Handles Granular Role-Based Access Control.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +18,7 @@ class SHUBX51_RBAC_Manager {
 	public function __construct() {
 		global $wpdb;
 		$this->db = new SHUBX51_DB_Router();
-		$this->roles_table = "{$wpdb->prefix}society_hubx_roles";
+		$this->roles_table = "{$wpdb->prefix}shubx51_roles";
 	}
 
 	/**

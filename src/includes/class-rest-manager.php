@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 /**
  * Class: REST API Manager
  * Handles registration of REST routes and authentication.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

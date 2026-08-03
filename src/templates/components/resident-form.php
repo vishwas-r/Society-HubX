@@ -53,16 +53,16 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
             <div class="rounded-circle bg-light border border-2 border-white shadow-sm overflow-hidden d-flex align-items-center justify-content-center" 
                  style="width: 100px; height: 100px;">
                 <?php if($profile_photo): ?>
-                    <img src="<?php echo esc_url($profile_photo); ?>" id="preview-<?php echo $context; ?>" class="w-100 h-100 object-fit-cover" alt="Profile">
+                    <img src="<?php echo esc_url($profile_photo); ?>" id="preview-<?php echo esc_html( $context ); ?>" class="w-100 h-100 object-fit-cover" alt="Profile">
                 <?php else: ?>
-                    <i class="bi bi-person-fill text-secondary fs-1" id="icon-<?php echo $context; ?>"></i>
-                    <img src="" id="preview-<?php echo $context; ?>" class="w-100 h-100 object-fit-cover d-none" alt="Preview">
+                    <i class="bi bi-person-fill text-secondary fs-1" id="icon-<?php echo esc_html( $context ); ?>"></i>
+                    <img src="" id="preview-<?php echo esc_html( $context ); ?>" class="w-100 h-100 object-fit-cover d-none" alt="Preview">
                 <?php endif; ?>
             </div>
-            <label for="pic-<?php echo $context; ?>" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm cursor-pointer hover-scale" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+            <label for="pic-<?php echo esc_html( $context ); ?>" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm cursor-pointer hover-scale" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                 <i class="bi bi-camera-fill small"></i>
             </label>
-            <input type="file" name="profile_photo" id="pic-<?php echo $context; ?>" class="d-none js-profile-upload" accept="image/*" data-preview="#preview-<?php echo $context; ?>" data-icon="#icon-<?php echo $context; ?>">
+            <input type="file" name="profile_photo" id="pic-<?php echo esc_html( $context ); ?>" class="d-none js-profile-upload" accept="image/*" data-preview="#preview-<?php echo esc_html( $context ); ?>" data-icon="#icon-<?php echo esc_html( $context ); ?>">
         </div>
         <div class="text-muted small mt-2">Tap to upload photo</div>
     </div>
@@ -89,8 +89,8 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
                      ?>
                          <div class="col-md-4 col-6">
                              <div class="form-check">
-                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" type="checkbox" name="flat_ids[]" value="<?php echo esc_attr($val); ?>" id="flat-<?php echo esc_attr($val); ?>-<?php echo $context; ?>" data-number="<?php echo esc_attr($f_num); ?>" <?php checked($is_sel); ?>>
-                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo $context; ?>">
+                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" type="checkbox" name="flat_ids[]" value="<?php echo esc_attr($val); ?>" id="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" data-number="<?php echo esc_attr($f_num); ?>" <?php checked($is_sel); ?>>
+                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>">
                                      <?php echo esc_html($f_num); ?>
                                  </label>
                              </div>
@@ -99,19 +99,19 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
                  <?php endif; ?>
              </div>
              <!-- Hidden input to stay in sync with legacy flat_no for simple form post fallbacks -->
-             <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo $context; ?>" value="<?php echo esc_attr($flat_no); ?>">
+             <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($flat_no); ?>">
              
              <!-- Primary Flat Selection (Shown only when multiple selected) -->
-             <div class="mb-3" id="primary-flat-wrapper-<?php echo $context; ?>" style="display: none;">
+             <div class="mb-3" id="primary-flat-wrapper-<?php echo esc_html( $context ); ?>" style="display: none;">
                  <label class="form-label small fw-bold text-secondary text-uppercase">Primary Flat <span class="text-danger">*</span></label>
-                 <select name="primary_flat_id" id="primary-flat-select-<?php echo $context; ?>" class="form-select rounded-3 border-light shadow-none">
+                 <select name="primary_flat_id" id="primary-flat-select-<?php echo esc_html( $context ); ?>" class="form-select rounded-3 border-light shadow-none">
                      <!-- Options populated dynamically by JS -->
                  </select>
              </div>
         </div>
         <div class="col-md-6 text-start">
              <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
-             <select name="type" id="resident-type-select-<?php echo $context; ?>" class="form-select rounded-3 border-light shadow-none js-resident-type-toggle" data-context="<?php echo $context; ?>" required>
+             <select name="type" id="resident-type-select-<?php echo esc_html( $context ); ?>" class="form-select rounded-3 border-light shadow-none js-resident-type-toggle" data-context="<?php echo esc_html( $context ); ?>" required>
                  <option value="owner" <?php selected($type, 'owner'); ?>>Owner</option>
                  <option value="tenant" <?php selected($type, 'tenant'); ?>>Tenant</option>
                  <option value="family" <?php selected($type, 'family'); ?>>Family Member</option>
@@ -121,7 +121,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
             <?php 
-            $display_flat = Society_HubX::get_instance()->db->get_flat_display_name( $flat_no );
+            $display_flat = SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $flat_no );
             ?>
             <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($display_flat); ?>" disabled>
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
@@ -137,7 +137,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
     <?php endif; ?>
 
     <!-- Relation (Frontend Family OR Admin) -->
-    <div class="col-md-6" id="relation-wrapper-<?php echo $context; ?>" style="<?php echo ($type !== 'family') ? 'display:none;' : ''; ?>">
+    <div class="col-md-6" id="relation-wrapper-<?php echo esc_html( $context ); ?>" style="<?php echo ($type !== 'family') ? 'display:none;' : ''; ?>">
          <label class="form-label small fw-bold text-secondary text-uppercase">Relation <span class="text-danger">*</span></label>
          <select name="relation" class="form-select rounded-3 border-light shadow-none" <?php echo ($type === 'family') ? 'required' : ''; ?>>
              <option value="">Select Relation</option>
@@ -176,17 +176,17 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
              $bgs = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
              foreach($bgs as $bg): 
              ?>
-                <option value="<?php echo $bg; ?>" <?php selected($blood_group, $bg); ?>><?php echo $bg; ?></option>
+                <option value="<?php echo esc_html( $bg ); ?>" <?php selected($blood_group, $bg); ?>><?php echo esc_html( $bg ); ?></option>
              <?php endforeach; ?>
          </select>
     </div>
 
      <!-- Society Role (Admin Only) -->
      <?php if($is_admin): 
-        $all_rbac_roles = Society_HubX::get_instance()->rbac->get_all_roles();
+        $all_rbac_roles = SHUBX51_Plugin::get_instance()->rbac->get_all_roles();
         $selected_roles = is_array($role) ? $role : array_filter(explode(',', (string)$role));
      ?>
-        <div class="col-12 text-start" id="society-role-wrapper-<?php echo $context; ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
+        <div class="col-12 text-start" id="society-role-wrapper-<?php echo esc_html( $context ); ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
             <label class="form-label small fw-bold text-secondary text-uppercase">Society Role(s)</label>
             <div class="row g-2 px-1">
                 <?php foreach($all_rbac_roles as $rbac_role): 
@@ -194,8 +194,8 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
                 ?>
                     <div class="col-md-4 col-6">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="role[]" value="<?php echo esc_attr($rbac_role['id']); ?>" id="role-<?php echo $rbac_role['id']; ?>-<?php echo $context; ?>" <?php checked($is_checked); ?>>
-                            <label class="form-check-label small" for="role-<?php echo $rbac_role['id']; ?>-<?php echo $context; ?>">
+                            <input class="form-check-input" type="checkbox" name="role[]" value="<?php echo esc_attr($rbac_role['id']); ?>" id="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>" <?php checked($is_checked); ?>>
+                            <label class="form-check-label small" for="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>">
                                 <?php echo esc_html($rbac_role['name']); ?>
                             </label>
                         </div>

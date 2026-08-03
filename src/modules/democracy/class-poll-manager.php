@@ -3,7 +3,7 @@
  * Class: Poll Manager
  * Handles Digital Democracy (Polling & Voting).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -112,7 +112,7 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
         // DB_Router doesn't support delete_many efficiently yet without key, 
         // but votes don't have unique ID in current schema? 
         // Wait, votes schema: id, poll_id... check schema.
-        // Schema says: society_hubx_votes (id, poll_id, flat_no, ...)
+        // Schema says: shubx51_votes (id, poll_id, flat_no, ...)
         // JSON file had flat_no+poll_id as key somewhat. 
         // For MySQL, we run a DELETE query. For JSON, we might leave orphans or iterate?
         // Since DB_Router relies on 'id' for delete(), we can't delete by poll_id easily.

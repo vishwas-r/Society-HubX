@@ -26,7 +26,7 @@ $total_violations = count($violations);
 $pending_violations = count(array_filter($violations, fn($v) => $v['status'] === 'pending'));
 
 global $wpdb;
-$acks_table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
+$acks_table = "{$wpdb->prefix}shubx51_rule_acknowledgments";
 $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 ?>
 
@@ -56,7 +56,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Published Rules</p>
-            <h2 class="h2 fw-bold m-0"><?php echo $total_rules; ?></h2>
+            <h2 class="h2 fw-bold m-0"><?php echo esc_html( $total_rules ); ?></h2>
         </div>
     </div>
     <div class="col-lg-3 col-md-6">
@@ -67,7 +67,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Draft Rules</p>
-            <h2 class="h2 fw-bold m-0"><?php echo $draft_rules; ?></h2>
+            <h2 class="h2 fw-bold m-0"><?php echo esc_html( $draft_rules ); ?></h2>
         </div>
     </div>
     <div class="col-lg-3 col-md-6">
@@ -78,7 +78,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Acknowledgments</p>
-            <h2 class="h2 fw-bold m-0"><?php echo $total_acks; ?></h2>
+            <h2 class="h2 fw-bold m-0"><?php echo esc_html( $total_acks ); ?></h2>
         </div>
     </div>
     <div class="col-lg-3 col-md-6">
@@ -89,7 +89,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Violations</p>
-            <h2 class="h2 fw-bold m-0"><?php echo $total_violations; ?></h2>
+            <h2 class="h2 fw-bold m-0"><?php echo esc_html( $total_violations ); ?></h2>
         </div>
     </div>
 </div>
@@ -110,7 +110,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                 <button onclick="switchRulesTab('violations')" id="tab-btn-violations" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent d-flex align-items-center gap-2" style="background:none;">
                     Violations
                     <?php if($pending_violations > 0): ?>
-                        <span class="badge rounded-pill bg-danger px-2"><?php echo $pending_violations; ?></span>
+                        <span class="badge rounded-pill bg-danger px-2"><?php echo esc_html( $pending_violations ); ?></span>
                     <?php endif; ?>
                 </button>
             </li>
@@ -175,7 +175,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                 data-search="<?php echo esc_attr(strtolower($rule['title'] . ' ' . $rule['category'] . ' ' . $rule['tags'])); ?>">
                                 <td class="ps-5 py-4">
                                     <div class="fw-bold text-dark"><?php echo esc_html($rule['title']); ?></div>
-                                    <div class="small text-muted">v<?php echo $rule['version']; ?> • <?php echo $rule['requires_acknowledgment'] ? 'Requires Acknowledgment' : 'No Acknowledgment'; ?></div>
+                                    <div class="small text-muted">v<?php echo esc_html( $rule['version'] ); ?> • <?php echo $rule['requires_acknowledgment'] ? 'Requires Acknowledgment' : 'No Acknowledgment'; ?></div>
                                 </td>
                                 <td class="px-4 py-4">
                                     <?php 
@@ -184,8 +184,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     $cat_color = !empty($cat) ? $cat[0]['color'] : '#6c757d';
                                     $cat_name = !empty($cat) ? $cat[0]['name'] : ucfirst($rule['category']);
                                     ?>
-                                    <span class="badge px-3 py-2 rounded-pill fw-bold" style="background-color: <?php echo $cat_color; ?>20; color: <?php echo $cat_color; ?>; border: 1px solid <?php echo $cat_color; ?>40;">
-                                        <i class="<?php echo $cat_icon; ?> me-1"></i>
+                                    <span class="badge px-3 py-2 rounded-pill fw-bold" style="background-color: <?php echo esc_html( $cat_color ); ?>20; color: <?php echo esc_html( $cat_color ); ?>; border: 1px solid <?php echo esc_html( $cat_color ); ?>40;">
+                                        <i class="<?php echo esc_html( $cat_icon ); ?> me-1"></i>
                                         <?php echo esc_html($cat_name); ?>
                                     </span>
                                 </td>
@@ -199,7 +199,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     ];
                                     $p = $priority_badges[$rule['priority']] ?? $priority_badges['medium'];
                                     ?>
-                                    <span class="badge <?php echo $p['class']; ?> text-white px-3 py-1 rounded-pill"><?php echo $p['text']; ?></span>
+                                    <span class="badge <?php echo esc_html( $p['class'] ); ?> text-white px-3 py-1 rounded-pill"><?php echo esc_html( $p['text'] ); ?></span>
                                 </td>
                                 <td class="px-4 py-4">
                                     <?php 
@@ -210,8 +210,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     ];
                                     $s = $status_badges[$rule['status']] ?? $status_badges['draft'];
                                     ?>
-                                    <span class="badge <?php echo $s['class']; ?> text-white px-3 py-1 rounded-pill">
-                                        <i class="<?php echo $s['icon']; ?> me-1"></i>
+                                    <span class="badge <?php echo esc_html( $s['class'] ); ?> text-white px-3 py-1 rounded-pill">
+                                        <i class="<?php echo esc_html( $s['icon'] ); ?> me-1"></i>
                                         <?php echo esc_html( ucfirst( $rule['status'] ) ); ?>
                                     </span>
                                 </td>
@@ -260,8 +260,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                         <div class="card border rounded-3 h-100">
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="p-3 rounded-3" style="background-color: <?php echo $cat['color']; ?>20;">
-                                        <i class="<?php echo $cat['icon']; ?> fs-2" style="color: <?php echo $cat['color']; ?>;"></i>
+                                    <div class="p-3 rounded-3" style="background-color: <?php echo esc_html( $cat['color'] ); ?>20;">
+                                        <i class="<?php echo esc_html( $cat['icon'] ); ?> fs-2" style="color: <?php echo esc_html( $cat['color'] ); ?>;"></i>
                                     </div>
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light border-0" data-bs-toggle="dropdown">
@@ -286,7 +286,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                         echo $count . ' ' . ($count === 1 ? 'rule' : 'rules');
                                         ?>
                                     </span>
-                                    <span class="badge rounded-pill px-3 py-1" style="background-color: <?php echo $cat['color']; ?>; color: white;">
+                                    <span class="badge rounded-pill px-3 py-1" style="background-color: <?php echo esc_html( $cat['color'] ); ?>; color: white;">
                                         <?php echo esc_html($cat['slug']); ?>
                                     </span>
                                 </div>
@@ -335,9 +335,9 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     <div class="small text-muted"><?php echo esc_html($v['description']); ?></div>
                                 </td>
                                 <td class="px-4 py-4 small text-secondary">
-                                    <?php echo wp_date('M d, Y', strtotime($v['violation_date'])); ?>
+                                    <?php echo esc_html( wp_date('M d, Y', strtotime($v['violation_date'])) ); ?>
                                 </td>
-                                <td class="px-4 py-4 fw-bold">₹<?php echo number_format($v['fine_amount'], 2); ?></td>
+                                <td class="px-4 py-4 fw-bold">₹<?php echo esc_html( number_format($v['fine_amount'], 2) ); ?></td>
                                 <td class="px-4 py-4">
                                     <?php 
                                     $vio_status = [
@@ -349,7 +349,7 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                     ];
                                     $vs = $vio_status[$v['status']] ?? $vio_status['pending'];
                                     ?>
-                                    <span class="badge <?php echo $vs['class']; ?> text-white px-3 py-1 rounded-pill"><?php echo $vs['text']; ?></span>
+                                    <span class="badge <?php echo esc_html( $vs['class'] ); ?> text-white px-3 py-1 rounded-pill"><?php echo esc_html( $vs['text'] ); ?></span>
                                 </td>
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
@@ -383,8 +383,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
             <?php
             // Get acknowledgment stats per rule
-            $rules_table = "{$wpdb->prefix}society_hubx_rules";
-            $residents_table = "{$wpdb->prefix}society_hubx_residents";
+            $rules_table = "{$wpdb->prefix}shubx51_rules";
+            $residents_table = "{$wpdb->prefix}shubx51_residents";
             $ack_stats = $wpdb->get_results("
                 SELECT r.id, r.title, r.requires_acknowledgment, r.acknowledgment_deadline,
                        COUNT(DISTINCT a.resident_id) as ack_count,
@@ -428,14 +428,14 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                         <div class="d-flex align-items-center gap-3">
                                             <div class="progress flex-grow-1" style="height: 8px;">
                                                 <div class="progress-bar <?php echo $compliance >= 80 ? 'bg-success' : ($compliance >= 50 ? 'bg-warning' : 'bg-danger'); ?>" 
-                                                     style="width: <?php echo $compliance; ?>%"></div>
+                                                     style="width: <?php echo esc_html( $compliance ); ?>%"></div>
                                             </div>
-                                            <span class="small fw-bold"><?php echo $ack_count; ?>/<?php echo $total_res; ?></span>
+                                            <span class="small fw-bold"><?php echo esc_html( $ack_count ); ?>/<?php echo esc_html( $total_res ); ?></span>
                                         </div>
                                     </td>
                                     <td class="px-4 py-3">
                                         <span class="badge <?php echo $compliance >= 80 ? 'bg-success' : ($compliance >= 50 ? 'bg-warning' : 'bg-danger'); ?> text-white px-3 py-1 rounded-pill">
-                                            <?php echo $compliance; ?>%
+                                            <?php echo esc_html( $compliance ); ?>%
                                         </span>
                                     </td>
                                 </tr>
@@ -474,8 +474,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                                 <?php foreach($violation_by_category as $cat => $count): ?>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between small mb-1">
-                                            <span><?php echo ucfirst($cat); ?></span>
-                                            <span class="fw-bold"><?php echo $count; ?> violations</span>
+                                            <span><?php echo esc_html( ucfirst($cat) ); ?></span>
+                                            <span class="fw-bold"><?php echo esc_html( $count ); ?> violations</span>
                                         </div>
                                         <div class="progress" style="height: 6px;">
                                             <div class="progress-bar bg-danger" style="width: <?php echo (count($violations) > 0 ? ($count/count($violations))*100 : 0); ?>%"></div>
@@ -500,35 +500,35 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="small text-secondary">Collection Rate</span>
-                                    <span class="fw-bold"><?php echo $collection_rate; ?>%</span>
+                                    <span class="fw-bold"><?php echo esc_html( $collection_rate ); ?>%</span>
                                 </div>
                                 <div class="progress" style="height: 10px;">
-                                    <div class="progress-bar bg-success" style="width: <?php echo $collection_rate; ?>%"></div>
+                                    <div class="progress-bar bg-success" style="width: <?php echo esc_html( $collection_rate ); ?>%"></div>
                                 </div>
                             </div>
                             <div class="row g-3">
                                 <div class="col-6">
                                     <div class="p-3 rounded-3 bg-light">
                                         <div class="small text-secondary mb-1">Total Fines</div>
-                                        <div class="h5 fw-bold m-0">₹<?php echo number_format($total_fines, 2); ?></div>
+                                        <div class="h5 fw-bold m-0">₹<?php echo esc_html( number_format($total_fines, 2) ); ?></div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="p-3 rounded-3 bg-light">
                                         <div class="small text-secondary mb-1">Collected</div>
-                                        <div class="h5 fw-bold m-0 text-success">₹<?php echo number_format($paid_fines, 2); ?></div>
+                                        <div class="h5 fw-bold m-0 text-success">₹<?php echo esc_html( number_format($paid_fines, 2) ); ?></div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="p-3 rounded-3 bg-light">
                                         <div class="small text-secondary mb-1">Pending</div>
-                                        <div class="h5 fw-bold m-0 text-danger">₹<?php echo number_format($unpaid_fines, 2); ?></div>
+                                        <div class="h5 fw-bold m-0 text-danger">₹<?php echo esc_html( number_format($unpaid_fines, 2) ); ?></div>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="p-3 rounded-3 bg-light">
                                         <div class="small text-secondary mb-1">Total Cases</div>
-                                        <div class="h5 fw-bold m-0"><?php echo count($violations); ?></div>
+                                        <div class="h5 fw-bold m-0"><?php echo esc_html( count($violations) ); ?></div>
                                     </div>
                                 </div>
                             </div>
@@ -558,7 +558,7 @@ add_action('shubx51_admin_modals', function() use ($categories) {
             <form id="ruleForm">
                 <div class="modal-body p-4">
                     <input type="hidden" name="rule_id" id="rule_id">
-                    <input type="hidden" name="_wpnonce" value="<?php echo $nonce; ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( $nonce ); ?>">
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold small">Title <span class="text-danger">*</span></label>
@@ -656,7 +656,7 @@ add_action('shubx51_admin_modals', function() use ($categories) {
             <form id="categoryForm">
                 <div class="modal-body p-4">
                     <input type="hidden" name="category_id" id="category_id">
-                    <input type="hidden" name="_wpnonce" value="<?php echo $nonce; ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( $nonce ); ?>">
                     <input type="hidden" name="category_action" id="category_action" value="add">
                     
                     <div class="mb-3">

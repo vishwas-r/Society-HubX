@@ -3,7 +3,7 @@
  * Plugin Name:       Society HubX – Society Management Portal
  * Plugin URI:        https://github.com/vishwas-r/Society-GovernX
  * Description:       A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Vishwas R
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SHUBX51_VERSION', '1.0.4' );
+define( 'SHUBX51_VERSION', '1.0.5' );
 define( 'SHUBX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SHUBX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SHUBX51_PREFIX', 'SHUBX51' );
@@ -27,7 +27,7 @@ define( 'SHUBX51_PREFIX', 'SHUBX51' );
 /**
  * Main Plugin Class.
  */
-final class Society_HubX {
+final class SHUBX51_Plugin {
 	/**
 	 * Instance of this class.
 	 *
@@ -567,7 +567,7 @@ final class Society_HubX {
 	 * Load Custom Page Templates.
 	 * Logic:
 	 * 1. If explicit template is selected in dropdown.
-	 * 2. OR if the page contains string '[society_hubx_dashboard]' - AUTO APPLY.
+	 * 2. OR if the page contains string '[shubx51_dashboard]' - AUTO APPLY.
 	 */
 	public function load_page_template( $template ) {
 		global $post;
@@ -579,7 +579,7 @@ final class Society_HubX {
 		}
 
 		// 2. Auto-detect Shortcode (Fallback if user can't select template)
-		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'society_hubx_dashboard' ) ) {
+		if ( isset( $post->post_content ) && has_shortcode( $post->post_content, 'shubx51_dashboard' ) ) {
 			 return SHUBX51_PLUGIN_DIR . 'templates/page-society-app.php';
 		}
 
@@ -635,6 +635,6 @@ final class Society_HubX {
  * Initialize the plugin.
  */
 function shubx51_init() {
-	return Society_HubX::get_instance();
+	return SHUBX51_Plugin::get_instance();
 }
 add_action( 'plugins_loaded', 'shubx51_init' );

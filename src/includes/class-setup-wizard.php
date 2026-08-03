@@ -7,7 +7,7 @@
  * 3. Creates Local JSON files + Headers (if offline/shadow).
  * 4. Creates Drive Folder Hierarchy.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -81,7 +81,7 @@ class SHUBX51_Setup_Wizard {
 		$floors = intval( $data['floors'] ?? 1 );
 		$flats_per_floor = intval( $data['flats_per_floor'] ?? 1 );
 
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$count = 0;
 
 		foreach ( $blocks as $block ) {
@@ -120,15 +120,15 @@ class SHUBX51_Setup_Wizard {
 		$pages = array(
 			'Resident Dashboard' => array(
 				'slug'    => 'resident-dashboard',
-				'content' => '[society_hubx_dashboard]',
+				'content' => '[shubx51_dashboard]',
 			),
 			'Society Notices' => array(
 				'slug'    => 'society-notices',
-				'content' => '[society_hubx_notices]',
+				'content' => '[shubx51_notices]',
 			),
 			'Residents Directory' => array(
 				'slug'    => 'residents-directory',
-				'content' => '[society_hubx_directory]',
+				'content' => '[shubx51_directory]',
 			),
 		);
 
@@ -164,7 +164,7 @@ class SHUBX51_Setup_Wizard {
 		}
 
 		// 2. Create New Spreadsheet.
-		$sheet_title = 'society_hubx_Master_' . gmdate( 'Y-m-d' );
+		$sheet_title = 'shubx51_Master_' . gmdate( 'Y-m-d' );
 		$body = array(
 			'properties' => array( 'title' => $sheet_title ),
 		);

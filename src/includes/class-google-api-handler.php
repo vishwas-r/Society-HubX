@@ -3,7 +3,7 @@
  * Class: Google API Handler
  * Handles OAuth2 Authentication and API Requests via REST.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Assets for Settings (if any specific ones needed, usually handled by main helper)
 // Data for Communication Tab
-$db = Society_HubX::get_instance()->db;
+$db = SHUBX51_Plugin::get_instance()->db;
 $channels  = $db->get('notification_channels');
 $events    = $db->get('notification_events');
 $templates = $db->get('notification_templates');
@@ -274,21 +274,21 @@ $templates = $db->get('notification_templates');
                                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
                                                 <div class="card-body p-4 d-flex flex-column">
                                                     <div class="d-flex align-items-center justify-content-between mb-3">
-                                                        <div class="p-3 bg-<?php echo $color; ?> bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                                            <i class="bi <?php echo $icon; ?> text-<?php echo $color; ?> fs-4"></i>
+                                                        <div class="p-3 bg-<?php echo esc_html( $color ); ?> bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                            <i class="bi <?php echo esc_html( $icon ); ?> text-<?php echo esc_html( $color ); ?> fs-4"></i>
                                                         </div>
                                                         <label class="shubx-premium-toggle">
-                                                            <input type="checkbox" class="shubx-channel-toggle" data-channel="<?php echo $slug; ?>" <?php checked($channel['is_active'], 1); ?>/>
+                                                            <input type="checkbox" class="shubx-channel-toggle" data-channel="<?php echo esc_html( $slug ); ?>" <?php checked($channel['is_active'], 1); ?>/>
                                                             <span class="slider"></span>
                                                         </label>
                                                     </div>
-                                                    <h6 class="fw-bold text-slate-900 mb-1"><?php echo ucfirst($slug); ?></h6>
+                                                    <h6 class="fw-bold text-slate-900 mb-1"><?php echo esc_html( ucfirst($slug) ); ?></h6>
                                                     <p class="text-slate-500 x-small mb-4 flex-grow-1">
                                                         <?php if($slug === 'email') echo 'Send alerts via WP Mail or Gmail API.'; ?>
                                                         <?php if($slug === 'whatsapp') echo 'Real-time alerts via Twilio WhatsApp API.'; ?>
                                                         <?php if($slug === 'inapp') echo 'Display alerts directly on resident dashboards.'; ?>
                                                     </p>
-                                                    <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 shubx-configure-channel" data-channel="<?php echo $slug; ?>">
+                                                    <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 shubx-configure-channel" data-channel="<?php echo esc_html( $slug ); ?>">
                                                         <i class="bi bi-gear me-2"></i>Configure
                                                     </button>
                                                 </div>
@@ -326,14 +326,14 @@ $templates = $db->get('notification_templates');
                                                 ?>
                                                 <tr>
                                                     <td class="ps-4 py-3">
-                                                        <div class="fw-bold text-slate-900"><?php echo str_replace('_', ' ', ucfirst($event['event_slug'])); ?></div>
-                                                        <div class="text-slate-400 x-small font-monospace"><?php echo $event['event_slug']; ?></div>
+                                                        <div class="fw-bold text-slate-900"><?php echo esc_html( str_replace('_', ' ', ucfirst($event['event_slug'])) ); ?></div>
+                                                        <div class="text-slate-400 x-small font-monospace"><?php echo esc_html( $event['event_slug'] ); ?></div>
                                                     </td>
-                                                    <td><span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-2"><?php echo ucfirst($event['module']); ?></span></td>
+                                                    <td><span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-2"><?php echo esc_html( ucfirst($event['module']) ); ?></span></td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
                                                             <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
+                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
@@ -341,7 +341,7 @@ $templates = $db->get('notification_templates');
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
                                                             <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
+                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
@@ -349,7 +349,7 @@ $templates = $db->get('notification_templates');
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
                                                             <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo $event['event_slug']; ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
+                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
@@ -377,9 +377,9 @@ $templates = $db->get('notification_templates');
                                         <div class="col-md-6">
                                             <div class="card border-0 shadow-sm rounded-4 h-100">
                                                 <div class="card-header bg-white border-bottom px-4 py-3 d-flex align-items-center justify-content-between">
-                                                    <h6 class="fw-bold text-slate-900 m-0 small text-truncate"><?php echo str_replace('_', ' ', ucfirst($template['event_slug'])); ?></h6>
+                                                    <h6 class="fw-bold text-slate-900 m-0 small text-truncate"><?php echo esc_html( str_replace('_', ' ', ucfirst($template['event_slug'])) ); ?></h6>
                                                     <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 x-small fw-bold border border-primary-subtle">
-                                                        <?php echo strtoupper($template['channel']); ?>
+                                                        <?php echo esc_html( strtoupper($template['channel']) ); ?>
                                                     </span>
                                                 </div>
                                                 <div class="card-body p-4">
@@ -387,8 +387,8 @@ $templates = $db->get('notification_templates');
                                                         <p class="text-slate-600 x-small m-0 line-clamp-3 font-monospace"><?php echo esc_html($template['content']); ?></p>
                                                     </div>
                                                     <div class="d-flex justify-content-between align-items-center">
-                                                        <span class="text-slate-400 x-small fw-medium">Version <?php echo $template['version']; ?></span>
-                                                        <button class="btn btn-sm btn-link text-primary fw-bold p-0 x-small text-decoration-none shubx-edit-template" data-id="<?php echo $template['id']; ?>">
+                                                        <span class="text-slate-400 x-small fw-medium">Version <?php echo esc_html( $template['version'] ); ?></span>
+                                                        <button class="btn btn-sm btn-link text-primary fw-bold p-0 x-small text-decoration-none shubx-edit-template" data-id="<?php echo esc_html( $template['id'] ); ?>">
                                                             <i class="bi bi-pencil-square me-1"></i> Edit Content
                                                         </button>
                                                     </div>
@@ -480,8 +480,8 @@ $templates = $db->get('notification_templates');
                                 foreach($policies as $opt => $label): ?>
                                     <div class="card border border-light shadow-none bg-light bg-opacity-50 rounded-3">
                                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
-                                            <div class="fw-bold text-dark small"><?php echo $label; ?></div>
-                                            <select name="<?php echo $opt; ?>" class="form-select form-select-sm shadow-none w-auto rounded-pill px-4 fw-bold border-0 bg-white">
+                                            <div class="fw-bold text-dark small"><?php echo esc_html( $label ); ?></div>
+                                            <select name="<?php echo esc_html( $opt ); ?>" class="form-select form-select-sm shadow-none w-auto rounded-pill px-4 fw-bold border-0 bg-white">
                                                 <option value="manual" <?php selected(get_option($opt, 'manual'), 'manual'); ?>>Approver Insight (Manual)</option>
                                                 <option value="auto" <?php selected(get_option($opt), 'auto'); ?>>Direct Entry (Auto)</option>
                                             </select>
@@ -537,7 +537,7 @@ $templates = $db->get('notification_templates');
                                                     Download a complete backup of your society records (CSV + JSON) in a single ZIP file.
                                                 </p>
                                             </div>
-                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" class="mt-4">
+                                            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" class="mt-4">
                                                 <input type="hidden" name="action" value="shubx51_export_data">
                                                 <?php wp_nonce_field( 'shubx51_export_nonce' ); ?>
                                                 <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-none">
@@ -563,7 +563,7 @@ $templates = $db->get('notification_templates');
                                                     Upload CSV records for a specific module. Headers must match your database columns.
                                                 </p>
                                             </div>
-                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data" class="mt-4">
+                                            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" enctype="multipart/form-data" class="mt-4">
                                                 <input type="hidden" name="action" value="shubx51_import_data">
                                                 <?php wp_nonce_field( 'shubx51_import_nonce' ); ?>
                                                 
@@ -612,7 +612,7 @@ $templates = $db->get('notification_templates');
                                             </p>
                                         </div>
                                         <div>
-                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                                                 <input type="hidden" name="action" value="shubx51_relaunch_wizard">
                                                 <?php wp_nonce_field( 'shubx51_relaunch_nonce' ); ?>
                                                 <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
@@ -638,7 +638,7 @@ $templates = $db->get('notification_templates');
                                             </p>
                                         </div>
                                         <div class="d-flex flex-column flex-sm-row gap-2">
-                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                                                 <input type="hidden" name="action" value="shubx51_reset_db">
                                                 <input type="hidden" name="reset_type" value="mysql">
                                                 <?php wp_nonce_field( 'shubx51_reset_nonce' ); ?>
@@ -646,7 +646,7 @@ $templates = $db->get('notification_templates');
                                                     Purge MySQL DB
                                                 </button>
                                             </form>
-                                            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                                            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                                                 <input type="hidden" name="action" value="shubx51_reset_db">
                                                 <input type="hidden" name="reset_type" value="json">
                                                 <?php wp_nonce_field( 'shubx51_reset_nonce' ); ?>
@@ -703,7 +703,7 @@ $templates = $db->get('notification_templates');
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Personal Data Export Consent Notice</label>
-                                    <textarea name="shubx51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_textarea( get_option('shubx51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ); ?></textarea>
+                                    <textarea name="shubx51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_html( esc_textarea( get_option('shubx51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ) ); ?></textarea>
                                     <div class="x-small text-muted mt-1">This text is displayed during personal data exports.</div>
                                 </div>
                             </div>
@@ -732,7 +732,7 @@ add_action('shubx51_admin_modals', function() {
             <form id="shubx-channel-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="channel_slug" id="shubx-modal-channel-slug">
-                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('shubx51_request_action'); ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('shubx51_request_action') ); ?>">
                     <div id="shubx-channel-settings-fields">
                         <!-- Fields dynamically rendered by JS -->
                     </div>
@@ -757,7 +757,7 @@ add_action('shubx51_admin_modals', function() {
             <form id="shubx-template-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="id" id="shubx-template-id">
-                    <input type="hidden" name="_wpnonce" value="<?php echo wp_create_nonce('shubx51_request_action'); ?>">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('shubx51_request_action') ); ?>">
                     
                     <div class="mb-3 subject-field">
                         <label class="form-label small fw-bold text-slate-700">Subject</label>

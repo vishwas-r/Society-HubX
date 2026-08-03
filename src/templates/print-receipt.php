@@ -85,7 +85,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
                         <div style="font-weight: 600;"><?php echo esc_html($p['method']); ?></div>
                         <div style="font-size: 11px; color: #94a3b8;"><?php echo esc_html($p['reference']); ?></div>
                     </td>
-                    <td class="amt">₹<?php echo number_format($p['amount'], 2); ?></td>
+                    <td class="amt">₹<?php echo esc_html( number_format($p['amount'], 2) ); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -98,7 +98,7 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
             <div class="total-box">
                 <div class="total-row">
                     <span class="total-label">Total Paid (INR)</span>
-                    <span class="total-val">₹<?php echo number_format($total_paid, 2); ?></span>
+                    <span class="total-val">₹<?php echo esc_html( number_format($total_paid, 2) ); ?></span>
                 </div>
             </div>
         </div>

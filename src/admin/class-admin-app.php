@@ -3,7 +3,7 @@
  * Class: Admin App
  * Handles the full-screen "App Mode" rendering for the admin panel.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

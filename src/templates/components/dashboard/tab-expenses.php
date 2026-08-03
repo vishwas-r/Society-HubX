@@ -94,11 +94,11 @@ if ( ! defined( 'ABSPATH' ) ) {
             ?>
 
                 <div class="col-4 col-sm-3 col-md-2 col-lg-1">
-                    <div class="<?php echo $div_class; ?> p-2 rounded-2 text-center position-relative d-flex flex-column justify-content-center align-items-center shadow-sm"
+                    <div class="<?php echo esc_html( $div_class ); ?> p-2 rounded-2 text-center position-relative d-flex flex-column justify-content-center align-items-center shadow-sm"
                         title="<?php echo esc_attr($tooltip); ?>"
                         data-bs-toggle="tooltip"
                         data-bs-placement="top"
-                        data-bs-custom-class="<?php echo $tooltip_class; ?>">
+                        data-bs-custom-class="<?php echo esc_html( $tooltip_class ); ?>">
 
                         <div class="fw-bold lh-1" style="font-size: 0.85rem;">
                             <?php echo (!empty($s['block']) ? esc_html($s['block']) . '-' : '') . esc_html($s['flat_no'] ?? 'N/A'); ?>

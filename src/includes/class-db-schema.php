@@ -3,7 +3,7 @@
  * Class: DB Schema
  * Defines the SQL table structures and handles creation/updates via dbDelta.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,7 +27,7 @@ class SHUBX51_DB_Schema {
 		$tables = array();
 
 		// 1. Flats Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_flats (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_number varchar(20) DEFAULT '' NOT NULL,
@@ -42,7 +42,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 2. Residents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_residents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_residents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -67,7 +67,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 3. Resident History Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_resident_history (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_history (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -87,7 +87,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 4. Expenses Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_expenses (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_expenses (
 			id varchar(50) NOT NULL,
 			title varchar(255) DEFAULT '' NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -105,7 +105,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 5. Assets Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_assets (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_assets (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			value decimal(15,2) DEFAULT 0 NOT NULL,
@@ -121,7 +121,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 6. Notices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notices (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			content longtext NOT NULL,
@@ -138,7 +138,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 7. Invoices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_invoices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_invoices (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -161,7 +161,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 8. Receipts Table (for tracking receipt numbers)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_receipts (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_receipts (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			receipt_number varchar(50) NOT NULL,
@@ -172,7 +172,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 9. Polls Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_polls (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_polls (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			description text NOT NULL,
@@ -184,7 +184,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 10. Votes Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_votes (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_votes (
 			id int(11) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			poll_id varchar(50) NOT NULL,
@@ -198,7 +198,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 11. Vehicles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_vehicles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_vehicles (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -216,7 +216,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Facilities Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_facilities (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_facilities (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			rate decimal(10,2) DEFAULT 0 NOT NULL,
@@ -230,7 +230,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Bookings Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_bookings (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_bookings (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -248,7 +248,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 13. Daily Help Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_daily_help (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_daily_help (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			role varchar(50) DEFAULT '' NOT NULL,
@@ -262,7 +262,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 14. Rules Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_rules (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rules (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			slug varchar(255) NOT NULL,
@@ -291,7 +291,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Rule Versions Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_rule_versions (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_versions (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			rule_id varchar(50) NOT NULL,
 			version int(11) NOT NULL,
@@ -306,7 +306,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Rule Acknowledgments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_rule_acknowledgments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_acknowledgments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -325,7 +325,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Rule Violations Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_rule_violations (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_violations (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -354,7 +354,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Rule Categories Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_rule_categories (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_categories (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			slug varchar(100) NOT NULL,
@@ -369,7 +369,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Documents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_documents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_documents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
@@ -387,7 +387,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Requests Table (Audit Trail)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_requests (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_requests (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			module varchar(50) DEFAULT '' NOT NULL,
@@ -409,7 +409,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Audit Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_audit_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_audit_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			action varchar(100) NOT NULL,
@@ -423,7 +423,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Meta Table (Key-Value Store)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_meta (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_meta (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			meta_key varchar(255) NOT NULL,
 			meta_value longtext NOT NULL,
@@ -433,7 +433,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Notification Channels
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notification_channels (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_channels (
 			channel_slug varchar(20) NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
 			config longtext NOT NULL,
@@ -441,7 +441,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Notification Events
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notification_events (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_events (
 			event_slug varchar(50) NOT NULL,
 			module varchar(20) NOT NULL,
 			default_channels varchar(255) NOT NULL,
@@ -449,7 +449,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 20. Notification Templates
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notification_templates (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_templates (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			event_slug varchar(50) NOT NULL,
 			channel varchar(20) NOT NULL,
@@ -464,7 +464,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 21. Notification Preferences
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notification_preferences (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_preferences (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -476,7 +476,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 22. Notification Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_notification_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -494,7 +494,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 23. In-App Notifications
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_inapp_notifications (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_inapp_notifications (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -508,7 +508,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 24. Custom Roles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_roles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_roles (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			capabilities longtext NOT NULL,
@@ -519,7 +519,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 25. Staff-Flat Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_staff_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_flats (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			staff_id varchar(50) NOT NULL,
 			flat_id varchar(50) NOT NULL,
@@ -529,7 +529,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 26. Resident-Role Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_resident_role_map (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_role_map (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			resident_id varchar(50) NOT NULL,
 			role_id varchar(50) NOT NULL,
@@ -539,7 +539,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 27. Resident-Flat Mapping Table (Multi-Flat Ownership)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_resident_flat_map (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_flat_map (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			resident_id varchar(50) NOT NULL,
 			flat_id varchar(50) NOT NULL,
@@ -551,7 +551,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 28. Detailed Payments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}society_hubx_payments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_payments (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -564,6 +564,37 @@ class SHUBX51_DB_Schema {
 			PRIMARY KEY  (id),
 			KEY invoice_id (invoice_id),
 			KEY date (date)
+		) $charset_collate;";
+
+		// 29. Staff Attendance Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_attendance (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			staff_id varchar(50) NOT NULL,
+			date date NOT NULL,
+			time_in time DEFAULT NULL,
+			time_out time DEFAULT NULL,
+			status varchar(20) DEFAULT 'present' NOT NULL,
+			marked_by bigint(20) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY staff_id (staff_id),
+			KEY date (date)
+		) $charset_collate;";
+
+		// 30. Staff Concerns Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_concerns (
+			id varchar(50) NOT NULL,
+			staff_id varchar(50) NOT NULL,
+			type varchar(20) DEFAULT 'society' NOT NULL,
+			flat_no varchar(50) DEFAULT '' NOT NULL,
+			description text NOT NULL,
+			status varchar(20) DEFAULT 'open' NOT NULL,
+			raised_by bigint(20) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			resolved_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY staff_id (staff_id),
+			KEY status (status)
 		) $charset_collate;";
 
 		foreach ( $tables as $sql ) {
@@ -580,7 +611,7 @@ class SHUBX51_DB_Schema {
 		global $wpdb;
 
 		// 1. Channels
-		$channels_table = "{$wpdb->prefix}society_hubx_notification_channels";
+		$channels_table = "{$wpdb->prefix}shubx51_notification_channels";
 		$existing_channels = $wpdb->get_var("SELECT COUNT(*) FROM $channels_table");
 		
 		if ($existing_channels == 0) {
@@ -590,7 +621,7 @@ class SHUBX51_DB_Schema {
 		}
 
 		// 2. Events
-		$events_table = "{$wpdb->prefix}society_hubx_notification_events";
+		$events_table = "{$wpdb->prefix}shubx51_notification_events";
 		$default_events = [
 			['event_slug' => 'visitor_checkin', 'module' => 'visitors', 'default_channels' => 'inapp,whatsapp,email'],
 			['event_slug' => 'invoice_generated', 'module' => 'accounts', 'default_channels' => 'email,inapp'],
@@ -606,7 +637,10 @@ class SHUBX51_DB_Schema {
 			['event_slug' => 'violation_reported', 'module' => 'rules', 'default_channels' => 'inapp,email,whatsapp'],
 			['event_slug' => 'violation_resolved', 'module' => 'rules', 'default_channels' => 'inapp,email'],
 			['event_slug' => 'appeal_approved', 'module' => 'rules', 'default_channels' => 'inapp,email'],
-			['event_slug' => 'appeal_rejected', 'module' => 'rules', 'default_channels' => 'inapp,email']
+			['event_slug' => 'appeal_rejected', 'module' => 'rules', 'default_channels' => 'inapp,email'],
+			// Staff Events
+			['event_slug' => 'society_staff_concern', 'module' => 'staff', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'flat_staff_concern', 'module' => 'staff', 'default_channels' => 'inapp,email,whatsapp']
 		];
 
 		foreach ($default_events as $event) {
@@ -617,7 +651,7 @@ class SHUBX51_DB_Schema {
 		}
 
 		// 3. Templates (Default V1)
-		$templates_table = "{$wpdb->prefix}society_hubx_notification_templates";
+		$templates_table = "{$wpdb->prefix}shubx51_notification_templates";
 		$default_templates = [
 			// Visitor Templates
 			['event_slug' => 'visitor_checkin', 'channel' => 'inapp', 'subject' => 'Visitor Arrived', 'content' => 'Visitor {visitor_name} has arrived at the gate.'],
@@ -662,7 +696,15 @@ class SHUBX51_DB_Schema {
 			['event_slug' => 'appeal_approved', 'channel' => 'email', 'subject' => 'Appeal Approved - Violation #{id}', 'content' => 'Hello {resident_name},<br><br>Your appeal for violation #{id} has been approved. The fine has been waived.'],
 			
 			['event_slug' => 'appeal_rejected', 'channel' => 'inapp', 'subject' => 'Appeal Rejected', 'content' => 'Your appeal for violation #{id} has been rejected.'],
-			['event_slug' => 'appeal_rejected', 'channel' => 'email', 'subject' => 'Appeal Rejected - Violation #{id}', 'content' => 'Hello {resident_name},<br><br>Your appeal for violation #{id} has been rejected.<br><br>Reason: {reason}<br><br>The fine remains payable.']
+			['event_slug' => 'appeal_rejected', 'channel' => 'email', 'subject' => 'Appeal Rejected - Violation #{id}', 'content' => 'Hello {resident_name},<br><br>Your appeal for violation #{id} has been rejected.<br><br>Reason: {reason}<br><br>The fine remains payable.'],
+			
+			// Staff Concerns Templates
+			['event_slug' => 'society_staff_concern', 'channel' => 'inapp', 'subject' => 'Society Staff Concern Raised', 'content' => 'A concern was raised by society staff {staff_name}: {description}'],
+			['event_slug' => 'society_staff_concern', 'channel' => 'email', 'subject' => 'Society Staff Concern: {staff_name}', 'content' => 'Hello,<br><br>A concern was raised by society staff member <b>{staff_name}</b>.<br><br>Details: {description}'],
+			
+			['event_slug' => 'flat_staff_concern', 'channel' => 'inapp', 'subject' => 'Flat Staff Concern', 'content' => 'Your staff {staff_name} raised a concern: {description}'],
+			['event_slug' => 'flat_staff_concern', 'channel' => 'email', 'subject' => 'Staff Concern: {staff_name}', 'content' => 'Hello {resident_name},<br><br>Your flat staff member <b>{staff_name}</b> has raised a concern.<br><br>Details: {description}'],
+			['event_slug' => 'flat_staff_concern', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Alert: Your staff {staff_name} raised a concern. Login to view details.']
 		];
 
 		foreach ($default_templates as $tpl) {
@@ -675,7 +717,7 @@ class SHUBX51_DB_Schema {
 		}
 		
 		// 4. Seed Default Rule Categories
-		$categories_table = "{$wpdb->prefix}society_hubx_rule_categories";
+		$categories_table = "{$wpdb->prefix}shubx51_rule_categories";
 		$existing_categories = $wpdb->get_var("SELECT COUNT(*) FROM $categories_table");
 		
 		if ($existing_categories == 0) {
@@ -697,7 +739,7 @@ class SHUBX51_DB_Schema {
 		}
 
 		// 5. Seed Default Roles
-		$roles_table = "{$wpdb->prefix}society_hubx_roles";
+		$roles_table = "{$wpdb->prefix}shubx51_roles";
 		$existing_roles = $wpdb->get_var("SELECT COUNT(*) FROM $roles_table");
 		
 		if ($existing_roles == 0) {
@@ -747,39 +789,41 @@ class SHUBX51_DB_Schema {
         global $wpdb;
         
         $tables = array(
-            'society_hubx_flats',
-            'society_hubx_residents',
-            'society_hubx_resident_history',
-            'society_hubx_expenses',
-            'society_hubx_assets',
-            'society_hubx_notices',
-            'society_hubx_invoices',
-            'society_hubx_receipts',
-            'society_hubx_polls',
-            'society_hubx_votes',
-            'society_hubx_vehicles',
-            'society_hubx_facilities',
-            'society_hubx_bookings',
-            'society_hubx_daily_help',
-            'society_hubx_documents',
-            'society_hubx_rules',
-            'society_hubx_rule_versions',
-            'society_hubx_rule_acknowledgments',
-            'society_hubx_rule_violations',
-            'society_hubx_rule_categories',
-            'society_hubx_requests',
-            'society_hubx_audit_logs',
-            'society_hubx_meta',
-            'society_hubx_notification_channels',
-            'society_hubx_notification_events',
-            'society_hubx_notification_templates',
-            'society_hubx_notification_preferences',
-            'society_hubx_notification_logs',
-            'society_hubx_inapp_notifications',
-            'society_hubx_roles',
-            'society_hubx_staff_flats',
-            'society_hubx_resident_role_map',
-            'society_hubx_payments'
+            'shubx51_flats',
+            'shubx51_residents',
+            'shubx51_resident_history',
+            'shubx51_expenses',
+            'shubx51_assets',
+            'shubx51_notices',
+            'shubx51_invoices',
+            'shubx51_receipts',
+            'shubx51_polls',
+            'shubx51_votes',
+            'shubx51_vehicles',
+            'shubx51_facilities',
+            'shubx51_bookings',
+            'shubx51_daily_help',
+            'shubx51_documents',
+            'shubx51_rules',
+            'shubx51_rule_versions',
+            'shubx51_rule_acknowledgments',
+            'shubx51_rule_violations',
+            'shubx51_rule_categories',
+            'shubx51_requests',
+            'shubx51_audit_logs',
+            'shubx51_meta',
+            'shubx51_notification_channels',
+            'shubx51_notification_events',
+            'shubx51_notification_templates',
+            'shubx51_notification_preferences',
+            'shubx51_notification_logs',
+            'shubx51_inapp_notifications',
+            'shubx51_roles',
+            'shubx51_staff_flats',
+            'shubx51_resident_role_map',
+            'shubx51_payments',
+            'shubx51_staff_attendance',
+            'shubx51_staff_concerns'
         );
         
         foreach($tables as $t) {

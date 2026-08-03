@@ -3,7 +3,7 @@
  * Module: General Request Manager
  * Handles generic resident requests (CCTV, Swimming Pool, Play-time, etc.).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -59,7 +59,7 @@ class SHUBX51_General_Request_Manager implements SHUBX51_Module {
 			'category'      => $category,
 			'comments'      => $comments,
 			'resident_id'   => $user_id,
-			'flat_no'       => $resident ? Society_HubX::get_instance()->db->get_flat_display_name($resident['flat_no']) : 'Unknown',
+			'flat_no'       => $resident ? SHUBX51_Plugin::get_instance()->db->get_flat_display_name($resident['flat_no']) : 'Unknown',
 			'resident_name' => $resident ? $resident['name'] : 'Unknown'
 		];
 

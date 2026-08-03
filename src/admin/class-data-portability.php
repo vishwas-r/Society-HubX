@@ -3,7 +3,7 @@
  * Class: Data Portability
  * Handles Import/Export of Society Data (CSV/JSON/ZIP).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -77,7 +77,7 @@ class SHUBX51_Data_Portability {
 		file_put_contents( $temp_dir . 'search_index_dump.json', json_encode( $full_dump, JSON_PRETTY_PRINT ) );
 
 		// 4. Create ZIP
-		$zip_filename = 'society_hubx_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
+		$zip_filename = 'shubx51_export_' . gmdate( 'Y-m-d_H-i-s' ) . '.zip';
 		$zip_path     = $temp_dir . $zip_filename;
 
 		if ( class_exists( 'ZipArchive' ) ) {

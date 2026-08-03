@@ -7,7 +7,7 @@
  * - Writes go to Google Sheets (if connected) then Update Local.
  * - If Offline, Writes go directly to Local JSON.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -69,35 +69,35 @@ class SHUBX51_DB_Router {
 	public function get_table_name( $slug ) {
 		global $wpdb;
 		$tables = array(
-            'residents'               => $wpdb->prefix . 'society_hubx_residents',
-            'flats'                   => $wpdb->prefix . 'society_hubx_flats',
-            'daily_help'              => $wpdb->prefix . 'society_hubx_daily_help',
-            'invoices'                => $wpdb->prefix . 'society_hubx_invoices',
-            'transactions'            => $wpdb->prefix . 'society_hubx_transactions',
-            'notices'                 => $wpdb->prefix . 'society_hubx_notices',
-            'amenities'               => $wpdb->prefix . 'society_hubx_amenities',
-            'bookings'                => $wpdb->prefix . 'society_hubx_bookings',
-            'vehicles'                => $wpdb->prefix . 'society_hubx_vehicles',
-            'visitors'                => $wpdb->prefix . 'society_hubx_visitors',
-            'complaints'              => $wpdb->prefix . 'society_hubx_complaints',
-            'suggestions'             => $wpdb->prefix . 'society_hubx_suggestions',
-            'polls'                   => $wpdb->prefix . 'society_hubx_polls',
-            'poll_options'            => $wpdb->prefix . 'society_hubx_poll_options',
-            'poll_votes'              => $wpdb->prefix . 'society_hubx_poll_votes',
-            'documents'               => $wpdb->prefix . 'society_hubx_documents',
-            'events'                  => $wpdb->prefix . 'society_hubx_events',
-            'vendors'                 => $wpdb->prefix . 'society_hubx_vendors',
-            'staff'                   => $wpdb->prefix . 'society_hubx_staff',
-            'settings'                => $wpdb->prefix . 'society_hubx_settings',
-            'requests'                => $wpdb->prefix . 'society_hubx_requests',
-            'audit_logs'              => $wpdb->prefix . 'society_hubx_audit_logs',
-            'roles'                   => $wpdb->prefix . 'society_hubx_roles',
-            'staff_flats'             => $wpdb->prefix . 'society_hubx_staff_flats',
-            'resident_role_map'       => $wpdb->prefix . 'society_hubx_resident_role_map',
-            'resident_flat_map'       => $wpdb->prefix . 'society_hubx_resident_flat_map',
-            'payments'                => $wpdb->prefix . 'society_hubx_payments',
+            'residents'               => $wpdb->prefix . 'shubx51_residents',
+            'flats'                   => $wpdb->prefix . 'shubx51_flats',
+            'daily_help'              => $wpdb->prefix . 'shubx51_daily_help',
+            'invoices'                => $wpdb->prefix . 'shubx51_invoices',
+            'transactions'            => $wpdb->prefix . 'shubx51_transactions',
+            'notices'                 => $wpdb->prefix . 'shubx51_notices',
+            'amenities'               => $wpdb->prefix . 'shubx51_amenities',
+            'bookings'                => $wpdb->prefix . 'shubx51_bookings',
+            'vehicles'                => $wpdb->prefix . 'shubx51_vehicles',
+            'visitors'                => $wpdb->prefix . 'shubx51_visitors',
+            'complaints'              => $wpdb->prefix . 'shubx51_complaints',
+            'suggestions'             => $wpdb->prefix . 'shubx51_suggestions',
+            'polls'                   => $wpdb->prefix . 'shubx51_polls',
+            'poll_options'            => $wpdb->prefix . 'shubx51_poll_options',
+            'poll_votes'              => $wpdb->prefix . 'shubx51_poll_votes',
+            'documents'               => $wpdb->prefix . 'shubx51_documents',
+            'events'                  => $wpdb->prefix . 'shubx51_events',
+            'vendors'                 => $wpdb->prefix . 'shubx51_vendors',
+            'staff'                   => $wpdb->prefix . 'shubx51_staff',
+            'settings'                => $wpdb->prefix . 'shubx51_settings',
+            'requests'                => $wpdb->prefix . 'shubx51_requests',
+            'audit_logs'              => $wpdb->prefix . 'shubx51_audit_logs',
+            'roles'                   => $wpdb->prefix . 'shubx51_roles',
+            'staff_flats'             => $wpdb->prefix . 'shubx51_staff_flats',
+            'resident_role_map'       => $wpdb->prefix . 'shubx51_resident_role_map',
+            'resident_flat_map'       => $wpdb->prefix . 'shubx51_resident_flat_map',
+            'payments'                => $wpdb->prefix . 'shubx51_payments',
         );
-		return $tables[ $slug ] ?? $wpdb->prefix . 'society_hubx_' . $slug;
+		return $tables[ $slug ] ?? $wpdb->prefix . 'shubx51_' . $slug;
 	}
 
 	/**

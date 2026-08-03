@@ -53,7 +53,7 @@ usort( $polls, function($a, $b) {
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
                     <div class="bg-primary bg-opacity-10 px-3 py-2 rounded-xl border border-light d-flex align-items-center">
-                        <span class="small fw-bold text-primary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Total Polls: <?php echo count($polls); ?></span>
+                        <span class="small fw-bold text-primary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Total Polls: <?php echo esc_html( count($polls) ); ?></span>
                     </div>
                 </div>
             </div>
@@ -79,12 +79,12 @@ usort( $polls, function($a, $b) {
                 $status_bg = $final_status === 'Active' ? 'bg-success bg-opacity-10 text-success border-success border-opacity-10' : 'bg-light text-secondary border-light';
                 $search_text = esc_attr(strtolower(($p['title']??'') . ' ' . ($p['description']??'')));
             ?>
-                <div class="col-lg-6 shubx-poll-card" data-search="<?php echo $search_text; ?>">
+                <div class="col-lg-6 shubx-poll-card" data-search="<?php echo esc_html( $search_text ); ?>">
                     <div class="card border border-light shadow-none rounded-3 h-100 overflow-hidden bg-white hover-shadow-sm transition-all border-top border-4 <?php echo $final_status === 'Active' ? 'border-primary' : 'border-secondary opacity-50'; ?>">
                         <div class="p-4 p-md-5 flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start mb-4">
-                                <span class="badge <?php echo $status_bg; ?> border px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;">
-                                    <?php echo $final_status; ?>
+                                <span class="badge <?php echo esc_html( $status_bg ); ?> border px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;">
+                                    <?php echo esc_html( $final_status ); ?>
                                 </span>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light border-0 shadow-none p-2 rounded-circle hover-bg-slate-100" type="button" data-bs-toggle="dropdown">
@@ -113,10 +113,10 @@ usort( $polls, function($a, $b) {
                                     <div>
                                         <div class="d-flex justify-content-between small fw-bold text-dark mb-2">
                                             <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em;"><?php echo esc_html($opt); ?></span>
-                                            <span class="text-primary" style="font-size: 12px;"><?php echo $v_count; ?> votes (<?php echo $pct; ?>%)</span>
+                                            <span class="text-primary" style="font-size: 12px;"><?php echo esc_html( $v_count ); ?> votes (<?php echo esc_html( $pct ); ?>%)</span>
                                         </div>
                                         <div class="progress rounded-pill bg-slate-100" style="height: 8px;">
-                                            <div class="progress-bar bg-primary rounded-pill transition-all" role="progressbar" style="width: <?php echo $pct; ?>%" aria-valuenow="<?php echo $pct; ?>" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar bg-primary rounded-pill transition-all" role="progressbar" style="width: <?php echo esc_html( $pct ); ?>%" aria-valuenow="<?php echo esc_html( $pct ); ?>" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -126,11 +126,11 @@ usort( $polls, function($a, $b) {
                         <div class="p-4 bg-light border-top border-light d-flex justify-content-between align-items-center">
                             <span class="small text-muted d-flex align-items-center gap-2">
                                 <i class="bi bi-calendar3"></i>
-                                <span>Launched: <?php echo wp_date('M d, Y', strtotime($p['created_at'])); ?></span>
+                                <span>Launched: <?php echo esc_html( wp_date('M d, Y', strtotime($p['created_at'])) ); ?></span>
                             </span>
                             <span class="small fw-bold text-dark d-flex align-items-center gap-2">
                                 <i class="bi bi-person-check-fill fs-6 text-primary"></i>
-                                <span><?php echo $total_votes; ?> VOTES TOTAL</span>
+                                <span><?php echo esc_html( $total_votes ); ?> VOTES TOTAL</span>
                             </span>
                         </div>
                     </div>
@@ -153,7 +153,7 @@ add_action('shubx51_admin_modals', function() {
                 <h5 class="fw-bold m-0 text-dark">New Society Poll</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="<?php echo admin_url('admin-post.php'); ?>" method="POST">
+            <form action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="shubx51_create_poll">
                     <?php wp_nonce_field('shubx51_poll_action'); ?>

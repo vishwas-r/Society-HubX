@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 /**
  * Class: Privacy Manager
  * Handles DPDP/GDPR Compliance (Data Export & Erasure).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -118,7 +118,7 @@ class SHUBX51_Privacy_Manager {
 			return $data;
 		}
 		// If current user has high privileges, don't mask
-		$shubx = Society_HubX::get_instance();
+		$shubx = SHUBX51_Plugin::get_instance();
 		if ( $shubx->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			return $data;
 		}

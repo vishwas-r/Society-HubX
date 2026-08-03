@@ -40,7 +40,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                 </div>
                 <div>
                     <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.05em; font-size: 10px;">Pending Action</div>
-                    <div class="h3 fw-bold m-0"><?php echo count($pending); ?></div>
+                    <div class="h3 fw-bold m-0"><?php echo esc_html( count($pending) ); ?></div>
                 </div>
             </div>
         </div>
@@ -167,11 +167,11 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                             <td class="px-4 py-4">
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="bg-primary bg-opacity-10 text-primary rounded-pill d-flex align-items-center justify-content-center fw-bold" style="width: 24px; height: 24px; font-size: 10px;">
-                                        <?php echo substr($name, 0, 1); ?>
+                                        <?php echo esc_html( substr($name, 0, 1) ); ?>
                                     </div>
                                     <span class="small fw-medium text-dark"><?php echo esc_html($name); ?></span>
                                 </div>
-                                <div class="text-muted small" style="font-size: 10px;"><?php echo wp_date('d M, h:i A', strtotime($req['created_at'])); ?></div>
+                                <div class="text-muted small" style="font-size: 10px;"><?php echo esc_html( wp_date('d M, h:i A', strtotime($req['created_at'])) ); ?></div>
                             </td>
                             <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 align-items-center">
@@ -186,7 +186,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                             data-date="<?php echo esc_attr(wp_date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
                                         <i class="bi bi-eye me-1"></i> VIEW
                                     </button>
-                                    <?php echo SHUBX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
+                                    <?php echo esc_html( SHUBX51_Admin_UI::render_approval_buttons( $req['id'], $module ) ); ?>
                                 </div>
                             </td>
                         </tr>
@@ -234,14 +234,14 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                         </td>
                         <td class="px-2 py-3">
                             <span class="badge <?php echo $status==='approved'?'bg-success':'bg-danger'; ?> bg-opacity-10 <?php echo $status==='approved'?'text-success':'text-danger'; ?> rounded-pill px-2 py-1" style="font-size: 9px;">
-                                <?php echo strtoupper($status); ?>
+                                <?php echo esc_html( strtoupper($status) ); ?>
                             </span>
                         </td>
                         <td class="px-2 py-3">
                             <div class="text-muted small" style="font-size: 10px;">
                                 <?php echo $user ? $user->display_name : 'System'; ?>
                                 <span class="mx-1">•</span>
-                                <?php echo wp_date('d M', strtotime($req['processed_at'])); ?>
+                                <?php echo esc_html( wp_date('d M', strtotime($req['processed_at'])) ); ?>
                             </div>
                         </td>
                         <td class="pe-5 py-3 text-end">

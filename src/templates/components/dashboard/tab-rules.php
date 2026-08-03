@@ -25,8 +25,8 @@ $categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' 
 
 // Get pending acknowledgments
 global $wpdb;
-$rules_table = "{$wpdb->prefix}society_hubx_rules";
-$acks_table = "{$wpdb->prefix}society_hubx_rule_acknowledgments";
+$rules_table = "{$wpdb->prefix}shubx51_rules";
+$acks_table = "{$wpdb->prefix}shubx51_rule_acknowledgments";
 
 $pending_rules = $wpdb->get_results($wpdb->prepare("
     SELECT r.* FROM $rules_table r
@@ -58,7 +58,7 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="fw-bold mb-1">Pending Acknowledgments</h6>
-                            <p class="m-0 small">You have <strong><?php echo count($pending_rules); ?> rule(s)</strong> that require your acknowledgment.</p>
+                            <p class="m-0 small">You have <strong><?php echo esc_html( count($pending_rules) ); ?> rule(s)</strong> that require your acknowledgment.</p>
                         </div>
                         <button onclick="showPendingAcknowledgments()" class="btn btn-warning px-4 fw-bold rounded-pill">
                             View & Acknowledge
@@ -82,7 +82,7 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                 </div>
                                 <div>
                                     <h6 class="fw-bold mb-1">Outstanding Violations</h6>
-                                    <p class="m-0 small">You have <strong><?php echo count($unpaid_violations); ?> unpaid violation(s)</strong> • Total: ₹<?php echo number_format($total_fines, 2); ?></p>
+                                    <p class="m-0 small">You have <strong><?php echo esc_html( count($unpaid_violations) ); ?> unpaid violation(s)</strong> • Total: ₹<?php echo esc_html( number_format($total_fines, 2) ); ?></p>
                                 </div>
                             </div>
                             <button onclick="showMyViolations()" class="btn btn-danger px-4 fw-bold rounded-pill">
@@ -108,12 +108,12 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                             <div class="col-md-6 col-lg-4">
                                 <div class="p-3 border rounded-3 hover-shadow cursor-pointer" onclick="filterByCategory('<?php echo esc_attr($cat['slug']); ?>')">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="p-2 rounded-3" style="background-color: <?php echo $cat['color']; ?>20;">
-                                            <i class="<?php echo $cat['icon']; ?> fs-2" style="color: <?php echo $cat['color']; ?>;"></i>
+                                        <div class="p-2 rounded-3" style="background-color: <?php echo esc_html( $cat['color'] ); ?>20;">
+                                            <i class="<?php echo esc_html( $cat['icon'] ); ?> fs-2" style="color: <?php echo esc_html( $cat['color'] ); ?>;"></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="fw-bold"><?php echo esc_html($cat['name']); ?></div>
-                                            <div class="small text-muted"><?php echo $cat_count; ?> rules</div>
+                                            <div class="small text-muted"><?php echo esc_html( $cat_count ); ?> rules</div>
                                         </div>
                                         <i class="bi bi-chevron-right text-muted"></i>
                                     </div>
@@ -172,13 +172,13 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <div class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="badge px-3 py-1 rounded-pill" style="background-color: <?php echo $cat_color; ?>20; color: <?php echo $cat_color; ?>; border: 1px solid <?php echo $cat_color; ?>40;">
-                                            <i class="<?php echo $cat_icon; ?> me-1"></i>
-                                            <?php echo $cat_name; ?>
+                                        <span class="badge px-3 py-1 rounded-pill" style="background-color: <?php echo esc_html( $cat_color ); ?>20; color: <?php echo esc_html( $cat_color ); ?>; border: 1px solid <?php echo esc_html( $cat_color ); ?>40;">
+                                            <i class="<?php echo esc_html( $cat_icon ); ?> me-1"></i>
+                                            <?php echo esc_html( $cat_name ); ?>
                                         </span>
                                         <?php if($rule['priority'] === 'critical' || $rule['priority'] === 'high'): ?>
                                             <span class="badge bg-danger text-white px-2 py-1 rounded-pill">
-                                                <?php echo ucfirst($rule['priority']); ?>
+                                                <?php echo esc_html( ucfirst($rule['priority']) ); ?>
                                             </span>
                                         <?php endif; ?>
                                         <?php if($is_acked): ?>
@@ -191,9 +191,9 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                     <div class="small text-muted">
                                         Effective: <?php echo $rule['effective_date'] ? wp_date('M d, Y', strtotime($rule['effective_date'])) : 'Immediately'; ?>
                                         <?php if($rule['expiry_date']): ?>
-                                            • Expires: <?php echo wp_date('M d, Y', strtotime($rule['expiry_date'])); ?>
+                                            • Expires: <?php echo esc_html( wp_date('M d, Y', strtotime($rule['expiry_date'])) ); ?>
                                         <?php endif; ?>
-                                        • Version <?php echo $rule['version']; ?>
+                                        • Version <?php echo esc_html( $rule['version'] ); ?>
                                     </div>
                                 </div>
                                  <button onclick="viewRuleModal(<?php echo esc_attr(wp_json_encode($rule)); ?>, <?php echo $is_acked ? 'true' : 'false'; ?>)" 
@@ -211,7 +211,7 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                     <i class="bi bi-info-circle me-2"></i>
                                     <strong>Acknowledgment Required</strong>
                                     <?php if($rule['acknowledgment_deadline']): ?>
-                                        • Deadline: <?php echo wp_date('M d, Y', strtotime($rule['acknowledgment_deadline'])); ?>
+                                        • Deadline: <?php echo esc_html( wp_date('M d, Y', strtotime($rule['acknowledgment_deadline'])) ); ?>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
@@ -247,8 +247,8 @@ $violations = $db->get( 'rule_violations', array( 'where' => array( 'flat_no' =>
                                             <div class="fw-bold"><?php echo esc_html($v_rule_title); ?></div>
                                             <div class="small text-muted"><?php echo esc_html($v['description']); ?></div>
                                         </td>
-                                        <td class="small"><?php echo wp_date('M d, Y', strtotime($v['violation_date'])); ?></td>
-                                        <td class="fw-bold">₹<?php echo number_format($v['fine_amount'], 2); ?></td>
+                                        <td class="small"><?php echo esc_html( wp_date('M d, Y', strtotime($v['violation_date'])) ); ?></td>
+                                        <td class="fw-bold">₹<?php echo esc_html( number_format($v['fine_amount'], 2) ); ?></td>
                                         <td>
                                             <span class="badge bg-<?php echo $v['status'] === 'resolved' ? 'success' : ($v['status'] === 'dismissed' ? 'secondary' : 'warning'); ?> text-white">
                                                 <?php echo esc_html( ucfirst($v['status']) ); ?>

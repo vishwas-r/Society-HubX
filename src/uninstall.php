@@ -5,7 +5,7 @@
  * Triggered when the plugin is uninstalled.
  * Cleans up options and custom database tables.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 // If uninstall not called from WordPress, exit.
@@ -37,27 +37,27 @@ global $wpdb;
 
 // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Local uninstall variables.
 $shubx51_tables = array(
-	'society_hubx_flats',
-	'society_hubx_residents',
-	'society_hubx_resident_history',
-	'society_hubx_resident_role_map',
-	'society_hubx_daily_help',
-	'society_hubx_notices',
-	'society_hubx_documents',
-	'society_hubx_bookings',
-	'society_hubx_facilities',
-	'society_hubx_assets',
-	'society_hubx_expenses',
-	'society_hubx_invoices',
-	'society_hubx_ledger',
-	'society_hubx_payments',
-	'society_hubx_rules',
-	'society_hubx_rule_versions',
-	'society_hubx_rule_acknowledgments',
-	'society_hubx_rule_violations',
-	'society_hubx_rule_categories',
-	'society_hubx_requests',
-	'society_hubx_activity_logs',
+	'shubx51_flats',
+	'shubx51_residents',
+	'shubx51_resident_history',
+	'shubx51_resident_role_map',
+	'shubx51_daily_help',
+	'shubx51_notices',
+	'shubx51_documents',
+	'shubx51_bookings',
+	'shubx51_facilities',
+	'shubx51_assets',
+	'shubx51_expenses',
+	'shubx51_invoices',
+	'shubx51_ledger',
+	'shubx51_payments',
+	'shubx51_rules',
+	'shubx51_rule_versions',
+	'shubx51_rule_acknowledgments',
+	'shubx51_rule_violations',
+	'shubx51_rule_categories',
+	'shubx51_requests',
+	'shubx51_activity_logs',
 );
 
 foreach ( $shubx51_tables as $shubx51_table ) {

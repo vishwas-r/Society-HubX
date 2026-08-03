@@ -59,17 +59,17 @@ usort($published, function($a, $b) {
         <ul class="nav nav-tabs border-0 gap-3 gap-md-5 text-nowrap flex-nowrap" id="noticeTabs">
             <li class="nav-item">
                 <button class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary notice-tab-btn" data-tab="published" style="background:none;">
-                    Published <span class="badge bg-primary bg-opacity-10 text-primary ms-2 rounded-pill"><?php echo count($published); ?></span>
+                    Published <span class="badge bg-primary bg-opacity-10 text-primary ms-2 rounded-pill"><?php echo esc_html( count($published) ); ?></span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent notice-tab-btn" data-tab="drafts" style="background:none;">
-                    Drafts <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2 rounded-pill"><?php echo count($drafts); ?></span>
+                    Drafts <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2 rounded-pill"><?php echo esc_html( count($drafts) ); ?></span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent notice-tab-btn" data-tab="archived" style="background:none;">
-                    Archive <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2 rounded-pill"><?php echo count($archived); ?></span>
+                    Archive <span class="badge bg-secondary bg-opacity-10 text-secondary ms-2 rounded-pill"><?php echo esc_html( count($archived) ); ?></span>
                 </button>
             </li>
         </ul>
@@ -124,8 +124,8 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
     if ( empty( $list ) ) : ?>
         <div class="py-5 text-center text-muted bg-white rounded-3 shadow-sm border border-light">
             <i class="bi bi-clipboard-x text-muted opacity-25 mb-4 d-block" style="font-size: 64px;"></i>
-            <h5 class="text-dark fw-bold"><?php echo $empty_title; ?></h5>
-            <p class="text-secondary m-0"><?php echo $empty_msg; ?></p>
+            <h5 class="text-dark fw-bold"><?php echo esc_html( $empty_title ); ?></h5>
+            <p class="text-secondary m-0"><?php echo esc_html( $empty_msg ); ?></p>
         </div>
     <?php else : ?>
         <div class="d-flex flex-column gap-4">
@@ -140,10 +140,10 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                 elseif($urgency === 'maintenance') { $border_class = 'border-warning border-opacity-50'; }
                 elseif($urgency === 'info') { $border_class = 'border-primary border-opacity-50'; }
             ?>
-                <div class="card <?php echo $border_class; ?> <?php echo $glow_class; ?> shadow-sm rounded-3 overflow-hidden bg-white shubx-notice-card" 
+                <div class="card <?php echo esc_html( $border_class ); ?> <?php echo esc_html( $glow_class ); ?> shadow-sm rounded-3 overflow-hidden bg-white shubx-notice-card" 
                      data-id="<?php echo esc_attr($n['id']); ?>" 
-                     data-search="<?php echo $search_text; ?>"
-                     data-urgency="<?php echo $urgency; ?>">
+                     data-search="<?php echo esc_html( $search_text ); ?>"
+                     data-urgency="<?php echo esc_html( $urgency ); ?>">
                     
                     <?php if($is_pinned): ?>
                         <div class="bg-primary bg-opacity-10 px-3 py-1 small fw-bold text-primary d-inline-flex align-items-center gap-2 rounded-bottom-end-3" style="font-size: 10px;">
@@ -155,14 +155,14 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div class="d-flex gap-3 align-items-start">
                                 <div class="notice-urgency-icon rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" 
-                                     style="width: 48px; height: 48px; background: <?php echo getUrgencyColor($urgency, true); ?>; color: <?php echo getUrgencyColor($urgency); ?>;">
-                                    <i class="bi <?php echo getUrgencyIcon($urgency); ?> fs-4"></i>
+                                     style="width: 48px; height: 48px; background: <?php echo esc_html( getUrgencyColor($urgency, true) ); ?>; color: <?php echo esc_html( getUrgencyColor($urgency) ); ?>;">
+                                    <i class="bi <?php echo esc_html( getUrgencyIcon($urgency) ); ?> fs-4"></i>
                                 </div>
                                 <div>
                                     <h4 class="h5 fw-bold text-dark m-0" style="letter-spacing: -0.01em;"><?php echo esc_html( $n['title'] ); ?></h4>
                                     <div class="small text-secondary opacity-75 mt-1 d-flex align-items-center gap-2">
                                         <i class="bi bi-calendar3"></i>
-                                        <span><?php echo wp_date( 'd M Y, H:i', strtotime( $n['created_at'] ) ); ?></span>
+                                        <span><?php echo esc_html( wp_date( 'd M Y, H:i', strtotime( $n['created_at'] ) ) ); ?></span>
                                         <span class="mx-1">•</span>
                                         <span class="text-uppercase fw-bold" style="font-size: 10px;">For: <?php echo esc_html($n['audience']); ?></span>
                                     </div>
@@ -173,10 +173,10 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                                     <i class="bi bi-three-dots-vertical fs-5"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3">
-                                    <li><a class="dropdown-item py-2 fw-semibold js-edit-notice" href="#" data-id="<?php echo $n['id']; ?>"><i class="bi bi-pencil me-2"></i> Edit Notice</a></li>
-                                    <li><a class="dropdown-item py-2 fw-semibold js-toggle-pin" href="#" data-id="<?php echo $n['id']; ?>" data-pinned="<?php echo $is_pinned ? '0' : '1'; ?>"><i class="bi bi-pin-angle me-2"></i> <?php echo $is_pinned ? 'Unpin' : 'Pin to Top'; ?></a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold js-edit-notice" href="#" data-id="<?php echo esc_html( $n['id'] ); ?>"><i class="bi bi-pencil me-2"></i> Edit Notice</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold js-toggle-pin" href="#" data-id="<?php echo esc_html( $n['id'] ); ?>" data-pinned="<?php echo $is_pinned ? '0' : '1'; ?>"><i class="bi bi-pin-angle me-2"></i> <?php echo $is_pinned ? 'Unpin' : 'Pin to Top'; ?></a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item py-2 fw-semibold text-danger js-delete-notice" href="#" data-id="<?php echo $n['id']; ?>"><i class="bi bi-trash me-2"></i> Delete</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold text-danger js-delete-notice" href="#" data-id="<?php echo esc_html( $n['id'] ); ?>"><i class="bi bi-trash me-2"></i> Delete</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -186,8 +186,8 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                         <div class="d-flex align-items-center justify-content-between pt-4 border-top border-light">
                             <div class="d-flex gap-2">
                                 <span class="badge rounded-pill px-3 py-1.5 fw-bold text-uppercase" 
-                                      style="font-size: 9px; background: <?php echo getUrgencyColor($urgency, true); ?>; color: <?php echo getUrgencyColor($urgency); ?>;">
-                                    <?php echo $urgency; ?>
+                                      style="font-size: 9px; background: <?php echo esc_html( getUrgencyColor($urgency, true) ); ?>; color: <?php echo esc_html( getUrgencyColor($urgency) ); ?>;">
+                                    <?php echo esc_html( $urgency ); ?>
                                 </span>
                                 <?php if(!empty($n['expiry_date'])): ?>
                                     <span class="badge bg-light text-muted border border-light px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;">Exp: <?php echo esc_html($n['expiry_date']); ?></span>

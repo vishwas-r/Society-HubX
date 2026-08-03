@@ -3,7 +3,7 @@
  * Module: Staff Manager
  * Handles Maintenance Staff & Daily Help.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if (!defined('ABSPATH')) {
@@ -22,17 +22,23 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         $this->drive = new SHUBX51_Drive_Manager();
 
         add_action('admin_menu', array($this, 'register_menu'), 200);
+        add_action('rest_api_init', array($this, 'register_rest_routes'));
 
         // AJAX
         add_action('wp_ajax_shubx51_add_staff', array($this, 'handle_add_staff'));
         add_action('wp_ajax_shubx51_edit_staff', array($this, 'handle_edit_staff'));
         add_action('wp_ajax_shubx51_delete_staff', array($this, 'handle_delete_staff'));
         add_action('wp_ajax_shubx51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('wp_ajax_shubx51_mark_attendance', array($this, 'handle_mark_attendance'));
+        add_action('wp_ajax_shubx51_raise_concern', array($this, 'handle_raise_concern'));
+        add_action('wp_ajax_shubx51_get_attendance_report', array($this, 'handle_get_attendance_report'));
 
         add_action('admin_post_shubx51_add_staff', array($this, 'handle_add_staff'));
         add_action('admin_post_shubx51_edit_staff', array($this, 'handle_edit_staff'));
         add_action('admin_post_shubx51_delete_staff', array($this, 'handle_delete_staff'));
         add_action('admin_post_shubx51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('admin_post_shubx51_mark_attendance', array($this, 'handle_mark_attendance'));
+        add_action('admin_post_shubx51_raise_concern', array($this, 'handle_raise_concern'));
 
         // Self-Heal Schema (Ensure columns exist)
         if (is_admin()) {
@@ -51,6 +57,42 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     public function get_instance()
     {
         return $this;
+    }
+
+    public function register_rest_routes() {
+        register_rest_route('shubx51/v1', '/biometric-sync', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'handle_biometric_sync'),
+            'permission_callback' => '__return_true', // In production, add token auth
+        ));
+    }
+
+    public function handle_biometric_sync($request) {
+        $params = $request->get_json_params();
+        if (empty($params['staff_id']) || empty($params['status'])) {
+            return new WP_Error('missing_params', 'staff_id and status are required', array('status' => 400));
+        }
+
+        $staff_id = sanitize_text_field($params['staff_id']);
+        $status = sanitize_text_field($params['status']);
+        $date = !empty($params['date']) ? sanitize_text_field($params['date']) : current_time('Y-m-d');
+        
+        $data = array(
+            'staff_id' => $staff_id,
+            'date' => $date,
+            'status' => $status,
+            'time_in' => $status === 'present' ? current_time('H:i:s') : null,
+            'marked_by' => 0, // 0 indicates system/biometric
+            'created_at' => current_time('mysql')
+        );
+
+        $res = $this->db->insert('staff_attendance', $data);
+
+        if (is_wp_error($res)) {
+            return new WP_Error('db_error', $res->get_error_message(), array('status' => 500));
+        }
+
+        return rest_ensure_response(array('success' => true, 'message' => 'Attendance synced successfully'));
     }
 
     public function get_module_slug()
@@ -497,4 +539,173 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
         );
     }
+    public function handle_mark_attendance() {
+        if (wp_doing_ajax()) {
+            check_ajax_referer('shubx51_staff_nonce');
+        } else {
+            if (!check_admin_referer('shubx51_staff_nonce')) wp_die('Security check failed');
+        }
+
+        $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
+        $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : 'present';
+        $date = isset($_POST['date']) ? sanitize_text_field(wp_unslash($_POST['date'])) : current_time('Y-m-d');
+        
+        if (!$staff_id) {
+            if (wp_doing_ajax()) wp_send_json_error(['message' => 'Staff ID is required']);
+            wp_die('Staff ID is required');
+        }
+
+        $time_in = $status === 'present' ? current_time('H:i:s') : null;
+        $time_out = null; // Can be updated later for check-out
+
+        $data = array(
+            'staff_id' => $staff_id,
+            'date' => $date,
+            'status' => $status,
+            'time_in' => $time_in,
+            'marked_by' => get_current_user_id(),
+            'created_at' => current_time('mysql')
+        );
+
+        $res = $this->db->insert('staff_attendance', $data);
+
+        if (wp_doing_ajax()) {
+            if (is_wp_error($res)) wp_send_json_error(['message' => $res->get_error_message()]);
+            wp_send_json_success(['message' => 'Attendance marked successfully']);
+        } else {
+            wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=attendance_marked'));
+        }
+        exit;
+    }
+
+    public function handle_raise_concern() {
+        if (wp_doing_ajax()) {
+            check_ajax_referer('shubx51_staff_nonce');
+        } else {
+            if (!check_admin_referer('shubx51_staff_nonce')) wp_die('Security check failed');
+        }
+
+        $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
+        $description = isset($_POST['description']) ? sanitize_textarea_field(wp_unslash($_POST['description'])) : '';
+        
+        if (!$staff_id || !$description) {
+            if (wp_doing_ajax()) wp_send_json_error(['message' => 'Staff ID and description are required']);
+            wp_die('Staff ID and description are required');
+        }
+
+        // Fetch staff details to determine routing
+        $staffs = $this->db->get('daily_help');
+        $staff = null;
+        foreach($staffs as $s) {
+            if($s['id'] === $staff_id) {
+                $staff = $s;
+                break;
+            }
+        }
+
+        if (!$staff) {
+            if (wp_doing_ajax()) wp_send_json_error(['message' => 'Staff not found']);
+            wp_die('Staff not found');
+        }
+
+        // Determine if society or flat staff
+        $type = (stripos($staff['category'], 'society') !== false || empty($staff['flat_no'])) ? 'society' : 'flat';
+        $flat_no = $type === 'flat' ? $staff['flat_no'] : '';
+
+        $concern_id = uniqid('concern_');
+        $data = array(
+            'id' => $concern_id,
+            'staff_id' => $staff_id,
+            'type' => $type,
+            'flat_no' => $flat_no,
+            'description' => $description,
+            'status' => 'open',
+            'raised_by' => get_current_user_id(),
+            'created_at' => current_time('mysql')
+        );
+
+        $res = $this->db->insert('staff_concerns', $data);
+
+        // Notify
+        if (class_exists('SHUBX51_Plugin')) {
+            $shubx = SHUBX51_Plugin::get_instance();
+            if ($type === 'society') {
+                // Alert association members
+                $shubx->notifications->trigger('society_staff_concern', 0, [
+                    'staff_name' => $staff['name'],
+                    'description' => $description
+                ], 0, 'admin'); 
+            } else {
+                // Alert flat members
+                $residents = $this->db->get('residents');
+                foreach($residents as $r) {
+                    if($r['flat_no'] === $flat_no && $r['status'] === 'approved') {
+                        $shubx->notifications->trigger('flat_staff_concern', $r['wp_user_id'], [
+                            'staff_name' => $staff['name'],
+                            'description' => $description,
+                            'resident_name' => $r['name']
+                        ], $r['wp_user_id']);
+                    }
+                }
+            }
+        }
+
+        if (wp_doing_ajax()) {
+            if (is_wp_error($res)) wp_send_json_error(['message' => $res->get_error_message()]);
+            wp_send_json_success(['message' => 'Concern raised successfully']);
+        } else {
+            wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=concern_raised'));
+        }
+        exit;
+    }
+
+    public function handle_get_attendance_report() {
+        if (!check_ajax_referer('shubx51_staff_nonce', false, false)) {
+            wp_send_json_error(['message' => 'Security check failed']);
+        }
+        $month = isset($_POST['month']) ? sanitize_text_field(wp_unslash($_POST['month'])) : wp_date('Y-m');
+        
+        $attendance = $this->db->get('staff_attendance');
+        $report_data = [];
+        $staff_totals = [];
+
+        if (!empty($attendance)) {
+            foreach ($attendance as $record) {
+                if (strpos($record['date'], $month) === 0) {
+                    $sid = $record['staff_id'];
+                    if (!isset($staff_totals[$sid])) {
+                        $staff_totals[$sid] = ['present' => 0, 'absent' => 0, 'leave' => 0];
+                    }
+                    if ($record['status'] === 'present') {
+                        $staff_totals[$sid]['present']++;
+                    } elseif ($record['status'] === 'absent') {
+                        $staff_totals[$sid]['absent']++;
+                    } elseif ($record['status'] === 'leave') {
+                        $staff_totals[$sid]['leave']++;
+                    }
+                }
+            }
+        }
+
+        $staffs = $this->db->get('daily_help');
+        if (!empty($staffs)) {
+            foreach ($staffs as $staff) {
+                $sid = $staff['id'];
+                if (isset($staff_totals[$sid])) {
+                    $report_data[] = [
+                        'id' => $sid,
+                        'name' => $staff['name'],
+                        'role' => $staff['role'],
+                        'category' => $staff['category'],
+                        'present' => $staff_totals[$sid]['present'],
+                        'absent' => $staff_totals[$sid]['absent'],
+                        'leave' => $staff_totals[$sid]['leave']
+                    ];
+                }
+            }
+        }
+
+        wp_send_json_success(['report' => $report_data]);
+    }
 }
+

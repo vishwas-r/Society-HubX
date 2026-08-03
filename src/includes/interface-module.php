@@ -5,7 +5,7 @@
  * Standard interface for all Society HubX modules to support
  * centralized request handling (Approval/Rejection).
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

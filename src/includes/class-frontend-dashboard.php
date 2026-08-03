@@ -3,7 +3,7 @@
  * Class: Frontend Dashboard
  * Handles the Resident Dashboard Shortcode.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -21,14 +21,11 @@ class SHUBX51_Frontend_Dashboard {
 		$this->drive = new SHUBX51_Drive_Manager();
 		$this->media = new SHUBX51_Media_Manager();
 		
-		add_shortcode( 'society_hubx_dashboard', array( $this, 'render_dashboard' ) );
-		add_shortcode( 'society_hubx_notices', array( $this, 'render_notices' ) );
-		add_shortcode( 'society_hubx_directory', array( $this, 'render_directory' ) );
-
-		// Prefix compliance aliases
 		add_shortcode( 'shubx51_dashboard', array( $this, 'render_dashboard' ) );
 		add_shortcode( 'shubx51_notices', array( $this, 'render_notices' ) );
 		add_shortcode( 'shubx51_directory', array( $this, 'render_directory' ) );
+
+
 		// Form Handlers
 		add_action( 'admin_post_shubx51_update_profile', array( $this, 'handle_profile_update' ) );
 		add_action( 'admin_post_shubx51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
@@ -1723,7 +1720,13 @@ class SHUBX51_Frontend_Dashboard {
                                             <!-- Floating DP / Avatar -->
                                             <div class="position-relative">
                                                 <?php 
-                                                    $dp_url = !empty($r['owner_photo']) ? $r['owner_photo'] : 'https://ui-avatars.com/api/?name=' . urlencode($r['owner'] ?? $r['name']) . '&background=random&color=fff';
+                                                    if ( !empty($r['owner_photo']) ) {
+                                                        $dp_url = $r['owner_photo'];
+                                                    } else {
+                                                        $initial = strtoupper(substr($r['owner'] ?? $r['name'] ?? 'U', 0, 1));
+                                                        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' . esc_html($initial) . '</text></svg>';
+                                                        $dp_url = 'data:image/svg+xml;base64,' . base64_encode($svg);
+                                                    }
                                                 ?>
                                                 <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 52px; height: 52px; object-fit: cover;">
                                                 <div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;" title="Occupied"></div>

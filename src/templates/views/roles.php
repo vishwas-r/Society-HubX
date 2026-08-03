@@ -72,7 +72,7 @@ $available_caps = SHUBX51_RBAC_Manager::get_available_capabilities();
                                 <i class="bi bi-pencil me-1"></i> Edit
                             </button>
                             <?php if ( empty( $role['is_system'] ) ) : ?>
-                                <button onclick="deleteRole('<?php echo $role['id']; ?>')" class="btn btn-sm btn-light border-light text-danger p-2 px-3 rounded-3">
+                                <button onclick="deleteRole('<?php echo esc_html( $role['id'] ); ?>')" class="btn btn-sm btn-light border-light text-danger p-2 px-3 rounded-3">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             <?php endif; ?>
@@ -94,7 +94,7 @@ add_action('shubx51_admin_modals', function() use ($available_caps) {
                 <h5 class="fw-bold m-0 text-dark" id="roleModalTitle">Create Custom Role</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="role-form" method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+            <form id="role-form" method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" value="shubx51_save_role">
                     <input type="hidden" name="role_id" id="role_id" value="">

@@ -3,7 +3,7 @@
  * Module: Facility Manager
  * Handles Facilities (Clubhouse, etc.) and Bookings.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

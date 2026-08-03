@@ -109,11 +109,11 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
                                          <?php if ( !empty($a['warranty_expiry']) ) : ?>
                                         <?php if ( wp_date( 'Y-m-d' ) > $a['warranty_expiry'] ) : ?>
                                             <span class="text-danger small fw-bold d-flex align-items-center gap-1">
-                                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 14px;"></i> EXPIRED (<?php echo wp_date('M Y', strtotime($a['warranty_expiry'])); ?>)
+                                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 14px;"></i> EXPIRED (<?php echo esc_html( wp_date('M Y', strtotime($a['warranty_expiry'])) ); ?>)
                                             </span>
                                         <?php else : ?>
                                             <span class="text-success small fw-bold d-flex align-items-center gap-1">
-                                                <i class="bi bi-check-circle-fill" style="font-size: 14px;"></i> VALID UNTIL <?php echo wp_date('M Y', strtotime($a['warranty_expiry'])); ?>
+                                                <i class="bi bi-check-circle-fill" style="font-size: 14px;"></i> VALID UNTIL <?php echo esc_html( wp_date('M Y', strtotime($a['warranty_expiry'])) ); ?>
                                             </span>
                                         <?php endif; ?>
                                     <?php else : ?>
@@ -135,7 +135,7 @@ $success_msg = isset( $_GET['success'] ) ? 'Asset registry updated.' : '';
                                     if(strtolower($status) === 'under repair') $status_cls = 'bg-warning bg-opacity-10 text-dark';
                                     if(strtolower($status) === 'scrapped') $status_cls = 'bg-danger bg-opacity-10 text-danger';
                                     ?>
-                                    <span class="badge <?php echo $status_cls; ?> px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html( $status ); ?></span>
+                                    <span class="badge <?php echo esc_html( $status_cls ); ?> px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 9px;"><?php echo esc_html( $status ); ?></span>
                                 </td>
                                 <td class="pe-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2">
@@ -178,7 +178,7 @@ add_action('shubx51_admin_modals', function() {
                 <h5 class="fw-bold m-0 text-dark" id="assetModalTitle">Register Asset</h5>
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post" action="<?php echo admin_url( 'admin-post.php' ); ?>" id="asset-form">
+            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="asset-form">
                 <div class="modal-body p-4">
                     <input type="hidden" name="action" id="asset-form-action" value="shubx51_add_asset">
                     <input type="hidden" name="asset_id" id="asset-id" value="">

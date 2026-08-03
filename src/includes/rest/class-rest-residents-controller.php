@@ -1,9 +1,9 @@
-﻿<?php
+<?php
 /**
  * Class: REST Residents Controller
  * Endpoints for managing society residents.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -55,7 +55,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		$residents = $db->get( 'residents' );
 
 		if ( empty( $residents ) ) {
@@ -63,7 +63,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		}
 
 		// Apply DPDP masking
-		$privileged = Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
+		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 		
 		foreach ( $residents as &$resident ) {
 			if ( ! $privileged ) {
@@ -80,7 +80,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = $request->get_param( 'id' );
-		$db = Society_HubX::get_instance()->db;
+		$db = SHUBX51_Plugin::get_instance()->db;
 		
 		$resident = $db->get_row( 'residents', $id );
 
@@ -89,7 +89,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		}
 
 		// Apply masking if not committee
-		$privileged = Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
+		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 		if ( ! $privileged ) {
 			$resident['phone'] = SHUBX51_Privacy_Manager::mask_data( $resident['phone'] );
 			$resident['email'] = SHUBX51_Privacy_Manager::mask_data( $resident['email'] );
@@ -119,7 +119,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for viewing residents.
 	 */
 	public function get_items_permissions_check( $request ) {
-		if ( ! Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
+		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
 			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view residents.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;
@@ -130,11 +130,11 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function get_item_permissions_check( $request ) {
 		$user_id = get_current_user_id();
-		if ( Society_HubX::get_instance()->rbac->has_capability( $user_id, 'residents_view' ) ) {
+		if ( SHUBX51_Plugin::get_instance()->rbac->has_capability( $user_id, 'residents_view' ) ) {
 			return true;
 		}
 		$id = $request->get_param( 'id' );
-		$resident = Society_HubX::get_instance()->db->get_row( 'residents', $id );
+		$resident = SHUBX51_Plugin::get_instance()->db->get_row( 'residents', $id );
 		if ( $resident && intval( $resident['wp_user_id'] ) === $user_id ) {
 			return true;
 		}
@@ -145,7 +145,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for creating a resident.
 	 */
 	public function create_item_permissions_check( $request ) {
-		if ( ! Society_HubX::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
+		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
 			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to manage residents.', 'society-governx' ), array( 'status' => 403 ) );
 		}
 		return true;

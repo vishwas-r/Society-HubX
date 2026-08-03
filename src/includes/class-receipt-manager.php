@@ -4,7 +4,7 @@
  * Handles receipt generation and numbering for payments.
  * Receipt format: shubx-YYYYMMXXX (Year, Month, Auto-incremented number)
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

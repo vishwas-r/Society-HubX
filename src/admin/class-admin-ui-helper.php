@@ -3,7 +3,7 @@
  * Class: Admin UI Helper
  * Enqueues Bootstrap and custom styles for Admin Backend.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

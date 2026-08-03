@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SHUBX Staff Management JS
  */
 (function ($) {
@@ -82,6 +82,20 @@
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
         const categoryVal = categoryFilter ? categoryFilter.value : 'all';
         const statusVal = statusFilter ? statusFilter.value : 'all';
+
+        // View Toggling
+        if (currentTab === 'report') {
+            $('#staff-directory-view, #staff-filter-section, .shubx-bulk-actions, .js-toggle-staff-filters, #addStaff, .staff-search-wrapper').hide();
+            $('#staff-report-view').removeClass('d-none').show();
+            // Automatically fetch if not fetched yet (optional)
+            return;
+        } else {
+            $('#staff-report-view').hide();
+            $('#staff-directory-view, #addStaff').show();
+            if ($('#staff-filter-section').hasClass('show')) {
+                // Let collapse handle it
+            }
+        }
 
         if (!fuse && window.SHUBXCreateFuse) {
             fuse = window.SHUBXCreateFuse('.staff-row');
@@ -249,6 +263,20 @@
         });
     };
 
+    window.markAttendance = function (id) {
+        let attendanceModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('attendanceModal'));
+        document.getElementById('attendance-staff-id').value = id;
+        document.getElementById('attendance-form').reset();
+        attendanceModal.show();
+    };
+
+    window.raiseConcern = function (id) {
+        let concernModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('concernModal'));
+        document.getElementById('concern-staff-id').value = id;
+        document.getElementById('concern-form').reset();
+        concernModal.show();
+    };
+
     // --- Init ---
     $(function () {
         fetchModuleConfig().then(() => {
@@ -266,6 +294,18 @@
                 e.preventDefault();
                 const id = $(this).data('id');
                 if (id) window.deleteStaff(id);
+            });
+
+            $(document).on('click', '.js-mark-attendance', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) window.markAttendance(id);
+            });
+
+            $(document).on('click', '.js-raise-concern', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) window.raiseConcern(id);
             });
 
             // Real-time Search Listener
@@ -305,7 +345,124 @@
                     });
                 });
             }
+
+            const $attendanceForm = $('#attendance-form');
+            if ($attendanceForm.length) {
+                $attendanceForm.on('submit', function (e) {
+                    e.preventDefault();
+                    const action = $attendanceForm.find('[name="action"]').val();
+                    const formData = new FormData($attendanceForm[0]);
+
+                    SHUBX.ajax({
+                        action: action,
+                        data: formData,
+                        loadingButton: $attendanceForm.find('button[type="submit"]'),
+                        successMessage: 'Attendance saved successfully',
+                        reload: true
+                    });
+                });
+            }
+
+            const $concernForm = $('#concern-form');
+            if ($concernForm.length) {
+                $concernForm.on('submit', function (e) {
+                    e.preventDefault();
+                    const action = $concernForm.find('[name="action"]').val();
+                    const formData = new FormData($concernForm[0]);
+
+                    SHUBX.ajax({
+                        action: action,
+                        data: formData,
+                        loadingButton: $concernForm.find('button[type="submit"]'),
+                        successMessage: 'Concern submitted successfully',
+                        reload: true
+                    });
+                });
+            }
         });
     });
+    
+    // --- Attendance Report Generation ---
+    window.fetchAttendanceReport = function() {
+        const month = document.getElementById('attendance-month').value;
+        if (!month) {
+            alert('Please select a month');
+            return;
+        }
+        
+        const btn = event.currentTarget;
+        const origText = btn.innerText;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+        btn.disabled = true;
+
+        const data = new FormData();
+        data.append('action', 'shubx51_get_attendance_report');
+        data.append('_wpnonce', document.getElementById('shubx51_staff_nonce') ? document.getElementById('shubx51_staff_nonce').value : shubxAdminData.nonce);
+        data.append('month', month);
+
+        fetch(shubxAdminData.ajaxUrl, {
+            method: 'POST',
+            body: data
+        })
+        .then(res => res.json())
+        .then(res => {
+            btn.innerHTML = origText;
+            btn.disabled = false;
+            
+            if (res.success && res.data.report) {
+                const tbody = document.getElementById('attendance-report-body');
+                if (res.data.report.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">No attendance data found for the selected month.</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                res.data.report.forEach(r => {
+                    const totalPayable = r.present + r.leave; // Simple formula: Present + Leave days are payable. Absent is not.
+                    html += `
+                        <tr>
+                            <td class="ps-3 ps-md-5">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary me-3 shadow-sm border border-white" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">${r.name}</div>
+                                        <div class="small text-muted font-monospace">${r.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 px-md-4">
+                                <div class="fw-semibold text-dark">${r.role}</div>
+                                <div class="small text-muted">${r.category}</div>
+                            </td>
+                            <td class="px-3 px-md-4">
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-2 rounded-pill fs-6">${r.present}</span>
+                            </td>
+                            <td class="px-3 px-md-4">
+                                <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill fs-6">${r.absent}</span>
+                            </td>
+                            <td class="px-3 px-md-4">
+                                <span class="badge bg-warning bg-opacity-10 text-warning fw-bold px-3 py-2 rounded-pill fs-6">${r.leave}</span>
+                            </td>
+                            <td class="pe-3 pe-md-5 text-end">
+                                <div class="fw-bold fs-5 text-dark">${totalPayable}</div>
+                                <div class="small text-muted">Days</div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } else {
+                alert(res.data?.message || 'Error generating report');
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching report', err);
+            btn.innerHTML = origText;
+            btn.disabled = false;
+            alert('A network error occurred.');
+        });
+    }
 
 })(jQuery);

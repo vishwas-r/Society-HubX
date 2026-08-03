@@ -3,7 +3,7 @@
  * Class: Background Worker
  * Interfaces with Action Scheduler for asynchronous task processing.
  *
- * @package Society_HubX
+ * @package SHUBX51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -148,9 +148,9 @@ class SHUBX51_Background_Worker {
 	 * Worker: Process Notification Blast.
 	 */
 	public function process_notification_blast( $event_slug, $data ) {
-		if ( ! class_exists( 'Society_HubX' ) ) return;
+		if ( ! class_exists( 'SHUBX51_Plugin' ) ) return;
 		
-		$shubx = Society_HubX::get_instance();
+		$shubx = SHUBX51_Plugin::get_instance();
 		if ( isset( $shubx->notifications ) ) {
 			// Trigger for all relevant users (e.g., all residents)
 			$db = new SHUBX51_DB_Router();
