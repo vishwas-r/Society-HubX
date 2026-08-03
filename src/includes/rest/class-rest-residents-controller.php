@@ -85,7 +85,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		$resident = $db->get_row( 'residents', $id );
 
 		if ( ! $resident ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-governx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
 		}
 
 		// Apply masking if not committee
@@ -120,7 +120,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function get_items_permissions_check( $request ) {
 		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
-			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view residents.', 'society-governx' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view residents.', 'society-hubx' ), array( 'status' => 403 ) );
 		}
 		return true;
 	}
@@ -138,7 +138,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		if ( $resident && intval( $resident['wp_user_id'] ) === $user_id ) {
 			return true;
 		}
-		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view this resident.', 'society-governx' ), array( 'status' => 403 ) );
+		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view this resident.', 'society-hubx' ), array( 'status' => 403 ) );
 	}
 
 	/**
@@ -146,7 +146,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function create_item_permissions_check( $request ) {
 		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
-			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to manage residents.', 'society-governx' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to manage residents.', 'society-hubx' ), array( 'status' => 403 ) );
 		}
 		return true;
 	}

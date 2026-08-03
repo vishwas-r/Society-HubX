@@ -3,7 +3,7 @@ Contributors: vishwasr
 Tags: society, management, billing, notices, polls
 Requires at least: 6.0
 Tested up to: 7.0
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,9 +65,9 @@ To configure the plugin, navigate to the **Society HubX > Settings** menu in the
 
 The plugin provides the following shortcodes to render portal elements on frontend pages:
 
-* `[shubx51_dashboard]` (or legacy alias `[society_hubx_dashboard]`) - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
-* `[shubx51_notices]` (or legacy alias `[society_hubx_notices]`) - Renders a standalone public notice board feed.
-* `[shubx51_directory]` (or legacy alias `[society_hubx_directory]`) - Renders a searchable member directory (accessible only to authorized logged-in residents).
+* `[shubx51_dashboard]` - Renders the unified Resident Dashboard containing the notice feed, requests page, rule acknowledgments, facilities booking, and billing/dues log.
+* `[shubx51_notices]` - Renders a standalone public notice board feed.
+* `[shubx51_directory]` - Renders a searchable member directory (accessible only to authorized logged-in residents).
 
 == External Services ==
 
@@ -78,10 +78,7 @@ This plugin utilizes the following third-party / external services to facilitate
    * **What data is sent**: OAuth tokens, metadata of files/spreadsheets, and files uploaded by users. Sent only when the admin connects their Google account and triggers drive backups or sync operations.
    * **Links**: [Google Privacy Policy](https://policies.google.com/privacy), [Google Terms of Service](https://policies.google.com/terms).
 
-2. **UI Avatars (ui-avatars.com)**:
-   * **What the service is / does**: Used to generate clean, letter-based fallback profile pictures for residents who have not uploaded a custom profile photo.
-   * **What data is sent**: The resident's name is sent as a query parameter in the image URL request. Sent only when rendering fallback profile images on the frontend dashboard or admin directory.
-   * **Links**: [UI Avatars Home](https://ui-avatars.com), [Terms of Service](https://ui-avatars.com/tos), [Privacy Policy](https://ui-avatars.com/privacy).
+
 
 == Changelog ==
 

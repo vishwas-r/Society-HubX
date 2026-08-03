@@ -378,7 +378,7 @@ class SHUBX51_Admin_Settings {
 		echo '<div class="notice notice-warning is-dismissible">';
 		echo '<p>' . sprintf(
 			// translators: %1$s is an opening <a> tag, %2$s is the closing </a> tag.
-			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-governx' ),
+			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-hubx' ),
 			'<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-setup' ) ) . '"><strong>',
 			'</strong></a>'
 		) . '</p>';

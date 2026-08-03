@@ -27,7 +27,7 @@ class SHUBX51_Privacy_Manager {
 	 */
 	public function register_exporters( $exporters ) {
 		$exporters['society-hubx'] = array(
-			'exporter_friendly_name' => __( 'Society HubX Data', 'society-governx' ),
+			'exporter_friendly_name' => __( 'Society HubX Data', 'society-hubx' ),
 			'callback'               => array( $this, 'export_society_data' ),
 		);
 		return $exporters;
@@ -38,7 +38,7 @@ class SHUBX51_Privacy_Manager {
 	 */
 	public function register_erasers( $erasers ) {
 		$erasers['society-hubx'] = array(
-			'eraser_friendly_name' => __( 'Society HubX Data', 'society-governx' ),
+			'eraser_friendly_name' => __( 'Society HubX Data', 'society-hubx' ),
 			'callback'             => array( $this, 'erase_society_data' ),
 		);
 		return $erasers;
@@ -55,16 +55,16 @@ class SHUBX51_Privacy_Manager {
 		foreach ( $residents as $resident ) {
 			$item_id = "resident-{$resident['id']}";
 			$data = array(
-				array( 'name' => __( 'Name', 'society-governx' ), 'value' => $resident['name'] ),
-				array( 'name' => __( 'Flat No', 'society-governx' ), 'value' => $resident['flat_no'] ),
-				array( 'name' => __( 'Phone', 'society-governx' ), 'value' => $resident['phone'] ),
-				array( 'name' => __( 'Type', 'society-governx' ), 'value' => $resident['type'] ),
-				array( 'name' => __( 'DOB', 'society-governx' ), 'value' => $resident['dob'] ?? '' ),
+				array( 'name' => __( 'Name', 'society-hubx' ), 'value' => $resident['name'] ),
+				array( 'name' => __( 'Flat No', 'society-hubx' ), 'value' => $resident['flat_no'] ),
+				array( 'name' => __( 'Phone', 'society-hubx' ), 'value' => $resident['phone'] ),
+				array( 'name' => __( 'Type', 'society-hubx' ), 'value' => $resident['type'] ),
+				array( 'name' => __( 'DOB', 'society-hubx' ), 'value' => $resident['dob'] ?? '' ),
 			);
 
 			$data_to_export[] = array(
 				'group_id'    => 'society-hubx-residents',
-				'group_label' => __( 'Society Residents', 'society-governx' ),
+				'group_label' => __( 'Society Residents', 'society-hubx' ),
 				'item_id'     => $item_id,
 				'data'        => $data,
 			);
@@ -87,7 +87,7 @@ class SHUBX51_Privacy_Manager {
 
 		foreach ( $residents as $resident ) {
 			$anon_data = array(
-				'name'          => __( 'Anonymized', 'society-governx' ),
+				'name'          => __( 'Anonymized', 'society-hubx' ),
 				'email'         => '',
 				'phone'         => '0000000000',
 				'profile_photo' => '',
