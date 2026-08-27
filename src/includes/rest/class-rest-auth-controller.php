@@ -182,6 +182,10 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			wp_update_user( $userdata );
 		}
 
+		if ( isset( $params['avatar_url'] ) ) {
+			update_user_meta( $user_id, 'shubx51_custom_avatar', esc_url_raw( $params['avatar_url'] ) );
+		}
+
 		// Update corresponding resident record if exists
 		$db = new SHUBX51_DB_Router();
 		$resident = $db->get_resident_by_wp_id( $user_id );
@@ -198,6 +202,15 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			}
 			if ( isset( $params['emergency_contact'] ) ) {
 				$res_update['emergency_contact'] = sanitize_text_field( $params['emergency_contact'] );
+			}
+			if ( isset( $params['blood_group'] ) ) {
+				$res_update['blood_group'] = sanitize_text_field( $params['blood_group'] );
+			}
+			if ( isset( $params['dob'] ) ) {
+				$res_update['dob'] = sanitize_text_field( $params['dob'] );
+			}
+			if ( isset( $params['avatar_url'] ) ) {
+				$res_update['profile_photo'] = esc_url_raw( $params['avatar_url'] );
 			}
 			if ( ! empty( $res_update ) ) {
 				$db->update( 'residents', $res_update, array( 'id' => $resident['id'] ) );
@@ -255,13 +268,19 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			}
 		}
 
+		$custom_avatar = get_user_meta( $user_id, 'shubx51_custom_avatar', true );
+		if ( empty( $custom_avatar ) && ! empty( $resident['profile_photo'] ) ) {
+			$custom_avatar = $resident['profile_photo'];
+		}
+		$avatar_url = $custom_avatar ? $custom_avatar : get_avatar_url( $user_id );
+
 		return array(
 			'user' => array(
 				'id'           => $user_id,
 				'username'     => $user ? $user->user_login : '',
 				'display_name' => $user ? $user->display_name : '',
 				'email'        => $user ? $user->user_email : '',
-				'avatar_url'   => get_avatar_url( $user_id ),
+				'avatar_url'   => $avatar_url,
 				'roles'        => $user ? (array) $user->roles : array(),
 				'is_admin'     => $is_admin,
 			),
@@ -272,6 +291,11 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 				'block'               => $block,
 				'type'                => $unit_type,
 				'phone'               => $resident['phone'] ?? '',
+				'email'               => $resident['email'] ?? ( $user ? $user->user_email : '' ),
+				'emergency_contact'   => $resident['emergency_contact'] ?? '',
+				'blood_group'         => $resident['blood_group'] ?? '',
+				'dob'                 => $resident['dob'] ?? '',
+				'profile_photo'       => $avatar_url,
 				'status'              => $resident['status'] ?? 'active',
 				'maintenance_balance' => $balance,
 			),
