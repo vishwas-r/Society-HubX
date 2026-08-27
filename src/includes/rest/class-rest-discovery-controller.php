@@ -59,6 +59,17 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 			$society_name = get_bloginfo( 'name' );
 		}
 
+		$palette_map = array(
+			'orange'  => '#ea580c',
+			'indigo'  => '#4f46e5',
+			'emerald' => '#059669',
+			'ocean'   => '#0284c7',
+			'rose'    => '#e11d48',
+		);
+		$color_palette = get_option( 'shubx51_color_palette', 'orange' );
+		$primary_color = isset( $palette_map[ $color_palette ] ) ? $palette_map[ $color_palette ] : get_option( 'shubx51_primary_color', '#ea580c' );
+		$default_theme = get_option( 'shubx51_default_theme', 'light' );
+
 		$discovery_data = array(
 			'status'           => 'active',
 			'app_name'         => 'Society HubX',
@@ -76,7 +87,9 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 				'pincode'       => get_option( 'shubx51_society_pincode', '' ),
 				'contact_phone' => get_option( 'shubx51_society_contact', '' ),
 				'emergency_num' => get_option( 'shubx51_society_emergency', get_option( 'shubx51_society_contact', '' ) ),
-				'primary_color' => get_option( 'shubx51_primary_color', '#2563eb' ),
+				'color_palette' => $color_palette,
+				'primary_color' => $primary_color,
+				'default_theme' => $default_theme,
 				'currency'      => get_option( 'shubx51_currency_symbol', '₹' ),
 				'currency_code' => get_option( 'shubx51_currency_code', 'INR' ),
 			),
