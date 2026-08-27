@@ -271,16 +271,14 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	 * Permission check for reading flats.
 	 */
 	public function get_items_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
-		return $rbac->has_capability( get_current_user_id(), 'flats_view' ) || current_user_can( 'manage_options' );
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
 	 * Permission check for reading single flat.
 	 */
 	public function get_item_permissions_check( $request ) {
-		return $this->get_items_permissions_check( $request );
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
