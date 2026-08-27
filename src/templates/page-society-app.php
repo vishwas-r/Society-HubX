@@ -17,9 +17,10 @@ $cookie_theme = isset( $_COOKIE['shubx_theme'] ) ? sanitize_key( wp_unslash( $_C
 $current_theme = in_array( $cookie_theme, [ 'light', 'dark' ], true ) ? $cookie_theme : get_option( 'shubx51_default_theme', 'light' );
 
 $valid_palettes = [ 'orange', 'indigo', 'emerald', 'ocean', 'rose' ];
-// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$cookie_palette = isset( $_COOKIE['shubx_palette'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_palette'] ) ) : '';
-$current_palette = in_array( $cookie_palette, $valid_palettes, true ) ? $cookie_palette : get_option( 'shubx51_color_palette', 'orange' );
+$current_palette = get_option( 'shubx51_color_palette', 'orange' );
+if ( ! in_array( $current_palette, $valid_palettes, true ) ) {
+    $current_palette = 'orange';
+}
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?> data-bs-theme="<?php echo esc_attr( $current_theme ); ?>" data-shubx-palette="<?php echo esc_attr( $current_palette ); ?>">
 <head>
