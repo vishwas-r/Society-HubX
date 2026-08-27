@@ -116,6 +116,9 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 
 		foreach ( $residents as &$resident ) {
+			if ( ! empty( $resident['flat_no'] ) ) {
+				$resident['flat_display'] = $db->get_flat_display_name( $resident['flat_no'] );
+			}
 			if ( ! $privileged ) {
 				$resident['phone'] = SHUBX51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
 				$resident['email'] = SHUBX51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
@@ -138,6 +141,10 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 
 		if ( ! $resident ) {
 			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
+		}
+
+		if ( ! empty( $resident['flat_no'] ) ) {
+			$resident['flat_display'] = $db->get_flat_display_name( $resident['flat_no'] );
 		}
 
 		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );

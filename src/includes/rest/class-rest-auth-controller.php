@@ -250,14 +250,19 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			'can_manage_requests'   => $rbac->has_capability( $user_id, 'requests_manage' ) || $is_admin,
 		);
 
-		$flat_no = $resident['flat_no'] ?? '';
+		$flat_raw = $resident['flat_no'] ?? '';
+		$flat_display = $flat_raw ? $db->get_flat_display_name( $flat_raw ) : '';
+		$flat_no = $flat_display ? $flat_display : $flat_raw;
 		$block = $resident['block'] ?? '';
 		$unit_type = $resident['type'] ?? ( $is_admin ? 'Admin' : 'Resident' );
 
 		// Check maintenance balance if resident
 		$balance = 0.00;
-		if ( ! empty( $flat_no ) ) {
-			$invoices = $db->get( 'invoices', array( 'flat_no' => $flat_no ) );
+		if ( ! empty( $flat_raw ) ) {
+			$invoices = $db->get( 'invoices', array( 'flat_no' => $flat_raw ) );
+			if ( empty( $invoices ) && ! empty( $flat_no ) && $flat_no !== $flat_raw ) {
+				$invoices = $db->get( 'invoices', array( 'flat_no' => $flat_no ) );
+			}
 			foreach ( $invoices as $inv ) {
 				if ( ( $inv['status'] ?? '' ) !== 'Paid' && ( $inv['status'] ?? '' ) !== 'paid' ) {
 					$due = floatval( $inv['amount'] ?? 0 ) - floatval( $inv['total_paid'] ?? ( $inv['paid_amount'] ?? 0 ) );
