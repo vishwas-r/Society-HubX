@@ -29,6 +29,8 @@ class SHUBX51_REST_Manager {
 	 */
 	public function register_routes() {
 		// Include controller classes
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-discovery-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-auth-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-flats-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-vehicles-controller.php';
@@ -46,6 +48,8 @@ class SHUBX51_REST_Manager {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
 
 		// Instantiate & register
+		( new SHUBX51_REST_Discovery_Controller() )->register_routes();
+		( new SHUBX51_REST_Auth_Controller() )->register_routes();
 		( new SHUBX51_REST_Flats_Controller() )->register_routes();
 		( new SHUBX51_REST_Residents_Controller() )->register_routes();
 		( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
