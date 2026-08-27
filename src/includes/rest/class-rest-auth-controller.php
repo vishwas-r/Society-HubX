@@ -57,6 +57,11 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 					'callback'            => array( $this, 'get_current_user_profile' ),
 					'permission_callback' => array( $this, 'user_logged_in_check' ),
 				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_current_user_profile' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
 			)
 		);
 
@@ -146,6 +151,61 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 		$user_id = get_current_user_id();
 		$profile_data = $this->build_user_profile( $user_id );
 		return rest_ensure_response( array( 'success' => true, 'data' => $profile_data ) );
+	}
+
+	/**
+	 * Update current user profile and linked resident record.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function update_current_user_profile( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			return new WP_Error( 'rest_not_logged_in', __( 'You must be logged in to update your profile.', 'society-hubx' ), array( 'status' => 401 ) );
+		}
+
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$userdata = array( 'ID' => $user_id );
+		if ( isset( $params['display_name'] ) ) {
+			$userdata['display_name'] = sanitize_text_field( $params['display_name'] );
+		}
+		if ( isset( $params['email'] ) && is_email( $params['email'] ) ) {
+			$userdata['user_email'] = sanitize_email( $params['email'] );
+		}
+		if ( count( $userdata ) > 1 ) {
+			wp_update_user( $userdata );
+		}
+
+		// Update corresponding resident record if exists
+		$db = new SHUBX51_DB_Router();
+		$resident = $db->get_resident_by_wp_id( $user_id );
+		if ( $resident && ! empty( $resident['id'] ) ) {
+			$res_update = array();
+			if ( isset( $params['display_name'] ) || isset( $params['name'] ) ) {
+				$res_update['name'] = sanitize_text_field( $params['display_name'] ?? $params['name'] );
+			}
+			if ( isset( $params['phone'] ) ) {
+				$res_update['phone'] = sanitize_text_field( $params['phone'] );
+			}
+			if ( isset( $params['email'] ) ) {
+				$res_update['email'] = sanitize_email( $params['email'] );
+			}
+			if ( isset( $params['emergency_contact'] ) ) {
+				$res_update['emergency_contact'] = sanitize_text_field( $params['emergency_contact'] );
+			}
+			if ( ! empty( $res_update ) ) {
+				$db->update( 'residents', $res_update, array( 'id' => $resident['id'] ) );
+			}
+		}
+
+		$profile_data = $this->build_user_profile( $user_id );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Profile updated successfully.', 'society-hubx' ), 'data' => $profile_data ) );
 	}
 
 	/**
