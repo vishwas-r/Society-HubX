@@ -328,16 +328,18 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'staff_view' ) || current_user_can( 'manage_options' );
 	}
 
 	public function manage_staff_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'staff_manage' ) || current_user_can( 'manage_options' );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 }

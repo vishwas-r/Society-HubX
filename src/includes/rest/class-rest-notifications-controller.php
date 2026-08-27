@@ -137,6 +137,6 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 }

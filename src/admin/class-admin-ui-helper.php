@@ -12,10 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class SHUBX51_Admin_UI {
 
-	public static function init() {
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_assets' ) );
-	}
-
     public static function render_status_badge( $status ) {
         $status = strtolower( $status );
         $classes = 'badge border-0 px-3 py-1.5 rounded-pill fw-bold text-uppercase';
@@ -67,13 +63,14 @@ class SHUBX51_Admin_UI {
         // 1. Profile Photo Case
         if ( ! empty( $photo_url ) ) {
             return sprintf(
-                '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s font-size: 0px;">
-                    <img src="%s" class="w-100 h-100 object-fit-cover" alt="%s" onerror="this.parentElement.innerHTML=\'%s\'">
+                '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s">
+                    <img src="%s" class="w-100 h-100 object-fit-cover" alt="%s" onerror="this.style.display=\'none\'; if(this.nextElementSibling) this.nextElementSibling.style.display=\'flex\';">
+                    <div class="w-100 h-100 align-items-center justify-content-center bg-secondary text-white fw-bold" style="display: none; font-size: 1rem;">%s</div>
                 </div>',
                 $style,
                 esc_url( $photo_url ),
                 esc_attr( $name ),
-                $email ? get_avatar( $email, $size, '', '', ['class' => 'w-100 h-100']) : '<div class=\"w-100 h-100 d-flex align-items-center justify-content-center bg-secondary text-white fw-bold\">' . strtoupper(substr($name ?? 'U', 0, 1)) . '</div>'
+                esc_html( strtoupper( substr( $name ?? 'U', 0, 1 ) ) )
             );
         }
         
@@ -82,7 +79,7 @@ class SHUBX51_Admin_UI {
             $gravatar = get_avatar_url( $email, ['size' => $size] );
             if ( strpos($gravatar, 'd=mm') === false && strpos($gravatar, 'd=mp') === false && strpos($gravatar, 'd=blank') === false ) {
                  return sprintf(
-                    '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s font-size: 0px;">
+                    '<div class="bg-light rounded-3 overflow-hidden d-flex align-items-center justify-content-center border shadow-sm" style="%s">
                         <img src="%s" class="w-100 h-100 object-fit-cover" alt="%s">
                     </div>',
                     $style,
@@ -103,7 +100,7 @@ class SHUBX51_Admin_UI {
             </div>',
             $bg_color,
             $style,
-            $initial
+            esc_html( $initial )
         );
     }
 
@@ -141,29 +138,4 @@ class SHUBX51_Admin_UI {
             esc_attr( $id ), esc_attr( $module )
         );
     }
-
-	public static function enqueue_admin_assets( $hook ) {
-		// Assets are now centrally handled in society-hubx.php with priority 999 
-        // to ensure correct loading order and Bootstrap overrides.
-        return;
-        
-		// Only load on our plugin pages
-		if ( strpos( $hook, 'SHUBX51' ) === false ) {
-			return;
-		}
-
-		// 1. Google Fonts (Inter) - Local
-		wp_enqueue_style( 'shubx-fonts', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
-
-		// 2. Bootstrap 5 - Local
-		wp_enqueue_style( 'shubx-bootstrap', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap.min.css', array(), '5.3.0' );
-		wp_enqueue_style( 'shubx-bootstrap-icons', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/lib/bootstrap-icons.min.css', array(), '1.11.3' );
-		wp_enqueue_script( 'shubx-bootstrap-js', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/js/lib/bootstrap.bundle.min.js', array('jquery'), '5.3.0', false );
-
-        // 3. Admin Premium Theme
-		wp_enqueue_style( 'shubx51-admin-layout', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-layout.css', array('shubx51-bootstrap'), '1.0.0' );
-		wp_enqueue_style( 'shubx51-admin-premium', plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin-premium.css', array('shubx51-bootstrap', 'shubx51-admin-layout'), '1.0.1' );
-	}
 }
-
-SHUBX51_Admin_UI::init();

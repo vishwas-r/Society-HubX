@@ -324,6 +324,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for viewing residents.
 	 */
 	public function get_items_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'residents_view' ) || current_user_can( 'manage_options' );
 	}
@@ -332,6 +333,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for viewing a single resident.
 	 */
 	public function get_item_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		if ( $rbac->has_capability( $user_id, 'residents_view' ) || current_user_can( 'manage_options' ) ) {
@@ -349,6 +351,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for creating/managing residents.
 	 */
 	public function create_item_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'residents_manage' ) || current_user_can( 'manage_options' );
 	}
@@ -357,6 +360,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for updating a resident.
 	 */
 	public function update_item_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$rbac = SHUBX51_Plugin::get_instance()->rbac;
 		if ( $rbac->has_capability( $user_id, 'residents_manage' ) || current_user_can( 'manage_options' ) ) {

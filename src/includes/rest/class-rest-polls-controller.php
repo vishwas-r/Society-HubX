@@ -272,10 +272,11 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function polls_manage_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || current_user_can( 'manage_options' );
 	}

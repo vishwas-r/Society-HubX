@@ -331,7 +331,7 @@ sort($unique_blocks);
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <?php if ( $is_request ) : ?>
-                                        <?php echo esc_html( SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ) ); ?>
+                                        <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>

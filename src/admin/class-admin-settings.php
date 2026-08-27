@@ -166,6 +166,10 @@ class SHUBX51_Admin_Settings {
 		// Privacy & DPDP
 		register_setting( 'shubx51_options_group', 'shubx51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'shubx51_options_group', 'shubx51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+
+		// Branding & Theme Preferences
+		register_setting( 'shubx51_options_group', 'shubx51_color_palette', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'orange' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_default_theme', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'light' ) );
 	}
 
 	public function handle_setup_actions() {

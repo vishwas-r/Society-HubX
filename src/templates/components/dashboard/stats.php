@@ -70,7 +70,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
             <div class="card-body p-4 position-relative z-10">
                  <div class="d-flex justify-content-between align-items-center mb-3">
                      <span class="text-secondary small fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Total Maintenance Dues</span>
-                     <div class="bg-<?php echo esc_html( $status_class ); ?> bg-opacity-20 rounded-3 p-2 d-flex align-items-center justify-content-center text-primary">
+                     <div class="bg-<?php echo esc_html( $status_class ); ?> bg-opacity-20 rounded-3 p-2 d-flex align-items-center justify-content-center text-<?php echo esc_html( $status_class ); ?>" style="width: 40px; height: 40px;">
                         <i class="bi <?php echo esc_html( $status_icon ); ?> fs-5"></i>
                      </div>
                  </div>

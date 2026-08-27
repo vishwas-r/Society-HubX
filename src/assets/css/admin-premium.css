@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Society HubX - Premium Admin Theme 
  * Design System: "Slate & Glass"
  */
@@ -9,16 +9,11 @@
 :root {
     --shubx-bg: #f8fafc;
     --shubx-card-bg: #ffffff;
-    --shubx-primary: #3b82f6;
-    /* Blue 500 */
-    --shubx-primary-dark: #2563eb;
-    /* Blue 600 */
+    --shubx-primary: var(--custom-primary-color, #ea580c);
+    --shubx-primary-dark: var(--custom-primary-hover, #c2410c);
     --shubx-text-main: #0f172a;
-    /* Slate 900 */
     --shubx-text-muted: #64748b;
-    /* Slate 500 */
     --shubx-border: #e2e8f0;
-    /* Slate 200 */
     --shubx-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shubx-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shubx-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -241,8 +236,8 @@ body.toplevel_page_shubx51-residents {
 }
 
 .list-group-item.active {
-    background-color: #eff6ff;
-    color: var(--shubx-primary-dark);
+    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.1));
+    color: var(--custom-primary-color);
     font-weight: 600;
     border-color: transparent;
 }
@@ -253,7 +248,7 @@ body.toplevel_page_shubx51-residents {
 
 /* 8. Soft Utilities */
 .bg-primary-soft {
-    background-color: #eff6ff !important;
+    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.1)) !important;
 }
 
 .bg-info-soft {
@@ -269,7 +264,7 @@ body.toplevel_page_shubx51-residents {
 }
 
 .text-primary {
-    color: var(--shubx-primary) !important;
+    color: var(--custom-primary-color) !important;
 }
 
 .text-info {

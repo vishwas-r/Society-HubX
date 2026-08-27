@@ -186,7 +186,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                             data-date="<?php echo esc_attr(wp_date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
                                         <i class="bi bi-eye me-1"></i> VIEW
                                     </button>
-                                    <?php echo esc_html( SHUBX51_Admin_UI::render_approval_buttons( $req['id'], $module ) ); ?>
+                                    <?php echo SHUBX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
                                 </div>
                             </td>
                         </tr>

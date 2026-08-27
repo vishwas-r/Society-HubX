@@ -109,10 +109,10 @@ if(!empty($expenses)) {
         <div class="col-lg-3">
             <div class="card border-0 bg-primary text-white rounded-3 shadow-sm p-4 mb-4">
                 <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div class="bg-white bg-opacity-20 text-primary p-2 rounded-3">
-                        <i class="bi bi-wallet2 fs-4"></i>
+                    <div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                        <i class="bi bi-wallet2 fs-4 text-primary"></i>
                     </div>
-                    <span class="badge bg-white bg-opacity-20 text-primary px-2 py-1 rounded-pill text-uppercase fw-bold" style="font-size: 8px; letter-spacing: 0.05em;">Audited</span>
+                    <span class="badge bg-white text-primary px-2 py-1 rounded-pill text-uppercase fw-bold shadow-sm" style="font-size: 8px; letter-spacing: 0.05em;">Audited</span>
                 </div>
                 <p class="small text-white opacity-75 fw-medium mb-1">Total Verified (<?php echo esc_html($selected_year); ?>)</p>
                 <h2 class="h2 fw-bold m-0" style="letter-spacing: -0.03em;">₹<?php echo esc_html( number_format( $verified_total, 2 ) ); ?></h2>

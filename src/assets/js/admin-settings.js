@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Admin Settings JS
  * Handles Tab Switching and QR Code Upload.
  */
@@ -83,5 +83,36 @@
             });
         }
     });
+
+    // --- 3. Color Palette & Theme Selection Helpers ---
+    window.shubxSelectPalette = function (key) {
+        $('.shubx-palette-radio').each(function () {
+            this.checked = (this.value === key);
+        });
+        $('.shubx-palette-card').removeClass('border-2 border-primary shadow-sm').addClass('border-light');
+        const $selectedRadio = $('#palette-radio-' + key);
+        if ($selectedRadio.length) {
+            $selectedRadio.closest('.shubx-palette-card').addClass('border-2 border-primary shadow-sm').removeClass('border-light');
+        }
+        $('.shubx-palette-check').addClass('d-none');
+        if ($selectedRadio.length) {
+            $selectedRadio.closest('.shubx-palette-card').find('.shubx-palette-check').removeClass('d-none');
+        }
+
+        // Live update DOM
+        document.documentElement.setAttribute('data-shubx-palette', key);
+        const root = document.getElementById('shubx51-app-root');
+        if (root) root.setAttribute('data-shubx-palette', key);
+
+        // Set 1-year Cookie for PHP SSR
+        document.cookie = "shubx_palette=" + encodeURIComponent(key) + "; path=/; max-age=31536000; SameSite=Lax";
+    };
+
+    window.shubxSelectDefaultTheme = function (mode) {
+        document.documentElement.setAttribute('data-bs-theme', mode);
+        const root = document.getElementById('shubx51-app-root');
+        if (root) root.setAttribute('data-bs-theme', mode);
+        document.cookie = "shubx_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
+    };
 
 })(jQuery);

@@ -243,13 +243,14 @@ class SHUBX51_REST_Vehicles_Controller extends WP_REST_Controller {
 	 * Permission check for reading vehicles.
 	 */
 	public function get_items_permissions_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
 	 * Permission check for reading single vehicle.
 	 */
 	public function get_item_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( $rbac->has_capability( $user_id, 'vehicles_view' ) || current_user_can( 'manage_options' ) ) {
@@ -273,7 +274,7 @@ class SHUBX51_REST_Vehicles_Controller extends WP_REST_Controller {
 	 * Permission check for creating a vehicle.
 	 */
 	public function create_item_permissions_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**

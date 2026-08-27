@@ -357,8 +357,8 @@ final class SHUBX51_Plugin {
         wp_enqueue_style( 'shubx51_bootstrap_icons', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('shubx51_bootstrap_css'), '1.11.3' );
 
         // 4. Custom Admin Styles (Final Overrides)
-		wp_enqueue_style( 'shubx51_admin_layout', SHUBX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('shubx51_bootstrap_css', 'shubx51_bootstrap_icons'), SHUBX51_VERSION );
-		wp_enqueue_style( 'shubx51_admin_premium', SHUBX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('shubx51_bootstrap_css', 'shubx51_admin_layout'), SHUBX51_VERSION );
+		wp_enqueue_style( 'shubx51_admin_premium', SHUBX51_PLUGIN_URL . 'assets/css/admin-premium.css', array('shubx51_bootstrap_css'), SHUBX51_VERSION );
+		wp_enqueue_style( 'shubx51_admin_layout', SHUBX51_PLUGIN_URL . 'assets/css/admin-layout.css', array('shubx51_bootstrap_css', 'shubx51_bootstrap_icons', 'shubx51_admin_premium'), SHUBX51_VERSION );
 
 		// 5. Receipt Styling
 		wp_enqueue_style( 'shubx51_receipt_css', SHUBX51_PLUGIN_URL . 'assets/css/receipt.css', array(), SHUBX51_VERSION );
@@ -497,21 +497,21 @@ final class SHUBX51_Plugin {
 	 * Enqueue Frontend Assets.
 	 */
 	public function enqueue_frontend_assets() {
-		// Bootstrap 5 & jQuery (if needed, but we use Tailwind mostly - NOW MIGRATED TO BOOTSTRAP)
+        // 0. Fonts (Local Inter)
+        wp_enqueue_style( 'shubx51-fonts', SHUBX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
+
+		// 1. Bootstrap 5 (Local)
         wp_enqueue_style( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap.min.css', array(), '5.3.8' );
 		wp_enqueue_script( 'shubx51-bootstrap', SHUBX51_PLUGIN_URL . 'assets/js/lib/bootstrap.bundle.min.js', array( 'jquery' ), '5.3.8', true );
 
-        // 0. Bootstrap Icons (Local)
+        // 2. Bootstrap Icons (Local)
         wp_enqueue_style( 'shubx51-bootstrap-icons', SHUBX51_PLUGIN_URL . 'assets/css/lib/bootstrap-icons.min.css', array('shubx51-bootstrap'), '1.11.3' );
 
-        // Custom Frontend CSS (Tailwind Replacement)
+        // 3. Custom Frontend CSS (Loaded after Bootstrap to ensure override)
         wp_enqueue_style( 'shubx51-frontend-css', SHUBX51_PLUGIN_URL . 'assets/css/shubx-frontend.css', array('shubx51-bootstrap', 'shubx51-fonts', 'shubx51-bootstrap-icons'), SHUBX51_VERSION );
         
-        // Receipt CSS
+        // 4. Receipt CSS
         wp_enqueue_style( 'shubx51-receipt-css', SHUBX51_PLUGIN_URL . 'assets/css/receipt.css', array('shubx51-bootstrap'), SHUBX51_VERSION );
-        
-        // Fonts
-        wp_enqueue_style( 'shubx51-fonts', SHUBX51_PLUGIN_URL . 'assets/css/lib/inter-fonts.css', array(), '1.0' );
 
 		// 1. Chart.js for Charts (Local)
 		wp_enqueue_script( 'shubx51-chartjs', SHUBX51_PLUGIN_URL . 'assets/js/lib/chart.umd.min.js', array(), '4.5.1', true );

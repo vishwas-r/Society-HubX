@@ -235,7 +235,7 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                 <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 text-nowrap">
                                     <?php if ($is_request && !empty($v['request_id'])): ?>
-                                        <?php echo esc_html( SHUBX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ) ); ?>
+                                        <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
                                     <?php elseif ($status === 'rejected'): ?>
                                         <button class="btn btn-sm btn-light js-edit-vehicle text-primary border shadow-sm rounded-3 p-2" data-vehicle="<?php echo esc_attr(wp_json_encode($v)); ?>">
                                             <i class="bi bi-pencil-square"></i>

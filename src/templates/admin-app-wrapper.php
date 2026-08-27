@@ -80,9 +80,24 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
     }
 }
 
+// Server-Side Cookie & Option Resolution (Zero-Flash SSR)
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$cookie_theme = isset( $_COOKIE['shubx_theme'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_theme'] ) ) : '';
+$current_theme = in_array( $cookie_theme, [ 'light', 'dark' ], true ) ? $cookie_theme : get_option( 'shubx51_default_theme', 'light' );
+
+$valid_palettes = [ 'orange', 'indigo', 'emerald', 'ocean', 'rose' ];
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$cookie_palette = isset( $_COOKIE['shubx_palette'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_palette'] ) ) : '';
+$current_palette = in_array( $cookie_palette, $valid_palettes, true ) ? $cookie_palette : get_option( 'shubx51_color_palette', 'orange' );
+
 ?>
 <!-- Admin App Wrapper Output -->
-<div id="shubx51-app-root" class="d-flex w-100 overflow-hidden">
+<script>
+document.documentElement.setAttribute('data-bs-theme', '<?php echo esc_js( $current_theme ); ?>');
+document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( $current_palette ); ?>');
+</script>
+
+<div id="shubx51-app-root" data-bs-theme="<?php echo esc_attr( $current_theme ); ?>" data-shubx-palette="<?php echo esc_attr( $current_palette ); ?>" class="d-flex w-100 overflow-hidden">
     <!-- Styles: See assets/css/admin-layout.css -->
 
     <!-- Sidebar Backdrop for Mobile -->
@@ -149,6 +164,11 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                     </div>
                 <?php endif; ?>
 
+                <!-- Theme Toggle Button -->
+                <button id="shubx-theme-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 shubx-theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+                    <i id="shubx-theme-icon" class="bi bi-moon-stars-fill fs-5 text-secondary"></i>
+                </button>
+
                 <div class="dropdown">
                     <button class="d-flex align-items-center gap-3 border-0 bg-transparent p-0 dropdown-toggle-no-caret shadow-none px-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="text-end d-none d-lg-block border-start ps-3">
@@ -156,7 +176,7 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
                             <div class="small text-secondary" style="font-size: 10px;">Administrator</div>
                         </div>
                         <div class="shubx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
-                            <?php echo esc_html( get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ) ); ?>
+                            <?php echo get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ); ?>
                         </div>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 py-2 px-2" style="min-width: 180px;">
@@ -228,3 +248,54 @@ do_action( 'admin_print_footer_scripts' );
 ?>
 
 <?php /* Styles: admin-layout.css handles WP reset overrides. */ ?>
+
+<script>
+(function() {
+    function shubxSetCookie(name, value) {
+        document.cookie = name + "=" + encodeURIComponent(value) + "; path=/; max-age=31536000; SameSite=Lax";
+    }
+
+    function shubxApplyTheme(theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        var appRoot = document.getElementById('shubx51-app-root');
+        if (appRoot) {
+            appRoot.setAttribute('data-bs-theme', theme);
+        }
+        shubxSetCookie('shubx_theme', theme);
+        
+        var icon = document.getElementById('shubx-theme-icon');
+        if (icon) {
+            if (theme === 'dark') {
+                icon.className = 'bi bi-sun-fill fs-5 text-warning';
+            } else {
+                icon.className = 'bi bi-moon-stars-fill fs-5 text-secondary';
+            }
+        }
+    }
+
+    window.shubxToggleTheme = function() {
+        var currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        shubxApplyTheme(newTheme);
+    };
+
+    window.shubxSetPalette = function(palette) {
+        document.documentElement.setAttribute('data-shubx-palette', palette);
+        var appRoot = document.getElementById('shubx51-app-root');
+        if (appRoot) {
+            appRoot.setAttribute('data-shubx-palette', palette);
+        }
+        shubxSetCookie('shubx_palette', palette);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var currentTheme = document.documentElement.getAttribute('data-bs-theme') || '<?php echo esc_js( $current_theme ); ?>';
+        shubxApplyTheme(currentTheme);
+        
+        var btn = document.getElementById('shubx-theme-toggle');
+        if (btn) {
+            btn.addEventListener('click', window.shubxToggleTheme);
+        }
+    });
+})();
+</script>

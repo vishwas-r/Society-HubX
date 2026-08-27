@@ -40,7 +40,7 @@
 
 /* Header Section */
 .receipt-header-standard {
-    border-bottom: 2px solid #0d6efd;
+    border-bottom: 2px solid var(--custom-primary-color, #ea580c);
     padding-bottom: 2rem;
     margin-bottom: 2.5rem;
 }
@@ -113,7 +113,7 @@
     padding-top: 1rem;
     font-weight: 800;
     font-size: 1.25rem;
-    color: #0d6efd;
+    color: var(--custom-primary-color, #ea580c);
 }
 
 /* Status Badge */

@@ -30,57 +30,6 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'determine_current_user', array( $this, 'determine_current_user_from_token' ), 20 );
-	}
-
-	/**
-	 * Validate mobile auth token and set current user.
-	 *
-	 * @param int|bool $user_id Current determined user ID.
-	 * @return int|bool
-	 */
-	public function determine_current_user_from_token( $user_id ) {
-		if ( $user_id ) {
-			return $user_id;
-		}
-
-		$auth_header = '';
-		if ( ! empty( $_SERVER['HTTP_AUTHORIZATION'] ) ) {
-			$auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_AUTHORIZATION'] ) );
-		} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
-			$auth_header = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
-		} elseif ( ! empty( $_SERVER['HTTP_X_SHUBX_AUTH'] ) ) {
-			$auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_SHUBX_AUTH'] ) );
-		}
-
-		if ( empty( $auth_header ) ) {
-			return $user_id;
-		}
-
-		$token = trim( str_ireplace( 'Bearer ', '', $auth_header ) );
-		$parts = explode( '.', $token );
-		if ( count( $parts ) !== 2 ) {
-			return $user_id;
-		}
-
-		$payload_json = base64_decode( $parts[0] );
-		$signature = $parts[1];
-
-		$expected_signature = hash_hmac( 'sha256', $payload_json, wp_salt( 'auth' ) );
-		if ( ! hash_equals( $expected_signature, $signature ) ) {
-			return $user_id;
-		}
-
-		$payload = json_decode( $payload_json, true );
-		if ( empty( $payload['user_id'] ) || empty( $payload['expires'] ) ) {
-			return $user_id;
-		}
-
-		if ( time() > intval( $payload['expires'] ) ) {
-			return $user_id; // Expired token
-		}
-
-		return (int) $payload['user_id'];
 	}
 
 	/**
@@ -165,14 +114,16 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			return new WP_Error( 'rest_auth_failed', __( 'Invalid username or password.', 'society-hubx' ), array( 'status' => 401 ) );
 		}
 
-		// Generate authentication token for mobile API
+		// Generate authentication token for mobile API (URL-safe Base64)
 		$token_payload = array(
 			'user_id'   => $user->ID,
 			'username'  => $user->user_login,
 			'issued_at' => time(),
 			'expires'   => time() + ( 30 * DAY_IN_SECONDS ),
 		);
-		$auth_token = base64_encode( json_encode( $token_payload ) ) . '.' . hash_hmac( 'sha256', json_encode( $token_payload ), wp_salt( 'auth' ) );
+		$payload_encoded = rtrim( strtr( base64_encode( json_encode( $token_payload ) ), '+/', '-_' ), '=' );
+		$signature = hash_hmac( 'sha256', $payload_encoded, wp_salt( 'auth' ) );
+		$auth_token = $payload_encoded . '.' . $signature;
 
 		// Set auth cookie for session compatibility
 		wp_set_current_user( $user->ID );
@@ -191,6 +142,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_current_user_profile( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$profile_data = $this->build_user_profile( $user_id );
 		return rest_ensure_response( array( 'success' => true, 'data' => $profile_data ) );
@@ -277,6 +229,6 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 }

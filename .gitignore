@@ -21,3 +21,8 @@ society-governx-*.md
 test/node_modules/
 test/playwright-report/
 test/test-results/
+
+# Mobile App
+mobile-app/node_modules/
+mobile-app/.expo/
+.expo/

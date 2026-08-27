@@ -1,10 +1,10 @@
-﻿/* 
+/* 
  * Society HubX - Premium Frontend Theme
  * Design System: "PropTech Modern"
  */
 
 :root {
-    --pt-primary: #2563eb;
+    --pt-primary: var(--custom-primary-color, #ea580c);
     --pt-bg: #f3f4f6;
     --pt-surface: #ffffff;
     --pt-text: #1f2937;
@@ -52,13 +52,13 @@
 
 .shubx51-dashboard .nav-pills .nav-link:hover {
     color: var(--pt-primary);
-    background: rgba(37, 99, 235, 0.05);
+    background: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.05));
 }
 
 .shubx51-dashboard .nav-pills .nav-link.active {
     background-color: var(--pt-primary);
     color: #fff;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 6px -1px var(--custom-primary-shadow, rgba(var(--bs-primary-rgb), 0.2));
 }
 
 /* 3. Cards */
@@ -90,11 +90,11 @@
     border-radius: 10px;
     padding: 12px 24px;
     font-weight: 600;
-    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 6px -1px var(--custom-primary-shadow, rgba(var(--bs-primary-rgb), 0.2));
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--custom-primary-hover, #c2410c);
     transform: translateY(-1px);
 }
 
@@ -110,7 +110,7 @@
 
 .shubx51-directory-search:focus {
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px var(--custom-primary-shadow, rgba(var(--bs-primary-rgb), 0.1));
     outline: none;
 }
 

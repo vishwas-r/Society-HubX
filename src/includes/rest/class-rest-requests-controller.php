@@ -39,6 +39,11 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 					'callback'            => array( $this, 'get_items' ),
 					'permission_callback' => array( $this, 'user_logged_in_check' ),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
 			)
 		);
 
@@ -62,6 +67,11 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_item' ),
 					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_item' ),
+					'permission_callback' => array( $this, 'requests_manage_check' ),
 				),
 			)
 		);
@@ -199,11 +209,53 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 		return rest_ensure_response( array( 'success' => true, 'processed_count' => $count ) );
 	}
 
+	/**
+	 * Create resident submission request.
+	 */
+	public function create_item( $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$module       = isset( $params['module'] ) ? sanitize_text_field( $params['module'] ) : 'residents';
+		$request_type = isset( $params['request_type'] ) ? sanitize_text_field( $params['request_type'] ) : 'general_request';
+		$payload      = isset( $params['payload'] ) ? (array) $params['payload'] : array();
+		$entity_id    = isset( $params['entity_id'] ) ? sanitize_text_field( $params['entity_id'] ) : uniqid();
+		$flat_no      = isset( $params['flat_no'] ) ? sanitize_text_field( $params['flat_no'] ) : '';
+
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SHUBX51_Request_Manager();
+		$req_id = $rm->create_request( $module, $request_type, $payload, $entity_id, $flat_no );
+
+		if ( is_wp_error( $req_id ) ) {
+			return $req_id;
+		}
+
+		return new WP_REST_Response( array( 'success' => true, 'id' => $req_id, 'message' => __( 'Request submitted successfully.', 'society-hubx' ) ), 201 );
+	}
+
+	/**
+	 * Delete approval request.
+	 */
+	public function delete_item( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$db = new SHUBX51_DB_Router();
+		$result = $db->delete( 'requests', array( 'id' => $id ) );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request deleted successfully.', 'society-hubx' ) ) );
+	}
+
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function requests_manage_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'requests_manage' ) || $rbac->has_capability( get_current_user_id(), 'finance_manage' ) || current_user_can( 'manage_options' );
 	}

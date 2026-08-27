@@ -294,7 +294,7 @@ $all_flats = $flats;
                                 <td class="pe-3 pe-md-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2 text-nowrap">
                                         <?php if ($is_request && !empty($s['request_id'])): ?>
-                                            <?php echo esc_html( SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ) ); ?>
+                                            <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
                                         <?php elseif ($status === 'rejected'): ?>
                                             <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>

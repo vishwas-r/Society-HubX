@@ -33,6 +33,11 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 					'callback'            => array( $this, 'get_invoices' ),
 					'permission_callback' => array( $this, 'user_logged_in_check' ),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_invoice' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
+				),
 			)
 		);
 
@@ -44,6 +49,16 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 					'methods'             => WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_invoice' ),
 					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'update_invoice' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_invoice' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
 				),
 			)
 		);
@@ -182,6 +197,123 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		}
 
 		return rest_ensure_response( $invoices[0] );
+	}
+
+	/**
+	 * Create single custom invoice.
+	 */
+	public function create_invoice( $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$flat_no = isset( $params['flat_no'] ) ? sanitize_text_field( $params['flat_no'] ) : '';
+		$amount  = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
+		$month   = isset( $params['month'] ) ? sanitize_text_field( $params['month'] ) : gmdate( 'F Y' );
+
+		if ( empty( $flat_no ) || $amount <= 0 ) {
+			return new WP_Error( 'rest_invalid_params', __( 'Flat number and valid amount are required.', 'society-hubx' ), array( 'status' => 400 ) );
+		}
+
+		$db = new SHUBX51_DB_Router();
+		$data = array(
+			'id'            => uniqid( 'inv_' ),
+			'block'         => isset( $params['block'] ) ? sanitize_text_field( $params['block'] ) : '',
+			'flat_no'       => $flat_no,
+			'resident_name' => isset( $params['resident_name'] ) ? sanitize_text_field( $params['resident_name'] ) : '',
+			'amount'        => $amount,
+			'total_paid'    => isset( $params['total_paid'] ) ? floatval( $params['total_paid'] ) : 0.00,
+			'month'         => $month,
+			'type'          => isset( $params['type'] ) ? sanitize_text_field( $params['type'] ) : 'maintenance',
+			'status'        => isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : 'unpaid',
+			'due_date'      => isset( $params['due_date'] ) ? sanitize_text_field( $params['due_date'] ) : gmdate( 'Y-m-d', strtotime( '+15 days' ) ),
+			'description'   => isset( $params['description'] ) ? sanitize_textarea_field( $params['description'] ) : '',
+			'payment_ref'   => isset( $params['payment_ref'] ) ? sanitize_text_field( $params['payment_ref'] ) : '',
+			'payments'      => '[]',
+			'created_at'    => current_time( 'mysql' ),
+		);
+
+		$result = $db->insert( 'invoices', $data );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new WP_REST_Response( array( 'success' => true, 'id' => $data['id'], 'invoice' => $data ), 201 );
+	}
+
+	/**
+	 * Update invoice.
+	 */
+	public function update_invoice( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$db = new SHUBX51_DB_Router();
+		$existing = $db->get( 'invoices', array( 'id' => $id ) );
+		if ( empty( $existing ) ) {
+			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+		}
+
+		$data = array();
+		if ( isset( $params['amount'] ) ) {
+			$data['amount'] = floatval( $params['amount'] );
+		}
+		if ( isset( $params['total_paid'] ) ) {
+			$data['total_paid'] = floatval( $params['total_paid'] );
+		}
+		if ( isset( $params['status'] ) ) {
+			$data['status'] = sanitize_text_field( $params['status'] );
+		}
+		if ( isset( $params['due_date'] ) ) {
+			$data['due_date'] = sanitize_text_field( $params['due_date'] );
+		}
+		if ( isset( $params['type'] ) ) {
+			$data['type'] = sanitize_text_field( $params['type'] );
+		}
+		if ( isset( $params['month'] ) ) {
+			$data['month'] = sanitize_text_field( $params['month'] );
+		}
+		if ( isset( $params['description'] ) ) {
+			$data['description'] = sanitize_textarea_field( $params['description'] );
+		}
+		if ( isset( $params['payment_ref'] ) ) {
+			$data['payment_ref'] = sanitize_text_field( $params['payment_ref'] );
+		}
+		if ( isset( $params['resident_name'] ) ) {
+			$data['resident_name'] = sanitize_text_field( $params['resident_name'] );
+		}
+		if ( isset( $params['block'] ) ) {
+			$data['block'] = sanitize_text_field( $params['block'] );
+		}
+		if ( isset( $params['flat_no'] ) ) {
+			$data['flat_no'] = sanitize_text_field( $params['flat_no'] );
+		}
+
+		$result = $db->update( 'invoices', $data, array( 'id' => $id ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice updated successfully.', 'society-hubx' ) ) );
+	}
+
+	/**
+	 * Delete invoice.
+	 */
+	public function delete_invoice( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$db = new SHUBX51_DB_Router();
+		$result = $db->delete( 'invoices', array( 'id' => $id ) );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice deleted successfully.', 'society-hubx' ) ) );
 	}
 
 	/**
@@ -431,15 +563,17 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function finance_view_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'finance_view' ) || current_user_can( 'manage_options' );
 	}
 
 	public function finance_manage_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'finance_manage' ) || current_user_can( 'manage_options' );
 	}

@@ -281,18 +281,19 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function get_item_permissions_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function create_item_permissions_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function update_item_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$rbac = new SHUBX51_RBAC_Manager();
 		if ( $rbac->has_capability( $user_id, 'documents_manage' ) || current_user_can( 'manage_options' ) ) {
@@ -314,6 +315,7 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	}
 
 	public function admin_permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'documents_manage' ) || current_user_can( 'manage_options' );
 	}

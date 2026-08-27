@@ -11,15 +11,24 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; 
 }
+// Server-Side Cookie & Option Resolution (Zero-Flash SSR)
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$cookie_theme = isset( $_COOKIE['shubx_theme'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_theme'] ) ) : '';
+$current_theme = in_array( $cookie_theme, [ 'light', 'dark' ], true ) ? $cookie_theme : get_option( 'shubx51_default_theme', 'light' );
+
+$valid_palettes = [ 'orange', 'indigo', 'emerald', 'ocean', 'rose' ];
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$cookie_palette = isset( $_COOKIE['shubx_palette'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_palette'] ) ) : '';
+$current_palette = in_array( $cookie_palette, $valid_palettes, true ) ? $cookie_palette : get_option( 'shubx51_color_palette', 'orange' );
 ?><!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html <?php language_attributes(); ?> data-bs-theme="<?php echo esc_attr( $current_theme ); ?>" data-shubx-palette="<?php echo esc_attr( $current_palette ); ?>">
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?php wp_head(); ?>
     
 </head>
-<body <?php body_class('bg-light text-dark shadow-none'); ?>>
+<body <?php body_class('shadow-none'); ?>>
 
     <!-- App Header -->
     <header class="shubx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom sticky-top shadow-sm" style="height: 72px; z-index: 1050;">
@@ -32,10 +41,11 @@ if ( ! defined( 'ABSPATH' ) ) {
                  <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">Society HubX</h1>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-4">
-            <!-- <div class="bg-light p-2 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="No Pending Requests">
-                <i class="bi bi-bell text-secondary opacity-50"></i>
-            </div> -->
+        <div class="d-flex align-items-center gap-3">
+            <!-- Theme Toggle Button -->
+            <button id="shubx-theme-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 shubx-theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+                <i id="shubx-theme-icon" class="bi bi-moon-stars-fill fs-5 text-secondary"></i>
+            </button>
             
             <?php 
             if ( is_user_logged_in() ) : 
@@ -99,6 +109,49 @@ if ( ! defined( 'ABSPATH' ) ) {
             &copy; <?php echo esc_html( wp_date('Y') ); ?> <?php bloginfo('name'); ?>.
         </div>
     </footer>
+
+    <script>
+    (function() {
+        function shubxSetCookie(name, value) {
+            document.cookie = name + "=" + encodeURIComponent(value) + "; path=/; max-age=31536000; SameSite=Lax";
+        }
+
+        function shubxApplyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            shubxSetCookie('shubx_theme', theme);
+            
+            var icon = document.getElementById('shubx-theme-icon');
+            if (icon) {
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun-fill fs-5 text-warning';
+                } else {
+                    icon.className = 'bi bi-moon-stars-fill fs-5 text-secondary';
+                }
+            }
+        }
+
+        window.shubxToggleTheme = function() {
+            var currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            shubxApplyTheme(newTheme);
+        };
+
+        window.shubxSetPalette = function(palette) {
+            document.documentElement.setAttribute('data-shubx-palette', palette);
+            shubxSetCookie('shubx_palette', palette);
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var current = document.documentElement.getAttribute('data-bs-theme') || '<?php echo esc_js( $current_theme ); ?>';
+            shubxApplyTheme(current);
+            
+            var btn = document.getElementById('shubx-theme-toggle');
+            if (btn) {
+                btn.addEventListener('click', window.shubxToggleTheme);
+            }
+        });
+    })();
+    </script>
 
     <?php wp_footer(); ?>
 </body>

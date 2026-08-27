@@ -103,6 +103,18 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/violations/(?P<id>[\w-]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_violation' ),
+					'permission_callback' => array( $this, 'rules_manage_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<id>[\w-]+)',
 			array(
 				array(
@@ -442,11 +454,27 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation status updated.', 'society-hubx' ) ) );
 	}
 
+	/**
+	 * Delete violation.
+	 */
+	public function delete_violation( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$db = new SHUBX51_DB_Router();
+		$result = $db->delete( 'rule_violations', array( 'id' => $id ) );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation record deleted.', 'society-hubx' ) ) );
+	}
+
 	public function user_logged_in_check( $request ) {
-		return is_user_logged_in();
+		return SHUBX51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function rules_manage_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		$rbac = new SHUBX51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'rules_manage' ) || current_user_can( 'manage_options' );
 	}

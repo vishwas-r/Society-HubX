@@ -157,6 +157,52 @@ $templates = $db->get('notification_templates');
                             </div>
                         </div>
 
+                        <div class="mb-5">
+                            <h5 class="fw-bold text-primary mb-2 border-bottom border-light pb-2">Branding & Color Theme</h5>
+                            <p class="small text-muted mb-4">Select your society's primary brand palette and default appearance. The selected palette dynamically styles buttons, active tabs, highlights, and badges across both Light and Dark themes.</p>
+                            
+                            <?php
+                                $current_palette = get_option('shubx51_color_palette', 'orange');
+                                $palettes = [
+                                    'orange'  => ['name' => 'Sunset Orange', 'color' => '#ea580c', 'dark_color' => '#f97316', 'desc' => 'Warm, High-Energy, Modern'],
+                                    'indigo'  => ['name' => 'Royal Indigo',  'color' => '#4f46e5', 'dark_color' => '#6366f1', 'desc' => 'Tech, Premium SaaS, Sleek'],
+                                    'emerald' => ['name' => 'Emerald Forest','color' => '#059669', 'dark_color' => '#10b981', 'desc' => 'Fresh, Natural, Sustainable'],
+                                    'ocean'   => ['name' => 'Ocean Blue',    'color' => '#0284c7', 'dark_color' => '#38bdf8', 'desc' => 'Classic, Professional, Crisp'],
+                                    'rose'    => ['name' => 'Crimson Rose',  'color' => '#e11d48', 'dark_color' => '#fb7185', 'desc' => 'Bold, Elegant, Contemporary'],
+                                ];
+                                $default_theme = get_option('shubx51_default_theme', 'light');
+                            ?>
+                            <div class="row g-3 mb-4">
+                                <?php foreach ( $palettes as $key => $p ): ?>
+                                    <div class="col-6 col-md-4 col-xl-2.4">
+                                        <label class="shubx-palette-card card h-100 p-3 rounded-3 border <?php echo $current_palette === $key ? 'border-2 border-primary shadow-sm' : 'border-light'; ?> cursor-pointer transition-all hover-translate-y" style="cursor: pointer;" onclick="shubxSelectPalette('<?php echo esc_js($key); ?>')">
+                                            <input type="radio" name="shubx51_color_palette" value="<?php echo esc_attr($key); ?>" <?php checked($current_palette, $key); ?> class="d-none shubx-palette-radio" id="palette-radio-<?php echo esc_attr($key); ?>">
+                                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                                <div class="d-flex gap-1">
+                                                    <span class="rounded-circle d-inline-block shadow-sm" style="width: 22px; height: 22px; background-color: <?php echo esc_attr($p['color']); ?>;" title="Light mode tone"></span>
+                                                    <span class="rounded-circle d-inline-block shadow-sm" style="width: 22px; height: 22px; background-color: <?php echo esc_attr($p['dark_color']); ?>;" title="Dark mode tone"></span>
+                                                </div>
+                                                <i class="bi bi-check-circle-fill text-primary fs-5 <?php echo $current_palette === $key ? '' : 'd-none'; ?> shubx-palette-check"></i>
+                                            </div>
+                                            <div class="fw-bold small text-dark mb-1"><?php echo esc_html($p['name']); ?></div>
+                                            <div class="text-muted" style="font-size: 11px; line-height: 1.3;"><?php echo esc_html($p['desc']); ?></div>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Default Theme Mode</label>
+                                    <select name="shubx51_default_theme" class="form-select shadow-none rounded-3 border-light" onchange="shubxSelectDefaultTheme(this.value)">
+                                        <option value="light" <?php selected($default_theme, 'light'); ?>>☀️ Light Mode (Default)</option>
+                                        <option value="dark" <?php selected($default_theme, 'dark'); ?>>🌙 Dark Mode</option>
+                                    </select>
+                                    <div class="form-text small text-muted">New visitors or users without preference cookies will default to this appearance.</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Finance Rules</h5>
                             <div class="row g-3">
@@ -198,6 +244,8 @@ $templates = $db->get('notification_templates');
                         <input type="hidden" name="shubx51_maintenance_amount" value="<?php echo esc_attr( get_option('shubx51_maintenance_amount', '5000') ); ?>">
                         <input type="hidden" name="shubx51_opening_bank" value="<?php echo esc_attr( get_option('shubx51_opening_bank', '0') ); ?>">
                         <input type="hidden" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Beneficiary Details</h5>
                             <div class="row g-3">
@@ -465,6 +513,8 @@ $templates = $db->get('notification_templates');
                         <input type="hidden" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>">
                         <input type="hidden" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>">
                         <input type="hidden" name="shubx51_bank_qr" value="<?php echo esc_attr( get_option('shubx51_bank_qr') ); ?>">
+                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Verification Policies</h5>
                             <p class="small text-secondary mb-4">Control whether resident-submitted changes require admin oversight.</p>
@@ -683,6 +733,8 @@ $templates = $db->get('notification_templates');
                         <input type="hidden" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>">
                         <input type="hidden" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>">
                         <input type="hidden" name="shubx51_bank_qr" value="<?php echo esc_attr( get_option('shubx51_bank_qr') ); ?>">
+                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
                         
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">DPDP Compliance & Data Privacy</h5>

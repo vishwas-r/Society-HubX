@@ -51,8 +51,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
     <div class="col-lg-3 col-md-6">
         <div class="card border-0 bg-primary text-white rounded-3 shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="bg-white bg-opacity-20 p-2 rounded-3">
-                    <i class="bi bi-file-text fs-4"></i>
+                <div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                    <i class="bi bi-file-text fs-4 text-primary"></i>
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Published Rules</p>
@@ -62,8 +62,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
     <div class="col-lg-3 col-md-6">
         <div class="card border-0 bg-warning text-dark rounded-3 shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="bg-white bg-opacity-40 p-2 rounded-3">
-                    <i class="bi bi-pencil-square fs-4"></i>
+                <div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                    <i class="bi bi-pencil-square fs-4 text-warning"></i>
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Draft Rules</p>
@@ -73,8 +73,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
     <div class="col-lg-3 col-md-6">
         <div class="card border-0 bg-success text-white rounded-3 shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="bg-white bg-opacity-20 p-2 rounded-3">
-                    <i class="bi bi-check-circle fs-4"></i>
+                <div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                    <i class="bi bi-check-circle fs-4 text-success"></i>
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Acknowledgments</p>
@@ -84,8 +84,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
     <div class="col-lg-3 col-md-6">
         <div class="card border-0 bg-danger text-white rounded-3 shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-start mb-3">
-                <div class="bg-white bg-opacity-20 p-2 rounded-3">
-                    <i class="bi bi-exclamation-triangle fs-4"></i>
+                <div class="bg-white rounded-3 p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                    <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
                 </div>
             </div>
             <p class="small opacity-75 fw-medium mb-1">Total Violations</p>
