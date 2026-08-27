@@ -159,7 +159,8 @@ class SHUBX51_Expense_Manager {
 			wp_die( 'Security check failed' );
 		}
 
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized' );
 		}
 
@@ -189,9 +190,13 @@ class SHUBX51_Expense_Manager {
 	 * AJAX Handler for Adding Expense
 	 */
 	public function handle_add_expense_ajax() {
-		check_ajax_referer( 'shubx51_add_expense_nonce', '_wpnonce' );
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_add_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -260,9 +265,13 @@ class SHUBX51_Expense_Manager {
 	 * AJAX Handler for Editing Expense
 	 */
 	public function handle_edit_expense_ajax() {
-		check_ajax_referer( 'shubx51_edit_expense_nonce', '_wpnonce' );
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_edit_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -310,9 +319,13 @@ class SHUBX51_Expense_Manager {
 	 * AJAX Handler for Deleting Expense
 	 */
 	public function handle_delete_expense_ajax() {
-		check_ajax_referer( 'shubx51_nonce', '_wpnonce' );
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
@@ -338,9 +351,13 @@ class SHUBX51_Expense_Manager {
 	 * AJAX Handler for Approving Expense
 	 */
 	public function handle_approve_expense_ajax() {
-		check_ajax_referer( 'shubx51_nonce', '_wpnonce' );
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
 		
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		

@@ -61,9 +61,6 @@ class SHUBX51_Frontend_Dashboard {
         add_action( 'wp_ajax_shubx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
         add_action( 'wp_ajax_shubx51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
         add_action( 'wp_ajax_shubx51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
-		
-        // Payment Submission Handler
-        add_action( 'wp_ajax_shubx51_submit_payment_request', array( $this, 'handle_submit_payment' ) );
 
 		// Switch Flat Handler
 		add_action( 'wp_ajax_shubx51_switch_flat', array( $this, 'handle_switch_flat' ) );

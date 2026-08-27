@@ -394,7 +394,10 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 * Handle Payment Request from Resident (Frontend)
 	 */
 	public function handle_submit_payment_request() {
-		check_ajax_referer( 'shubx51_frontend_nonce' );
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : ( isset( $_REQUEST['_ajax_nonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_ajax_nonce'] ) ) : '' );
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
 		
 		$invoice_id = isset( $_POST['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_POST['invoice_id'] ) ) : '';
 		$amount = isset( $_POST['amount'] ) ? floatval( wp_unslash( $_POST['amount'] ) ) : 0;

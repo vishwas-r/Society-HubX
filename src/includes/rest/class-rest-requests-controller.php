@@ -1,0 +1,210 @@
+<?php
+/**
+ * Class: REST Requests Controller
+ * Endpoints for Request Approval Workflow (Resident Submissions, Admin Approvals).
+ *
+ * @package SHUBX51_Plugin
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
+
+	/**
+	 * Namespace for the API.
+	 *
+	 * @var string
+	 */
+	protected $namespace = 'society-hubx/v1';
+
+	/**
+	 * Route base.
+	 *
+	 * @var string
+	 */
+	protected $rest_base = 'requests';
+
+	/**
+	 * Register routes.
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/bulk',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'bulk_process' ),
+					'permission_callback' => array( $this, 'requests_manage_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\w-]+)',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_item' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\w-]+)/approve',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'approve_item' ),
+					'permission_callback' => array( $this, 'requests_manage_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<id>[\w-]+)/reject',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'reject_item' ),
+					'permission_callback' => array( $this, 'requests_manage_check' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * List approval requests.
+	 */
+	public function get_items( $request ) {
+		$db = new SHUBX51_DB_Router();
+		$requests = $db->get( 'requests' );
+
+		$user_id = get_current_user_id();
+		$rbac = new SHUBX51_RBAC_Manager();
+		$is_admin = $rbac->has_capability( $user_id, 'requests_manage' ) || current_user_can( 'manage_options' );
+
+		if ( ! $is_admin ) {
+			$resident = $db->get_resident_by_wp_id( $user_id );
+			$user_flat = $resident['flat_no'] ?? '';
+			$requests = array_filter(
+				$requests,
+				function( $r ) use ( $user_flat, $user_id ) {
+					return ( isset( $r['flat_no'] ) && $r['flat_no'] === $user_flat ) || ( isset( $r['requested_by'] ) && (int) $r['requested_by'] === $user_id );
+				}
+			);
+			$requests = array_values( $requests );
+		}
+
+		return rest_ensure_response( $requests ? $requests : array() );
+	}
+
+	/**
+	 * Get single request details.
+	 */
+	public function get_item( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$db = new SHUBX51_DB_Router();
+		$requests = $db->get( 'requests', array( 'id' => $id ) );
+
+		if ( empty( $requests ) ) {
+			return new WP_Error( 'rest_request_not_found', __( 'Request not found.', 'society-hubx' ), array( 'status' => 404 ) );
+		}
+
+		return rest_ensure_response( $requests[0] );
+	}
+
+	/**
+	 * Approve request.
+	 */
+	public function approve_item( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SHUBX51_Request_Manager();
+		$result = $rm->approve_request( $id );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request approved successfully.', 'society-hubx' ) ) );
+	}
+
+	/**
+	 * Reject request.
+	 */
+	public function reject_item( $request ) {
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$params = $request->get_json_params();
+		$note = isset( $params['admin_note'] ) ? sanitize_textarea_field( $params['admin_note'] ) : '';
+
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SHUBX51_Request_Manager();
+		$result = $rm->reject_request( $id, $note );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request rejected successfully.', 'society-hubx' ) ) );
+	}
+
+	/**
+	 * Bulk process requests.
+	 */
+	public function bulk_process( $request ) {
+		$params = $request->get_json_params();
+		$ids = isset( $params['ids'] ) ? (array) $params['ids'] : array();
+		$action = isset( $params['action'] ) ? sanitize_text_field( $params['action'] ) : 'approve';
+		$note = isset( $params['admin_note'] ) ? sanitize_textarea_field( $params['admin_note'] ) : '';
+
+		if ( empty( $ids ) ) {
+			return new WP_Error( 'rest_invalid_params', __( 'Request IDs are required.', 'society-hubx' ), array( 'status' => 400 ) );
+		}
+
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new SHUBX51_Request_Manager();
+		$count = 0;
+
+		foreach ( $ids as $id ) {
+			$clean_id = sanitize_text_field( $id );
+			if ( $action === 'approve' ) {
+				$res = $rm->approve_request( $clean_id );
+			} else {
+				$res = $rm->reject_request( $clean_id, $note );
+			}
+			if ( ! is_wp_error( $res ) ) {
+				$count++;
+			}
+		}
+
+		return rest_ensure_response( array( 'success' => true, 'processed_count' => $count ) );
+	}
+
+	public function user_logged_in_check( $request ) {
+		return is_user_logged_in();
+	}
+
+	public function requests_manage_check( $request ) {
+		$rbac = new SHUBX51_RBAC_Manager();
+		return $rbac->has_capability( get_current_user_id(), 'requests_manage' ) || $rbac->has_capability( get_current_user_id(), 'finance_manage' ) || current_user_can( 'manage_options' );
+	}
+}

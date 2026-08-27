@@ -17,11 +17,6 @@ class SHUBX51_Request_Manager {
 
 	public function __construct() {
 		$this->db = new SHUBX51_DB_Router();
-        
-        // Register AJAX Actions for Approvals
-        add_action( 'wp_ajax_shubx51_approve_request', array( $this, 'handle_ajax_approve' ) );
-        add_action( 'wp_ajax_shubx51_reject_request', array( $this, 'handle_ajax_reject' ) );
-        add_action( 'wp_ajax_shubx51_bulk_process_requests', array( $this, 'handle_bulk_process' ) );
 
         // Self-Heal Schema
         if ( is_admin() ) {

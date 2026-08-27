@@ -120,10 +120,14 @@ class SHUBX51_Rule_Manager implements SHUBX51_Module {
 	 * Add / Edit Rule
 	 */
 	public function handle_add_rule() {
-		ob_start(); // Capture any stray output so it doesn't corrupt the JSON response
-		check_ajax_referer( 'shubx51_rule_nonce', '_wpnonce' );
-		
-		if ( ! current_user_can( 'manage_options' ) ) {
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_rule_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			ob_end_clean();
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
+
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'rules_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			ob_end_clean();
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}

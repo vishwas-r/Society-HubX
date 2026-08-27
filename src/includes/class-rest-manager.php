@@ -28,21 +28,39 @@ class SHUBX51_REST_Manager {
 	 * Register all plugin REST routes.
 	 */
 	public function register_routes() {
-		// Residents Controller
-		$resident_controller = new SHUBX51_REST_Residents_Controller();
-		$resident_controller->register_routes();
+		// Include controller classes
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-flats-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-vehicles-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-documents-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-facilities-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-finance-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-assets-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-notices-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-polls-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-rules-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-requests-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-notifications-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
 
-		// Staff Controller
-		$staff_controller = new SHUBX51_REST_Staff_Controller();
-		$staff_controller->register_routes();
-
-		// Activity Controller
-		$activity_controller = new SHUBX51_REST_Activity_Controller();
-		$activity_controller->register_routes();
-
-		// Payments Controller (Webhooks & Polling)
-		$payments_controller = new SHUBX51_REST_Payments_Controller();
-		$payments_controller->register_routes();
+		// Instantiate & register
+		( new SHUBX51_REST_Flats_Controller() )->register_routes();
+		( new SHUBX51_REST_Residents_Controller() )->register_routes();
+		( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
+		( new SHUBX51_REST_Documents_Controller() )->register_routes();
+		( new SHUBX51_REST_Facilities_Controller() )->register_routes();
+		( new SHUBX51_REST_Finance_Controller() )->register_routes();
+		( new SHUBX51_REST_Assets_Controller() )->register_routes();
+		( new SHUBX51_REST_Notices_Controller() )->register_routes();
+		( new SHUBX51_REST_Polls_Controller() )->register_routes();
+		( new SHUBX51_REST_Staff_Controller() )->register_routes();
+		( new SHUBX51_REST_Rules_Controller() )->register_routes();
+		( new SHUBX51_REST_Requests_Controller() )->register_routes();
+		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
+		( new SHUBX51_REST_Activity_Controller() )->register_routes();
+		( new SHUBX51_REST_Payments_Controller() )->register_routes();
 	}
 
 	/**

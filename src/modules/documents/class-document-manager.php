@@ -31,6 +31,9 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 		add_action( 'admin_post_shubx51_delete_doc', array( $this, 'handle_delete' ) );
 		add_action( 'wp_ajax_shubx51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'wp_ajax_shubx51_edit_doc_meta', array( $this, 'handle_edit_meta' ) );
+		add_action( 'wp_ajax_shubx51_restore_doc', array( $this, 'handle_restore' ) );
+		add_action( 'wp_ajax_shubx51_get_doc', array( $this, 'handle_get_doc' ) );
 
         // Module Registration
         add_filter( 'shubx51_get_module_documents', array( $this, 'get_instance' ) );
@@ -341,6 +344,86 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 			wp_safe_redirect( add_query_arg( array( 'page' => 'shubx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
 		}
 		exit;
+	}
+
+	public function handle_edit_meta() {
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
+
+		$user_id = get_current_user_id();
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SHUBX51_RBAC_Manager();
+		$is_admin = current_user_can( 'manage_options' ) || $rbac->has_capability( $user_id, 'documents_manage' );
+
+		$doc_id = isset( $_POST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_POST['doc_id'] ) ) : ( isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '' );
+		if ( empty( $doc_id ) ) {
+			wp_send_json_error( array( 'message' => 'Document ID missing' ), 400 );
+		}
+
+		$docs = $this->db->get( 'documents', array( 'id' => $doc_id ) );
+		if ( empty( $docs ) ) {
+			wp_send_json_error( array( 'message' => 'Document not found' ), 404 );
+		}
+		$doc = $docs[0];
+
+		if ( ! $is_admin && (int) $doc['uploaded_by'] !== $user_id ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+		}
+
+		$update_data = array();
+		if ( isset( $_POST['title'] ) ) {
+			$update_data['title'] = sanitize_text_field( wp_unslash( $_POST['title'] ) );
+		}
+		if ( isset( $_POST['category'] ) ) {
+			$update_data['category'] = sanitize_text_field( wp_unslash( $_POST['category'] ) );
+		}
+		if ( isset( $_POST['access_level'] ) && $is_admin ) {
+			$update_data['access_level'] = sanitize_text_field( wp_unslash( $_POST['access_level'] ) );
+		}
+
+		if ( ! empty( $update_data ) ) {
+			$this->db->update( 'documents', $update_data, array( 'id' => $doc_id ) );
+		}
+
+		wp_send_json_success( array( 'message' => 'Document updated successfully' ) );
+	}
+
+	public function handle_restore() {
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
+
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+		}
+
+		$doc_id = isset( $_POST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_POST['doc_id'] ) ) : ( isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '' );
+		if ( empty( $doc_id ) ) {
+			wp_send_json_error( array( 'message' => 'Document ID missing' ), 400 );
+		}
+
+		$this->db->update( 'documents', array( 'status' => 'approved' ), array( 'id' => $doc_id ) );
+		wp_send_json_success( array( 'message' => 'Document restored successfully' ) );
+	}
+
+	public function handle_get_doc() {
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
+
+		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : ( isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : '' );
+		$docs = $this->db->get( 'documents', array( 'id' => $doc_id ) );
+		if ( empty( $docs ) ) {
+			wp_send_json_error( array( 'message' => 'Document not found' ), 404 );
+		}
+
+		wp_send_json_success( $docs[0] );
 	}
 
 	public function render_page() {

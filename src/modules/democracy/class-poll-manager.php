@@ -17,10 +17,15 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 	public function __construct() {
 		$this->db = new SHUBX51_DB_Router();
         
-        // Admin Actions
+        // Admin Actions (POST + AJAX)
 		add_action( 'admin_post_shubx51_create_poll', array( $this, 'handle_create_poll' ) );
         add_action( 'admin_post_shubx51_delete_poll', array( $this, 'handle_delete_poll' ) );
         add_action( 'admin_post_shubx51_close_poll', array( $this, 'handle_close_poll' ) );
+
+        add_action( 'wp_ajax_shubx51_create_poll', array( $this, 'handle_create_poll' ) );
+        add_action( 'wp_ajax_shubx51_delete_poll', array( $this, 'handle_delete_poll' ) );
+        add_action( 'wp_ajax_shubx51_close_poll', array( $this, 'handle_close_poll' ) );
+        add_action( 'wp_ajax_shubx51_get_poll_results', array( $this, 'handle_get_poll_results' ) );
 
         // Frontend Actions
         add_action( 'admin_post_shubx51_cast_vote', array( $this, 'handle_cast_vote' ) );
@@ -52,8 +57,6 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
                 'voted_at'   => $payload['voted_at'] ?? current_time( 'mysql' )
             );
 
-            // Primary Key 'id' is AUTO_INCREMENT in MySQL schema, 
-            // DB_Router handles it or we can let it be.
             return $this->db->insert('votes', $vote_data);
         }
         return new WP_Error( 'invalid_action', 'Unknown action' );
@@ -63,8 +66,22 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 	 * Create a new Poll.
 	 */
 	public function handle_create_poll() {
+		if ( wp_doing_ajax() ) {
+			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+			}
+		} else {
+			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
+
         $rbac = new SHUBX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
+		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
 			wp_die( 'Unauthorized' );
 		}
 
@@ -74,23 +91,32 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 		$expiry = isset( $_POST['expiry_date'] ) ? sanitize_text_field( wp_unslash( $_POST['expiry_date'] ) ) : '';
 
 		if ( count( $options ) < 2 ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'At least 2 options are required.' ), 400 );
+			}
 			wp_die( 'At least 2 options are required.' );
 		}
 
-		$polls = $this->db->get( 'polls' );
-        
         $new_poll = array(
             'id'          => uniqid( 'poll_' ),
             'title'       => $title,
             'description' => $desc,
-            'options'     => json_encode(array_values($options)), // JSON for DB
+            'options'     => json_encode( array_values( $options ) ),
             'expiry'      => $expiry,
-            'status'      => 'open', // open, closed
+            'status'      => 'open',
             'created_at'  => current_time( 'mysql' ),
             'created_by'  => get_current_user_id()
         );
 
-        $this->db->insert('polls', $new_poll);
+        $res = $this->db->insert( 'polls', $new_poll );
+
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ), 500 );
+			}
+			wp_send_json_success( array( 'message' => 'Poll created successfully', 'id' => $new_poll['id'] ) );
+			exit;
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&created=1' ) );
 		exit;
@@ -100,30 +126,42 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
      * Delete a Poll.
      */
     public function handle_delete_poll() {
+		if ( wp_doing_ajax() ) {
+			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+			}
+		} else {
+			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
+
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
 			wp_die( 'Unauthorized' );
 		}
 
-        $id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
-        $this->db->delete('polls', ['id' => $id]);
+        $id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : ( isset( $_POST['poll_id'] ) ? sanitize_text_field( wp_unslash( $_POST['poll_id'] ) ) : '' );
+        $res = $this->db->delete( 'polls', array( 'id' => $id ) );
 
-        // Also clean up votes for this poll
-        // DB_Router doesn't support delete_many efficiently yet without key, 
-        // but votes don't have unique ID in current schema? 
-        // Wait, votes schema: id, poll_id... check schema.
-        // Schema says: shubx51_votes (id, poll_id, flat_no, ...)
-        // JSON file had flat_no+poll_id as key somewhat. 
-        // For MySQL, we run a DELETE query. For JSON, we might leave orphans or iterate?
-        // Since DB_Router relies on 'id' for delete(), we can't delete by poll_id easily.
-        // Let's iterate and delete one by one or assume DB_Router needs upgrade.
-        // For now: Iterate and delete found votes.
         $votes = $this->db->get( 'votes' );
-        foreach($votes as $v) {
-            if($v['poll_id'] === $id && isset($v['id'])) {
-                $this->db->delete('votes', ['id' => $v['id']]);
+        foreach ( $votes as $v ) {
+            if ( isset( $v['poll_id'], $v['id'] ) && $v['poll_id'] === $id ) {
+                $this->db->delete( 'votes', array( 'id' => $v['id'] ) );
             }
         }
+
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ), 500 );
+			}
+			wp_send_json_success( array( 'message' => 'Poll deleted successfully' ) );
+			exit;
+		}
 
         wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&deleted=1' ) );
         exit;
@@ -133,18 +171,77 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
      * Close a Poll manually.
      */
     public function handle_close_poll() {
+		if ( wp_doing_ajax() ) {
+			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+			}
+		} else {
+			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
+
         $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || ! check_admin_referer( 'shubx51_poll_action' ) ) {
+        if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
 			wp_die( 'Unauthorized' );
 		}
 
-        $id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
-        // Update Poll Status
-        $this->db->update('polls', ['status' => 'closed'], ['id' => $id]);
+        $id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : ( isset( $_POST['poll_id'] ) ? sanitize_text_field( wp_unslash( $_POST['poll_id'] ) ) : '' );
+        $res = $this->db->update( 'polls', array( 'status' => 'closed' ), array( 'id' => $id ) );
+
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ), 500 );
+			}
+			wp_send_json_success( array( 'message' => 'Poll closed successfully' ) );
+			exit;
+		}
 
         wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&closed=1' ) );
         exit;
     }
+
+	public function handle_get_poll_results() {
+		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_vote_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+		}
+
+		$id = isset( $_REQUEST['id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['id'] ) ) : ( isset( $_POST['poll_id'] ) ? sanitize_text_field( wp_unslash( $_POST['poll_id'] ) ) : '' );
+		$polls = $this->db->get( 'polls', array( 'id' => $id ) );
+		if ( empty( $polls ) ) {
+			wp_send_json_error( array( 'message' => 'Poll not found' ), 404 );
+		}
+
+		$poll = $polls[0];
+		$all_votes = $this->db->get( 'votes', array( 'where' => array( 'poll_id' => $id ) ) );
+		$options = is_string( $poll['options'] ) ? json_decode( $poll['options'], true ) : $poll['options'];
+		$tally = array();
+		if ( is_array( $options ) ) {
+			foreach ( $options as $opt ) {
+				$tally[ $opt ] = 0;
+			}
+		}
+
+		foreach ( $all_votes as $v ) {
+			$opt = $v['option'] ?? '';
+			if ( isset( $tally[ $opt ] ) ) {
+				$tally[ $opt ]++;
+			} else {
+				$tally[ $opt ] = 1;
+			}
+		}
+
+		wp_send_json_success( array(
+			'poll'        => $poll,
+			'total_votes' => count( $all_votes ),
+			'tally'       => $tally,
+		) );
+	}
 
 	/**
 	 * Cast a Vote (Frontend).

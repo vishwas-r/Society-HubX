@@ -22,6 +22,7 @@ class SHUBX51_Flat_Manager {
 		// AJAX
 		add_action( 'wp_ajax_shubx51_add_flat', array( $this, 'handle_add_flat' ) );
 		add_action( 'wp_ajax_shubx51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'wp_ajax_shubx51_get_flat', array( $this, 'handle_get_flat' ) );
 		add_action( 'wp_ajax_shubx51_delete_flat', array( $this, 'handle_delete_flat' ) );
 		add_action( 'wp_ajax_shubx51_restore_flat', array( $this, 'handle_restore_flat' ) );
 		add_action( 'wp_ajax_shubx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
@@ -49,23 +50,56 @@ class SHUBX51_Flat_Manager {
 	 */
 	public function handle_add_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_add_flat_nonce' );
-        } else {
-		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
-        }
+			check_ajax_referer( 'shubx51_add_flat_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
+
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
+			wp_die( 'Unauthorized' );
+		}
+
 		$post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
 		$res = $this->process_add_flat( $post_data );
 
-        if ( wp_doing_ajax() ) {
-            if ( is_wp_error( $res ) ) {
-                wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-            }
-            wp_send_json_success( array( 'message' => 'Flat added successfully' ) );
-            exit;
-        }
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+			}
+			wp_send_json_success( array( 'message' => 'Flat added successfully' ) );
+			exit;
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
 		exit;
+	}
+
+	/**
+	 * Handle Get Single Flat via AJAX.
+	 */
+	public function handle_get_flat() {
+		check_ajax_referer( 'shubx51_add_flat_nonce' );
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_view' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+		}
+
+		$flat_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
+		if ( empty( $flat_id ) ) {
+			wp_send_json_error( array( 'message' => 'Flat ID missing' ), 400 );
+		}
+
+		$flats = $this->db->get( 'flats', array( 'id' => $flat_id ) );
+		if ( ! empty( $flats ) ) {
+			wp_send_json_success( $flats[0] );
+		}
+		wp_send_json_error( array( 'message' => 'Flat not found' ), 404 );
 	}
 
 	/**
@@ -75,7 +109,7 @@ class SHUBX51_Flat_Manager {
 		check_ajax_referer( 'shubx51_hard_delete_flat_nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) && ! (new SHUBX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
-			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 
 		$flat_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
@@ -90,22 +124,32 @@ class SHUBX51_Flat_Manager {
 
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
-            if ( !isset($_POST['_wpnonce']) || !wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_flat_nonce') ) {
-                wp_send_json_error(['message' => 'Nonce verification failed'], 403);
-                exit;
-            }
-        } else {
-		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
-        }
+			if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_flat_nonce' ) ) {
+				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
+				exit;
+			}
+		} else {
+			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
+
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
+			wp_die( 'Unauthorized' );
+		}
 
 		$data = array(
-			'block' => isset( $_POST['block'] ) ? sanitize_text_field( wp_unslash( $_POST['block'] ) ) : '',
-			'flat_number' => isset( $_POST['flat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_number'] ) ) : '',
-			'floor' => isset( $_POST['floor'] ) ? sanitize_text_field( wp_unslash( $_POST['floor'] ) ) : '',
-			'sq_foot' => isset( $_POST['sq_foot'] ) ? floatval( wp_unslash( $_POST['sq_foot'] ) ) : 0,
-			'parking_slot' => isset( $_POST['parking_slot'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_slot'] ) ) : '',
-			'type' => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
-			'status' => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
+			'block'          => isset( $_POST['block'] ) ? sanitize_text_field( wp_unslash( $_POST['block'] ) ) : '',
+			'flat_number'    => isset( $_POST['flat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_number'] ) ) : '',
+			'floor'          => isset( $_POST['floor'] ) ? sanitize_text_field( wp_unslash( $_POST['floor'] ) ) : '',
+			'sq_foot'        => isset( $_POST['sq_foot'] ) ? floatval( wp_unslash( $_POST['sq_foot'] ) ) : 0,
+			'parking_slot'   => isset( $_POST['parking_slot'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_slot'] ) ) : '',
+			'type'           => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : '',
+			'status'         => isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '',
 			'parking_status' => isset( $_POST['parking_status'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_status'] ) ) : '',
 		);
 
@@ -120,28 +164,21 @@ class SHUBX51_Flat_Manager {
 
 		$where_id = ! empty( $original_id ) ? $original_id : $new_id;
 
-		error_log( 'SHUBX51 handle_edit_flat: Attempting to update flat. original_id=' . $original_id . ', new_id=' . $new_id . ', where_id=' . $where_id . ', data=' . json_encode( $data ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
-
 		$res = $this->db->update( 'flats', $data, array( 'id' => $where_id ) );
 
-		error_log( 'SHUBX51 handle_edit_flat: Update result: ' . json_encode( $res ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
-
-        $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
-
-	    if ( wp_doing_ajax() ) {
-	        if ( is_wp_error( $res ) ) {
-	            wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-	        } else {
-	            $rows = is_int( $res ) ? $res : null;
-	            if ( is_int( $rows ) && $rows === 0 ) {
-	                wp_send_json_success( array( 'message' => 'No changes detected', 'rows_affected' => 0 ) );
-	            } else {
-	                wp_send_json_success( array( 'message' => 'Flat updated successfully', 'rows_affected' => $rows ) );
-	            }
-	        }
-	        exit;
-	    }
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+			} else {
+				$rows = is_int( $res ) ? $res : null;
+				if ( is_int( $rows ) && $rows === 0 ) {
+					wp_send_json_success( array( 'message' => 'No changes detected', 'rows_affected' => 0 ) );
+				} else {
+					wp_send_json_success( array( 'message' => 'Flat updated successfully', 'rows_affected' => $rows ) );
+				}
+			}
+			exit;
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1&msg=Updated' ) );
 		exit;
@@ -149,24 +186,31 @@ class SHUBX51_Flat_Manager {
 
 	public function handle_delete_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_delete_flat_nonce' );
-        } else {
-		    if ( ! check_admin_referer( 'shubx51_delete_flat_nonce' ) ) wp_die( 'Security check failed' );
-        }
+			check_ajax_referer( 'shubx51_delete_flat_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_delete_flat_nonce' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
-        if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) wp_die( 'Unauthorized' );
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
+			wp_die( 'Unauthorized' );
+		}
 
 		$id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
-		$res = $this->db->update( 'flats', ['status' => 'archived'], array( 'id' => $id ) );
+		$res = $this->db->update( 'flats', array( 'status' => 'archived' ), array( 'id' => $id ) );
 
-        if ( wp_doing_ajax() ) {
-            if ( is_wp_error( $res ) ) {
-                wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-            }
-            wp_send_json_success( array( 'message' => 'Flat archived successfully' ) );
-            exit;
-        }
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+			}
+			wp_send_json_success( array( 'message' => 'Flat archived successfully' ) );
+			exit;
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&status=deleted' ) );
 		exit;
@@ -174,21 +218,31 @@ class SHUBX51_Flat_Manager {
 
 	public function handle_restore_flat() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_add_flat_nonce' );
-        } else {
-		    if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) wp_die( 'Security check failed' );
-        }
+			check_ajax_referer( 'shubx51_add_flat_nonce' );
+		} else {
+			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+				wp_die( 'Security check failed' );
+			}
+		}
 
-		$id = isset($_POST['flat_id']) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+			if ( wp_doing_ajax() ) {
+				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
+			}
+			wp_die( 'Unauthorized' );
+		}
+
+		$id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
 		$res = $this->db->update( 'flats', array( 'status' => 'vacant' ), array( 'id' => $id ) );
 
-        if ( wp_doing_ajax() ) {
-            if ( is_wp_error( $res ) ) {
-                wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-            }
-            wp_send_json_success( array( 'message' => 'Flat restored successfully' ) );
-            exit;
-        }
+		if ( wp_doing_ajax() ) {
+			if ( is_wp_error( $res ) ) {
+				wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+			}
+			wp_send_json_success( array( 'message' => 'Flat restored successfully' ) );
+			exit;
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
 		exit;
@@ -200,6 +254,11 @@ class SHUBX51_Flat_Manager {
 	public function handle_bulk_import() {
 		if ( ! check_admin_referer( 'shubx51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
+		}
+
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+			wp_die( 'Unauthorized' );
 		}
 
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- CSV text data parsed and columns sanitized individually.

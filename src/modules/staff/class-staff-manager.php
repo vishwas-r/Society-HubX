@@ -60,10 +60,16 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     }
 
     public function register_rest_routes() {
+        register_rest_route('society-hubx/v1', '/staff/biometric-sync', array(
+            'methods'  => 'POST',
+            'callback' => array($this, 'handle_biometric_sync'),
+            'permission_callback' => '__return_true',
+        ));
+
         register_rest_route('shubx51/v1', '/biometric-sync', array(
             'methods'  => 'POST',
             'callback' => array($this, 'handle_biometric_sync'),
-            'permission_callback' => '__return_true', // In production, add token auth
+            'permission_callback' => '__return_true', // Legacy alias
         ));
     }
 

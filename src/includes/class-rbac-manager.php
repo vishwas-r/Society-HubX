@@ -122,27 +122,45 @@ class SHUBX51_RBAC_Manager {
 	 */
 	public static function get_available_capabilities() {
 		return array(
-			'dashboard_view'   => 'View Executive Dashboard',
-			'residents_view'   => 'View Residents List',
-			'residents_manage' => 'Add/Edit/Delete Residents',
-			'flats_view'       => 'View Flats & Units',
-			'flats_manage'     => 'Manage Flats & Units',
-			'facilities_view'  => 'View Facilities & Bookings',
-			'facilities_manage'=> 'Manage Facilities & Bookings',
-			'finance_view'     => 'View Financial Reports',
-			'finance_manage'   => 'Manage Invoices & Payments',
-			'notices_view'     => 'View Society Notices',
-			'notices_manage'   => 'Manage Society Notices',
-			'rules_view'       => 'View Society Rules',
-			'rules_manage'     => 'Manage Rules & Violations',
-			'staff_view'       => 'View Support Staff',
-			'staff_manage'     => 'Manage Support Staff',
-			'vehicles_view'    => 'View Vehicle Registry',
-			'vehicles_manage'  => 'Manage Vehicle Registry',
-			'polls_view'       => 'View Society Polls',
-			'polls_manage'     => 'Manage Society Polls',
-			'settings_manage'  => 'Manage Plugin Settings'
+			'dashboard_view'    => 'View Executive Dashboard',
+			'residents_view'    => 'View Residents List',
+			'residents_manage'  => 'Add/Edit/Delete Residents',
+			'flats_view'        => 'View Flats & Units',
+			'flats_manage'      => 'Manage Flats & Units',
+			'facilities_view'   => 'View Facilities & Bookings',
+			'facilities_manage' => 'Manage Facilities & Bookings',
+			'finance_view'      => 'View Financial Reports',
+			'finance_manage'    => 'Manage Invoices & Payments',
+			'documents_view'    => 'View Document Vault',
+			'documents_manage'  => 'Manage Document Vault',
+			'assets_view'       => 'View Asset Registry',
+			'assets_manage'     => 'Manage Asset Registry',
+			'notices_view'      => 'View Society Notices',
+			'notices_manage'    => 'Manage Society Notices',
+			'rules_view'        => 'View Society Rules',
+			'rules_manage'      => 'Manage Rules & Violations',
+			'staff_view'        => 'View Support Staff',
+			'staff_manage'      => 'Manage Support Staff',
+			'vehicles_view'     => 'View Vehicle Registry',
+			'vehicles_manage'   => 'Manage Vehicle Registry',
+			'polls_view'        => 'View Society Polls',
+			'polls_manage'      => 'Manage Society Polls',
+			'requests_view'     => 'View Approval Requests',
+			'requests_manage'   => 'Manage Approval Requests',
+			'settings_manage'   => 'Manage Plugin Settings',
 		);
+	}
+
+	/**
+	 * Check if a user can manage a specific module.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $module  Module slug.
+	 * @return bool
+	 */
+	public function can_manage_module( $user_id, $module ) {
+		$cap = $module . '_manage';
+		return $this->has_capability( $user_id, $cap );
 	}
 
 	public function delete_role( $role_id ) {

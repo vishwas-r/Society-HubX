@@ -147,6 +147,34 @@ class SHUBX51_AJAX_Handler {
 				);
 				break;
 
+			case 'assets':
+				$config = array(
+					'nonce'        => wp_create_nonce( 'shubx51_asset_action' ),
+					'deleteNonce'  => wp_create_nonce( 'shubx51_delete_asset_nonce' ),
+					'restoreNonce' => wp_create_nonce( 'shubx51_restore_asset_nonce' ),
+				);
+				break;
+
+			case 'polls':
+				$config = array(
+					'nonce'       => wp_create_nonce( 'shubx51_poll_action' ),
+					'voteNonce'   => wp_create_nonce( 'shubx51_vote_nonce' ),
+					'deleteNonce' => wp_create_nonce( 'shubx51_poll_action' ),
+				);
+				break;
+
+			case 'requests':
+				$config = array(
+					'nonce' => wp_create_nonce( 'shubx51_request_action' ),
+				);
+				break;
+
+			case 'notifications':
+				$config = array(
+					'nonce' => wp_create_nonce( 'shubx51_request_action' ),
+				);
+				break;
+
 			default:
 				return false;
 		}
@@ -163,9 +191,7 @@ class SHUBX51_AJAX_Handler {
 		$verified = false;
 		if ( isset( $_POST['nonce'] ) ) {
 			$nonce = sanitize_key( wp_unslash( $_POST['nonce'] ) );
-			if ( wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) ) {
-				$verified = true;
-			} elseif ( wp_verify_nonce( $nonce, 'shubx51_nonce' ) ) { // Admin Context
+			if ( wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) || wp_verify_nonce( $nonce, 'shubx51_nonce' ) || wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) || wp_verify_nonce( $nonce, 'shubx51_receipt_nonce' ) ) {
 				$verified = true;
 			}
 		}
@@ -187,6 +213,7 @@ class SHUBX51_AJAX_Handler {
 
 		// Get current user
 		$current_user = wp_get_current_user();
+		$user_id = $current_user->ID;
 		$is_admin = current_user_can( 'manage_options' );
 
 		// Get invoice data
@@ -200,7 +227,7 @@ class SHUBX51_AJAX_Handler {
 		// Permission check: Residents can only view their own invoices, admins can view all
 		if ( ! $is_admin ) {
 			// Get resident ID for current user
-			$resident = $plugin->db->get_resident_by_wp_id( $current_user->ID );
+			$resident = $plugin->db->get_resident_by_wp_id( $user_id );
 			if ( ! $resident ) {
 				wp_send_json_error( array( 'message' => 'Resident not found' ), 403 );
 			}
@@ -230,19 +257,23 @@ class SHUBX51_AJAX_Handler {
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		if ( ! $rbac->has_capability( get_current_user_id(), 'requests_manage' ) && ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 		
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
-		if (!$id) wp_send_json_error(['message' => 'Missing ID'], 400);
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => 'Missing ID' ), 400 );
+		}
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		$rm = new SHUBX51_Request_Manager();
 		$res = $rm->approve_request( $id );
 
-		if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
-		wp_send_json_success( ['message' => 'Request approved successfully'] );
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+		}
+		wp_send_json_success( array( 'message' => 'Request approved successfully' ) );
 	}
 
 	/**
@@ -253,20 +284,24 @@ class SHUBX51_AJAX_Handler {
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		if ( ! $rbac->has_capability( get_current_user_id(), 'requests_manage' ) && ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 		$note = isset( $_POST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['admin_note'] ) ) : '';
-		if (!$id) wp_send_json_error(['message' => 'Missing ID'], 400);
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => 'Missing ID' ), 400 );
+		}
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		$rm = new SHUBX51_Request_Manager();
 		$res = $rm->reject_request( $id, $note );
 
-		if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
-		wp_send_json_success( ['message' => 'Request rejected successfully'] );
+		if ( is_wp_error( $res ) ) {
+			wp_send_json_error( array( 'message' => $res->get_error_message() ) );
+		}
+		wp_send_json_success( array( 'message' => 'Request rejected successfully' ) );
 	}
 
 	/**
@@ -277,15 +312,17 @@ class SHUBX51_AJAX_Handler {
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
 		$rbac = new SHUBX51_RBAC_Manager();
-		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( ['message' => 'Unauthorized'], 403 );
+		if ( ! $rbac->has_capability( get_current_user_id(), 'requests_manage' ) && ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 
-		$ids = isset( $_POST['ids'] ) ? map_deep( wp_unslash( $_POST['ids'] ), 'sanitize_text_field' ) : [];
+		$ids = isset( $_POST['ids'] ) ? map_deep( wp_unslash( $_POST['ids'] ), 'sanitize_text_field' ) : array();
 		$action = isset( $_POST['bulk_action'] ) ? sanitize_text_field( wp_unslash( $_POST['bulk_action'] ) ) : '';
 		$note = isset( $_POST['note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['note'] ) ) : '';
 
-		if ( empty($ids) ) wp_send_json_error(['message' => 'No items selected'], 400);
+		if ( empty( $ids ) ) {
+			wp_send_json_error( array( 'message' => 'No items selected' ), 400 );
+		}
 
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
 		$rm = new SHUBX51_Request_Manager();
@@ -297,10 +334,12 @@ class SHUBX51_AJAX_Handler {
 			} else {
 				$res = $rm->reject_request( $id, $note );
 			}
-			if ( ! is_wp_error( $res ) ) $count++;
+			if ( ! is_wp_error( $res ) ) {
+				$count++;
+			}
 		}
 
-		wp_send_json_success( ['message' => "$count items processed successfully"] );
+		wp_send_json_success( array( 'message' => "$count items processed successfully" ) );
 	}
 
 	/**
