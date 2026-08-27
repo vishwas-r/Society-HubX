@@ -10,27 +10,136 @@
 /* =====================================================================
    ROLES VIEW
    ===================================================================== */
+function shubxHighlightCapCard(cb) {
+	if (!cb) return;
+	const card = cb.closest('.shubx-cap-card');
+	if (!card) return;
+	if (cb.checked) {
+		card.classList.add('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
+		card.classList.remove('border-light', 'bg-white');
+	} else {
+		card.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
+		card.classList.add('border-light', 'bg-white');
+	}
+}
+
+function shubxUpdateCapCount() {
+	const all = document.querySelectorAll('.cap-checkbox');
+	const checked = document.querySelectorAll('.cap-checkbox:checked');
+	const counter = document.getElementById('cap-selected-counter');
+	if (counter) {
+		counter.innerText = checked.length + ' / ' + all.length + ' Selected';
+		if (checked.length === all.length && all.length > 0) {
+			counter.className = 'badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill font-monospace';
+		} else if (checked.length > 0) {
+			counter.className = 'badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1.5 rounded-pill font-monospace';
+		} else {
+			counter.className = 'badge bg-secondary bg-opacity-10 text-secondary fw-bold px-3 py-1.5 rounded-pill font-monospace';
+		}
+	}
+}
+
+function shubxOnCapChange(cb) {
+	shubxHighlightCapCard(cb);
+	shubxUpdateCapCount();
+}
+
+function shubxCardClick(event, inputId) {
+	if (event && event.target && event.target.tagName && event.target.tagName.toLowerCase() === 'input') return;
+	const cb = document.getElementById(inputId);
+	if (cb) {
+		cb.checked = !cb.checked;
+		shubxOnCapChange(cb);
+	}
+}
+
+function shubxToggleAllCaps(checked) {
+	document.querySelectorAll('.cap-checkbox').forEach(cb => {
+		cb.checked = !!checked;
+		shubxHighlightCapCard(cb);
+	});
+	shubxUpdateCapCount();
+}
+
+function shubxToggleGroupCaps(groupKey) {
+	const groupCbs = document.querySelectorAll('.cap-group-' + groupKey);
+	const anyUnchecked = Array.from(groupCbs).some(cb => !cb.checked);
+	groupCbs.forEach(cb => {
+		cb.checked = anyUnchecked;
+		shubxHighlightCapCard(cb);
+	});
+	shubxUpdateCapCount();
+}
+
+function shubxApplyPreset(preset) {
+	shubxToggleAllCaps(false);
+	const presetMaps = {
+		admin: ['dashboard_view', 'residents_view', 'residents_manage', 'flats_view', 'flats_manage', 'facilities_view', 'facilities_manage', 'finance_view', 'finance_manage', 'documents_view', 'documents_manage', 'assets_view', 'assets_manage', 'notices_view', 'notices_manage', 'rules_view', 'rules_manage', 'staff_view', 'staff_manage', 'vehicles_view', 'vehicles_manage', 'polls_view', 'polls_manage', 'requests_view', 'requests_manage', 'settings_manage'],
+		manager: ['dashboard_view', 'residents_view', 'residents_manage', 'flats_view', 'facilities_view', 'facilities_manage', 'documents_view', 'documents_manage', 'notices_view', 'notices_manage', 'rules_view', 'staff_view', 'staff_manage', 'vehicles_view', 'polls_view', 'polls_manage', 'requests_view', 'requests_manage'],
+		treasurer: ['dashboard_view', 'finance_view', 'finance_manage', 'assets_view', 'assets_manage', 'residents_view', 'flats_view', 'requests_view', 'requests_manage'],
+		viewer: ['dashboard_view', 'residents_view', 'flats_view', 'facilities_view', 'finance_view', 'documents_view', 'assets_view', 'notices_view', 'rules_view', 'staff_view', 'vehicles_view', 'polls_view', 'requests_view']
+	};
+	const caps = presetMaps[preset] || [];
+	caps.forEach(cap => {
+		const cb = document.getElementById('cap_' + cap);
+		if (cb) {
+			cb.checked = true;
+			shubxHighlightCapCard(cb);
+		}
+	});
+	shubxUpdateCapCount();
+}
+
 function openRoleModal() {
-	document.getElementById('role-form').reset();
-	document.getElementById('role_id').value = '';
-	document.getElementById('roleModalTitle').innerText = 'Create Custom Role';
-	document.querySelectorAll('.cap-checkbox').forEach(cb => cb.checked = false);
-	new bootstrap.Modal(document.getElementById('roleModal')).show();
+	const form = document.getElementById('role-form');
+	if (form) form.reset();
+	const roleIdEl = document.getElementById('role_id');
+	if (roleIdEl) roleIdEl.value = '';
+	const titleEl = document.getElementById('roleModalTitle');
+	if (titleEl) titleEl.innerText = 'Create Custom Role';
+	
+	// Default: select all capabilities by default for new roles
+	shubxToggleAllCaps(true);
+	
+	const modalEl = document.getElementById('roleModal');
+	if (modalEl) new bootstrap.Modal(modalEl).show();
 }
 
 function editRole(role) {
-	document.getElementById('role_id').value = role.id;
-	document.getElementById('role_name').value = role.name;
-	document.getElementById('roleModalTitle').innerText = 'Edit Role: ' + role.name;
+	if (!role) return;
+	const roleIdEl = document.getElementById('role_id');
+	if (roleIdEl) roleIdEl.value = role.id || '';
+	const roleNameEl = document.getElementById('role_name');
+	if (roleNameEl) roleNameEl.value = role.name || '';
+	const titleEl = document.getElementById('roleModalTitle');
+	if (titleEl) titleEl.innerText = 'Edit Role: ' + (role.name || '');
 
-	document.querySelectorAll('.cap-checkbox').forEach(cb => cb.checked = false);
-	const caps = JSON.parse(role.capabilities || '[]');
-	caps.forEach(cap => {
-		const cb = document.getElementById('cap_' + cap);
-		if (cb) cb.checked = true;
+	let caps = role.capabilities;
+	if (typeof caps === 'string') {
+		try {
+			caps = JSON.parse(caps);
+		} catch (e) {
+			caps = [];
+		}
+	}
+	if (!Array.isArray(caps)) {
+		caps = [];
+	}
+
+	const isAdmin = (role.id === 'admin' || (role.name && role.name.toLowerCase().includes('admin')));
+
+	document.querySelectorAll('.cap-checkbox').forEach(cb => {
+		if (caps.length === 0 && isAdmin) {
+			cb.checked = true;
+		} else {
+			cb.checked = caps.includes(cb.value);
+		}
+		shubxHighlightCapCard(cb);
 	});
 
-	new bootstrap.Modal(document.getElementById('roleModal')).show();
+	shubxUpdateCapCount();
+	const modalEl = document.getElementById('roleModal');
+	if (modalEl) new bootstrap.Modal(modalEl).show();
 }
 
 function deleteRole(roleId) {

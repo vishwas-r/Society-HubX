@@ -1514,3 +1514,41 @@ html { margin-top: 0 !important; }
 .shubx-theme-toggle-btn:hover {
     transform: scale(1.05);
 }
+
+/* Capability Cards */
+.shubx-cap-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    min-height: 50px;
+}
+
+.shubx-cap-card:hover {
+    border-color: var(--custom-primary-color) !important;
+    transform: translateY(-1px);
+}
+
+.shubx-cap-card .form-check {
+    min-height: auto;
+    padding-left: 0;
+}
+
+.shubx-cap-card .form-check-input {
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: 0;
+    flex-shrink: 0;
+}
+
+.shubx-cap-card .form-check-label {
+    line-height: 1.35;
+}
+
+[data-bs-theme="dark"] .shubx-cap-card {
+    background-color: #141e33 !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .shubx-cap-card.bg-primary {
+    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.15)) !important;
+    border-color: var(--custom-primary-color) !important;
+}
