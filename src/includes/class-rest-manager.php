@@ -233,6 +233,7 @@ class SHUBX51_REST_Manager {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-notifications-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-settings-controller.php';
 
 		// Instantiate & register
 		( new SHUBX51_REST_Discovery_Controller() )->register_routes();
@@ -252,6 +253,7 @@ class SHUBX51_REST_Manager {
 		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
 		( new SHUBX51_REST_Activity_Controller() )->register_routes();
 		( new SHUBX51_REST_Payments_Controller() )->register_routes();
+		( new SHUBX51_REST_Settings_Controller() )->register_routes();
 	}
 
 	/**
