@@ -43,6 +43,7 @@ class SHUBX51_REST_Settings_Controller {
 	 * Permission check: Logged in user with admin/staff capabilities.
 	 */
 	public function permissions_check( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to view settings.', 'society-hubx' ), array( 'status' => 401 ) );
 		}
@@ -53,6 +54,7 @@ class SHUBX51_REST_Settings_Controller {
 	 * Permission check for updating: Must have settings_manage or manage_options.
 	 */
 	public function permissions_check_manage( $request ) {
+		SHUBX51_REST_Manager::authenticate_request( $request );
 		if ( ! is_user_logged_in() ) {
 			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to update settings.', 'society-hubx' ), array( 'status' => 401 ) );
 		}
