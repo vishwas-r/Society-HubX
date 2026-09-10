@@ -72,9 +72,10 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 		);
 	}
 
-	public function check_auth() {
-		if ( ! is_user_logged_in() ) {
-			return new WP_Error( 'rest_unauthorized', __( 'Please log in to continue.', 'society-hubx' ), array( 'status' => 401 ) );
+	public function check_auth( $request = null ) {
+		$auth = SHUBX51_REST_Manager::authenticate_request( $request );
+		if ( is_wp_error( $auth ) ) {
+			return $auth;
 		}
 		return true;
 	}

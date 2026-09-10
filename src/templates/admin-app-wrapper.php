@@ -274,6 +274,8 @@ do_action( 'admin_print_footer_scripts' );
         }
     }
 
+    window.shubxApplyTheme = shubxApplyTheme;
+
     window.shubxToggleTheme = function() {
         var currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
         var newTheme = currentTheme === 'dark' ? 'light' : 'dark';

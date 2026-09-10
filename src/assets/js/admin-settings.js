@@ -160,10 +160,14 @@
     };
 
     window.shubxSelectDefaultTheme = function (mode) {
-        document.documentElement.setAttribute('data-bs-theme', mode);
-        const root = document.getElementById('shubx51-app-root');
-        if (root) root.setAttribute('data-bs-theme', mode);
-        document.cookie = "shubx_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
+        if (typeof window.shubxApplyTheme === 'function') {
+            window.shubxApplyTheme(mode);
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', mode);
+            const root = document.getElementById('shubx51-app-root');
+            if (root) root.setAttribute('data-bs-theme', mode);
+            document.cookie = "shubx_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
+        }
     };
 
 })(jQuery);
