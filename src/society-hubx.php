@@ -117,6 +117,9 @@ final class SHUBX51_Plugin {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-visitors-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-helpdesk-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-emergency-controller.php';
 		
 		// Notifications
 		require_once SHUBX51_PLUGIN_DIR . 'includes/notifications/interface-notification-provider.php';

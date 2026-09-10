@@ -365,8 +365,8 @@ add_action('shubx51_admin_modals', function() use ($facilities, $residents) {
                 <p class="text-secondary small mb-0">This reservation will be permanently removed from the schedule.</p>
             </div>
             <div class="modal-footer border-0 p-4 pt-0 gap-2">
-                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2.5 shadow-none" data-bs-dismiss="modal">No, Keep</button>
-                <button type="button" id="confirm-delete-booking-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2.5 shadow-none">Confirm Delete</button>
+                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2 shadow-none" data-bs-dismiss="modal">No, Keep</button>
+                <button type="button" id="confirm-delete-booking-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2 shadow-none">Confirm Delete</button>
             </div>
         </div>
     </div>
@@ -384,8 +384,8 @@ add_action('shubx51_admin_modals', function() use ($facilities, $residents) {
                 <p class="text-secondary small mb-0">This amenitiy will be permanently removed from the system.</p>
             </div>
             <div class="modal-footer border-0 p-4 pt-0 gap-2">
-                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2.5 shadow-none" data-bs-dismiss="modal">No, Keep</button>
-                <button type="button" id="confirm-delete-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2.5 shadow-none">Confirm Delete</button>
+                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2 shadow-none" data-bs-dismiss="modal">No, Keep</button>
+                <button type="button" id="confirm-delete-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2 shadow-none">Confirm Delete</button>
             </div>
         </div>
     </div>

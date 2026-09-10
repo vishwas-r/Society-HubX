@@ -123,7 +123,7 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
                 <?php foreach($nav_items as $key => $nav): ?>
                     <li class="nav-item">
                         <a href="<?php echo esc_url($nav[1]); ?>" 
-                           class="nav-link d-flex align-items-center gap-3 mb-2 py-2.5 px-3 transition-all <?php echo $current_view === $key ? 'active shadow-sm' : 'text-slate-500 hover-bg-slate-50'; ?>"
+                           class="nav-link d-flex align-items-center gap-3 my-0 py-2 px-3 transition-all <?php echo $current_view === $key ? 'active shadow-sm' : 'text-slate-500 hover-bg-slate-50'; ?>"
                            <?php echo $current_view === $key ? 'aria-current="page"' : ''; ?>>
                             <i class="bi <?php echo esc_html( $nav[2] ); ?> <?php echo $current_view === $key ? 'text-custom-primary' : 'text-slate-400'; ?>" style="font-size: 1.25rem;"></i>
                             <span class="small fw-semibold text-nowrap"><?php echo esc_html($nav[0]); ?></span>

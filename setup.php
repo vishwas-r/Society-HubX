@@ -443,7 +443,7 @@ function sanitize_input($val) {
                     <p class="small text-danger-emphasis mb-4">If you want to start over from scratch, clicking the button below will drop all database tables, delete the configuration file, and allow you to configure the webapp again. This will delete all resident, flats, and financial logs permanently.</p>
                     <form method="post" action="" onsubmit="return confirm('WARNING: Are you sure you want to delete all database tables and configuration? This action is permanent and cannot be undone!');">
                         <input type="hidden" name="action" value="reset_reinstall" />
-                        <button type="submit" class="btn shubx-btn-danger px-4 py-2.5">
+                        <button type="submit" class="btn shubx-btn-danger px-4 py-2">
                             <i class="fa-solid fa-trash-can me-2"></i>Re-install From Scratch
                         </button>
                     </form>

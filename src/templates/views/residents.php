@@ -413,8 +413,8 @@ add_action('shubx51_admin_modals', function() use ($flats) {
                 <p class="text-secondary small mb-0 modal-text">The resident will be moved to the history log. You can restore them later.</p>
             </div>
             <div class="modal-footer border-0 p-4 pt-0 gap-2">
-                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2.5 shadow-none" data-bs-dismiss="modal">No, Keep</button>
-                <button type="button" id="confirm-delete-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2.5 shadow-none">Confirm Delete</button>
+                <button type="button" class="btn btn-light flex-grow-1 fw-semibold text-secondary rounded-3 py-2 shadow-none" data-bs-dismiss="modal">No, Keep</button>
+                <button type="button" id="confirm-delete-btn" class="btn btn-danger flex-grow-1 fw-bold rounded-3 py-2 shadow-none">Confirm Delete</button>
             </div>
         </div>
     </div>

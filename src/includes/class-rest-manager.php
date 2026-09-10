@@ -234,6 +234,9 @@ class SHUBX51_REST_Manager {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-settings-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-visitors-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-helpdesk-controller.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-emergency-controller.php';
 
 		// Instantiate & register core endpoints
 		( new SHUBX51_REST_Discovery_Controller() )->register_routes();
@@ -243,9 +246,13 @@ class SHUBX51_REST_Manager {
 		( new SHUBX51_REST_Activity_Controller() )->register_routes();
 		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
 		( new SHUBX51_REST_Settings_Controller() )->register_routes();
+		( new SHUBX51_REST_Emergency_Controller() )->register_routes();
 
 		// Conditional modules based on Society Settings
 		if ( class_exists( 'SHUBX51_Module_Registry' ) ) {
+			if ( SHUBX51_Module_Registry::is_enabled( 'visitors' ) ) {
+				( new SHUBX51_REST_Visitors_Controller() )->register_routes();
+			}
 			if ( SHUBX51_Module_Registry::is_enabled( 'vehicles' ) ) {
 				( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
 			}
@@ -276,6 +283,7 @@ class SHUBX51_REST_Manager {
 			}
 			if ( SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) {
 				( new SHUBX51_REST_Requests_Controller() )->register_routes();
+				( new SHUBX51_REST_Helpdesk_Controller() )->register_routes();
 			}
 		}
 	}
