@@ -26,6 +26,8 @@ class SHUBX51_Admin_Settings {
 		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
 		add_action( 'admin_notices', array( $this, 'render_setup_notice' ) );
 		add_action( 'wp_ajax_shubx51_toggle_module', array( $this, 'handle_toggle_module_ajax' ) );
+		add_action( 'wp_ajax_shubx51_upload_fcm_json', array( $this, 'handle_upload_fcm_json_ajax' ) );
+		add_action( 'wp_ajax_shubx51_send_test_push', array( $this, 'handle_send_test_push_ajax' ) );
 	}
 
 	public function maybe_redirect_to_setup() {
@@ -129,6 +131,10 @@ class SHUBX51_Admin_Settings {
 				SHUBX51_VERSION, 
 				false // Load in header so switchSettingsTab is defined early
 			);
+			wp_localize_script( 'shubx51-admin-settings', 'shubxAdmin', array(
+				'ajax_url'  => admin_url( 'admin-ajax.php' ),
+				'fcm_nonce' => wp_create_nonce( 'shubx51_fcm_nonce' ),
+			) );
 		}
 	}
 
@@ -191,6 +197,13 @@ class SHUBX51_Admin_Settings {
 		// Branding & Theme Preferences
 		register_setting( 'shubx51_options_group', 'shubx51_color_palette', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'orange' ) );
 		register_setting( 'shubx51_options_group', 'shubx51_default_theme', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'light' ) );
+
+		// Firebase Cloud Messaging (FCM) Settings
+		register_setting( 'shubx51_options_group', 'shubx51_fcm_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_fcm_project_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_fcm_client_email', array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_fcm_private_key', array( 'sanitize_callback' => 'trim' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_fcm_sender_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	public function handle_setup_actions() {
@@ -409,6 +422,103 @@ class SHUBX51_Admin_Settings {
 			),
 			'module'  => $module,
 			'enabled' => (bool) $status,
+		) );
+	}
+
+	/**
+	 * AJAX Handler: Upload and parse Firebase Service Account JSON.
+	 */
+	public function handle_upload_fcm_json_ajax() {
+		check_ajax_referer( 'shubx51_fcm_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+		}
+
+		$json_str = '';
+		if ( ! empty( $_FILES['fcm_json_file']['tmp_name'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$json_str = file_get_contents( $_FILES['fcm_json_file']['tmp_name'] );
+		} elseif ( ! empty( $_POST['fcm_json_raw'] ) ) {
+			$json_str = wp_unslash( $_POST['fcm_json_raw'] );
+		}
+
+		if ( empty( $json_str ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'No JSON data or file received.', 'society-hubx' ) ), 400 );
+		}
+
+		$data = json_decode( $json_str, true );
+		if ( empty( $data ) || ! is_array( $data ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid JSON file. Please ensure you uploaded a valid Firebase Service Account key.', 'society-hubx' ) ), 400 );
+		}
+
+		$project_id   = sanitize_text_field( $data['project_id'] ?? '' );
+		$client_email = sanitize_email( $data['client_email'] ?? '' );
+		$private_key  = trim( $data['private_key'] ?? '' );
+
+		if ( empty( $project_id ) || empty( $client_email ) || empty( $private_key ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Missing required fields in JSON. Expected "project_id", "client_email", and "private_key".', 'society-hubx' ) ), 400 );
+		}
+
+		update_option( 'shubx51_fcm_project_id', $project_id );
+		update_option( 'shubx51_fcm_client_email', $client_email );
+		update_option( 'shubx51_fcm_private_key', $private_key );
+		update_option( 'shubx51_fcm_enabled', '1' );
+
+		// Clear cached access token so next request generates fresh token with new credentials
+		delete_transient( 'shubx51_fcm_access_token' );
+
+		wp_send_json_success( array(
+			'message'      => esc_html__( 'Firebase credentials successfully configured and enabled!', 'society-hubx' ),
+			'project_id'   => $project_id,
+			'client_email' => $client_email,
+		) );
+	}
+
+	/**
+	 * AJAX Handler: Dispatch test push notification.
+	 */
+	public function handle_send_test_push_ajax() {
+		check_ajax_referer( 'shubx51_fcm_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+		}
+
+		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'FCM Service not available.', 'society-hubx' ) ), 500 );
+		}
+
+		if ( ! SHUBX51_FCM_Service::is_enabled() ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are not enabled or missing credentials.', 'society-hubx' ) ), 400 );
+		}
+
+		$title = esc_html__( '🧪 Society HubX Test Alert', 'society-hubx' );
+		$body  = sprintf( esc_html__( 'Test notification from %s. Push notifications are working!', 'society-hubx' ), get_bloginfo( 'name' ) );
+		$data  = array(
+			'type'      => 'test_ping',
+			'timestamp' => time(),
+		);
+
+		$flat_no = isset( $_POST['target_flat'] ) ? sanitize_text_field( wp_unslash( $_POST['target_flat'] ) ) : '';
+
+		if ( ! empty( $flat_no ) ) {
+			$sent = SHUBX51_FCM_Service::send_to_flat( $flat_no, $title, $body, $data, 'high' );
+			if ( $sent === 0 ) {
+				wp_send_json_error( array( 'message' => sprintf( esc_html__( 'No active mobile devices registered for Flat %s.', 'society-hubx' ), $flat_no ) ), 404 );
+			}
+		} else {
+			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
+			if ( $sent === 0 ) {
+				wp_send_json_error( array( 'message' => esc_html__( 'No registered devices found. Open the mobile app and log in to register a device first.', 'society-hubx' ) ), 404 );
+			}
+		}
+
+		wp_send_json_success( array(
+			'message' => sprintf(
+				// translators: %d is the number of devices reached.
+				esc_html__( 'Test push sent successfully to %d device(s)!', 'society-hubx' ),
+				$sent
+			),
+			'dispatched' => $sent,
 		) );
 	}
 

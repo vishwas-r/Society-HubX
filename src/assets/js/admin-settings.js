@@ -133,6 +133,95 @@
                 }
             });
         });
+
+        // --- 4. FCM Service Account JSON Upload ---
+        $('#shubx-fcm-file-input').on('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const parsed = JSON.parse(event.target.result);
+                    if (!parsed.project_id || !parsed.client_email || !parsed.private_key) {
+                        $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Invalid Firebase JSON: missing project_id, client_email, or private_key.</span>');
+                        return;
+                    }
+
+                    // Auto-fill form fields
+                    $('#shubx-fcm-project-id').val(parsed.project_id);
+                    $('#shubx-fcm-client-email').val(parsed.client_email);
+                    $('#shubx-fcm-private-key').val(parsed.private_key);
+                    if (parsed.project_number) {
+                        $('#shubx-fcm-sender-id').val(parsed.project_number);
+                    }
+
+                    $('#shubx-fcm-upload-status').html('<span class="text-info"><i class="bi bi-arrow-repeat spin me-1"></i>Saving credentials...</span>');
+
+                    const formData = new FormData();
+                    formData.append('action', 'shubx51_upload_fcm_json');
+                    formData.append('nonce', typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce || '' : '');
+                    formData.append('fcm_json_raw', event.target.result);
+
+                    const ajaxUrl = typeof shubxAdmin !== 'undefined' ? shubxAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+
+                    $.ajax({
+                        url: ajaxUrl,
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            if (res.success) {
+                                $('#shubx-fcm-upload-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Firebase credentials saved & push enabled!</span>');
+                                setTimeout(function () { window.location.reload(); }, 1000);
+                            } else {
+                                $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>' + (res.data ? res.data.message : 'Upload failed.') + '</span>');
+                            }
+                        },
+                        error: function () {
+                            $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Network error saving credentials.</span>');
+                        }
+                    });
+                } catch (err) {
+                    $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Could not parse JSON file. Ensure it is valid JSON.</span>');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // --- 5. FCM Test Push Trigger ---
+        $('#btn-send-test-push').on('click', function () {
+            const $btn = $(this);
+            const flatNo = $('#shubx-test-push-flat').val();
+            const originalText = $btn.html();
+            $btn.prop('disabled', true).html('<i class="bi bi-arrow-repeat spin me-1"></i>Sending...');
+
+            const ajaxUrl = typeof shubxAdmin !== 'undefined' ? shubxAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+
+            $.ajax({
+                url: ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'shubx51_send_test_push',
+                    nonce: typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce || '' : '',
+                    target_flat: flatNo
+                },
+                success: function (res) {
+                    $btn.prop('disabled', false).html(originalText);
+                    if (res.success) {
+                        alert(res.data.message || 'Test notification sent successfully!');
+                    } else {
+                        alert((res.data && res.data.message) ? res.data.message : 'Failed to send test push.');
+                    }
+                },
+                error: function (xhr) {
+                    $btn.prop('disabled', false).html(originalText);
+                    const msg = (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) ? xhr.responseJSON.data.message : 'Error dispatching test push.';
+                    alert(msg);
+                }
+            });
+        });
     });
 
     // --- 3. Color Palette & Theme Selection Helpers ---

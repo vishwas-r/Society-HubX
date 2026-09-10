@@ -124,6 +124,7 @@ final class SHUBX51_Plugin {
 		// Notifications
 		require_once SHUBX51_PLUGIN_DIR . 'includes/notifications/interface-notification-provider.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/notifications/class-notification-dispatcher.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-fcm-service.php';
 		
 		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-settings.php';
 		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
@@ -134,6 +135,7 @@ final class SHUBX51_Plugin {
 		// Initialize
 		$this->db = new SHUBX51_DB_Router();
 		$this->notifications = new SHUBX51_Notification_Dispatcher( $this->db );
+		SHUBX51_FCM_Service::init();
 		new SHUBX51_Log_Manager( $this->db );
 		new SHUBX51_Background_Worker();
 		$this->rbac = new SHUBX51_RBAC_Manager();

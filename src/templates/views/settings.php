@@ -109,6 +109,11 @@ $templates = $db->get('notification_templates');
                         <i class="bi bi-tools me-2"></i>Data & Maintenance
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button id="tab-btn-push" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('push')" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-bell-fill me-2"></i>Push Notifications
+                    </button>
+                </li>
                 <li class="nav-item d-none" role="presentation">
                     <button id="tab-btn-privacy" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('privacy')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-shield-lock me-2"></i>Privacy & DPDP
@@ -904,6 +909,147 @@ $templates = $db->get('notification_templates');
                             <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm rounded-3">Save Privacy Settings</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Tab: Push Notifications (Firebase / FCM) -->
+                <div class="settings-tab-pane hidden" id="tab-content-push">
+                    <?php
+                        $fcm_enabled    = (bool) get_option( 'shubx51_fcm_enabled', '0' );
+                        $fcm_project_id = get_option( 'shubx51_fcm_project_id', '' );
+                        $fcm_client_email = get_option( 'shubx51_fcm_client_email', '' );
+                        $fcm_private_key = get_option( 'shubx51_fcm_private_key', '' );
+                        $fcm_sender_id  = get_option( 'shubx51_fcm_sender_id', '' );
+                        $is_configured  = ( ! empty( $fcm_project_id ) && ! empty( $fcm_private_key ) );
+                    ?>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom border-light">
+                            <div>
+                                <h5 class="fw-bold text-primary m-0 mb-1">
+                                    <i class="bi bi-bell-fill me-2"></i>Firebase Cloud Messaging (FCM)
+                                </h5>
+                                <p class="small text-muted m-0">Enable 100% free, decentralized native push notifications for your apartment society. Your society connects directly to Google FCM with zero central servers.</p>
+                            </div>
+                            <div>
+                                <?php if ( $is_configured && $fcm_enabled ) : ?>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                                        <i class="bi bi-check-circle-fill me-1"></i>FCM Active & Connected
+                                    </span>
+                                <?php elseif ( $is_configured ) : ?>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                                        <i class="bi bi-pause-circle-fill me-1"></i>Configured (Disabled)
+                                    </span>
+                                <?php else : ?>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                                        <i class="bi bi-dash-circle-fill me-1"></i>Not Configured
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <!-- 1. Drag & Drop JSON Uploader Card -->
+                        <div class="card border border-2 border-dashed border-primary border-opacity-25 bg-light bg-opacity-50 rounded-4 p-4 mb-4 text-center">
+                            <div class="d-flex flex-column align-items-center justify-content-center py-2">
+                                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle mb-3">
+                                    <i class="bi bi-cloud-arrow-up fs-2"></i>
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1">Upload Firebase Service Account JSON</h6>
+                                <p class="small text-muted mb-3" style="max-width: 540px;">
+                                    Drop your downloaded <code>firebase-adminsdk-*.json</code> file here to instantly extract and save your Project ID, Client Email, and Private Key.
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <input type="file" id="shubx-fcm-file-input" accept=".json,application/json" class="d-none">
+                                    <button type="button" class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm" onclick="document.getElementById('shubx-fcm-file-input').click()">
+                                        <i class="bi bi-file-earmark-code me-2"></i>Select JSON Key File
+                                    </button>
+                                </div>
+                                <div id="shubx-fcm-upload-status" class="small mt-3"></div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Manual Configuration Form -->
+                        <form method="post" action="options.php" id="shubx-fcm-settings-form">
+                            <?php settings_fields( 'shubx51_options_group' ); ?>
+                            <input type="hidden" name="shubx51_society_name" value="<?php echo esc_attr( get_option('shubx51_society_name') ); ?>">
+
+                            <div class="row g-4 mb-4">
+                                <div class="col-12">
+                                    <div class="p-4 bg-light rounded-4 border border-light d-flex align-items-center justify-content-between">
+                                        <div class="pe-3">
+                                            <label class="fw-bold text-dark small mb-1">Enable Push Notifications</label>
+                                            <p class="x-small text-muted m-0">When enabled, alerts for Emergency SOS, Visitor Check-ins, and Support Tickets are dispatched to resident devices.</p>
+                                        </div>
+                                        <label class="shubx-premium-toggle">
+                                            <input type="checkbox" name="shubx51_fcm_enabled" value="1" <?php checked( $fcm_enabled, true ); ?>/>
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Firebase Project ID</label>
+                                    <input type="text" name="shubx51_fcm_project_id" id="shubx-fcm-project-id" value="<?php echo esc_attr( $fcm_project_id ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace" placeholder="e.g. greenvalley-society-1234">
+                                    <div class="x-small text-muted mt-1">Found in your Firebase Console project settings.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">Client Email (Service Account)</label>
+                                    <input type="email" name="shubx51_fcm_client_email" id="shubx-fcm-client-email" value="<?php echo esc_attr( $fcm_client_email ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace" placeholder="firebase-adminsdk-...@...iam.gserviceaccount.com">
+                                    <div class="x-small text-muted mt-1">Google service account email with Firebase Cloud Messaging API access.</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold text-secondary">FCM Sender ID (Project Number)</label>
+                                    <input type="text" name="shubx51_fcm_sender_id" id="shubx-fcm-sender-id" value="<?php echo esc_attr( $fcm_sender_id ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace" placeholder="e.g. 847291039482">
+                                    <div class="x-small text-muted mt-1">Sent to resident mobile apps for device token registration.</div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-secondary">RSA Private Key</label>
+                                    <textarea name="shubx51_fcm_private_key" id="shubx-fcm-private-key" rows="4" class="form-control shadow-none rounded-3 border-light font-monospace small" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"><?php echo esc_textarea( $fcm_private_key ); ?></textarea>
+                                    <div class="x-small text-muted mt-1">Private key from the Service Account JSON. Used exclusively on this server for OAuth2 JWT signing.</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3 border-top border-light">
+                                <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm rounded-3">Save Push Settings</button>
+                                
+                                <?php if ( $is_configured ) : ?>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="text" id="shubx-test-push-flat" placeholder="Flat No (optional)" class="form-control form-control-sm border-light shadow-none" style="width: 140px;">
+                                        <button type="button" class="btn btn-outline-primary px-3 fw-bold rounded-3 btn-sm" id="btn-send-test-push">
+                                            <i class="bi bi-send-fill me-1"></i>Send Test Push Alert
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+
+                        <!-- 3. Setup Guide Accordion -->
+                        <div class="mt-5 pt-4 border-top border-light">
+                            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i>How to get your free Firebase credentials (3-Minute Setup):</h6>
+                            <div class="row g-3 small text-muted">
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded-3 h-100 border border-light">
+                                        <div class="fw-bold text-dark mb-1">1. Create Project</div>
+                                        <div>Go to <a href="https://console.firebase.google.com" target="_blank" class="text-primary fw-semibold">Firebase Console</a>, click <strong>"Add Project"</strong>, and enter a name for your apartment society.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded-3 h-100 border border-light">
+                                        <div class="fw-bold text-dark mb-1">2. Generate Key</div>
+                                        <div>Click the gear icon (⚙️) ➔ <strong>Project Settings</strong> ➔ <strong>Service Accounts</strong> tab. Click <strong>"Generate new private key"</strong> to download your JSON file.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 bg-light rounded-3 h-100 border border-light">
+                                        <div class="fw-bold text-dark mb-1">3. Upload & Activate</div>
+                                        <div>Click <strong>"Select JSON Key File"</strong> above to upload the file. Toggle <strong>"Enable Push Notifications"</strong> and click Save!</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <?php do_action( 'shubx51_settings_tab_content' ); ?>
             </div>

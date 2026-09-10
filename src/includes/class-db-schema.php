@@ -698,6 +698,25 @@ class SHUBX51_DB_Schema {
 			KEY user_id (user_id)
 		) $charset_collate;";
 
+		// 36. Device Tokens Table (FCM Push Notifications)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_device_tokens (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			user_id bigint(20) unsigned DEFAULT 0 NOT NULL,
+			flat_no varchar(50) DEFAULT '' NOT NULL,
+			device_token text NOT NULL,
+			platform varchar(20) DEFAULT 'android' NOT NULL,
+			device_name varchar(100) DEFAULT '' NOT NULL,
+			app_version varchar(20) DEFAULT '' NOT NULL,
+			is_active tinyint(1) DEFAULT 1 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY flat_no (flat_no),
+			KEY user_id (user_id),
+			KEY platform (platform),
+			KEY is_active (is_active)
+		) $charset_collate;";
+
 		foreach ( $tables as $sql ) {
 			dbDelta( $sql );
 		}

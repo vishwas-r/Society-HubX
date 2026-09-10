@@ -50,6 +50,7 @@ class SHUBX51_DB_Router {
 		'resident_role_map',
 		'resident_flat_map',
 		'payments',
+		'device_tokens',
 	);
 
 	/**
