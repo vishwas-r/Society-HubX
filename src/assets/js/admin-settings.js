@@ -82,6 +82,57 @@
                 $(this).addClass('hidden');
             });
         }
+
+        // --- 4. Module Enable / Disable Toggle ---
+        $(document).on('change', '.module-toggle-switch', function () {
+            const $switch = $(this);
+            const moduleSlug = $switch.data('module');
+            const isEnabled = $switch.is(':checked') ? 1 : 0;
+            const nonce = $('#shubx51_module_toggle_nonce').val() || '';
+            const $badge = $('.status-badge-' + moduleSlug);
+            const $alert = $('#module-toggle-alert');
+
+            $switch.prop('disabled', true);
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'shubx51_toggle_module',
+                    module: moduleSlug,
+                    status: isEnabled,
+                    nonce: nonce
+                },
+                success: function (res) {
+                    $switch.prop('disabled', false);
+                    if (res && res.success) {
+                        if (isEnabled) {
+                            $badge.removeClass('bg-secondary bg-opacity-10 text-muted')
+                                  .addClass('bg-success bg-opacity-10 text-success')
+                                  .text('Active');
+                        } else {
+                            $badge.removeClass('bg-success bg-opacity-10 text-success')
+                                  .addClass('bg-secondary bg-opacity-10 text-muted')
+                                  .text('Disabled');
+                        }
+                        $alert.removeClass('d-none alert-danger').addClass('alert-success')
+                              .html('<i class="bi bi-check-circle-fill me-2"></i>' + (res.data.message || 'Module status updated successfully.'));
+                        setTimeout(function() { $alert.addClass('d-none'); }, 3500);
+                    } else {
+                        $switch.prop('checked', !isEnabled);
+                        $alert.removeClass('d-none alert-success').addClass('alert-danger')
+                              .html('<i class="bi bi-exclamation-triangle-fill me-2"></i>' + (res.data ? res.data.message : 'Failed to update module status.'));
+                    }
+                },
+                error: function (xhr) {
+                    $switch.prop('disabled', false);
+                    $switch.prop('checked', !isEnabled);
+                    const msg = (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) ? xhr.responseJSON.data.message : 'Network error updating module status.';
+                    $alert.removeClass('d-none alert-success').addClass('alert-danger')
+                          .html('<i class="bi bi-exclamation-triangle-fill me-2"></i>' + msg);
+                }
+            });
+        });
     });
 
     // --- 3. Color Palette & Theme Selection Helpers ---

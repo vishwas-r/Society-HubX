@@ -84,19 +84,11 @@ class SHUBX51_Frontend_Dashboard {
 		$email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 		$blood_group = isset( $_POST['blood_group'] ) ? sanitize_text_field( wp_unslash( $_POST['blood_group'] ) ) : '';
 		
-		// 1. Find Resident
-		$residents = $this->db->get( 'residents' );
-		$target_resident = null;
-		
-		foreach ( $residents as $r ) {
-			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
-				$target_resident = $r;
-				break;
-			}
-		}
+		// 1. Find Resident directly via indexed query
+		$target_resident = $this->db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 
 		// 2. Update Data
-		if ( $target_resident && isset($target_resident['id']) ) {
+		if ( $target_resident && isset( $target_resident['id'] ) ) {
 			$update_data = array(
 				'phone'       => $phone,
 				'email'       => $email,
@@ -144,15 +136,8 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( ['message' => 'Missing valid payment details.'] );
 		}
 
-		// Find Resident
-		$residents = $this->db->get( 'residents' );
-		$resident = null;
-		foreach ( $residents as $r ) {
-			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
-				$resident = $r;
-				break;
-			}
-		}
+		// Find Resident directly via indexed query
+		$resident = $this->db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 
 		if ( ! $resident ) wp_send_json_error( ['message' => 'Resident profile not found.'] );
 
@@ -192,14 +177,7 @@ class SHUBX51_Frontend_Dashboard {
 		}
 
 		$user_id = get_current_user_id();
-		$residents = $this->db->get( 'residents' );
-		$resident = null;
-		foreach ( $residents as $r ) {
-			if ( isset( $r['wp_user_id'] ) && (int) $r['wp_user_id'] === $user_id ) {
-				$resident = $r;
-				break;
-			}
-		}
+		$resident = $this->db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 
 		if ( ! $resident ) {
 			wp_send_json_error( array( 'message' => 'Resident profile not found.' ) );

@@ -98,9 +98,10 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 				'bank_name'    => get_option( 'shubx51_bank_name', '' ),
 				'qr_code_url'  => get_option( 'shubx51_bank_qr', '' ),
 			),
-			'features'         => array(
+			'features'         => class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::get_features_map() : array(
 				'flats'         => true,
 				'residents'     => true,
+				'visitors'      => true,
 				'vehicles'      => true,
 				'documents'     => true,
 				'facilities'    => true,
@@ -110,8 +111,7 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 				'polls'         => true,
 				'staff'         => true,
 				'rules'         => true,
-				'requests'      => true,
-				'notifications' => true,
+				'helpdesk'      => true,
 			),
 			'auth'             => array(
 				'login_endpoint' => get_rest_url( null, 'society-hubx/v1/auth/login' ),

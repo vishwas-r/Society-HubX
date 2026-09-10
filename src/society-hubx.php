@@ -96,6 +96,7 @@ final class SHUBX51_Plugin {
 	 */
 	private function includes() {
 		// Core Classes
+		require_once SHUBX51_PLUGIN_DIR . 'includes/class-module-registry.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/interface-module.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-google-api-handler.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-db-router.php';
@@ -110,6 +111,7 @@ final class SHUBX51_Plugin {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-privacy-manager.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rest-manager.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-data-migrator.php';
+		require_once SHUBX51_PLUGIN_DIR . 'includes/interface-payment-gateway.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-payment-service.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
@@ -149,49 +151,71 @@ final class SHUBX51_Plugin {
 			new SHUBX51_Data_Portability();
 		}
 		
-						
-		// Load Modules
-		require_once SHUBX51_PLUGIN_DIR . 'modules/flats/class-flat-manager.php'; // New Master Data
+		// Load Core Modules (Locked)
+		require_once SHUBX51_PLUGIN_DIR . 'modules/flats/class-flat-manager.php';
 		new SHUBX51_Flat_Manager();
 
 		require_once SHUBX51_PLUGIN_DIR . 'modules/residents/class-resident-manager.php';
 		new SHUBX51_Resident_Manager();
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/vehicles/class-vehicle-manager.php';
-		new SHUBX51_Vehicle_Manager();
+		// Load Conditional Modules (Can be toggled in Settings > Modules)
+		if ( SHUBX51_Module_Registry::is_enabled( 'vehicles' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/vehicles/class-vehicle-manager.php';
+			new SHUBX51_Vehicle_Manager();
+		}
 		
-		require_once SHUBX51_PLUGIN_DIR . 'modules/documents/class-document-manager.php';
-		new SHUBX51_Document_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'documents' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/documents/class-document-manager.php';
+			new SHUBX51_Document_Manager();
+		}
 		
-		require_once SHUBX51_PLUGIN_DIR . 'modules/facilities/class-facility-manager.php';
-		new SHUBX51_Facility_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'facilities' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/facilities/class-facility-manager.php';
+			new SHUBX51_Facility_Manager();
+		}
 		
-		require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-expense-manager.php';
-		new SHUBX51_Expense_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'finance' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-expense-manager.php';
+			new SHUBX51_Expense_Manager();
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
-		new SHUBX51_Account_Manager();
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+			new SHUBX51_Account_Manager();
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/assets/class-asset-manager.php';
-		new SHUBX51_Asset_Manager();
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-tally-exporter.php';
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/notices/class-notice-board.php';
-		new SHUBX51_Notice_Board();
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+			new SHUBX51_Ledger_Manager();
+		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
-		new SHUBX51_Ledger_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'assets' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/assets/class-asset-manager.php';
+			new SHUBX51_Asset_Manager();
+		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/democracy/class-poll-manager.php';
-		new SHUBX51_Poll_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'notices' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/notices/class-notice-board.php';
+			new SHUBX51_Notice_Board();
+		}
 
-        require_once SHUBX51_PLUGIN_DIR . 'modules/staff/class-staff-manager.php';
-		new SHUBX51_Staff_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/democracy/class-poll-manager.php';
+			new SHUBX51_Poll_Manager();
+		}
 
-        require_once SHUBX51_PLUGIN_DIR . 'modules/class-general-request-manager.php';
-        new SHUBX51_General_Request_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'staff' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/staff/class-staff-manager.php';
+			new SHUBX51_Staff_Manager();
+		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/rules/class-rule-manager.php';
-		new SHUBX51_Rule_Manager();
+		if ( SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/class-general-request-manager.php';
+			new SHUBX51_General_Request_Manager();
+		}
+
+		if ( SHUBX51_Module_Registry::is_enabled( 'rules' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/rules/class-rule-manager.php';
+			new SHUBX51_Rule_Manager();
+		}
 
 		// Frontend
 		require_once SHUBX51_PLUGIN_DIR . 'includes/class-frontend-dashboard.php';

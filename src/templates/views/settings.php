@@ -95,6 +95,11 @@ $templates = $db->get('notification_templates');
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button id="tab-btn-modules" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('modules')" type="button" role="tab" style="background:none;">
+                        <i class="bi bi-grid-fill me-2"></i>Modules & Features
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button id="tab-btn-communication" class="nav-link py-3 px-0 border-0 border-bottom border-2 fw-semibold text-muted border-transparent" onclick="switchSettingsTab('communication')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-chat-left-dots me-2"></i>Communication
                     </button>
@@ -220,6 +225,59 @@ $templates = $db->get('notification_templates');
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Cash Opening Balance</label>
                                     <input type="number" step="0.01" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="fw-bold text-primary mb-3 border-bottom border-light pb-2">Maintenance Billing Formula & Auto-Invoicing</h5>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Billing Calculation Mode</label>
+                                    <select name="shubx51_billing_calc_type" class="form-select shadow-none border-light rounded-3">
+                                        <option value="fixed" <?php selected( get_option('shubx51_billing_calc_type', 'fixed'), 'fixed' ); ?>>Fixed Flat Amount</option>
+                                        <option value="sqft" <?php selected( get_option('shubx51_billing_calc_type', 'fixed'), 'sqft' ); ?>>Formula (Sq. Ft + Components)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Rate Per Sq. Ft (₹)</label>
+                                    <input type="number" step="0.01" name="shubx51_billing_rate_per_sqft" value="<?php echo esc_attr( get_option('shubx51_billing_rate_per_sqft', '3.50') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Fixed Service Base (₹)</label>
+                                    <input type="number" step="0.01" name="shubx51_billing_fixed_base" value="<?php echo esc_attr( get_option('shubx51_billing_fixed_base', '500') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Sinking Fund Component (₹)</label>
+                                    <input type="number" step="0.01" name="shubx51_billing_sinking_fund" value="<?php echo esc_attr( get_option('shubx51_billing_sinking_fund', '250') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Utility / Water Component (₹)</label>
+                                    <input type="number" step="0.01" name="shubx51_billing_utility_charge" value="<?php echo esc_attr( get_option('shubx51_billing_utility_charge', '200') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">Recurring Auto-Invoicing (1st of Month)</label>
+                                    <select name="shubx51_auto_invoicing_enabled" class="form-select shadow-none border-light rounded-3">
+                                        <option value="0" <?php selected( get_option('shubx51_auto_invoicing_enabled', '0'), '0' ); ?>>Disabled (Manual Generation Only)</option>
+                                        <option value="1" <?php selected( get_option('shubx51_auto_invoicing_enabled', '0'), '1' ); ?>>Enabled (Auto-Generate on 1st)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 p-3 bg-light rounded-3 border border-light">
+                                <div class="col-md-4">
+                                    <div class="form-check form-switch pt-2">
+                                        <input class="form-check-input" type="checkbox" name="shubx51_gst_enabled" value="1" id="gstSwitch" <?php checked( get_option('shubx51_gst_enabled', '0'), '1' ); ?>>
+                                        <label class="form-check-label fw-bold text-dark small" for="gstSwitch">Enable GST Billing</label>
+                                    </div>
+                                    <div class="form-text small">Applies statutory GST if bill exceeds exemption limit.</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">GST Rate (%)</label>
+                                    <input type="number" step="0.1" name="shubx51_gst_rate" value="<?php echo esc_attr( get_option('shubx51_gst_rate', '18') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold text-secondary">GST Exemption Threshold (₹)</label>
+                                    <input type="number" step="1" name="shubx51_gst_threshold" value="<?php echo esc_attr( get_option('shubx51_gst_threshold', '7500') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -544,6 +602,88 @@ $templates = $db->get('notification_templates');
                             <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm rounded-3">Update Workflow</button>
                         </div>
                     </form>
+                </div>
+
+                <!-- Tab: Modules & Features -->
+                <div class="settings-tab-pane hidden" id="tab-content-modules">
+                    <div class="mb-4 pb-2 border-bottom border-light">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                            <div>
+                                <h5 class="fw-bold text-primary m-0">Society Modules & Feature Toggles</h5>
+                                <p class="small text-secondary m-0 mt-1">Enable or disable modules to tailor Society HubX to your community. Disabled modules are immediately hidden from all menus, resident dashboards, and APIs.</p>
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 rounded-pill px-3 py-2 small fw-bold">
+                                <i class="bi bi-toggles me-1"></i> Live Feature Control
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="module-toggle-alert" class="alert d-none mb-4 rounded-3 p-3 small"></div>
+
+                    <input type="hidden" id="shubx51_module_toggle_nonce" value="<?php echo esc_attr( wp_create_nonce( 'shubx51_module_toggle_nonce' ) ); ?>">
+
+                    <div class="row g-4">
+                        <?php 
+                        $all_modules = class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::get_all_modules() : array();
+                        $category_colors = array(
+                            'core'       => 'primary',
+                            'security'   => 'danger',
+                            'operations' => 'success',
+                            'governance' => 'warning',
+                            'community'  => 'info',
+                        );
+
+                        foreach ( $all_modules as $mod_slug => $mod_data ) : 
+                            $is_active = class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::is_enabled( $mod_slug ) : true;
+                            $cat_color = $category_colors[ $mod_data['category'] ?? 'operations' ] ?? 'primary';
+                        ?>
+                            <div class="col-md-6 col-xl-4">
+                                <div class="card h-100 border border-light shadow-sm rounded-4 overflow-hidden position-relative bg-white">
+                                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="d-flex align-items-start justify-content-between mb-3">
+                                                <div class="bg-<?php echo esc_attr( $cat_color ); ?> bg-opacity-10 text-<?php echo esc_attr( $cat_color ); ?> rounded-3 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                    <i class="bi <?php echo esc_attr( $mod_data['icon'] ); ?> fs-4"></i>
+                                                </div>
+                                                <span class="badge bg-light text-secondary border rounded-pill small text-uppercase px-2 py-1" style="font-size: 10px; letter-spacing: 0.04em;">
+                                                    <?php echo esc_html( ucfirst( $mod_data['category'] ) ); ?>
+                                                </span>
+                                            </div>
+
+                                            <h6 class="fw-bold text-dark mb-2"><?php echo esc_html( $mod_data['name'] ); ?></h6>
+                                            <p class="text-secondary small mb-4" style="line-height: 1.5; min-height: 42px;">
+                                                <?php echo esc_html( $mod_data['description'] ); ?>
+                                            </p>
+                                        </div>
+
+                                        <div class="pt-3 border-top border-light d-flex align-items-center justify-content-between">
+                                            <?php if ( ! empty( $mod_data['locked'] ) ) : ?>
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-3 py-1 small">
+                                                    <i class="bi bi-lock-fill me-1"></i>Permanent Core
+                                                </span>
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input" type="checkbox" checked disabled style="cursor: not-allowed; width: 2.4em; height: 1.25em;">
+                                                </div>
+                                            <?php else : ?>
+                                                <span class="badge status-badge-<?php echo esc_attr( $mod_slug ); ?> <?php echo $is_active ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-muted'; ?> rounded-pill px-3 py-1 small fw-semibold">
+                                                    <?php echo $is_active ? esc_html__( 'Active', 'society-hubx' ) : esc_html__( 'Disabled', 'society-hubx' ); ?>
+                                                </span>
+                                                <div class="form-check form-switch mb-0">
+                                                    <input class="form-check-input module-toggle-switch shadow-none" 
+                                                           type="checkbox" 
+                                                           role="switch"
+                                                           id="switch-<?php echo esc_attr( $mod_slug ); ?>" 
+                                                           data-module="<?php echo esc_attr( $mod_slug ); ?>"
+                                                           <?php checked( $is_active ); ?>
+                                                           style="cursor: pointer; width: 2.4em; height: 1.25em;">
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
 
                 <!-- Tab: Data & Maintenance (Combined) -->

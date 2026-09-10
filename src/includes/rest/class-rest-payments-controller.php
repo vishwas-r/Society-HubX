@@ -28,11 +28,31 @@ class SHUBX51_REST_Payments_Controller {
 			'permission_callback' => array( $this, 'check_frontend_auth' )
 		) );
 
-		// 3. Webhook Ingress (Gateway Integration)
+		// 3. Registered Gateways List (For Mobile / Frontend checkout)
+		register_rest_route( 'society-hubx/v1', '/payments/gateways', array(
+			'methods'  => WP_REST_Server::READABLE,
+			'callback' => array( $this, 'get_gateways' ),
+			'permission_callback' => array( $this, 'check_frontend_auth' ),
+		) );
+
+		// 4. Create Order / Checkout Session
+		register_rest_route( 'society-hubx/v1', '/payments/create-order', array(
+			'methods'  => WP_REST_Server::CREATABLE,
+			'callback' => array( $this, 'create_order' ),
+			'permission_callback' => array( $this, 'check_frontend_auth' ),
+			'args'     => array(
+				'invoice_id' => array(
+					'required'          => true,
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+			),
+		) );
+
+		// 5. Webhook Ingress (Gateway Integration)
 		register_rest_route( 'society-hubx/v1', '/webhooks/(?P<gateway>[a-zA-Z0-9-]+)', array(
 			'methods'  => WP_REST_Server::CREATABLE,
 			'callback' => array( $this, 'handle_webhook' ),
-			'permission_callback' => array( $this, 'webhook_permissions_check' )
+			'permission_callback' => array( $this, 'webhook_permissions_check' ),
 		) );
 	}
 	
@@ -43,12 +63,89 @@ class SHUBX51_REST_Payments_Controller {
 		return true;
 	}
 
+	/**
+	 * List available payment gateways.
+	 */
+	public function get_gateways() {
+		$gateways = SHUBX51_Payment_Service::get_gateways();
+		$active   = SHUBX51_Payment_Service::get_active_gateway();
+		$active_id = $active ? $active->get_id() : '';
+
+		$list = array();
+		foreach ( $gateways as $g ) {
+			if ( $g->is_available() ) {
+				$list[] = array(
+					'id'          => $g->get_id(),
+					'title'       => $g->get_title(),
+					'description' => $g->get_description(),
+					'is_default'  => ( $g->get_id() === $active_id ),
+				);
+			}
+		}
+
+		return rest_ensure_response( array(
+			'success'  => true,
+			'gateways' => $list,
+		) );
+	}
+
+	/**
+	 * Initiate checkout order for an invoice.
+	 */
+	public function create_order( WP_REST_Request $request ) {
+		$invoice_id = sanitize_text_field( $request->get_param( 'invoice_id' ) );
+		$gateway_id = sanitize_key( $request->get_param( 'gateway_id' ) ?? '' );
+
+		$db = new SHUBX51_DB_Router();
+		$invoice = $db->get_invoice( $invoice_id );
+
+		if ( ! $invoice ) {
+			return new WP_Error( 'invoice_not_found', __( 'Invoice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+		}
+
+		// Calculate outstanding balance
+		$amount_due = floatval( $invoice['amount'] ?? 0 );
+		$payments = isset( $invoice['payments'] ) && is_array( $invoice['payments'] ) ? $invoice['payments'] : array();
+		$paid_so_far = 0;
+		foreach ( $payments as $p ) {
+			$paid_so_far += floatval( $p['amount'] ?? 0 );
+		}
+		$balance = max( 0, $amount_due - $paid_so_far );
+
+		if ( $balance <= 0 || strtolower( $invoice['status'] ?? '' ) === 'paid' ) {
+			return new WP_Error( 'already_paid', __( 'This invoice is already fully paid.', 'society-hubx' ), array( 'status' => 400 ) );
+		}
+
+		// Customer Details
+		$current_user = wp_get_current_user();
+		$customer = array(
+			'name'        => $current_user->display_name,
+			'email'       => $current_user->user_email,
+			'phone'       => get_user_meta( $current_user->ID, 'phone', true ) ?: '',
+			'flat_number' => $invoice['flat_number'] ?? '',
+		);
+
+		$result = SHUBX51_Payment_Service::create_order( $invoice_id, $balance, $customer, $gateway_id );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'order'   => $result,
+		) );
+	}
+
 	public function webhook_permissions_check( WP_REST_Request $request ) {
-		$gateway = sanitize_text_field( $request->get_param( 'gateway' ) );
+		$gateway_id = sanitize_key( $request->get_param( 'gateway' ) );
+		$gateway = SHUBX51_Payment_Service::get_gateway( $gateway_id );
+
+		if ( $gateway && method_exists( $gateway, 'verify_webhook_permission' ) ) {
+			return $gateway->verify_webhook_permission( $request );
+		}
 		
-		// Delegate webhook signature verification and permissions check to the specific gateway addon.
-		// Addon plugins must filter this value to true (after validating signatures) or return false.
-		return apply_filters( "shubx51_webhook_permissions_check_{$gateway}", false, $request );
+		// Fallback for legacy / standalone hooks
+		return apply_filters( "shubx51_webhook_permissions_check_{$gateway_id}", false, $request );
 	}
 
 	public function get_state_hash( $request ) {
@@ -81,10 +178,15 @@ class SHUBX51_REST_Payments_Controller {
 	}
 
 	public function handle_webhook( WP_REST_Request $request ) {
-		$gateway = sanitize_text_field( $request->get_param( 'gateway' ) );
-		
-		// Trigger action for the gateway addon to handle webhook payload processing and record the payment
-		do_action( "shubx51_handle_webhook_{$gateway}", $request );
+		$gateway_id = sanitize_key( $request->get_param( 'gateway' ) );
+		$gateway = SHUBX51_Payment_Service::get_gateway( $gateway_id );
+
+		if ( $gateway && method_exists( $gateway, 'handle_webhook' ) ) {
+			return $gateway->handle_webhook( $request );
+		}
+
+		// Trigger action for external gateway addons
+		do_action( "shubx51_handle_webhook_{$gateway_id}", $request );
 		
 		return rest_ensure_response( array( 'status' => 'received' ) );
 	}

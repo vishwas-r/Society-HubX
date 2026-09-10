@@ -597,6 +597,107 @@ class SHUBX51_DB_Schema {
 			KEY status (status)
 		) $charset_collate;";
 
+		// 31. Visitors Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_visitors (
+			id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			visitor_name varchar(255) NOT NULL,
+			phone varchar(20) DEFAULT '' NOT NULL,
+			vehicle_no varchar(30) DEFAULT '' NOT NULL,
+			photo_url text NOT NULL,
+			purpose varchar(50) DEFAULT 'Guest' NOT NULL,
+			status varchar(20) DEFAULT 'pending' NOT NULL,
+			host_resident_id varchar(50) DEFAULT '' NOT NULL,
+			gate_id varchar(50) DEFAULT 'Main Gate' NOT NULL,
+			pass_code varchar(20) DEFAULT '' NOT NULL,
+			check_in datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			check_out datetime DEFAULT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY flat_no (flat_no),
+			KEY status (status),
+			KEY check_in (check_in)
+		) $charset_collate;";
+
+		// 32. Visitor Passes Table (Pre-Approved Passes)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_visitor_passes (
+			id varchar(50) NOT NULL,
+			resident_id varchar(50) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			visitor_name varchar(255) NOT NULL,
+			phone varchar(20) DEFAULT '' NOT NULL,
+			pass_code varchar(20) NOT NULL,
+			purpose varchar(50) DEFAULT 'Guest' NOT NULL,
+			valid_from datetime NOT NULL,
+			valid_until datetime NOT NULL,
+			status varchar(20) DEFAULT 'valid' NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY pass_code (pass_code),
+			KEY flat_no (flat_no),
+			KEY status (status)
+		) $charset_collate;";
+
+		// 33. Guard Audit Logs Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_guard_logs (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			guard_user_id bigint(20) NOT NULL,
+			gate_id varchar(50) DEFAULT 'Main Gate' NOT NULL,
+			action varchar(50) NOT NULL,
+			target_type varchar(50) NOT NULL,
+			target_id varchar(50) NOT NULL,
+			details text NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY guard_user_id (guard_user_id),
+			KEY created_at (created_at)
+		) $charset_collate;";
+
+		// 34. Helpdesk Tickets Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_helpdesk_tickets (
+			id varchar(50) NOT NULL,
+			ticket_number varchar(30) NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			resident_id varchar(50) NOT NULL,
+			category varchar(50) DEFAULT 'general' NOT NULL,
+			subcategory varchar(50) DEFAULT '' NOT NULL,
+			priority varchar(20) DEFAULT 'medium' NOT NULL,
+			status varchar(20) DEFAULT 'open' NOT NULL,
+			subject varchar(255) NOT NULL,
+			description text NOT NULL,
+			photos text NOT NULL,
+			assigned_to bigint(20) DEFAULT 0 NOT NULL,
+			sla_due_date datetime DEFAULT NULL,
+			resolved_at datetime DEFAULT NULL,
+			closure_otp varchar(10) DEFAULT '' NOT NULL,
+			rating int(2) DEFAULT 0 NOT NULL,
+			feedback text NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY ticket_number (ticket_number),
+			KEY flat_no (flat_no),
+			KEY status (status),
+			KEY priority (priority)
+		) $charset_collate;";
+
+		// 35. Ticket Conversation & Replies Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_ticket_replies (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			ticket_id varchar(50) NOT NULL,
+			user_id bigint(20) NOT NULL,
+			message text NOT NULL,
+			attachments text NOT NULL,
+			is_internal_note tinyint(1) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY ticket_id (ticket_id),
+			KEY user_id (user_id)
+		) $charset_collate;";
+
 		foreach ( $tables as $sql ) {
 			dbDelta( $sql );
 		}

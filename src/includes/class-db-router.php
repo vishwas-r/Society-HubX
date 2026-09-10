@@ -29,6 +29,10 @@ class SHUBX51_DB_Router {
 		'bookings',
 		'vehicles',
 		'visitors',
+		'visitor_passes',
+		'guard_logs',
+		'helpdesk_tickets',
+		'ticket_replies',
 		'complaints',
 		'suggestions',
 		'polls',
@@ -79,6 +83,10 @@ class SHUBX51_DB_Router {
             'bookings'                => $wpdb->prefix . 'shubx51_bookings',
             'vehicles'                => $wpdb->prefix . 'shubx51_vehicles',
             'visitors'                => $wpdb->prefix . 'shubx51_visitors',
+            'visitor_passes'          => $wpdb->prefix . 'shubx51_visitor_passes',
+            'guard_logs'              => $wpdb->prefix . 'shubx51_guard_logs',
+            'helpdesk_tickets'        => $wpdb->prefix . 'shubx51_helpdesk_tickets',
+            'ticket_replies'          => $wpdb->prefix . 'shubx51_ticket_replies',
             'complaints'              => $wpdb->prefix . 'shubx51_complaints',
             'suggestions'             => $wpdb->prefix . 'shubx51_suggestions',
             'polls'                   => $wpdb->prefix . 'shubx51_polls',
@@ -116,6 +124,95 @@ class SHUBX51_DB_Router {
 	public function get_row( $table, $id ) {
 		$results = $this->get( $table, array( 'where' => array( 'id' => $id ) ) );
 		return ! empty( $results ) ? $results[0] : false;
+	}
+
+	/**
+	 * Get a single row by field and value
+	 *
+	 * @param string $table Table name/slug.
+	 * @param string $field Column name.
+	 * @param mixed  $value Value to match.
+	 * @return array|false
+	 */
+	public function get_row_by_field( $table, $field, $value ) {
+		$results = $this->get( $table, array(
+			'where' => array( $field => $value ),
+			'limit' => 1,
+		) );
+		return ! empty( $results ) ? $results[0] : false;
+	}
+
+	/**
+	 * Get paginated records from a table with metadata.
+	 *
+	 * @param string $table Table name/slug.
+	 * @param array  $args Query parameters (page, per_page, where, orderby, order).
+	 * @return array Array with 'items', 'total', 'total_pages', 'current_page', 'per_page'.
+	 */
+	public function get_paginated( $table, $args = array() ) {
+		$page     = isset( $args['page'] ) ? max( 1, intval( $args['page'] ) ) : 1;
+		$per_page = isset( $args['per_page'] ) ? min( 100, max( 1, intval( $args['per_page'] ) ) ) : 25;
+		$offset   = ( $page - 1 ) * $per_page;
+
+		// Calculate total count
+		$count_args = $args;
+		unset( $count_args['limit'], $count_args['offset'], $count_args['page'], $count_args['per_page'], $count_args['orderby'], $count_args['order'] );
+		$total_records = $this->count( $table, $count_args );
+
+		$args['limit']  = $per_page;
+		$args['offset'] = $offset;
+
+		$items = $this->get_mysql( $table, $args );
+
+		return array(
+			'items'        => $items ? $items : array(),
+			'total'        => $total_records,
+			'total_pages'  => ( $total_records > 0 ) ? (int) ceil( $total_records / $per_page ) : 0,
+			'current_page' => $page,
+			'per_page'     => $per_page,
+		);
+	}
+
+	/**
+	 * Count matching rows in a table.
+	 *
+	 * @param string $table Table name/slug.
+	 * @param array  $args Where filter arguments.
+	 * @return int
+	 */
+	public function count( $table, $args = array() ) {
+		$sql_table = $this->get_table_name( $table );
+		$query = "SELECT COUNT(*) FROM " . $sql_table;
+		$where_clauses = array();
+		$values = array();
+
+		if ( ! empty( $args['where'] ) && is_array( $args['where'] ) ) {
+			foreach ( $args['where'] as $col => $val ) {
+				$clean_col = preg_replace( '/[^a-zA-Z0-9_]/', '', $col );
+				if ( is_array( $val ) ) {
+					$placeholders = implode( ',', array_fill( 0, count( $val ), '%s' ) );
+					$where_clauses[] = "`$clean_col` IN ($placeholders)";
+					foreach ( $val as $item ) {
+						$values[] = $item;
+					}
+				} else {
+					$where_clauses[] = "`$clean_col` = %s";
+					$values[] = $val;
+				}
+			}
+		}
+
+		if ( ! empty( $where_clauses ) ) {
+			$query .= " WHERE " . implode( ' AND ', $where_clauses );
+		}
+
+		if ( ! empty( $values ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- SQL prepared with dynamic values.
+			$query = $this->wpdb->prepare( $query, $values );
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Query built dynamically.
+		return (int) $this->wpdb->get_var( $query );
 	}
 
 	/**

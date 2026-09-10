@@ -63,14 +63,55 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         register_rest_route('society-hubx/v1', '/staff/biometric-sync', array(
             'methods'  => 'POST',
             'callback' => array($this, 'handle_biometric_sync'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => array($this, 'check_biometric_auth'),
         ));
 
         register_rest_route('shubx51/v1', '/biometric-sync', array(
             'methods'  => 'POST',
             'callback' => array($this, 'handle_biometric_sync'),
-            'permission_callback' => '__return_true', // Legacy alias
+            'permission_callback' => array($this, 'check_biometric_auth'), // Legacy alias
         ));
+    }
+
+    /**
+     * Permissions check for biometric hardware sync.
+     */
+    public function check_biometric_auth($request) {
+        if (current_user_can('manage_options')) {
+            return true;
+        }
+        if (class_exists('SHUBX51_RBAC_Manager')) {
+            $rbac = new SHUBX51_RBAC_Manager();
+            if ($rbac->has_capability(get_current_user_id(), 'staff_manage')) {
+                return true;
+            }
+        }
+
+        $stored_secret = get_option('shubx51_biometric_api_secret', '');
+        $provided_token = $request->get_header('x-device-token');
+        if (empty($provided_token)) {
+            $auth_header = $request->get_header('authorization');
+            if ($auth_header && preg_match('/Bearer\s+(.*)$/i', $auth_header, $matches)) {
+                $provided_token = trim($matches[1]);
+            }
+        }
+
+        $is_valid = false;
+        if (!empty($stored_secret) && !empty($provided_token) && hash_equals($stored_secret, $provided_token)) {
+            $is_valid = true;
+        }
+
+        $is_valid = apply_filters('shubx51_biometric_auth_check', $is_valid, $request);
+
+        if (!$is_valid) {
+            return new WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing biometric hardware device token. Set X-Device-Token header.', 'society-hubx'),
+                array('status' => 401)
+            );
+        }
+
+        return true;
     }
 
     public function handle_biometric_sync($request) {

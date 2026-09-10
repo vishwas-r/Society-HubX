@@ -243,6 +243,10 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                         </select>
                     </form>
                 </div>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#modalExportTally" class="btn btn-outline-secondary px-3 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm" style="height: 48px;">
+                    <i class="bi bi-file-earmark-arrow-down fs-5"></i>
+                    <span>Export for Tally (XML)</span>
+                </button>
                 <button onclick="openGenerateModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2" style="height: 48px;">
                     <i class="bi bi-file-earmark-plus fs-5"></i>
                     <span>Generate Maintenance</span>
@@ -909,6 +913,55 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                     <i class="bi bi-download me-2"></i>Download Receipt
                 </button>
             </div>
+        </div>
+</div>
+
+<!-- Modal: Export for Tally (XML) -->
+<div class="modal fade" id="modalExportTally" tabindex="-1" aria-labelledby="modalExportTallyLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
+                <?php wp_nonce_field( 'shubx51_account_action' ); ?>
+                <input type="hidden" name="action" value="shubx51_export_tally_xml">
+                <div class="modal-header border-bottom p-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
+                            <i class="bi bi-file-earmark-code fs-4"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark m-0" id="modalExportTallyLabel">Export for Tally ERP 9 / Prime</h5>
+                            <p class="small text-muted m-0">Generate standard Tally XML vouchers for Ledgers, Invoices & Receipts.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Billing Month (Optional)</label>
+                        <input type="month" name="month" value="<?php echo esc_attr( wp_date('Y-m') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                        <div class="form-text small">Leave blank to export entire financial year / all records.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Export Content</label>
+                        <select name="export_type" class="form-select shadow-none rounded-3 border-light">
+                            <option value="all">All Vouchers (Sales Invoices + Receipt Vouchers + Master Ledgers)</option>
+                            <option value="invoices">Sales Invoices Only</option>
+                            <option value="receipts">Receipt Vouchers Only</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 small text-muted">
+                        <i class="bi bi-info-circle text-primary me-1"></i>
+                        Import this generated XML directly into Tally via <strong>Import Data &gt; Vouchers</strong>.
+                    </div>
+                </div>
+                <div class="modal-footer border-top p-4">
+                    <button type="button" class="btn btn-light px-4 fw-bold rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-download"></i>
+                        <span>Download Tally XML</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

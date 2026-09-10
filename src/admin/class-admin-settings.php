@@ -25,6 +25,7 @@ class SHUBX51_Admin_Settings {
 		add_action( 'admin_post_shubx51_delete_role', array( $this, 'handle_delete_role' ) );
 		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
 		add_action( 'admin_notices', array( $this, 'render_setup_notice' ) );
+		add_action( 'wp_ajax_shubx51_toggle_module', array( $this, 'handle_toggle_module_ajax' ) );
 	}
 
 	public function maybe_redirect_to_setup() {
@@ -85,14 +86,16 @@ class SHUBX51_Admin_Settings {
 		);
 
 		// Democracy (Polls) Page
-		add_submenu_page(
-			'shubx51-settings',
-			'Digital Democracy',
-			'Democracy',
-			'read', // RBAC checked in render_polls_page
-			'shubx51-polls',
-			array( $this, 'render_polls_page' )
-		);
+		if ( class_exists( 'SHUBX51_Module_Registry' ) && SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
+			add_submenu_page(
+				'shubx51-settings',
+				'Digital Democracy',
+				'Democracy',
+				'read', // RBAC checked in render_polls_page
+				'shubx51-polls',
+				array( $this, 'render_polls_page' )
+			);
+		}
 
 		// Roles & Permissions Page
 		add_submenu_page(
@@ -166,6 +169,24 @@ class SHUBX51_Admin_Settings {
 		// Privacy & DPDP
 		register_setting( 'shubx51_options_group', 'shubx51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 		register_setting( 'shubx51_options_group', 'shubx51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+
+		// Active Modules & Feature Toggles
+		register_setting( 'shubx51_options_group', 'shubx51_active_modules' );
+
+		// Maintenance Formula & GST Settings
+		register_setting( 'shubx51_options_group', 'shubx51_billing_calc_type', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'fixed' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_billing_rate_per_sqft', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_billing_fixed_base', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_billing_sinking_fund', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_billing_utility_charge', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_gst_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_gst_rate', array( 'sanitize_callback' => 'floatval', 'default' => 18.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_gst_threshold', array( 'sanitize_callback' => 'floatval', 'default' => 7500.0 ) );
+		register_setting( 'shubx51_options_group', 'shubx51_auto_invoicing_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+
+		// Payment Gateway & API Security Settings
+		register_setting( 'shubx51_options_group', 'shubx51_active_payment_gateway', array( 'sanitize_callback' => 'sanitize_key' ) );
+		register_setting( 'shubx51_options_group', 'shubx51_biometric_api_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Branding & Theme Preferences
 		register_setting( 'shubx51_options_group', 'shubx51_color_palette', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'orange' ) );
@@ -343,6 +364,9 @@ class SHUBX51_Admin_Settings {
 	}
 
     public function render_polls_page() {
+        if ( class_exists( 'SHUBX51_Module_Registry' ) && ! SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
+            wp_die( esc_html__( 'The Digital Democracy & Polls module has been disabled by your society administration.', 'society-hubx' ), 403 );
+        }
         $rbac = new SHUBX51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'polls_view' ) ) {
             wp_die( 'You do not have permission to access Digital Democracy.' );
@@ -350,6 +374,43 @@ class SHUBX51_Admin_Settings {
 		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
         SHUBX51_Admin_App::render_view( 'polls' );
     }
+
+	/**
+	 * AJAX Handler: Toggle a module ON or OFF.
+	 */
+	public function handle_toggle_module_ajax() {
+		check_ajax_referer( 'shubx51_module_toggle_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+		}
+
+		$module = isset( $_POST['module'] ) ? sanitize_key( wp_unslash( $_POST['module'] ) ) : '';
+		$status = isset( $_POST['status'] ) ? (int) $_POST['status'] : 0;
+
+		if ( empty( $module ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Missing module slug.', 'society-hubx' ) ), 400 );
+		}
+
+		if ( ! class_exists( 'SHUBX51_Module_Registry' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Module registry not loaded.', 'society-hubx' ) ), 500 );
+		}
+
+		$success = SHUBX51_Module_Registry::set_module_status( $module, (bool) $status );
+		if ( ! $success ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Failed to update module status. Core master data modules cannot be disabled.', 'society-hubx' ) ), 400 );
+		}
+
+		wp_send_json_success( array(
+			'message' => sprintf(
+				// translators: %1$s is the module slug, %2$s is the status (enabled/disabled).
+				esc_html__( 'Module "%1$s" is now %2$s.', 'society-hubx' ),
+				$module,
+				$status ? esc_html__( 'enabled', 'society-hubx' ) : esc_html__( 'disabled', 'society-hubx' )
+			),
+			'module'  => $module,
+			'enabled' => (bool) $status,
+		) );
+	}
 
 	public function render_activity_hub_page() {
 		$rbac = new SHUBX51_RBAC_Manager();

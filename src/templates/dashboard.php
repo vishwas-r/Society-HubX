@@ -81,15 +81,33 @@ if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
 
     <!-- Tab Contents -->
     <?php include 'components/dashboard/tab-home.php'; ?>
-    <?php include 'components/dashboard/tab-notices.php'; ?>
-    <?php include 'components/dashboard/tab-requests.php'; ?>
-    <?php include 'components/dashboard/tab-notifications.php'; ?>
     <?php include 'components/dashboard/tab-community.php'; ?>
-    <?php include 'components/dashboard/tab-accounts.php'; ?>
-    <?php include 'components/dashboard/tab-expenses.php'; ?>
-    <?php include 'components/dashboard/tab-facilities.php'; ?>
-    <?php include 'components/dashboard/tab-polls.php'; ?>
-    <?php include 'components/dashboard/tab-rules.php'; ?>
+    <?php include 'components/dashboard/tab-notifications.php'; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'notices' ) ) : ?>
+        <?php include 'components/dashboard/tab-notices.php'; ?>
+    <?php endif; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) : ?>
+        <?php include 'components/dashboard/tab-requests.php'; ?>
+    <?php endif; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'finance' ) ) : ?>
+        <?php include 'components/dashboard/tab-accounts.php'; ?>
+        <?php include 'components/dashboard/tab-expenses.php'; ?>
+    <?php endif; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'facilities' ) ) : ?>
+        <?php include 'components/dashboard/tab-facilities.php'; ?>
+    <?php endif; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'polls' ) ) : ?>
+        <?php include 'components/dashboard/tab-polls.php'; ?>
+    <?php endif; ?>
+
+    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'rules' ) ) : ?>
+        <?php include 'components/dashboard/tab-rules.php'; ?>
+    <?php endif; ?>
 
 
 <!-- Modals are moved to footer or separate files usually, but kept inline for now with Bootstrap Modal structure -->

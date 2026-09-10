@@ -83,31 +83,49 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Get a collection of flats.
+	 * Get a collection of flats with pagination and filtering.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
 		$db = new SHUBX51_DB_Router();
-		$flats = $db->get( 'flats' );
 
-		if ( empty( $flats ) ) {
-			return rest_ensure_response( array() );
+		$page     = max( 1, intval( $request->get_param( 'page' ) ?: 1 ) );
+		$per_page = intval( $request->get_param( 'per_page' ) ?: 25 );
+		if ( $per_page <= 0 || $per_page > 100 ) {
+			$per_page = 25;
 		}
+
+		$args = array(
+			'page'     => $page,
+			'per_page' => $per_page,
+			'where'    => array(),
+			'orderby'  => 'flat_number',
+			'order'    => 'ASC',
+		);
 
 		$status = $request->get_param( 'status' );
 		if ( ! empty( $status ) ) {
-			$flats = array_filter(
-				$flats,
-				function( $item ) use ( $status ) {
-					return isset( $item['status'] ) && $item['status'] === $status;
-				}
-			);
-			$flats = array_values( $flats );
+			$args['where']['status'] = sanitize_text_field( $status );
 		}
 
-		return rest_ensure_response( $flats );
+		$block = $request->get_param( 'block' );
+		if ( ! empty( $block ) ) {
+			$args['where']['block'] = sanitize_text_field( $block );
+		}
+
+		$type = $request->get_param( 'type' );
+		if ( ! empty( $type ) ) {
+			$args['where']['type'] = sanitize_text_field( $type );
+		}
+
+		$paginated = $db->get_paginated( 'flats', $args );
+
+		$response = rest_ensure_response( $paginated['items'] );
+		$response->header( 'X-WP-Total', $paginated['total'] );
+		$response->header( 'X-WP-TotalPages', $paginated['total_pages'] );
+		return $response;
 	}
 
 	/**

@@ -235,25 +235,49 @@ class SHUBX51_REST_Manager {
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
 		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-settings-controller.php';
 
-		// Instantiate & register
+		// Instantiate & register core endpoints
 		( new SHUBX51_REST_Discovery_Controller() )->register_routes();
 		( new SHUBX51_REST_Auth_Controller() )->register_routes();
 		( new SHUBX51_REST_Flats_Controller() )->register_routes();
 		( new SHUBX51_REST_Residents_Controller() )->register_routes();
-		( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
-		( new SHUBX51_REST_Documents_Controller() )->register_routes();
-		( new SHUBX51_REST_Facilities_Controller() )->register_routes();
-		( new SHUBX51_REST_Finance_Controller() )->register_routes();
-		( new SHUBX51_REST_Assets_Controller() )->register_routes();
-		( new SHUBX51_REST_Notices_Controller() )->register_routes();
-		( new SHUBX51_REST_Polls_Controller() )->register_routes();
-		( new SHUBX51_REST_Staff_Controller() )->register_routes();
-		( new SHUBX51_REST_Rules_Controller() )->register_routes();
-		( new SHUBX51_REST_Requests_Controller() )->register_routes();
-		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
 		( new SHUBX51_REST_Activity_Controller() )->register_routes();
-		( new SHUBX51_REST_Payments_Controller() )->register_routes();
+		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
 		( new SHUBX51_REST_Settings_Controller() )->register_routes();
+
+		// Conditional modules based on Society Settings
+		if ( class_exists( 'SHUBX51_Module_Registry' ) ) {
+			if ( SHUBX51_Module_Registry::is_enabled( 'vehicles' ) ) {
+				( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'documents' ) ) {
+				( new SHUBX51_REST_Documents_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'facilities' ) ) {
+				( new SHUBX51_REST_Facilities_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'finance' ) ) {
+				( new SHUBX51_REST_Finance_Controller() )->register_routes();
+				( new SHUBX51_REST_Payments_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'assets' ) ) {
+				( new SHUBX51_REST_Assets_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'notices' ) ) {
+				( new SHUBX51_REST_Notices_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
+				( new SHUBX51_REST_Polls_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'staff' ) ) {
+				( new SHUBX51_REST_Staff_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'rules' ) ) {
+				( new SHUBX51_REST_Rules_Controller() )->register_routes();
+			}
+			if ( SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) {
+				( new SHUBX51_REST_Requests_Controller() )->register_routes();
+			}
+		}
 	}
 
 	/**

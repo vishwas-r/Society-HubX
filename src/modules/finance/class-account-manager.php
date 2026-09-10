@@ -26,6 +26,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		add_action( 'admin_post_shubx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
 		add_action( 'admin_post_shubx51_delete_payment', array( $this, 'handle_delete_payment' ) );
 		add_action( 'admin_post_shubx51_print_receipt', array( $this, 'handle_print_receipt' ) );
+		add_action( 'admin_post_shubx51_export_tally_xml', array( $this, 'handle_export_tally_xml' ) );
 
 		// AJAX for Residents
 		add_action( 'wp_ajax_shubx51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
@@ -124,12 +125,100 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	}
 
     /**
-     * Logic for bulk generation, now extractable for background processing.
+     * Calculate maintenance charges for a flat based on configured billing formulas and GST.
+     *
+     * @param array|string $flat Flat data array or flat number/ID.
+     * @param float|null   $custom_amount Optional override amount.
+     * @return array
      */
-    public function perform_bulk_invoice_generation( $month, $amount, $type, $due_date = '', $description = '' ) {
+    public static function calculate_maintenance_charge( $flat, $custom_amount = null ) {
+        $calc_type = get_option( 'shubx51_billing_calc_type', 'fixed' );
+        $default_fixed = floatval( get_option( 'shubx51_maintenance_amount', 0 ) );
+
+        if ( $custom_amount !== null && floatval( $custom_amount ) > 0 ) {
+            $base_maintenance = floatval( $custom_amount );
+            $sqft = 0;
+            $rate_sqft = 0;
+            $fixed_base = $base_maintenance;
+            $sinking = 0;
+            $utility = 0;
+        } elseif ( $calc_type === 'sqft' ) {
+            $sqft = is_array( $flat ) ? floatval( $flat['sq_foot'] ?? 0 ) : 0;
+            if ( ! is_array( $flat ) || empty( $sqft ) ) {
+                $db = new SHUBX51_DB_Router();
+                $flat_val = is_array( $flat ) ? ( $flat['flat_number'] ?? $flat['flat_no'] ?? '' ) : $flat;
+                $flat_data = $db->get_row_by_field( 'flats', 'flat_number', $flat_val );
+                if ( ! $flat_data ) {
+                    $flat_data = $db->get_row_by_field( 'flats', 'id', $flat_val );
+                }
+                if ( $flat_data ) {
+                    $sqft = floatval( $flat_data['sq_foot'] ?? 0 );
+                }
+            }
+
+            $rate_sqft = floatval( get_option( 'shubx51_billing_rate_per_sqft', 0 ) );
+            $fixed_base = floatval( get_option( 'shubx51_billing_fixed_base', 0 ) );
+            $sinking = floatval( get_option( 'shubx51_billing_sinking_fund', 0 ) );
+            $utility = floatval( get_option( 'shubx51_billing_utility_charge', 0 ) );
+
+            $sqft_total = ( $sqft > 0 && $rate_sqft > 0 ) ? ( $sqft * $rate_sqft ) : 0;
+            $base_maintenance = $sqft_total + $fixed_base + $sinking + $utility;
+            if ( $base_maintenance <= 0 && $default_fixed > 0 ) {
+                $base_maintenance = $default_fixed;
+            }
+        } else {
+            $sqft = 0;
+            $rate_sqft = 0;
+            $fixed_base = $default_fixed;
+            $sinking = 0;
+            $utility = 0;
+            $base_maintenance = $default_fixed;
+        }
+
+        // GST calculation
+        $gst_enabled = ( get_option( 'shubx51_gst_enabled', '0' ) === '1' );
+        $gst_rate = floatval( get_option( 'shubx51_gst_rate', 18 ) );
+        $gst_threshold = floatval( get_option( 'shubx51_gst_threshold', 7500 ) );
+
+        $gst_amount = 0;
+        if ( $gst_enabled && ( $gst_threshold <= 0 || $base_maintenance > $gst_threshold ) ) {
+            $gst_amount = round( $base_maintenance * ( $gst_rate / 100 ), 2 );
+        }
+
+        $total_amount = round( $base_maintenance + $gst_amount, 2 );
+
+        return array(
+            'base_maintenance' => round( $base_maintenance, 2 ),
+            'sqft'             => $sqft,
+            'rate_sqft'        => $rate_sqft,
+            'fixed_base'       => $fixed_base,
+            'sinking_fund'     => $sinking,
+            'utility_charge'   => $utility,
+            'gst_rate'         => $gst_rate,
+            'gst_amount'       => $gst_amount,
+            'total_amount'     => $total_amount,
+        );
+    }
+
+    /**
+     * Logic for bulk generation, now extractable for background processing and formula billing.
+     */
+    public function perform_bulk_invoice_generation( $month, $amount = 0, $type = 'maintenance', $due_date = '', $description = '' ) {
         $residents = $this->db->get( 'residents' );
         $invoices = $this->db->get( 'invoices', array( 'where' => array( 'month' => $month, 'type' => $type ) ) );
         
+        // Cache flats by flat_number and id to avoid N+1 queries during formula billing
+        $all_flats = $this->db->get( 'flats' );
+        $flat_map = array();
+        foreach ( $all_flats as $f ) {
+            if ( ! empty( $f['flat_number'] ) ) {
+                $flat_map[ (string) $f['flat_number'] ] = $f;
+            }
+            if ( ! empty( $f['id'] ) ) {
+                $flat_map[ (string) $f['id'] ] = $f;
+            }
+        }
+
         $generated_count = 0;
         $prefix = str_replace( '-', '', $month ); // 2024-05 -> 202405
         
@@ -144,6 +233,10 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
         }
         $next_seq = $max_seq + 1;
 
+        if ( empty( $due_date ) ) {
+            $due_date = gmdate( 'Y-m-10', strtotime( $month . '-01' ) );
+        }
+
         foreach ( $residents as $r ) {
             // Check if already generated for this month and type
             $exists = false;
@@ -154,6 +247,27 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
             }
             
             if ( ! $exists ) {
+                $flat_obj = $flat_map[ (string) $r['flat_no'] ] ?? null;
+                $charge = self::calculate_maintenance_charge( $flat_obj, $amount > 0 ? $amount : null );
+                $final_amount = $charge['total_amount'];
+
+                if ( $type === 'maintenance' && empty( $description ) ) {
+                    if ( $charge['sqft'] > 0 && $charge['rate_sqft'] > 0 ) {
+                        $desc = sprintf(
+                            'Maintenance for %s (%s sqft @ %s/sqft + Base %s%s)',
+                            $month,
+                            $charge['sqft'],
+                            $charge['rate_sqft'],
+                            $charge['fixed_base'] + $charge['sinking_fund'] + $charge['utility_charge'],
+                            $charge['gst_amount'] > 0 ? ' + GST ' . $charge['gst_rate'] . '%' : ''
+                        );
+                    } else {
+                        $desc = sprintf( 'Maintenance for %s', $month );
+                    }
+                } else {
+                    $desc = $description ? $description : ucfirst( $type ) . ' for ' . $month;
+                }
+
                 $new_id = $prefix . str_pad( $next_seq, 3, '0', STR_PAD_LEFT );
                 $data = array(
                     'id'            => $new_id,
@@ -161,12 +275,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                     'flat_no'       => $r['flat_no'],
                     'resident_name' => $r['name'] ?? '',
                     'month'         => $month,
-                    'amount'        => $amount,
+                    'amount'        => $final_amount,
                     'total_paid'    => 0,
                     'status'        => 'unpaid',
                     'type'          => $type,
                     'due_date'      => $due_date,
-                    'description'   => $description ? $description : ucfirst( $type ) . ' for ' . $month,
+                    'description'   => $desc,
                     'created_at'    => current_time( 'mysql' ),
                     'payments'      => '[]'
                 );
@@ -174,10 +288,6 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                 $this->db->insert( 'invoices', $data );
                 $generated_count++;
                 $next_seq++;
-
-                // Sync: Immediately update pending payment status
-                $my_invoices = $this->db->get('invoices', array('where'=>array('flat_no' => $r['flat_no'])));
-                // We update total dues on the resident dashboard calculation directly
             }
         }
         return $generated_count;
@@ -583,5 +693,25 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		// Load Template directly
 		include SHUBX51_PLUGIN_DIR . 'templates/print-receipt.php';
 		exit;
+	}
+
+	/**
+	 * Export Invoices and Receipts in Tally XML format.
+	 */
+	public function handle_export_tally_xml() {
+		if ( ! check_admin_referer( 'shubx51_account_action' ) ) {
+			wp_die( 'Security check failed' );
+		}
+
+		$rbac = new SHUBX51_RBAC_Manager();
+		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_view' ) ) {
+			wp_die( 'Unauthorized' );
+		}
+
+		$month = isset( $_POST['month'] ) ? sanitize_text_field( wp_unslash( $_POST['month'] ) ) : ( isset( $_GET['month'] ) ? sanitize_text_field( wp_unslash( $_GET['month'] ) ) : '' );
+		$export_type = isset( $_POST['export_type'] ) ? sanitize_key( wp_unslash( $_POST['export_type'] ) ) : ( isset( $_GET['export_type'] ) ? sanitize_key( wp_unslash( $_GET['export_type'] ) ) : 'all' );
+
+		require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-tally-exporter.php';
+		SHUBX51_Tally_Exporter::export_xml( $month, $export_type );
 	}
 }

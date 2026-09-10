@@ -100,32 +100,84 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Get a list of residents.
+	 * Get a list of residents with pagination and optimized bulk flat lookup.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
 		$db = SHUBX51_Plugin::get_instance()->db;
-		$residents = $db->get( 'residents', array( 'load_relations' => true ) );
+
+		$page     = max( 1, intval( $request->get_param( 'page' ) ?: 1 ) );
+		$per_page = intval( $request->get_param( 'per_page' ) ?: 25 );
+		if ( $per_page <= 0 || $per_page > 100 ) {
+			$per_page = 25;
+		}
+
+		$args = array(
+			'page'     => $page,
+			'per_page' => $per_page,
+			'where'    => array(),
+			'orderby'  => 'created_at',
+			'order'    => 'DESC',
+		);
+
+		// Optional filters
+		$status = $request->get_param( 'status' );
+		if ( ! empty( $status ) ) {
+			$args['where']['status'] = sanitize_text_field( $status );
+		}
+
+		$block = $request->get_param( 'block' );
+		if ( ! empty( $block ) ) {
+			$args['where']['block'] = sanitize_text_field( $block );
+		}
+
+		$type = $request->get_param( 'type' );
+		if ( ! empty( $type ) ) {
+			$args['where']['type'] = sanitize_text_field( $type );
+		}
+
+		$paginated = $db->get_paginated( 'residents', $args );
+		$residents = $paginated['items'];
 
 		if ( empty( $residents ) ) {
-			return rest_ensure_response( array() );
+			$response = rest_ensure_response( array() );
+			$response->header( 'X-WP-Total', 0 );
+			$response->header( 'X-WP-TotalPages', 0 );
+			return $response;
 		}
 
 		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 
-		foreach ( $residents as &$resident ) {
-			if ( ! empty( $resident['flat_no'] ) ) {
-				$resident['flat_display'] = $db->get_flat_display_name( $resident['flat_no'] );
+		// Eliminate N+1 query: fetch all associated flats in a single lookup
+		$flat_ids = array_unique( array_filter( array_column( $residents, 'flat_no' ) ) );
+		$flat_display_map = array();
+
+		if ( ! empty( $flat_ids ) ) {
+			$flats = $db->get( 'flats', array( 'where' => array( 'id' => $flat_ids ) ) );
+			if ( ! empty( $flats ) ) {
+				foreach ( $flats as $f ) {
+					$label = trim( ( $f['block'] ?? '' ) . '-' . ( $f['flat_number'] ?? '' ), '-' );
+					$flat_display_map[ $f['id'] ] = $label ? $label : ( $f['flat_number'] ?? $f['id'] );
+				}
 			}
+		}
+
+		foreach ( $residents as &$resident ) {
+			$fid = $resident['flat_no'] ?? '';
+			$resident['flat_display'] = isset( $flat_display_map[ $fid ] ) ? $flat_display_map[ $fid ] : $fid;
+
 			if ( ! $privileged ) {
 				$resident['phone'] = SHUBX51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
 				$resident['email'] = SHUBX51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
 			}
 		}
 
-		return rest_ensure_response( $residents );
+		$response = rest_ensure_response( $residents );
+		$response->header( 'X-WP-Total', $paginated['total'] );
+		$response->header( 'X-WP-TotalPages', $paginated['total_pages'] );
+		return $response;
 	}
 
 	/**

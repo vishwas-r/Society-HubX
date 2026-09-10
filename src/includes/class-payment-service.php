@@ -106,12 +106,92 @@ class SHUBX51_Payment_Service {
 		return $new_payment;
 	}
 
+	/**
+	 * Registered gateway instances implementing SHUBX51_Payment_Gateway_Interface.
+	 *
+	 * @var array<string, SHUBX51_Payment_Gateway_Interface>
+	 */
+	private static $gateways = array();
+
+	/**
+	 * Register a payment gateway addon.
+	 *
+	 * @param SHUBX51_Payment_Gateway_Interface $gateway
+	 */
+	public static function register_gateway( SHUBX51_Payment_Gateway_Interface $gateway ) {
+		$id = sanitize_key( $gateway->get_id() );
+		self::$gateways[ $id ] = $gateway;
+
+		// Automatically bind webhook verification and handling filters
+		add_filter( "shubx51_webhook_permissions_check_{$id}", array( $gateway, 'verify_webhook_permission' ), 10, 2 );
+		add_action( "shubx51_handle_webhook_{$id}", array( $gateway, 'handle_webhook' ), 10, 1 );
+	}
+
+	/**
+	 * Get registered gateway by ID.
+	 *
+	 * @param string $id
+	 * @return SHUBX51_Payment_Gateway_Interface|null
+	 */
+	public static function get_gateway( string $id ) {
+		$id = sanitize_key( $id );
+		return isset( self::$gateways[ $id ] ) ? self::$gateways[ $id ] : null;
+	}
+
+	/**
+	 * Get all registered gateways.
+	 *
+	 * @return array<string, SHUBX51_Payment_Gateway_Interface>
+	 */
+	public static function get_gateways(): array {
+		return self::$gateways;
+	}
+
+	/**
+	 * Get the currently active/preferred payment gateway.
+	 *
+	 * @return SHUBX51_Payment_Gateway_Interface|null
+	 */
+	public static function get_active_gateway() {
+		$configured_id = get_option( 'shubx51_active_payment_gateway', '' );
+		if ( ! empty( $configured_id ) && isset( self::$gateways[ $configured_id ] ) && self::$gateways[ $configured_id ]->is_available() ) {
+			return self::$gateways[ $configured_id ];
+		}
+
+		// Fallback: return the first available gateway
+		foreach ( self::$gateways as $gateway ) {
+			if ( $gateway->is_available() ) {
+				return $gateway;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Initiate checkout / create order via active or designated gateway.
+	 *
+	 * @param int|string $invoice_id
+	 * @param float      $amount
+	 * @param array      $customer_details
+	 * @param string     $gateway_id Optional specific gateway.
+	 * @return array|WP_Error
+	 */
+	public static function create_order( $invoice_id, float $amount, array $customer_details = array(), string $gateway_id = '' ) {
+		$gateway = ! empty( $gateway_id ) ? self::get_gateway( $gateway_id ) : self::get_active_gateway();
+		if ( ! $gateway || ! $gateway->is_available() ) {
+			return new WP_Error( 'gateway_unavailable', __( 'No payment gateway is currently available. Please contact the administrator.', 'society-hubx' ) );
+		}
+
+		return $gateway->create_order( $invoice_id, $amount, $customer_details );
+	}
+
 	public static function init() {
-		// Example: Hook into payment gateways if needed.
-		// add_action( 'stripe_payment_success', array( __CLASS__, 'process_payment' ), 10, 4 );
+		// Allow external addons to register themselves
+		do_action( 'shubx51_register_payment_gateways', __CLASS__ );
         
-        // Register AJAX endpoint for Admin polling
-        add_action('wp_ajax_shubx51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ));
+		// Register AJAX endpoint for Admin polling
+		add_action( 'wp_ajax_shubx51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ) );
 	}
 
     public static function ajax_poll_state_hash() {
