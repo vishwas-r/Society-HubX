@@ -108,9 +108,7 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
     <aside id="shubx-sidebar" class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end shubx-sidebar overflow-x-hidden transition-all" style="z-index: 1050;">
         <div class="d-flex align-items-center justify-content-between px-3 mb-2">
             <a href="<?php echo admin_url('admin.php?page=shubx51-settings'); ?>" class="d-flex align-items-center text-custom-primary text-decoration-none gap-2 gap-sm-3">
-                <div class="bg-primary rounded-xl d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
-                    <i class="bi bi-building-fill text-white" style="font-size: 1rem;"></i>
-                </div>
+                <img src="<?php echo esc_url( SHUBX51_PLUGIN_URL . 'assets/images/hubx-logo-sm.png' ); ?>" alt="Society HubX" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
                 <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Society HubX</span>
             </a>
             <button id="shubx-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">

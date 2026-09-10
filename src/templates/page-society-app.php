@@ -38,7 +38,7 @@ if ( ! in_array( $current_palette, $valid_palettes, true ) ) {
                 <i class="bi bi-list fs-3"></i>
             </button>
             <div class="d-flex align-items-center gap-2">
-                 <div class="rounded bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 2rem; height: 2rem;">S</div>
+                 <img src="<?php echo esc_url( SHUBX51_PLUGIN_URL . 'assets/images/hubx-logo-sm.png' ); ?>" alt="Society HubX" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
                  <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block">Society HubX</h1>
             </div>
         </div>

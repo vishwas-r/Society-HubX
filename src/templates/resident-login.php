@@ -45,9 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <div id="login-card" class="shubx-login-card p-4 p-md-5 d-none">
                     <!-- Logo / Brand -->
                     <div class="text-center mb-4">
-                        <div class="shubx-brand-icon mb-3 mx-auto">
-                            <i class="bi bi-shield-lock-fill text-white fs-2"></i>
-                        </div>
+                        <img src="<?php echo esc_url( SHUBX51_PLUGIN_URL . 'assets/images/hubx-logo.png' ); ?>" alt="Society HubX" class="mb-3 mx-auto shadow-sm" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover;">
                         <h2 class="h4 fw-bold text-dark m-0">Member Login</h2>
                         <p class="text-secondary small">Sign in to your society account</p>
                     </div>
