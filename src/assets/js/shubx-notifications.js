@@ -126,6 +126,62 @@ jQuery(document).ready(function ($) {
             `;
         } else if (channel === 'inapp') {
             html = `<p class="text-slate-500 small">In-App notifications are delivered to the resident dashboard. No additional configuration required.</p>`;
+        } else if (channel === 'push') {
+            const hasKey = Boolean(config.has_key || config.private_key);
+            const keyStatus = hasKey 
+                ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded-pill small"><i class="bi bi-check-circle-fill me-1"></i>Private Key Stored</span>'
+                : '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-2 py-1 rounded-pill small"><i class="bi bi-exclamation-circle me-1"></i>Key Missing</span>';
+
+            html = `
+                <div class="card border border-2 border-dashed border-primary border-opacity-25 bg-light bg-opacity-50 rounded-4 p-3 mb-3 text-center">
+                    <div class="d-flex flex-column align-items-center justify-content-center">
+                        <i class="bi bi-cloud-arrow-up fs-3 text-primary mb-1"></i>
+                        <div class="fw-bold small text-dark mb-1">Upload Firebase Service Account JSON</div>
+                        <p class="x-small text-muted mb-2">Upload your <code>firebase-adminsdk-*.json</code> to auto-populate Project ID, Email, & RSA Key.</p>
+                        <input type="file" id="shubx-modal-fcm-file" accept=".json,application/json" class="d-none">
+                        <button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-3" id="btn-modal-select-fcm-json">
+                            <i class="bi bi-file-earmark-code me-1"></i>Select JSON Key File
+                        </button>
+                        <div id="shubx-modal-fcm-status" class="x-small mt-2"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">Firebase Project ID</label>
+                    <input type="text" class="form-control rounded-3 font-monospace small" id="fcm-modal-project-id" name="config[project_id]" value="${config.project_id || ''}" placeholder="e.g. greenvalley-society-1234" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">Client Email (Service Account)</label>
+                    <input type="email" class="form-control rounded-3 font-monospace small" id="fcm-modal-client-email" name="config[client_email]" value="${config.client_email || ''}" placeholder="firebase-adminsdk-...@...iam.gserviceaccount.com" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">FCM Sender ID (Project Number)</label>
+                    <input type="text" class="form-control rounded-3 font-monospace small" id="fcm-modal-sender-id" name="config[sender_id]" value="${config.sender_id || ''}" placeholder="e.g. 847291039482">
+                    <div class="x-small text-muted mt-1">Broadcasted to resident mobile devices for FCM registration.</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <label class="form-label small fw-bold text-slate-700 m-0">RSA Private Key</label>
+                        ${keyStatus}
+                    </div>
+                    <textarea class="form-control rounded-3 font-monospace small" id="fcm-modal-private-key" name="config[private_key]" rows="3" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----">${config.private_key || ''}</textarea>
+                    <div class="x-small text-muted mt-1">Used exclusively on this server for OAuth2 JWT token signing (RS256).</div>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border border-light mt-3">
+                    <div class="fw-bold small text-dark mb-2"><i class="bi bi-send-fill text-primary me-1"></i>Test Push Notification</div>
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="shubx-modal-test-flat" class="form-control" placeholder="Target Flat (Optional, e.g. A-101)">
+                        <button type="button" class="btn btn-outline-primary fw-bold" id="btn-modal-send-test-push">
+                            Send Test Alert
+                        </button>
+                    </div>
+                    <div id="shubx-modal-test-status" class="x-small mt-2"></div>
+                </div>
+            `;
         }
 
         $fieldsContainer.html(html);
@@ -143,12 +199,68 @@ jQuery(document).ready(function ($) {
             };
             $('#shubx-email-method').on('change', toggleEmailMethodFields);
             toggleEmailMethodFields(); // Run initially
+        } else if (channel === 'push') {
+            $('#btn-modal-select-fcm-json').on('click', function () {
+                $('#shubx-modal-fcm-file').trigger('click');
+            });
+
+            $('#shubx-modal-fcm-file').on('change', function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    try {
+                        const parsed = JSON.parse(evt.target.result);
+                        if (!parsed.project_id || !parsed.private_key) {
+                            $('#shubx-modal-fcm-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Invalid JSON: Missing project_id or private_key.</span>');
+                            return;
+                        }
+                        $('#fcm-modal-project-id').val(parsed.project_id);
+                        $('#fcm-modal-client-email').val(parsed.client_email || '');
+                        $('#fcm-modal-private-key').val(parsed.private_key);
+                        $('#shubx-modal-fcm-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Credentials loaded from ' + file.name + '! Click "Save Configuration" below to apply.</span>');
+                    } catch (err) {
+                        $('#shubx-modal-fcm-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Failed to parse JSON file.</span>');
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            $('#btn-modal-send-test-push').on('click', function () {
+                const $btn = $(this);
+                const flatNo = $('#shubx-modal-test-flat').val();
+                $btn.prop('disabled', true).text('Sending...');
+                $('#shubx-modal-test-status').html('<span class="text-muted">Sending test alert...</span>');
+
+                $.ajax({
+                    url: (typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : ajaxurl),
+                    type: 'POST',
+                    data: {
+                        action: 'shubx51_send_test_push',
+                        target_flat: flatNo,
+                        nonce: (typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : ''))
+                    },
+                    success: function (res) {
+                        $btn.prop('disabled', false).text('Send Test Alert');
+                        if (res.success) {
+                            $('#shubx-modal-test-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>' + (res.data.message || 'Test push sent!') + '</span>');
+                        } else {
+                            $('#shubx-modal-test-status').html('<span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>' + (res.data && res.data.message ? res.data.message : 'Error sending test push.') + '</span>');
+                        }
+                    },
+                    error: function () {
+                        $btn.prop('disabled', false).text('Send Test Alert');
+                        $('#shubx-modal-test-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Network error occurred.</span>');
+                    }
+                });
+            });
         }
     }
 
     $channelForm.on('submit', function (e) {
         e.preventDefault();
-        const formData = Object.fromEntries(new FormData(this));
+        const formData = new FormData(this);
 
         SHUBX.ajax({
             action: 'shubx51_save_channel_config',

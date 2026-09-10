@@ -357,6 +357,17 @@ class SHUBX51_AJAX_Handler {
 		$db = SHUBX51_Plugin::get_instance()->db;
 		$channels = $db->get('notification_channels');
 
+		if ( $slug === 'push' ) {
+			wp_send_json_success( array(
+				'project_id'   => get_option( 'shubx51_fcm_project_id', '' ),
+				'client_email' => get_option( 'shubx51_fcm_client_email', '' ),
+				'sender_id'    => get_option( 'shubx51_fcm_sender_id', '' ),
+				'private_key'  => get_option( 'shubx51_fcm_private_key', '' ),
+				'has_key'      => ! empty( get_option( 'shubx51_fcm_private_key', '' ) ),
+				'is_enabled'   => get_option( 'shubx51_fcm_enabled', '0' ),
+			) );
+		}
+
 		foreach($channels as $c) {
 			if($c['channel_slug'] === $slug) {
 				wp_send_json_success(json_decode($c['config'], true));
@@ -380,6 +391,27 @@ class SHUBX51_AJAX_Handler {
 		$config = isset( $_POST['config'] ) ? map_deep( wp_unslash( $_POST['config'] ), 'sanitize_text_field' ) : [];
 		
 		$db = SHUBX51_Plugin::get_instance()->db;
+
+		if ( $slug === 'push' ) {
+			if ( isset( $config['project_id'] ) ) {
+				update_option( 'shubx51_fcm_project_id', sanitize_text_field( $config['project_id'] ) );
+			}
+			if ( isset( $config['client_email'] ) ) {
+				update_option( 'shubx51_fcm_client_email', sanitize_email( $config['client_email'] ) );
+			}
+			if ( isset( $config['sender_id'] ) ) {
+				update_option( 'shubx51_fcm_sender_id', sanitize_text_field( $config['sender_id'] ) );
+			}
+			if ( ! empty( $_POST['config']['private_key'] ) ) {
+				update_option( 'shubx51_fcm_private_key', trim( wp_unslash( $_POST['config']['private_key'] ) ) );
+			}
+			$config_to_save = $config;
+			unset( $config_to_save['private_key'] );
+			$db->update( 'notification_channels', array( 'config' => json_encode( $config_to_save ) ), array( 'channel_slug' => $slug ) );
+			delete_transient( 'shubx51_fcm_access_token' );
+			wp_send_json_success( array( 'message' => esc_html__( 'Push notification settings saved successfully.', 'society-hubx' ) ) );
+		}
+
 		$updated = $db->update('notification_channels', ['config' => json_encode($config)], ['channel_slug' => $slug]);
 
 		if(is_wp_error($updated)) wp_send_json_error(['message' => $updated->get_error_message()]);
@@ -402,6 +434,9 @@ class SHUBX51_AJAX_Handler {
 
 		$db = SHUBX51_Plugin::get_instance()->db;
 		$db->update('notification_channels', ['is_active' => $active], ['channel_slug' => $slug]);
+		if ( $slug === 'push' ) {
+			update_option( 'shubx51_fcm_enabled', $active ? '1' : '0' );
+		}
 		wp_send_json_success();
 	}
 

@@ -241,8 +241,10 @@
 
         // Live update DOM
         document.documentElement.setAttribute('data-shubx-palette', key);
-        const root = document.getElementById('shubx51-app-root');
-        if (root) root.setAttribute('data-shubx-palette', key);
+        var roots = document.querySelectorAll('#shubx51-app-root');
+        if (roots && roots.length) {
+            roots.forEach(function (r) { r.setAttribute('data-shubx-palette', key); });
+        }
 
         // Set 1-year Cookie for PHP SSR
         document.cookie = "shubx_palette=" + encodeURIComponent(key) + "; path=/; max-age=31536000; SameSite=Lax";
@@ -253,8 +255,10 @@
             window.shubxApplyTheme(mode);
         } else {
             document.documentElement.setAttribute('data-bs-theme', mode);
-            const root = document.getElementById('shubx51-app-root');
-            if (root) root.setAttribute('data-bs-theme', mode);
+            var roots = document.querySelectorAll('#shubx51-app-root');
+            if (roots && roots.length) {
+                roots.forEach(function (r) { r.setAttribute('data-bs-theme', mode); });
+            }
             document.cookie = "shubx_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
         }
     };

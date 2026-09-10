@@ -738,6 +738,22 @@ class SHUBX51_DB_Schema {
 			$wpdb->insert($channels_table, ['channel_slug' => 'email', 'is_active' => 1, 'config' => json_encode(['method' => 'wp_mail'])]);
 			$wpdb->insert($channels_table, ['channel_slug' => 'whatsapp', 'is_active' => 0, 'config' => json_encode(['sid' => '', 'token' => '', 'monthly_budget' => 50, 'current_usage' => 0])]);
 			$wpdb->insert($channels_table, ['channel_slug' => 'inapp', 'is_active' => 1, 'config' => json_encode([])]);
+			$wpdb->insert($channels_table, ['channel_slug' => 'push', 'is_active' => 0, 'config' => json_encode(['project_id' => '', 'client_email' => '', 'sender_id' => ''])]);
+		} else {
+			// Ensure push channel row exists on existing installations
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$has_push = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $channels_table WHERE channel_slug = %s", 'push' ) );
+			if ( ! $has_push ) {
+				$wpdb->insert( $channels_table, array(
+					'channel_slug' => 'push',
+					'is_active'    => get_option( 'shubx51_fcm_enabled', '0' ) === '1' ? 1 : 0,
+					'config'       => json_encode( array(
+						'project_id'   => get_option( 'shubx51_fcm_project_id', '' ),
+						'client_email' => get_option( 'shubx51_fcm_client_email', '' ),
+						'sender_id'    => get_option( 'shubx51_fcm_sender_id', '' ),
+					) ),
+				) );
+			}
 		}
 
 		// 2. Events

@@ -371,7 +371,6 @@ class SHUBX51_Admin_Settings {
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			wp_die( 'You do not have permission to manage Society Settings.' );
 		}
-		echo '<div id="shubx51-app-root"></div>'; // Placeholder for JS if needed, but we use PHP views
 		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
         SHUBX51_Admin_App::render_view( 'settings' );
 	}
@@ -429,7 +428,9 @@ class SHUBX51_Admin_Settings {
 	 * AJAX Handler: Upload and parse Firebase Service Account JSON.
 	 */
 	public function handle_upload_fcm_json_ajax() {
-		check_ajax_referer( 'shubx51_fcm_nonce', 'nonce' );
+		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed.', 'society-hubx' ) ), 403 );
+		}
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
 		}
@@ -478,7 +479,9 @@ class SHUBX51_Admin_Settings {
 	 * AJAX Handler: Dispatch test push notification.
 	 */
 	public function handle_send_test_push_ajax() {
-		check_ajax_referer( 'shubx51_fcm_nonce', 'nonce' );
+		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed.', 'society-hubx' ) ), 403 );
+		}
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
 		}

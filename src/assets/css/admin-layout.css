@@ -1723,3 +1723,49 @@ html { margin-top: 0 !important; }
     border-color: var(--custom-primary-color) !important;
     background-color: #141e33 !important;
 }
+
+/* ============================================================
+ * ADMIN SETTINGS PAGE DARK THEME SURFACES
+ * ============================================================ */
+[data-bs-theme="dark"] .shubx-settings-card,
+#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-card,
+[data-bs-theme="dark"] .shubx-settings-tab-bar,
+#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-tab-bar,
+[data-bs-theme="dark"] .shubx-settings-card .card-body,
+#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-card .card-body,
+[data-bs-theme="dark"] .settings-tab-pane,
+#shubx51-app-root[data-bs-theme="dark"] .settings-tab-pane {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] #shubx-settings-tabs .nav-link {
+    color: #94a3b8 !important;
+    background: transparent !important;
+}
+
+[data-bs-theme="dark"] #shubx-settings-tabs .nav-link.active {
+    color: var(--custom-primary-color, #fb923c) !important;
+    border-color: var(--custom-primary-color, #fb923c) !important;
+}
+
+[data-bs-theme="dark"] #shubx-settings-tabs .nav-link:hover:not(.active) {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .accordion-button,
+[data-bs-theme="dark"] .accordion-button.bg-white,
+[data-bs-theme="dark"] .accordion-item,
+#shubx51-app-root[data-bs-theme="dark"] .accordion-button,
+#shubx51-app-root[data-bs-theme="dark"] .accordion-item {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .accordion-body,
+#shubx51-app-root[data-bs-theme="dark"] .accordion-body {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+}

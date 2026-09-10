@@ -258,9 +258,11 @@ do_action( 'admin_print_footer_scripts' );
 
     function shubxApplyTheme(theme) {
         document.documentElement.setAttribute('data-bs-theme', theme);
-        var appRoot = document.getElementById('shubx51-app-root');
-        if (appRoot) {
-            appRoot.setAttribute('data-bs-theme', theme);
+        var appRoots = document.querySelectorAll('#shubx51-app-root');
+        if (appRoots && appRoots.length) {
+            appRoots.forEach(function(el) {
+                el.setAttribute('data-bs-theme', theme);
+            });
         }
         shubxSetCookie('shubx_theme', theme);
         
@@ -284,9 +286,11 @@ do_action( 'admin_print_footer_scripts' );
 
     window.shubxSetPalette = function(palette) {
         document.documentElement.setAttribute('data-shubx-palette', palette);
-        var appRoot = document.getElementById('shubx51-app-root');
-        if (appRoot) {
-            appRoot.setAttribute('data-shubx-palette', palette);
+        var appRoots = document.querySelectorAll('#shubx51-app-root');
+        if (appRoots && appRoots.length) {
+            appRoots.forEach(function(el) {
+                el.setAttribute('data-shubx-palette', palette);
+            });
         }
         shubxSetCookie('shubx_palette', palette);
     };
