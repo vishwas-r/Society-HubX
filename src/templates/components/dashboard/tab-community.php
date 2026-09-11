@@ -82,16 +82,14 @@ sort($unique_blocks);
                                      <div class="position-relative">
                                          <!-- Resident Display Picture -->
                                          <?php 
-                                            // Handle potential empty owner_photo and fallback to initials
-                                            if ( !empty($d['owner_photo']) ) {
-                                                $dp_url = $d['owner_photo'];
-                                            } else {
-                                                $initial = strtoupper(substr($d['owner'] ?? 'U', 0, 1));
-                                                $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' . esc_html($initial) . '</text></svg>';
-                                                $dp_url = 'data:image/svg+xml;base64,' . base64_encode($svg);
-                                            }
+                                            $default_avatar = SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg';
+                                            $dp_url = !empty($d['owner_photo']) ? $d['owner_photo'] : $default_avatar;
                                          ?>
-                                         <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+                                         <img src="<?php echo esc_url($dp_url); ?>" 
+                                              alt="<?php echo esc_attr($d['owner'] ?? 'Resident'); ?>" 
+                                              class="rounded-circle border border-white shadow-sm" 
+                                              style="width: 48px; height: 48px; object-fit: cover;"
+                                              onerror="this.src='<?php echo esc_url($default_avatar); ?>';">
                                          
                                          <!-- Flat Number Badge (Floating) with Finance Status Color -->
                                          <?php 

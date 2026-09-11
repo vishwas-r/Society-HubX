@@ -267,7 +267,8 @@ class SHUBX51_Frontend_Dashboard {
             'rest_url'         => esc_url_raw( rest_url( 'society-hubx/v1/' ) ),
             'rest_nonce'       => wp_create_nonce( 'wp_rest' ),
             'my_flats'         => $data['my_flats'] ?? array(),
-            'active_flat_no'   => $data['active_flat_no'] ?? ''
+            'active_flat_no'   => $data['active_flat_no'] ?? '',
+            'defaultAvatar'    => esc_url_raw( SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg' ),
          ));
         
 		ob_start();
@@ -1695,15 +1696,14 @@ class SHUBX51_Frontend_Dashboard {
                                             <!-- Floating DP / Avatar -->
                                             <div class="position-relative">
                                                 <?php 
-                                                    if ( !empty($r['owner_photo']) ) {
-                                                        $dp_url = $r['owner_photo'];
-                                                    } else {
-                                                        $initial = strtoupper(substr($r['owner'] ?? $r['name'] ?? 'U', 0, 1));
-                                                        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' . esc_html($initial) . '</text></svg>';
-                                                        $dp_url = 'data:image/svg+xml;base64,' . base64_encode($svg);
-                                                    }
+                                                    $default_avatar = SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg';
+                                                    $dp_url = !empty($r['owner_photo']) ? $r['owner_photo'] : $default_avatar;
                                                 ?>
-                                                <img src="<?php echo esc_url($dp_url); ?>" class="rounded-circle border border-white shadow-sm" style="width: 52px; height: 52px; object-fit: cover;">
+                                                <img src="<?php echo esc_url($dp_url); ?>" 
+                                                     alt="<?php echo esc_attr( $r['owner'] ?? $r['name'] ?? 'Resident' ); ?>" 
+                                                     class="rounded-circle border border-white shadow-sm" 
+                                                     style="width: 52px; height: 52px; object-fit: cover;"
+                                                     onerror="this.src='<?php echo esc_url($default_avatar); ?>';">
                                                 <div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width: 12px; height: 12px;" title="Occupied"></div>
                                             </div>
                                             <div>

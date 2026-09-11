@@ -1016,19 +1016,18 @@
                 
                 const ownerPhotoEl = document.getElementById('cdm-owner-photo');
                 if (ownerPhotoEl) {
+                    const defaultAvatar = (window.shubx51DashboardData && window.shubx51DashboardData.defaultAvatar)
+                        ? window.shubx51DashboardData.defaultAvatar
+                        : '';
                     if (data.owner_photo && data.owner_photo !== '') {
                         ownerPhotoEl.src = data.owner_photo;
                         ownerPhotoEl.style.display = 'block';
-                    } else if (data.owner && data.owner !== 'Unoccupied') {
-                        const getFallbackSvg = (name) => {
-                            const initial = name ? name.charAt(0).toUpperCase() : 'U';
-                            const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><rect width="100" height="100" fill="#0d6efd"/><text x="50" y="65" font-family="Arial, sans-serif" font-size="50" fill="#ffffff" text-anchor="middle">' + initial + '</text></svg>';
-                            return 'data:image/svg+xml;base64,' + btoa(svg);
-                        };
-                        ownerPhotoEl.src = getFallbackSvg(data.owner);
+                    } else if (defaultAvatar) {
+                        ownerPhotoEl.src = defaultAvatar;
                         ownerPhotoEl.style.display = 'block';
                     } else {
-                        ownerPhotoEl.style.display = 'none';
+                        ownerPhotoEl.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><circle cx="64" cy="64" r="62" fill="%23f8fafc" stroke="%23cbd5e1" stroke-width="2"/><circle cx="64" cy="46" r="22" fill="%2394a3b8"/><path d="M 26 108 C 26 84 43 75 64 75 C 85 75 102 84 102 108 Z" fill="%2394a3b8"/></svg>';
+                        ownerPhotoEl.style.display = 'block';
                     }
                 }
                 
