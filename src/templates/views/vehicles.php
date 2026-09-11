@@ -211,7 +211,10 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                         <i class="bi <?php echo $v_type === 'bike' ? 'bi-bicycle' : 'bi-car-front'; ?> fs-5"></i>
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-dark"><?php echo esc_html( $v['number'] ); ?></div>
+                                        <a href="#" class="fw-bold text-dark text-decoration-none js-view-vehicle-details" data-vehicle-id="<?php echo esc_attr( $v['id'] ); ?>" title="View vehicle details">
+                                            <?php echo esc_html( $v['number'] ); ?>
+                                            <i class="bi bi-box-arrow-up-right ms-1 text-primary opacity-50" style="font-size: 10px;"></i>
+                                        </a>
                                         <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( ($v['brand'] ?? '') . ' ' . ($v['model'] ?? '') ); ?></div>
                                     </div>
                                 </div>
@@ -226,14 +229,25 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                     ?>
                                 </td>
                             <td class="px-4 py-4">
-                                <div class="fw-bold text-dark small"><?php echo esc_html( !empty($v['owner_name']) ? $v['owner_name'] : ($flat_owners[$v['flat_no']] ?? 'System Admin') ); ?></div>
-                                <div class="text-secondary small" style="font-size: 11px;">Flat <?php echo esc_html( $v['flat_no'] ); ?></div>
+                                <div class="fw-bold text-dark small">
+                                    <a href="#" class="text-dark text-decoration-none js-view-resident-profile" data-resident-id="<?php echo esc_attr( !empty($v['owner_name']) ? $v['owner_name'] : ($flat_owners[$v['flat_no']] ?? '') ); ?>" title="View Owner Profile">
+                                        <?php echo esc_html( !empty($v['owner_name']) ? $v['owner_name'] : ($flat_owners[$v['flat_no']] ?? 'System Admin') ); ?>
+                                    </a>
+                                </div>
+                                <div class="text-secondary small" style="font-size: 11px;">
+                                    <a href="#" class="text-secondary text-decoration-none js-view-unit" data-unit-id="<?php echo esc_attr( $v['flat_no'] ); ?>" title="View Unit Details">
+                                        Flat <?php echo esc_html( $v['flat_no'] ); ?>
+                                    </a>
+                                </div>
                             </td>
                             <td class="px-4 py-4 text-center">
                                 <span class="badge bg-light text-dark fw-bold px-3 py-2 border rounded-3" style="font-size: 11px;">#<?php echo esc_html( $v['sticker'] ?? '---' ); ?></span>
                             </td>
                                 <td class="pe-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2 text-nowrap">
+                                    <button class="btn btn-sm btn-light js-view-vehicle-details text-dark border shadow-sm rounded-3 p-2" data-vehicle-id="<?php echo esc_attr( $v['id'] ); ?>" title="View Vehicle Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                     <?php if ($is_request && !empty($v['request_id'])): ?>
                                         <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $v['request_id'], 'vehicles' ); ?>
                                     <?php elseif ($status === 'rejected'): ?>

@@ -24,13 +24,43 @@
             }
         };
 
-        // 2. Generic Modal Dismissal
+        // 2. Generic Modal Dismissal (Dismiss buttons and Backdrop clicks)
         document.addEventListener('click', function (e) {
             const dismiss = e.target.closest('[data-dismiss-modal]');
             if (dismiss) {
                 e.preventDefault();
-                const modal = dismiss.closest('.fixed.inset-0.z-50, .fixed.inset-0.z-\\[60\\]');
+                const modal = dismiss.closest('.fixed.inset-0.z-50, .fixed.inset-0.z-\\[60\\], .fixed.inset-0');
                 if (modal) window.toggleModal(modal.id, false);
+                return;
+            }
+
+            // Universal outside-click dismiss for custom overlay modals
+            if (e.target.classList && e.target.classList.contains('fixed') && e.target.classList.contains('inset-0')) {
+                window.toggleModal(e.target.id, false);
+                return;
+            }
+
+            // Universal outside-click dismiss for Bootstrap modals (clicking backdrop outside dialog)
+            if (e.target.classList && e.target.classList.contains('modal')) {
+                if (!e.target.closest('.modal-dialog')) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                        const bsInstance = bootstrap.Modal.getInstance(e.target);
+                        if (bsInstance) {
+                            bsInstance.hide();
+                            return;
+                        }
+                    }
+                    const closeBtn = e.target.querySelector('[data-bs-dismiss="modal"], .btn-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    } else {
+                        e.target.classList.remove('show');
+                        e.target.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(b => b.remove());
+                    }
+                }
             }
         });
 

@@ -1,0 +1,793 @@
+<?php
+/**
+ * Directory Modals Component (Cross-Linked Modals for Units, Vehicles & Residents)
+ *
+ * Provides:
+ * 1. #unitDetailsModal - shows Unit specs, linked owners/residents (with links to resident modal), linked vehicles (with links to vehicle modal)
+ * 2. #vehicleDetailsModal - shows vehicle specs, mapped unit (with link to unit modal), mapped owner (with link to resident modal)
+ * 3. #residentDetailsModal - shows resident specs, mapped unit (with link to unit modal), all family members, and mapped vehicles (with link to vehicle modal)
+ *
+ * phpcs:ignoreFile WordPress.NamingConventions.PrefixAllGlobals
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+$db = new SHUBX51_DB_Router();
+$all_flats = $db->get( 'flats' );
+if ( empty( $all_flats ) || ! is_array( $all_flats ) ) {
+	$all_flats = array();
+}
+
+$all_vehicles = $db->get( 'vehicles' );
+if ( empty( $all_vehicles ) || ! is_array( $all_vehicles ) ) {
+	$all_vehicles = array();
+}
+
+$all_residents = $db->get( 'residents' );
+if ( empty( $all_residents ) || ! is_array( $all_residents ) ) {
+	$all_residents = array();
+}
+
+$all_family = $db->get( 'family_members' );
+if ( empty( $all_family ) || ! is_array( $all_family ) ) {
+	$all_family = array();
+}
+
+// Add residents of type 'family' into family array if not already present
+foreach ( $all_residents as $r ) {
+	if ( isset( $r['type'] ) && strtolower( $r['type'] ) === 'family' ) {
+		$exists = false;
+		foreach ( $all_family as $f ) {
+			if ( ( $f['name'] ?? '' ) === ( $r['name'] ?? '' ) && ( $f['flat_no'] ?? '' ) === ( $r['flat_no'] ?? '' ) ) {
+				$exists = true;
+				break;
+			}
+		}
+		if ( ! $exists ) {
+			$all_family[] = array(
+				'id'           => $r['id'] ?? '',
+				'name'         => $r['name'] ?? '',
+				'relationship' => $r['relationship'] ?? ( $r['relation'] ?? 'Family Member' ),
+				'relation'     => $r['relationship'] ?? ( $r['relation'] ?? 'Family Member' ),
+				'flat_no'      => $r['flat_no'] ?? '',
+				'phone'        => $r['phone'] ?? '',
+				'email'        => $r['email'] ?? '',
+				'age'          => $r['age'] ?? '',
+			);
+		}
+	}
+}
+?>
+
+<!-- 1. UNIT DETAILS MODAL -->
+<div class="modal fade" id="unitDetailsModal" tabindex="-1" aria-labelledby="unitDetailsModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+			<div class="modal-header border-bottom px-4 py-3 bg-light">
+				<div class="d-flex align-items-center gap-3">
+					<div class="rounded-3 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+						<i class="bi bi-building fs-4"></i>
+					</div>
+					<div>
+						<h5 class="modal-title fw-bold text-dark m-0" id="unitModalTitle">Unit Details</h5>
+						<p class="text-secondary small m-0" id="unitModalSubtitle">Residential Unit</p>
+					</div>
+				</div>
+				<button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<div class="modal-body p-4">
+				<!-- Status Banner -->
+				<div class="d-flex align-items-center justify-content-between p-3 rounded-3 bg-light border mb-3">
+					<span class="small fw-bold text-secondary text-uppercase">Occupancy Status</span>
+					<span id="unitModalStatusBadge" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-3 py-1.5 fw-bold">Occupied</span>
+				</div>
+
+				<!-- Unit Specs Grid -->
+				<div class="row g-2 mb-4">
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Configuration</div>
+							<div class="fw-bold text-dark" id="unitModalType">2BHK</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Super Built-up</div>
+							<div class="fw-bold text-dark" id="unitModalArea">1,250 sqft</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Parking Bay</div>
+							<div class="fw-bold text-dark" id="unitModalParking">P-12</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Intercom</div>
+							<div class="fw-bold text-dark" id="unitModalIntercom">Ext 204</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Linked Owners & Residents -->
+				<div class="mb-4">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<h6 class="fw-bold text-dark text-uppercase small m-0" style="letter-spacing: 0.5px;">
+							<i class="bi bi-people text-primary me-1"></i> Registered Owners & Residents
+						</h6>
+						<span id="unitModalResidentsCount" class="badge bg-light text-secondary border">0</span>
+					</div>
+					<div id="unitModalResidentsList" class="d-flex flex-column gap-2">
+						<!-- Injected dynamically -->
+					</div>
+				</div>
+
+				<!-- Linked Vehicles -->
+				<div>
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<h6 class="fw-bold text-dark text-uppercase small m-0" style="letter-spacing: 0.5px;">
+							<i class="bi bi-car-front text-info me-1"></i> Registered Vehicles
+						</h6>
+						<span id="unitModalVehiclesCount" class="badge bg-light text-secondary border">0</span>
+					</div>
+					<div id="unitModalVehiclesList" class="d-flex flex-column gap-2">
+						<!-- Injected dynamically -->
+					</div>
+				</div>
+			</div>
+
+			<div class="modal-footer border-top bg-light px-4 py-3">
+				<button type="button" class="btn btn-secondary px-4 fw-semibold rounded-3 shadow-none" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 2. VEHICLE DETAILS MODAL -->
+<div class="modal fade" id="vehicleDetailsModal" tabindex="-1" aria-labelledby="vehicleDetailsModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+			<div class="modal-header border-bottom px-4 py-3 bg-light">
+				<div class="d-flex align-items-center gap-3">
+					<div id="vehicleModalIconBox" class="rounded-3 bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+						<i id="vehicleModalIcon" class="bi bi-car-front fs-4"></i>
+					</div>
+					<div>
+						<h5 class="modal-title fw-bold text-dark m-0 font-monospace" id="vehicleModalPlate">KA-01-AB-1234</h5>
+						<p class="text-secondary small m-0" id="vehicleModalMakeModel">Registered Vehicle</p>
+					</div>
+				</div>
+				<button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<div class="modal-body p-4">
+				<!-- Vehicle Specs Grid -->
+				<div class="row g-2 mb-4">
+					<div class="col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Category</div>
+							<div class="fw-bold text-dark" id="vehicleModalCategory">4-Wheeler</div>
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Parking Bay</div>
+							<div class="fw-bold text-dark" id="vehicleModalSlot">Designated Bay</div>
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Assigned Unit</div>
+							<div class="fw-bold text-dark" id="vehicleModalAssignedUnit">Unit 101</div>
+						</div>
+					</div>
+					<div class="col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Sticker / RFID</div>
+							<div class="fw-bold text-dark" id="vehicleModalSticker">Verified Active</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Mapped Unit Card -->
+				<div class="mb-3">
+					<div class="small fw-bold text-secondary text-uppercase mb-2" style="font-size: 11px; letter-spacing: 0.5px;">Mapped Unit</div>
+					<div class="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between">
+						<div class="d-flex align-items-center gap-3">
+							<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+								<i class="bi bi-building"></i>
+							</div>
+							<div>
+								<div class="fw-bold text-dark" id="vehicleModalFlatTitle">Flat 101</div>
+								<div class="text-secondary small" id="vehicleModalFlatSub">Main Block • Occupied</div>
+							</div>
+						</div>
+						<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-3 px-3" id="vehicleModalViewUnitBtn">
+							View Unit →
+						</button>
+					</div>
+				</div>
+
+				<!-- Registered Owner / Resident Card -->
+				<div>
+					<div class="small fw-bold text-secondary text-uppercase mb-2" style="font-size: 11px; letter-spacing: 0.5px;">Registered Owner / Resident</div>
+					<div class="p-3 rounded-3 bg-light border" id="vehicleModalOwnerCard">
+						<div class="d-flex align-items-center justify-content-between mb-2">
+							<div class="d-flex align-items-center gap-3">
+								<div class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;" id="vehicleModalOwnerAvatar">
+									O
+								</div>
+								<div>
+									<div class="fw-bold text-dark" id="vehicleModalOwnerName">Owner Name</div>
+									<div class="text-secondary small" id="vehicleModalOwnerRole">OWNER • Primary Contact</div>
+								</div>
+							</div>
+							<button type="button" class="btn btn-sm btn-outline-success fw-bold rounded-3 px-3" id="vehicleModalViewOwnerBtn">
+								View Profile →
+							</button>
+						</div>
+						<div id="vehicleModalOwnerPhoneRow" class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between">
+							<span class="small text-secondary"><i class="bi bi-telephone me-1"></i> <span id="vehicleModalOwnerPhoneText">+91 98765 43210</span></span>
+							<a href="#" id="vehicleModalOwnerPhoneCall" class="btn btn-sm btn-success py-1 px-3 rounded-pill fw-bold" style="font-size: 11px;">
+								<i class="bi bi-telephone-fill me-1"></i> Call
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="modal-footer border-top bg-light px-4 py-3">
+				<button type="button" class="btn btn-secondary px-4 fw-semibold rounded-3 shadow-none" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 3. RESIDENT DETAILS MODAL -->
+<div class="modal fade" id="residentDetailsModal" tabindex="-1" aria-labelledby="residentDetailsModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered modal-lg">
+		<div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+			<div class="modal-header border-bottom px-4 py-3 bg-light">
+				<div class="d-flex align-items-center gap-3">
+					<div id="residentModalAvatarCircle" class="rounded-circle bg-success text-white fw-bold d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 18px;">
+						R
+					</div>
+					<div>
+						<div class="d-flex align-items-center gap-2">
+							<h5 class="modal-title fw-bold text-dark m-0" id="residentModalName">Resident Name</h5>
+							<span id="residentModalTypeBadge" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-10 rounded-pill px-2 py-1 small fw-bold">OWNER</span>
+						</div>
+						<p class="text-secondary small m-0" id="residentModalSub">Unit 101 • Active Member</p>
+					</div>
+				</div>
+				<button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<div class="modal-body p-4">
+				<!-- Resident Specs Grid -->
+				<div class="row g-2 mb-4">
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Resident Type</div>
+							<div class="fw-bold text-dark" id="residentModalType">Owner</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Block / Tower</div>
+							<div class="fw-bold text-dark" id="residentModalBlock">Block A</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Blood Group</div>
+							<div class="fw-bold text-dark" id="residentModalBlood">O+</div>
+						</div>
+					</div>
+					<div class="col-sm-3 col-6">
+						<div class="p-3 rounded-3 bg-light border text-center h-100">
+							<div class="text-secondary small fw-semibold mb-1" style="font-size: 11px;">Status</div>
+							<div class="fw-bold text-success" id="residentModalStatus">Active</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Mapped Unit Card -->
+				<div class="mb-4">
+					<div class="small fw-bold text-secondary text-uppercase mb-2" style="font-size: 11px; letter-spacing: 0.5px;">Assigned Residential Unit</div>
+					<div class="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between">
+						<div class="d-flex align-items-center gap-3">
+							<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+								<i class="bi bi-building"></i>
+							</div>
+							<div>
+								<div class="fw-bold text-dark" id="residentModalFlatTitle">Unit 101</div>
+								<div class="text-secondary small" id="residentModalFlatSub">Main Block • Occupied</div>
+							</div>
+						</div>
+						<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-3 px-3" id="residentModalViewUnitBtn">
+							View Unit →
+						</button>
+					</div>
+				</div>
+
+				<!-- Registered Family Members Section -->
+				<div class="mb-4">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<h6 class="fw-bold text-dark text-uppercase small m-0" style="letter-spacing: 0.5px;">
+							<i class="bi bi-people-fill text-primary me-1"></i> Registered Family Members
+						</h6>
+						<span id="residentModalFamilyCount" class="badge bg-light text-secondary border">0</span>
+					</div>
+					<div id="residentModalFamilyList" class="d-flex flex-column gap-2">
+						<!-- Injected dynamically -->
+					</div>
+				</div>
+
+				<!-- Registered Vehicles Section -->
+				<div class="mb-4">
+					<div class="d-flex align-items-center justify-content-between mb-2">
+						<h6 class="fw-bold text-dark text-uppercase small m-0" style="letter-spacing: 0.5px;">
+							<i class="bi bi-car-front text-info me-1"></i> Registered Vehicles
+						</h6>
+						<span id="residentModalVehiclesCount" class="badge bg-light text-secondary border">0</span>
+					</div>
+					<div id="residentModalVehiclesList" class="d-flex flex-column gap-2">
+						<!-- Injected dynamically -->
+					</div>
+				</div>
+
+				<!-- Direct Connect & Contact Section -->
+				<div>
+					<h6 class="fw-bold text-dark text-uppercase small mb-2" style="letter-spacing: 0.5px;">
+						<i class="bi bi-telephone-outbound text-secondary me-1"></i> Connect & Contact
+					</h6>
+					<div class="d-flex flex-wrap gap-2">
+						<a href="#" id="residentModalCallBtn" class="btn btn-primary px-4 fw-bold rounded-3 d-flex align-items-center gap-2 shadow-sm">
+							<i class="bi bi-telephone-fill"></i>
+							<span id="residentModalCallText">Call Resident</span>
+						</a>
+						<a href="#" id="residentModalEmailBtn" class="btn btn-outline-secondary px-4 fw-bold rounded-3 d-flex align-items-center gap-2">
+							<i class="bi bi-envelope-fill"></i>
+							<span id="residentModalEmailText">Send Email</span>
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="modal-footer border-top bg-light px-4 py-3">
+				<button type="button" class="btn btn-secondary px-4 fw-semibold rounded-3 shadow-none" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+window.shubxDirectoryData = {
+	flats: <?php echo wp_json_encode( $all_flats ); ?>,
+	vehicles: <?php echo wp_json_encode( $all_vehicles ); ?>,
+	residents: <?php echo wp_json_encode( $all_residents ); ?>,
+	family: <?php echo wp_json_encode( $all_family ); ?>
+};
+
+(function() {
+	function normalizeFlat(val) {
+		if (!val) return '';
+		return String(val).toLowerCase().replace(/[^a-z0-9]/g, '');
+	}
+
+	function matchFlat(flat1, flat2) {
+		const c1 = normalizeFlat(flat1);
+		const c2 = normalizeFlat(flat2);
+		if (!c1 || !c2) return false;
+		return c1 === c2 || c1.endsWith(c2) || c2.endsWith(c1);
+	}
+
+	function switchModal(hideModalId, showModalId) {
+		const hideEl = document.getElementById(hideModalId);
+		const showEl = document.getElementById(showModalId);
+		if (hideEl) {
+			const bsHide = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getInstance(hideEl) : null;
+			if (bsHide) bsHide.hide();
+		}
+		setTimeout(function() {
+			if (showEl) {
+				let bsShow = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getInstance(showEl) : null;
+				if (!bsShow && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+					bsShow = new bootstrap.Modal(showEl);
+				}
+				if (bsShow) bsShow.show();
+			}
+		}, 180);
+	}
+
+	// 1. Open Unit Details Modal
+	window.shubxOpenUnitModal = function(query) {
+		const data = window.shubxDirectoryData;
+		const queryStr = String(query);
+		const flat = data.flats.find(f => 
+			String(f.id) === queryStr || 
+			String(f.flat_number) === queryStr || 
+			matchFlat(f.flat_number || f.id, queryStr)
+		) || { id: queryStr, flat_number: queryStr, block: '', status: 'Occupied' };
+
+		const unitNo = flat.flat_number || flat.id || queryStr;
+		const block = flat.block ? 'Block ' + flat.block : 'Main Block';
+		const status = flat.status || 'Occupied';
+		const isOccupied = String(status).toLowerCase() === 'occupied';
+
+		document.getElementById('unitModalTitle').textContent = 'Unit ' + unitNo;
+		document.getElementById('unitModalSubtitle').textContent = block + ' • ' + (flat.floor ? 'Floor ' + flat.floor : 'Residential Unit');
+		
+		const badge = document.getElementById('unitModalStatusBadge');
+		badge.textContent = isOccupied ? 'Occupied' : 'Vacant';
+		badge.className = 'badge ' + (isOccupied ? 'bg-success bg-opacity-10 text-success border border-success border-opacity-10' : 'bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10') + ' rounded-pill px-3 py-1.5 fw-bold';
+
+		document.getElementById('unitModalType').textContent = flat.type || flat.flat_type || '2BHK';
+		document.getElementById('unitModalArea').textContent = (flat.sq_foot || flat.sqft_area || '1,250') + ' sqft';
+		document.getElementById('unitModalParking').textContent = flat.parking_slot || 'P-12';
+		document.getElementById('unitModalIntercom').textContent = flat.intercom_num || 'Ext 204';
+
+		// Linked Residents
+		const linkedResidents = data.residents.filter(r => matchFlat(r.flat_no, unitNo));
+		const resListEl = document.getElementById('unitModalResidentsList');
+		document.getElementById('unitModalResidentsCount').textContent = linkedResidents.length;
+		resListEl.innerHTML = '';
+
+		if (linkedResidents.length > 0) {
+			linkedResidents.forEach(r => {
+				const isOwner = String(r.type || '').toLowerCase() === 'owner';
+				const row = document.createElement('div');
+				row.className = 'p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2';
+				row.innerHTML = `
+					<div class="d-flex align-items-center gap-3">
+						<div class="rounded-circle ${isOwner ? 'bg-primary' : 'bg-info'} text-white fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+							${(r.name || 'R')[0].toUpperCase()}
+						</div>
+						<div>
+							<div class="fw-bold text-dark">${r.name || 'Resident'}</div>
+							<div class="text-secondary small">
+								<span class="badge ${isOwner ? 'bg-primary' : 'bg-info text-dark'} rounded-pill px-2 py-0.5" style="font-size: 9px;">${(r.type || 'RESIDENT').toUpperCase()}</span>
+								• ${r.status || 'Active'}
+							</div>
+						</div>
+					</div>
+					<div class="d-flex align-items-center gap-2">
+						${r.phone ? `<a href="tel:${r.phone}" class="btn btn-sm btn-outline-secondary rounded-3 px-2 py-1"><i class="bi bi-telephone-fill"></i></a>` : ''}
+						<button type="button" class="btn btn-sm btn-outline-primary fw-bold rounded-3 px-3 js-link-to-resident" data-resident-id="${r.id || r.name}">
+							View Profile →
+						</button>
+					</div>
+				`;
+				resListEl.appendChild(row);
+			});
+		} else {
+			resListEl.innerHTML = `
+				<div class="p-3 rounded-3 bg-light border border-dashed text-center text-secondary small fst-italic">
+					No registered residents listed under this unit.
+				</div>
+			`;
+		}
+
+		// Linked Vehicles
+		const linkedVehicles = data.vehicles.filter(v => matchFlat(v.flat_no, unitNo));
+		const vehListEl = document.getElementById('unitModalVehiclesList');
+		document.getElementById('unitModalVehiclesCount').textContent = linkedVehicles.length;
+		vehListEl.innerHTML = '';
+
+		if (linkedVehicles.length > 0) {
+			linkedVehicles.forEach(v => {
+				const isBike = String(v.type || '').toLowerCase().includes('2') || String(v.type || '').toLowerCase() === 'bike';
+				const row = document.createElement('div');
+				row.className = 'p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2';
+				row.innerHTML = `
+					<div class="d-flex align-items-center gap-3">
+						<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+							<i class="bi ${isBike ? 'bi-bicycle' : 'bi-car-front'}"></i>
+						</div>
+						<div>
+							<div class="fw-bold text-dark font-monospace">${v.plate_no || v.number || 'Vehicle'}</div>
+							<div class="text-secondary small">${[v.brand, v.model].filter(Boolean).join(' ') || (isBike ? 'Two-Wheeler' : 'Four-Wheeler')} • Slot: ${v.parking_slot || 'P-Bay'}</div>
+						</div>
+					</div>
+					<button type="button" class="btn btn-sm btn-outline-info fw-bold rounded-3 px-3 js-link-to-vehicle" data-vehicle-id="${v.id || v.plate_no || v.number}">
+						View Vehicle →
+					</button>
+				`;
+				vehListEl.appendChild(row);
+			});
+		} else {
+			vehListEl.innerHTML = `
+				<div class="p-3 rounded-3 bg-light border border-dashed text-center text-secondary small fst-italic">
+					No vehicles registered under this unit.
+				</div>
+			`;
+		}
+
+		// Wire up cross-modal buttons inside Unit Modal
+		resListEl.querySelectorAll('.js-link-to-resident').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const rid = this.getAttribute('data-resident-id');
+				switchModal('unitDetailsModal', 'residentDetailsModal');
+				setTimeout(() => window.shubxOpenResidentModal(rid), 190);
+			});
+		});
+
+		vehListEl.querySelectorAll('.js-link-to-vehicle').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const vid = this.getAttribute('data-vehicle-id');
+				switchModal('unitDetailsModal', 'vehicleDetailsModal');
+				setTimeout(() => window.shubxOpenVehicleModal(vid), 190);
+			});
+		});
+
+		const modalEl = document.getElementById('unitDetailsModal');
+		let bs = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getInstance(modalEl) : null;
+		if (!bs && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+			bs = new bootstrap.Modal(modalEl);
+		}
+		if (bs) bs.show();
+	};
+
+	// 2. Open Vehicle Details Modal
+	window.shubxOpenVehicleModal = function(query) {
+		const data = window.shubxDirectoryData;
+		const queryStr = String(query).toLowerCase();
+		const vehicle = data.vehicles.find(v => 
+			String(v.id).toLowerCase() === queryStr || 
+			String(v.plate_no || '').toLowerCase() === queryStr ||
+			String(v.number || '').toLowerCase() === queryStr
+		);
+
+		if (!vehicle) return;
+
+		const isBike = String(vehicle.type || '').toLowerCase().includes('2') || String(vehicle.type || '').toLowerCase() === 'bike';
+		const plate = vehicle.plate_no || vehicle.number || 'Vehicle';
+		const makeModel = [vehicle.brand, vehicle.model].filter(Boolean).join(' ') || (isBike ? 'Two-Wheeler' : 'Four-Wheeler');
+
+		document.getElementById('vehicleModalPlate').textContent = plate;
+		document.getElementById('vehicleModalMakeModel').textContent = makeModel;
+		document.getElementById('vehicleModalCategory').textContent = isBike ? '2-Wheeler' : '4-Wheeler';
+		document.getElementById('vehicleModalSlot').textContent = vehicle.parking_slot || 'Designated Bay';
+		document.getElementById('vehicleModalAssignedUnit').textContent = 'Unit ' + (vehicle.flat_no || '-');
+		document.getElementById('vehicleModalSticker').textContent = vehicle.sticker ? '#' + vehicle.sticker : 'Verified Active';
+
+		const iconBox = document.getElementById('vehicleModalIconBox');
+		const iconEl = document.getElementById('vehicleModalIcon');
+		iconEl.className = 'bi ' + (isBike ? 'bi-bicycle' : 'bi-car-front') + ' fs-4';
+
+		// Mapped Unit Link
+		const mappedFlat = data.flats.find(f => matchFlat(f.flat_number || f.id, vehicle.flat_no)) || { id: vehicle.flat_no, flat_number: vehicle.flat_no, block: '', status: 'Occupied' };
+		document.getElementById('vehicleModalFlatTitle').textContent = 'Flat ' + (mappedFlat.flat_number || mappedFlat.id || vehicle.flat_no);
+		document.getElementById('vehicleModalFlatSub').textContent = (mappedFlat.block ? 'Block ' + mappedFlat.block + ' • ' : '') + (mappedFlat.status || 'Occupied');
+
+		const viewUnitBtn = document.getElementById('vehicleModalViewUnitBtn');
+		viewUnitBtn.onclick = function() {
+			switchModal('vehicleDetailsModal', 'unitDetailsModal');
+			setTimeout(() => window.shubxOpenUnitModal(vehicle.flat_no), 190);
+		};
+
+		// Registered Owner
+		let owner = null;
+		if (vehicle.owner_name) {
+			owner = data.residents.find(r => r.name && r.name.toLowerCase() === vehicle.owner_name.toLowerCase());
+		}
+		if (!owner) {
+			const flatRes = data.residents.filter(r => matchFlat(r.flat_no, vehicle.flat_no));
+			owner = flatRes.find(r => String(r.type || '').toLowerCase() === 'owner') || flatRes[0] || null;
+		}
+
+		const ownerNameEl = document.getElementById('vehicleModalOwnerName');
+		const ownerRoleEl = document.getElementById('vehicleModalOwnerRole');
+		const ownerAvatarEl = document.getElementById('vehicleModalOwnerAvatar');
+		const ownerPhoneRow = document.getElementById('vehicleModalOwnerPhoneRow');
+		const viewOwnerBtn = document.getElementById('vehicleModalViewOwnerBtn');
+
+		if (owner) {
+			ownerNameEl.textContent = owner.name || 'Registered Resident';
+			ownerRoleEl.textContent = (owner.type ? owner.type.toUpperCase() : 'OWNER') + ' • Unit ' + (owner.flat_no || vehicle.flat_no);
+			ownerAvatarEl.textContent = (owner.name || 'O')[0].toUpperCase();
+			viewOwnerBtn.style.display = '';
+			viewOwnerBtn.onclick = function() {
+				switchModal('vehicleDetailsModal', 'residentDetailsModal');
+				setTimeout(() => window.shubxOpenResidentModal(owner.id || owner.name), 190);
+			};
+
+			if (owner.phone) {
+				ownerPhoneRow.style.display = '';
+				document.getElementById('vehicleModalOwnerPhoneText').textContent = owner.phone;
+				document.getElementById('vehicleModalOwnerPhoneCall').href = 'tel:' + owner.phone;
+			} else {
+				ownerPhoneRow.style.display = 'none';
+			}
+		} else {
+			ownerNameEl.textContent = vehicle.owner_name || vehicle.resident_name || 'Registered Resident';
+			ownerRoleEl.textContent = 'Resident of Unit ' + (vehicle.flat_no || '-');
+			ownerAvatarEl.textContent = (vehicle.owner_name || 'R')[0].toUpperCase();
+			viewOwnerBtn.style.display = 'none';
+			ownerPhoneRow.style.display = 'none';
+		}
+
+		const modalEl = document.getElementById('vehicleDetailsModal');
+		let bs = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getInstance(modalEl) : null;
+		if (!bs && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+			bs = new bootstrap.Modal(modalEl);
+		}
+		if (bs) bs.show();
+	};
+
+	// 3. Open Resident Details Modal
+	window.shubxOpenResidentModal = function(query) {
+		const data = window.shubxDirectoryData;
+		const queryStr = String(query).toLowerCase();
+		const resident = data.residents.find(r => 
+			String(r.id).toLowerCase() === queryStr || 
+			String(r.name || '').toLowerCase() === queryStr
+		);
+
+		if (!resident) return;
+
+		const isOwner = String(resident.type || '').toLowerCase() === 'owner';
+		document.getElementById('residentModalName').textContent = resident.name || 'Resident';
+		document.getElementById('residentModalAvatarCircle').textContent = (resident.name || 'R')[0].toUpperCase();
+		document.getElementById('residentModalAvatarCircle').className = 'rounded-circle ' + (isOwner ? 'bg-primary' : 'bg-info text-dark') + ' fw-bold d-flex align-items-center justify-content-center';
+		
+		const typeBadge = document.getElementById('residentModalTypeBadge');
+		typeBadge.textContent = (resident.type || 'Resident').toUpperCase();
+		typeBadge.className = 'badge ' + (isOwner ? 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10' : 'bg-info bg-opacity-10 text-info border border-info border-opacity-10') + ' rounded-pill px-2 py-1 small fw-bold';
+
+		document.getElementById('residentModalSub').textContent = 'Unit ' + (resident.flat_no || '-') + ' • ' + (resident.status || 'Active Member');
+
+		document.getElementById('residentModalType').textContent = resident.type ? resident.type.charAt(0).toUpperCase() + resident.type.slice(1) : 'Resident';
+		document.getElementById('residentModalBlock').textContent = resident.block ? 'Block ' + resident.block : 'Main Block';
+		document.getElementById('residentModalBlood').textContent = resident.blood_group || 'Not Specified';
+		document.getElementById('residentModalStatus').textContent = resident.status || 'Active';
+
+		// Mapped Unit Link
+		const mappedFlat = data.flats.find(f => matchFlat(f.flat_number || f.id, resident.flat_no)) || { id: resident.flat_no, flat_number: resident.flat_no, block: '', status: 'Occupied' };
+		document.getElementById('residentModalFlatTitle').textContent = 'Unit ' + (mappedFlat.flat_number || mappedFlat.id || resident.flat_no);
+		document.getElementById('residentModalFlatSub').textContent = (mappedFlat.block ? 'Block ' + mappedFlat.block + ' • ' : '') + (mappedFlat.status || 'Occupied');
+
+		const viewUnitBtn = document.getElementById('residentModalViewUnitBtn');
+		viewUnitBtn.onclick = function() {
+			switchModal('residentDetailsModal', 'unitDetailsModal');
+			setTimeout(() => window.shubxOpenUnitModal(resident.flat_no), 190);
+		};
+
+		// Family Members
+		const familyMembers = data.family.filter(f => matchFlat(f.flat_no, resident.flat_no));
+		const famListEl = document.getElementById('residentModalFamilyList');
+		document.getElementById('residentModalFamilyCount').textContent = familyMembers.length;
+		famListEl.innerHTML = '';
+
+		if (familyMembers.length > 0) {
+			familyMembers.forEach(fam => {
+				const row = document.createElement('div');
+				row.className = 'p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2';
+				row.innerHTML = `
+					<div class="d-flex align-items-center gap-3">
+						<div class="rounded-circle bg-purple text-white fw-bold d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; background-color: #8b5cf6;">
+							<i class="bi bi-person-heart"></i>
+						</div>
+						<div>
+							<div class="fw-bold text-dark">${fam.name || fam.member_name || 'Family Member'}</div>
+							<div class="text-secondary small">
+								<span class="badge bg-secondary bg-opacity-10 text-secondary border rounded-pill px-2 py-0.5" style="font-size: 9px;">${fam.relationship || fam.relation || 'Relation'}</span>
+								${fam.age ? `• ${fam.age} yrs` : ''}
+							</div>
+						</div>
+					</div>
+					${fam.phone ? `<a href="tel:${fam.phone}" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-1 fw-semibold"><i class="bi bi-telephone-fill me-1"></i> Call</a>` : ''}
+				`;
+				famListEl.appendChild(row);
+			});
+		} else {
+			famListEl.innerHTML = `
+				<div class="p-3 rounded-3 bg-light border border-dashed text-center text-secondary small fst-italic">
+					No family members registered under this profile.
+				</div>
+			`;
+		}
+
+		// Registered Vehicles for this resident's unit
+		const linkedVehicles = data.vehicles.filter(v => matchFlat(v.flat_no, resident.flat_no));
+		const vehListEl = document.getElementById('residentModalVehiclesList');
+		document.getElementById('residentModalVehiclesCount').textContent = linkedVehicles.length;
+		vehListEl.innerHTML = '';
+
+		if (linkedVehicles.length > 0) {
+			linkedVehicles.forEach(v => {
+				const isBike = String(v.type || '').toLowerCase().includes('2') || String(v.type || '').toLowerCase() === 'bike';
+				const row = document.createElement('div');
+				row.className = 'p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2';
+				row.innerHTML = `
+					<div class="d-flex align-items-center gap-3">
+						<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+							<i class="bi ${isBike ? 'bi-bicycle' : 'bi-car-front'}"></i>
+						</div>
+						<div>
+							<div class="fw-bold text-dark font-monospace">${v.plate_no || v.number || 'Vehicle'}</div>
+							<div class="text-secondary small">${[v.brand, v.model].filter(Boolean).join(' ') || (isBike ? 'Two-Wheeler' : 'Four-Wheeler')}</div>
+						</div>
+					</div>
+					<button type="button" class="btn btn-sm btn-outline-info fw-bold rounded-3 px-3 js-link-to-vehicle-from-res" data-vehicle-id="${v.id || v.plate_no || v.number}">
+						View Vehicle →
+					</button>
+				`;
+				vehListEl.appendChild(row);
+			});
+		} else {
+			vehListEl.innerHTML = `
+				<div class="p-3 rounded-3 bg-light border border-dashed text-center text-secondary small fst-italic">
+					No vehicles registered under this resident.
+				</div>
+			`;
+		}
+
+		vehListEl.querySelectorAll('.js-link-to-vehicle-from-res').forEach(btn => {
+			btn.addEventListener('click', function() {
+				const vid = this.getAttribute('data-vehicle-id');
+				switchModal('residentDetailsModal', 'vehicleDetailsModal');
+				setTimeout(() => window.shubxOpenVehicleModal(vid), 190);
+			});
+		});
+
+		// Call & Email buttons
+		const callBtn = document.getElementById('residentModalCallBtn');
+		const emailBtn = document.getElementById('residentModalEmailBtn');
+		if (resident.phone) {
+			callBtn.style.display = '';
+			callBtn.href = 'tel:' + resident.phone;
+			document.getElementById('residentModalCallText').textContent = 'Call ' + resident.phone;
+		} else {
+			callBtn.style.display = 'none';
+		}
+
+		if (resident.email) {
+			emailBtn.style.display = '';
+			emailBtn.href = 'mailto:' + resident.email;
+			document.getElementById('residentModalEmailText').textContent = 'Email ' + resident.email;
+		} else {
+			emailBtn.style.display = 'none';
+		}
+
+		const modalEl = document.getElementById('residentDetailsModal');
+		let bs = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? bootstrap.Modal.getInstance(modalEl) : null;
+		if (!bs && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+			bs = new bootstrap.Modal(modalEl);
+		}
+		if (bs) bs.show();
+	};
+
+	// Event Delegation for triggers throughout the table views
+	document.addEventListener('click', function(e) {
+		const unitTrigger = e.target.closest('.js-view-unit, .js-view-flat');
+		if (unitTrigger) {
+			e.preventDefault();
+			const flatId = unitTrigger.getAttribute('data-unit-id') || unitTrigger.getAttribute('data-flat-id') || unitTrigger.getAttribute('data-id') || unitTrigger.textContent.trim();
+			window.shubxOpenUnitModal(flatId);
+			return;
+		}
+
+		const vehTrigger = e.target.closest('.js-view-vehicle-details, .js-view-vehicle');
+		if (vehTrigger) {
+			e.preventDefault();
+			const vid = vehTrigger.getAttribute('data-vehicle-id') || vehTrigger.getAttribute('data-id') || vehTrigger.textContent.trim();
+			window.shubxOpenVehicleModal(vid);
+			return;
+		}
+
+		const resTrigger = e.target.closest('.js-view-resident-profile, .js-view-resident');
+		if (resTrigger) {
+			e.preventDefault();
+			const rid = resTrigger.getAttribute('data-resident-id') || resTrigger.getAttribute('data-id') || resTrigger.textContent.trim();
+			window.shubxOpenResidentModal(rid);
+			return;
+		}
+	});
+})();
+</script>

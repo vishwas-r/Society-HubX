@@ -189,7 +189,12 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         data-type="<?php echo esc_attr($f_type); ?>"
                         data-parking="<?php echo esc_attr($p_status); ?>"
                         data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
-                        <td class="ps-3 ps-md-5 py-4 fw-bold text-dark"><?php echo esc_html( $flat_no ); ?></td>
+                        <td class="ps-3 ps-md-5 py-4 fw-bold text-dark">
+                            <a href="#" class="text-dark fw-bold text-decoration-none js-view-unit" data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" title="Click to view unit details">
+                                <?php echo esc_html( $flat_no ); ?>
+                                <i class="bi bi-box-arrow-up-right ms-1 text-primary opacity-50" style="font-size: 11px;"></i>
+                            </a>
+                        </td>
                         <td class="px-4 py-4 text-secondary"><?php echo esc_html( $f['block'] ?? '-' ); ?></td>
                         <td class="px-4 py-4 text-dark font-monospace small">
                             <?php 
@@ -220,6 +225,9 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         </td>
                         <td class="pe-3 pe-md-5 py-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="btn btn-sm btn-light text-dark border shadow-sm rounded-3 p-2 js-view-unit" data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" title="View Unit Details">
+                                    <i class="bi bi-eye fs-6"></i>
+                                </button>
                                 <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(wp_json_encode($f)); ?>" title="Edit Unit">
                                     <i class="bi bi-pencil-square fs-6"></i>
                                 </button>

@@ -228,7 +228,12 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
 
 <!-- Global Modals Container (Outside Root for z-index) -->
 <div id="shubx51-modals-root">
-    <?php do_action('shubx51_admin_modals'); ?>
+    <?php 
+    if ( file_exists( dirname( __FILE__ ) . '/components/directory-modals.php' ) ) {
+        include_once dirname( __FILE__ ) . '/components/directory-modals.php';
+    }
+    do_action('shubx51_admin_modals'); 
+    ?>
 </div>
 
 <?php 

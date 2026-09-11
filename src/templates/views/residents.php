@@ -279,9 +279,16 @@ sort($unique_blocks);
                             </td>
                             <td class="ps-0 ps-md-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
-                                    <?php echo SHUBX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
+                                    <div class="js-view-resident-profile" role="button" data-resident-id="<?php echo esc_attr( $row['id'] ); ?>" title="View Resident Profile">
+                                        <?php echo SHUBX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
+                                    </div>
                                     <div>
-                                        <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>"><?php echo esc_html( $row['name'] ); ?></div>
+                                        <a href="#" class="text-decoration-none js-view-resident-profile" data-resident-id="<?php echo esc_attr( $row['id'] ); ?>" title="View Resident Profile">
+                                            <div class="fw-bold <?php echo $is_archived ? 'text-muted' : 'text-dark'; ?>">
+                                                <?php echo esc_html( $row['name'] ); ?>
+                                                <i class="bi bi-box-arrow-up-right ms-1 text-primary opacity-50" style="font-size: 10px;"></i>
+                                            </div>
+                                        </a>
                                         <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
                                     </div>
                                 </div>
@@ -292,7 +299,7 @@ sort($unique_blocks);
                                         $f_ids = ! empty( $row['flat_ids'] ) ? (array) $row['flat_ids'] : ( ! empty( $row['flat_no'] ) ? array( $row['flat_no'] ) : array( '-' ) );
                                         foreach ( $f_ids as $f_id ) {
                                             $display_f = $flat_map[$f_id] ?? $f_id;
-                                            echo '<span class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold" style="font-size: 11px; margin-right: 2px;">' . esc_html( $display_f ) . '</span>';
+                                            echo '<a href="#" class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold text-decoration-none js-view-unit" data-unit-id="' . esc_attr( $f_id ) . '" style="font-size: 11px; margin-right: 2px;" title="View Unit Details">' . esc_html( $display_f ) . '</a>';
                                         }
                                     ?>
                                     <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo esc_html( $type_label ); ?></span>
@@ -330,6 +337,9 @@ sort($unique_blocks);
                             </td>
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
+                                    <button class="btn btn-sm btn-light js-view-resident-profile text-dark border shadow-sm rounded-3 p-2" data-resident-id="<?php echo esc_attr( $row['id'] ); ?>" title="View Resident Profile">
+                                        <i class="bi bi-eye fs-6"></i>
+                                    </button>
                                     <?php if ( $is_request ) : ?>
                                         <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
