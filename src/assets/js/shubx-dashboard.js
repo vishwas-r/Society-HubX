@@ -997,7 +997,7 @@
         }
 
         // --- Open Directory Modal ---
-        window.openDirModal = function (card) {
+        function openDirModal(card) {
             if (!card || !card.dataset.json) return;
             try {
                 const data = JSON.parse(card.dataset.json);
@@ -1125,10 +1125,11 @@
             } catch (e) {
                 console.error('Error opening directory modal:', e);
             }
-        };
+        }
+        window.openDirModal = openDirModal;
 
         // --- Consolidated Community Filter/Search ---
-        window.applyCommunityFilters = function () {
+        function applyCommunityFilters() {
             const searchInput = document.getElementById('dir-search');
             const blockSelect = document.getElementById('dir-filter-block');
             const typeSelect = document.getElementById('dir-filter-type');
@@ -1181,9 +1182,10 @@
                     card.classList.add('d-none');
                 }
             });
-        };
+        }
+        window.applyCommunityFilters = applyCommunityFilters;
 
-        window.filterDirFilter = function (filter) {
+        function filterDirFilter(filter) {
             dirActiveFilter = filter;
             const filterBtns = document.querySelectorAll('.dir-filter-btn');
 
@@ -1199,12 +1201,14 @@
             });
 
             applyCommunityFilters();
-        };
+        }
+        window.filterDirFilter = filterDirFilter;
 
         // --- Directory Search Handler ---
-        window.filterDirectory = function () {
+        function filterDirectory() {
             applyCommunityFilters();
-        };
+        }
+        window.filterDirectory = filterDirectory;
 
         // --- Directory Filter Button Listeners ---
         function initDirectoryFilterListeners() {
@@ -2067,12 +2071,13 @@
         if (ruleViewModal) ruleViewModal.show();
     };
 
-    window.openAcknowledgeModal = function(ruleId) {
+    function openAcknowledgeModal(ruleId) {
         if (ruleViewModal) ruleViewModal.hide();
         document.getElementById('ack_rule_id').value = ruleId;
         document.getElementById('ackConfirm').checked = false;
         if (acknowledgeModal) acknowledgeModal.show();
-    };
+    }
+    window.openAcknowledgeModal = openAcknowledgeModal;
 
     function handleAcknowledge(e) {
         e.preventDefault();
