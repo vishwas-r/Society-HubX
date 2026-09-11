@@ -495,10 +495,10 @@ class SHUBX51_Admin_Settings {
 		}
 
 		if ( ! SHUBX51_FCM_Service::is_enabled() ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are not enabled or credentials have not been saved yet.', 'society-hubx' ) ) );
+			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are currently disabled for this society. Please enable the Push toggle in settings.', 'society-hubx' ) ) );
 		}
 
-		$title = esc_html__( '🧪 Society HubX Test Alert', 'society-hubx' );
+		$title = esc_html__( '🧪 NammaSociety Test Alert', 'society-hubx' );
 		$body  = sprintf( esc_html__( 'Test notification from %s. Push notifications are working!', 'society-hubx' ), get_bloginfo( 'name' ) );
 		$data  = array(
 			'type'      => 'test_ping',

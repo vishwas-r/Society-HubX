@@ -390,7 +390,7 @@ $templates = $db->get('notification_templates');
                                             $channel_title = ucfirst($slug);
                                             if($slug === 'whatsapp') { $icon = 'bi-whatsapp'; $color = 'success'; $channel_title = 'WhatsApp'; }
                                             if($slug === 'inapp') { $icon = 'bi-app-indicator'; $color = 'info'; $channel_title = 'In-App'; }
-                                            if($slug === 'push') { $icon = 'bi-bell-fill'; $color = 'danger'; $channel_title = 'Push Notifications (FCM)'; }
+                                            if($slug === 'push') { $icon = 'bi-bell-fill'; $color = 'danger'; $channel_title = 'Push Notifications (Central Relay)'; }
                                         ?>
                                         <div class="col-md-6 col-lg-3">
                                             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
@@ -409,7 +409,7 @@ $templates = $db->get('notification_templates');
                                                         <?php if($slug === 'email') echo 'Send alerts via WP Mail or Gmail API.'; ?>
                                                         <?php if($slug === 'whatsapp') echo 'Real-time alerts via Twilio WhatsApp API.'; ?>
                                                         <?php if($slug === 'inapp') echo 'Display alerts directly on resident dashboards.'; ?>
-                                                        <?php if($slug === 'push') echo 'Native mobile push alerts via Firebase Cloud Messaging.'; ?>
+                                                        <?php if($slug === 'push') echo 'Mobile push alerts dispatched via NammaSociety Central Cloud Relay.'; ?>
                                                     </p>
                                                     <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 shubx-configure-channel" data-channel="<?php echo esc_html( $slug ); ?>">
                                                         <i class="bi bi-gear me-2"></i>Configure
