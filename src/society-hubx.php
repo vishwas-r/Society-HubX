@@ -3,7 +3,7 @@
  * Plugin Name:       Society HubX – Society Management Portal
  * Plugin URI:        https://github.com/vishwas-r/society-hubx
  * Description:       A premium, comprehensive society management system featuring automated maintenance, facility bookings, digital document vault, and resident community engagement.
- * Version:           1.0.5
+ * Version:           1.0.6
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Vishwas R
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'SHUBX51_VERSION', '1.0.5' );
+define( 'SHUBX51_VERSION', '1.0.6' );
 define( 'SHUBX51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SHUBX51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SHUBX51_PREFIX', 'SHUBX51' );
