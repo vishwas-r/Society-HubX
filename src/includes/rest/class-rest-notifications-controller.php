@@ -66,6 +66,19 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			)
 		);
 
+		// Linked Devices for Current User
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/linked-devices',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_linked_devices' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+			)
+		);
+
 		// Push Notification Config Handshake (Public)
 		register_rest_route(
 			$this->namespace,
@@ -112,11 +125,23 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	public function get_inapp_notifications( $request ) {
 		$user_id = get_current_user_id();
 		$db = new SHUBX51_DB_Router();
-		$notifs = $db->get( 'notifications', array( 'where' => array( 'recipient_id' => $user_id ) ) );
+		$notifs = $db->get( 'inapp_notifications', array( 'where' => array( 'user_id' => $user_id ) ) );
 
 		if ( empty( $notifs ) ) {
 			return rest_ensure_response( array() );
 		}
+
+		// Normalize fields so both 'content' and 'message' are populated for React Native UI
+		foreach ( $notifs as &$n ) {
+			if ( ! isset( $n['message'] ) && isset( $n['content'] ) ) {
+				$n['message'] = $n['content'];
+			}
+			if ( ! isset( $n['content'] ) && isset( $n['message'] ) ) {
+				$n['content'] = $n['message'];
+			}
+			$n['is_read'] = (int) ( $n['is_read'] ?? 0 );
+		}
+		unset( $n );
 
 		usort(
 			$notifs,
@@ -137,14 +162,13 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 		$db = new SHUBX51_DB_Router();
 
 		$result = $db->update(
-			'notifications',
+			'inapp_notifications',
 			array(
 				'is_read' => 1,
-				'read_at' => current_time( 'mysql' ),
 			),
 			array(
-				'id'           => $id,
-				'recipient_id' => $user_id,
+				'id'      => $id,
+				'user_id' => $user_id,
 			)
 		);
 
@@ -161,18 +185,72 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	public function mark_all_read( $request ) {
 		global $wpdb;
 		$user_id = get_current_user_id();
-		$table = "{$wpdb->prefix}shubx51_notifications";
+		$table = "{$wpdb->prefix}shubx51_inapp_notifications";
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table} SET is_read = 1, read_at = %s WHERE recipient_id = %d AND is_read = 0",
-				current_time( 'mysql' ),
+				"UPDATE {$table} SET is_read = 1 WHERE user_id = %d AND is_read = 0",
 				$user_id
 			)
 		);
 
 		return rest_ensure_response( array( 'success' => true, 'message' => __( 'All notifications marked as read.', 'society-hubx' ) ) );
+	}
+
+	/**
+	 * Get list of linked devices for current user (or society if admin).
+	 */
+	public function get_linked_devices( $request ) {
+		global $wpdb;
+		$user_id = get_current_user_id();
+		$table = "{$wpdb->prefix}shubx51_device_tokens";
+
+		if ( current_user_can( 'manage_options' ) ) {
+			// Admins can see all registered devices in the society
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$devices = $wpdb->get_results(
+				"SELECT dt.*, u.display_name, u.user_login 
+				 FROM {$table} dt 
+				 LEFT JOIN {$wpdb->users} u ON dt.user_id = u.ID 
+				 ORDER BY dt.updated_at DESC LIMIT 50",
+				ARRAY_A
+			);
+		} else {
+			// Regular residents only see their own linked devices
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$devices = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$table} WHERE user_id = %d ORDER BY updated_at DESC",
+					$user_id
+				),
+				ARRAY_A
+			);
+		}
+
+		// Mask full token for security, leave preview
+		$clean_devices = array_map( function( $d ) {
+			$tok = $d['device_token'] ?? '';
+			return array(
+				'id'           => $d['id'] ?? '',
+				'user_id'      => $d['user_id'] ?? 0,
+				'display_name' => $d['display_name'] ?? '',
+				'user_login'   => $d['user_login'] ?? '',
+				'device_name'  => $d['device_name'] ?? 'Mobile Device',
+				'device_model' => $d['device_model'] ?? '',
+				'platform'     => $d['platform'] ?? 'android',
+				'app_version'  => $d['app_version'] ?? '1.0.0',
+				'ip_address'   => $d['ip_address'] ?? '',
+				'block'        => $d['block'] ?? '',
+				'flat_no'      => $d['flat_no'] ?? '',
+				'is_active'    => (int) ( $d['is_active'] ?? 1 ),
+				'created_at'   => $d['created_at'] ?? '',
+				'updated_at'   => $d['updated_at'] ?? '',
+				'token_preview'=> ! empty( $tok ) ? ( substr( $tok, 0, 10 ) . '...' . substr( $tok, -6 ) ) : '',
+			);
+		}, $devices ?: array() );
+
+		return rest_ensure_response( $clean_devices );
 	}
 
 	public function user_logged_in_check( $request ) {
@@ -219,14 +297,26 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 
 		$user_id = get_current_user_id();
 		$flat_no = sanitize_text_field( $params['flat_no'] ?? '' );
+		$block   = sanitize_text_field( $params['block'] ?? '' );
 
-		// If user is logged in, attempt to resolve flat_no from resident profile if not provided
-		if ( empty( $flat_no ) && $user_id > 0 ) {
+		// If user is logged in, attempt to resolve unit info from resident profile if not provided
+		if ( ( empty( $flat_no ) || empty( $block ) ) && $user_id > 0 ) {
 			$db = new SHUBX51_DB_Router();
 			$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
-			if ( $resident && ! empty( $resident['flat_no'] ) ) {
-				$flat_no = $resident['flat_no'];
+			if ( $resident ) {
+				if ( empty( $flat_no ) && ! empty( $resident['flat_no'] ) ) {
+					$flat_no = $resident['flat_no'];
+				}
+				if ( empty( $block ) && ! empty( $resident['block'] ) ) {
+					$block = $resident['block'];
+				}
 			}
+		}
+
+		$client_ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '' ) );
+		if ( strpos( $client_ip, ',' ) !== false ) {
+			$parts = explode( ',', $client_ip );
+			$client_ip = trim( $parts[0] );
 		}
 
 		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
@@ -236,10 +326,13 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 		$registered = SHUBX51_FCM_Service::register_token( array(
 			'user_id'      => $user_id,
 			'flat_no'      => $flat_no,
+			'block'        => $block,
 			'device_token' => $token,
 			'platform'     => sanitize_key( $params['platform'] ?? 'android' ),
 			'device_name'  => sanitize_text_field( $params['device_name'] ?? '' ),
+			'device_model' => sanitize_text_field( $params['device_model'] ?? '' ),
 			'app_version'  => sanitize_text_field( $params['app_version'] ?? '1.0.0' ),
+			'ip_address'   => $client_ip,
 		) );
 
 		if ( ! $registered ) {
@@ -250,6 +343,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			'success' => true,
 			'message' => __( 'Device token registered successfully.', 'society-hubx' ),
 			'flat_no' => $flat_no,
+			'block'   => $block,
 		) );
 	}
 
@@ -277,24 +371,62 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			'timestamp' => time(),
 		);
 
-		if ( ! empty( $target_token ) ) {
-			$res = SHUBX51_FCM_Service::send_notification( $target_token, $title, $body, $data, 'high' );
-		} elseif ( ! empty( $target_flat ) ) {
-			$sent = SHUBX51_FCM_Service::send_to_flat( $target_flat, $title, $body, $data, 'high' );
-			$res = ( $sent > 0 ) ? array( 'success' => true, 'sent' => $sent ) : new WP_Error( 'no_devices_found', __( 'No active registered devices for this flat.', 'society-hubx' ) );
-		} else {
-			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
-			$res = ( $sent > 0 ) ? array( 'success' => true, 'sent' => $sent ) : new WP_Error( 'no_devices_found', __( 'No active registered devices found in society.', 'society-hubx' ) );
+		// 1. Always record in-app notification first
+		$user_id = get_current_user_id();
+		$target_uids = array();
+		if ( $user_id > 0 ) {
+			$target_uids[] = $user_id;
 		}
 
-		if ( is_wp_error( $res ) ) {
-			return $res;
+		$db = new SHUBX51_DB_Router();
+		if ( ! empty( $target_flat ) ) {
+			$residents = $db->get( 'residents', array( 'where' => array( 'flat_no' => $target_flat ) ) );
+			if ( ! empty( $residents ) ) {
+				foreach ( $residents as $r ) {
+					if ( ! empty( $r['wp_user_id'] ) ) {
+						$target_uids[] = (int) $r['wp_user_id'];
+					}
+				}
+			}
+		}
+
+		$target_uids = array_unique( array_filter( $target_uids ) );
+		foreach ( $target_uids as $uid ) {
+			$db->insert( 'inapp_notifications', array(
+				'id'         => wp_generate_uuid4(),
+				'user_id'    => $uid,
+				'title'      => $title,
+				'content'    => $body,
+				'type'       => 'test_ping',
+				'is_read'    => 0,
+				'action_url' => '',
+				'created_at' => current_time( 'mysql' ),
+			) );
+		}
+
+		// 2. Dispatch push notification
+		if ( ! empty( $target_token ) ) {
+			$res = SHUBX51_FCM_Service::send_notification( $target_token, $title, $body, $data, 'high' );
+			$sent = ( ! is_wp_error( $res ) && ! empty( $res['success'] ) ) ? 1 : 0;
+		} elseif ( ! empty( $target_flat ) ) {
+			$sent = SHUBX51_FCM_Service::send_to_flat( $target_flat, $title, $body, $data, 'high' );
+		} else {
+			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
+		}
+
+		if ( $sent > 0 ) {
+			return rest_ensure_response( array(
+				'success'    => true,
+				'message'    => sprintf( __( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.', 'society-hubx' ), $sent ),
+				'dispatched' => $sent,
+			) );
 		}
 
 		return rest_ensure_response( array(
-			'success' => true,
-			'message' => __( 'Test notification dispatched successfully!', 'society-hubx' ),
-			'details' => $res,
+			'success'    => true,
+			'message'    => sprintf( __( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices registered for "%s" - open the mobile app to register device token).', 'society-hubx' ), ! empty( $target_flat ) ? $target_flat : __( 'all', 'society-hubx' ) ),
+			'dispatched' => 0,
+			'warning'    => true,
 		) );
 	}
 

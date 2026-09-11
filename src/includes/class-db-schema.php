@@ -702,19 +702,58 @@ class SHUBX51_DB_Schema {
 		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_device_tokens (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) unsigned DEFAULT 0 NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
 			device_token text NOT NULL,
 			platform varchar(20) DEFAULT 'android' NOT NULL,
 			device_name varchar(100) DEFAULT '' NOT NULL,
+			device_model varchar(100) DEFAULT '' NOT NULL,
 			app_version varchar(20) DEFAULT '' NOT NULL,
+			ip_address varchar(50) DEFAULT '' NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no),
+			KEY block (block),
 			KEY user_id (user_id),
 			KEY platform (platform),
 			KEY is_active (is_active)
+		) $charset_collate;";
+
+		// 37. Emergency SOS Alerts Forensic Audit Table
+		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_emergency_alerts (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			alert_id varchar(50) NOT NULL,
+			user_id bigint(20) unsigned DEFAULT 0 NOT NULL,
+			username varchar(100) DEFAULT '' NOT NULL,
+			resident_name varchar(255) DEFAULT '' NOT NULL,
+			block varchar(20) DEFAULT '' NOT NULL,
+			flat_no varchar(50) NOT NULL,
+			phone varchar(50) DEFAULT '' NOT NULL,
+			email varchar(100) DEFAULT '' NOT NULL,
+			sos_type varchar(50) NOT NULL,
+			notes text NOT NULL,
+			device_name varchar(100) DEFAULT '' NOT NULL,
+			device_model varchar(100) DEFAULT '' NOT NULL,
+			platform varchar(20) DEFAULT 'android' NOT NULL,
+			app_version varchar(20) DEFAULT '' NOT NULL,
+			ip_address varchar(50) DEFAULT '' NOT NULL,
+			status varchar(20) DEFAULT 'active' NOT NULL,
+			acknowledged_by bigint(20) unsigned DEFAULT 0 NOT NULL,
+			acknowledged_by_name varchar(100) DEFAULT '' NOT NULL,
+			acknowledged_at datetime DEFAULT NULL,
+			resolved_by bigint(20) unsigned DEFAULT 0 NOT NULL,
+			resolved_by_name varchar(100) DEFAULT '' NOT NULL,
+			resolved_at datetime DEFAULT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY alert_id (alert_id),
+			KEY flat_no (flat_no),
+			KEY block (block),
+			KEY status (status),
+			KEY created_at (created_at)
 		) $charset_collate;";
 
 		foreach ( $tables as $sql ) {

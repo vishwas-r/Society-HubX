@@ -136,6 +136,18 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			)
 		);
 
+		register_rest_route(
+			$this->namespace,
+			'/finance/monthly-summary',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_monthly_summary' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+			)
+		);
+
 		// Payments Routes
 		register_rest_route(
 			$this->namespace,
@@ -774,6 +786,24 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
 		return rest_ensure_response( $entries ? $entries : array() );
+	}
+
+	/**
+	 * Get monthly flat maintenance summary (web transparency parity).
+	 */
+	public function get_monthly_summary( $request ) {
+		$month = $request->get_param( 'month' );
+		if ( ! $month ) {
+			$month = gmdate( 'Y-m' );
+		}
+
+		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		}
+
+		$ledger = new SHUBX51_Ledger_Manager();
+		$summary = $ledger->get_monthly_summary( $month );
+		return rest_ensure_response( $summary ? $summary : array() );
 	}
 
 	/**

@@ -233,25 +233,34 @@ jQuery(document).ready(function ($) {
                 $btn.prop('disabled', true).text('Sending...');
                 $('#shubx-modal-test-status').html('<span class="text-muted">Sending test alert...</span>');
 
+                const nonceVal = (typeof shubxAdmin !== 'undefined' && shubxAdmin.fcm_nonce) ? shubxAdmin.fcm_nonce :
+                                 ((typeof shubxAdmin !== 'undefined' && shubxAdmin.nonce) ? shubxAdmin.nonce :
+                                 ((typeof shubx51RequestNonce !== 'undefined') ? shubx51RequestNonce : ''));
+
                 $.ajax({
-                    url: (typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : ajaxurl),
+                    url: (typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php')),
                     type: 'POST',
                     data: {
                         action: 'shubx51_send_test_push',
                         target_flat: flatNo,
-                        nonce: (typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : ''))
+                        nonce: nonceVal
                     },
                     success: function (res) {
                         $btn.prop('disabled', false).text('Send Test Alert');
                         if (res.success) {
-                            $('#shubx-modal-test-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>' + (res.data.message || 'Test push sent!') + '</span>');
+                            const icon = res.data && res.data.warning ? 'bi-info-circle-fill text-info' : 'bi-check-circle-fill text-success';
+                            const textClass = res.data && res.data.warning ? 'text-primary' : 'text-success';
+                            $('#shubx-modal-test-status').html('<span class="' + textClass + ' fw-bold"><i class="bi ' + icon + ' me-1"></i>' + (res.data.message || 'Test alert recorded!') + '</span>');
                         } else {
                             $('#shubx-modal-test-status').html('<span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i>' + (res.data && res.data.message ? res.data.message : 'Error sending test push.') + '</span>');
                         }
                     },
-                    error: function () {
+                    error: function (xhr) {
                         $btn.prop('disabled', false).text('Send Test Alert');
-                        $('#shubx-modal-test-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Network error occurred.</span>');
+                        const msg = (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message)
+                            ? xhr.responseJSON.data.message
+                            : 'Network error occurred.';
+                        $('#shubx-modal-test-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>' + msg + '</span>');
                     }
                 });
             });

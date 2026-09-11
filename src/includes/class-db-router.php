@@ -51,6 +51,8 @@ class SHUBX51_DB_Router {
 		'resident_flat_map',
 		'payments',
 		'device_tokens',
+		'inapp_notifications',
+		'emergency_alerts',
 	);
 
 	/**
@@ -105,6 +107,9 @@ class SHUBX51_DB_Router {
             'resident_role_map'       => $wpdb->prefix . 'shubx51_resident_role_map',
             'resident_flat_map'       => $wpdb->prefix . 'shubx51_resident_flat_map',
             'payments'                => $wpdb->prefix . 'shubx51_payments',
+            'device_tokens'           => $wpdb->prefix . 'shubx51_device_tokens',
+            'inapp_notifications'     => $wpdb->prefix . 'shubx51_inapp_notifications',
+            'emergency_alerts'        => $wpdb->prefix . 'shubx51_emergency_alerts',
         );
 		return $tables[ $slug ] ?? $wpdb->prefix . 'shubx51_' . $slug;
 	}

@@ -479,19 +479,23 @@ class SHUBX51_Admin_Settings {
 	 * AJAX Handler: Dispatch test push notification.
 	 */
 	public function handle_send_test_push_ajax() {
-		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed.', 'society-hubx' ) ), 403 );
+		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && 
+		     ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && 
+		     ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) &&
+		     ! check_ajax_referer( 'shubx51_settings_nonce', 'nonce', false ) &&
+		     ! check_ajax_referer( 'shubx51_admin_nonce', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed. Please refresh the page and try again.', 'society-hubx' ) ) );
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized: Administrator privileges required.', 'society-hubx' ) ) );
 		}
 
 		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'FCM Service not available.', 'society-hubx' ) ), 500 );
+			wp_send_json_error( array( 'message' => esc_html__( 'FCM Service class not available.', 'society-hubx' ) ) );
 		}
 
 		if ( ! SHUBX51_FCM_Service::is_enabled() ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are not enabled or missing credentials.', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are not enabled or credentials have not been saved yet.', 'society-hubx' ) ) );
 		}
 
 		$title = esc_html__( '🧪 Society HubX Test Alert', 'society-hubx' );
@@ -503,26 +507,73 @@ class SHUBX51_Admin_Settings {
 
 		$flat_no = isset( $_POST['target_flat'] ) ? sanitize_text_field( wp_unslash( $_POST['target_flat'] ) ) : '';
 
+		// 1. Record In-App notification first for admin and resident(s)
+		$current_uid = get_current_user_id();
+		$target_uids = array();
+		if ( $current_uid > 0 ) {
+			$target_uids[] = $current_uid;
+		}
+
+		$db = new SHUBX51_DB_Router();
 		if ( ! empty( $flat_no ) ) {
-			$sent = SHUBX51_FCM_Service::send_to_flat( $flat_no, $title, $body, $data, 'high' );
-			if ( $sent === 0 ) {
-				wp_send_json_error( array( 'message' => sprintf( esc_html__( 'No active mobile devices registered for Flat %s.', 'society-hubx' ), $flat_no ) ), 404 );
-			}
-		} else {
-			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
-			if ( $sent === 0 ) {
-				wp_send_json_error( array( 'message' => esc_html__( 'No registered devices found. Open the mobile app and log in to register a device first.', 'society-hubx' ) ), 404 );
+			$residents = $db->get( 'residents', array( 'where' => array( 'flat_no' => $flat_no ) ) );
+			if ( ! empty( $residents ) ) {
+				foreach ( $residents as $r ) {
+					if ( ! empty( $r['wp_user_id'] ) ) {
+						$target_uids[] = (int) $r['wp_user_id'];
+					}
+				}
 			}
 		}
 
-		wp_send_json_success( array(
-			'message' => sprintf(
-				// translators: %d is the number of devices reached.
-				esc_html__( 'Test push sent successfully to %d device(s)!', 'society-hubx' ),
-				$sent
-			),
-			'dispatched' => $sent,
-		) );
+		$target_uids = array_unique( array_filter( $target_uids ) );
+		foreach ( $target_uids as $uid ) {
+			$db->insert( 'inapp_notifications', array(
+				'id'         => wp_generate_uuid4(),
+				'user_id'    => $uid,
+				'title'      => $title,
+				'content'    => $body,
+				'type'       => 'test_ping',
+				'is_read'    => 0,
+				'action_url' => '',
+				'created_at' => current_time( 'mysql' ),
+			) );
+		}
+
+		// 2. Dispatch FCM push notification
+		if ( ! empty( $flat_no ) ) {
+			$sent = SHUBX51_FCM_Service::send_to_flat( $flat_no, $title, $body, $data, 'high' );
+		} else {
+			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
+		}
+
+		// 3. Return clean diagnostic JSON without throwing HTTP 404
+		$usage_info = get_option( 'shubx51_gateway_usage_cached', array() );
+		$usage_note = isset( $usage_info['monthly_usage'] ) ? sprintf( ' [Gateway Usage: %d / %d]', $usage_info['monthly_usage'], $usage_info['monthly_limit'] ?? 5000 ) : '';
+
+		if ( $sent > 0 ) {
+			wp_send_json_success( array(
+				'message'    => sprintf(
+					// translators: %d is the number of devices reached.
+					esc_html__( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.%s', 'society-hubx' ),
+					$sent,
+					$usage_note
+				),
+				'dispatched' => $sent,
+				'usage'      => $usage_info,
+			) );
+		} else {
+			wp_send_json_success( array(
+				'message'    => sprintf(
+					esc_html__( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices linked for "%s" - please log into the mobile app to register device token).%s', 'society-hubx' ),
+					! empty( $flat_no ) ? $flat_no : esc_html__( 'all', 'society-hubx' ),
+					$usage_note
+				),
+				'dispatched' => 0,
+				'warning'    => true,
+				'usage'      => $usage_info,
+			) );
+		}
 	}
 
 	public function render_activity_hub_page() {

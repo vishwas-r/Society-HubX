@@ -16,6 +16,10 @@ wordpress-temp.zip
 plugin-check/
 strip-bom.php
 society-governx-*.md
+pcp-chek reports/
+skills/
+libraries/
+demo-nodko-central-gateway/
 
 # Playwright local test artifacts
 test/node_modules/
