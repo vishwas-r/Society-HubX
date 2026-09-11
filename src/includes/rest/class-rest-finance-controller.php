@@ -75,6 +75,67 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			)
 		);
 
+		register_rest_route(
+			$this->namespace,
+			'/invoices/adhoc',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'generate_adhoc_invoices' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/invoices/(?P<id>[\w-]+)/record-payment',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'record_invoice_payment' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
+				),
+			)
+		);
+
+		// Finance Overview, Ledger & Reconciliation Routes
+		register_rest_route(
+			$this->namespace,
+			'/finance/overview',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_finance_overview' ),
+					'permission_callback' => array( $this, 'user_logged_in_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/finance/ledger',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_finance_ledger' ),
+					'permission_callback' => array( $this, 'finance_view_check' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/finance/reconcile',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'reconcile_funds' ),
+					'permission_callback' => array( $this, 'finance_manage_check' ),
+				),
+			)
+		);
+
 		// Payments Routes
 		register_rest_route(
 			$this->namespace,
@@ -163,7 +224,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function get_invoices( $request ) {
 		$db = new SHUBX51_DB_Router();
-		$invoices = $db->get( 'invoices' );
+		$invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
 
 		$user_id = get_current_user_id();
 		$rbac = new SHUBX51_RBAC_Manager();
@@ -560,6 +621,279 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		}
 
 		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense approved successfully.', 'society-hubx' ) ) );
+	}
+
+	/**
+	 * Get aggregated Finance Overview KPIs & Charts.
+	 */
+	public function get_finance_overview( $request ) {
+		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		}
+
+		$selected_year = sanitize_text_field( $request->get_param( 'year' ) );
+		if ( empty( $selected_year ) ) {
+			$selected_year = wp_date( 'Y' );
+		}
+
+		$db = new SHUBX51_DB_Router();
+		$invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
+		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
+
+		$total_credit = 0;
+		$total_debit = 0;
+		$opening_bank = floatval( get_option( 'shubx51_opening_bank_' . $selected_year, 0 ) );
+		$opening_cash = floatval( get_option( 'shubx51_opening_cash_' . $selected_year, 0 ) );
+
+		foreach ( $ledger_entries as $e ) {
+			if ( ( $e['type'] ?? '' ) === 'Credit' ) {
+				$total_credit += floatval( $e['amount'] ?? 0 );
+			} elseif ( ( $e['type'] ?? '' ) === 'Debit' ) {
+				$total_debit += floatval( $e['amount'] ?? 0 );
+			}
+		}
+
+		$last_entry = ! empty( $ledger_entries ) ? end( $ledger_entries ) : null;
+		$net_balance = ( floatval( $last_entry['bank_balance'] ?? 0 ) ) + ( floatval( $last_entry['cash_balance'] ?? 0 ) );
+
+		$actual_bank = floatval( get_option( 'shubx51_actual_bank_' . $selected_year, 0 ) );
+		$actual_cash = floatval( get_option( 'shubx51_actual_cash_' . $selected_year, 0 ) );
+		$actual_total = $actual_bank + $actual_cash;
+		$variance = $actual_total - $net_balance;
+
+		// Demand vs Collected
+		$total_demand = 0;
+		$total_collected = 0;
+		$paid_count = 0;
+		$unpaid_count = 0;
+		$partial_count = 0;
+
+		foreach ( $invoices as $inv ) {
+			if ( ( $inv['status'] ?? '' ) === 'pending_total' ) {
+				continue;
+			}
+			$inv_year = wp_date( 'Y', strtotime( $inv['month'] ?? $inv['created_at'] ?? '' ) );
+			if ( $inv_year == $selected_year ) {
+				$total_demand += floatval( $inv['amount'] ?? 0 );
+				$collected_this = 0;
+				if ( ! empty( $inv['payments'] ) && is_array( $inv['payments'] ) ) {
+					foreach ( $inv['payments'] as $p ) {
+						if ( wp_date( 'Y', strtotime( $p['date'] ?? '' ) ) == $selected_year ) {
+							$collected_this += floatval( $p['amount'] ?? 0 );
+						}
+					}
+				}
+				if ( $collected_this == 0 && strtolower( $inv['status'] ?? '' ) === 'paid' ) {
+					$collected_this = floatval( $inv['amount'] ?? 0 );
+				}
+				$total_collected += $collected_this;
+
+				$inv_status = strtolower( $inv['status'] ?? 'unpaid' );
+				if ( $inv_status === 'paid' ) {
+					$paid_count++;
+				} elseif ( $inv_status === 'partial' || $inv_status === 'partially paid' ) {
+					$partial_count++;
+				} else {
+					$unpaid_count++;
+				}
+			}
+		}
+
+		$collection_pct = ( $total_demand > 0 ) ? round( ( $total_collected / $total_demand ) * 100 ) : 0;
+
+		// Monthly cash flow
+		$monthly_data = array();
+		foreach ( $ledger_entries as $entry ) {
+			$month = wp_date( 'M Y', strtotime( $entry['date'] ?? '' ) );
+			if ( ! isset( $monthly_data[ $month ] ) ) {
+				$monthly_data[ $month ] = array( 'income' => 0, 'expense' => 0, 'net' => 0 );
+			}
+			if ( ( $entry['type'] ?? '' ) === 'Credit' ) {
+				$monthly_data[ $month ]['income'] += floatval( $entry['amount'] ?? 0 );
+			} elseif ( ( $entry['type'] ?? '' ) === 'Debit' ) {
+				$monthly_data[ $month ]['expense'] += floatval( $entry['amount'] ?? 0 );
+			}
+		}
+		foreach ( $monthly_data as $m => &$m_val ) {
+			$m_val['net'] = $m_val['income'] - $m_val['expense'];
+		}
+		unset( $m_val );
+
+		// Category data
+		$category_data = array();
+		foreach ( $ledger_entries as $e ) {
+			if ( ( $e['type'] ?? '' ) === 'Debit' ) {
+				$cat = ! empty( $e['category'] ) ? $e['category'] : 'Others';
+				if ( ! isset( $category_data[ $cat ] ) ) {
+					$category_data[ $cat ] = 0;
+				}
+				$category_data[ $cat ] += floatval( $e['amount'] ?? 0 );
+			}
+		}
+
+		$live_bal = $ledger_mgr->get_current_balance();
+
+		return rest_ensure_response( array(
+			'year'            => $selected_year,
+			'total_credit'    => $total_credit,
+			'total_debit'     => $total_debit,
+			'total_demand'    => $total_demand,
+			'total_collected' => $total_collected,
+			'collection_pct'  => $collection_pct,
+			'net_balance'     => $net_balance,
+			'live_balance'    => $live_bal['total'] ?? $net_balance,
+			'actual_bank'     => $actual_bank,
+			'actual_cash'     => $actual_cash,
+			'actual_total'    => $actual_total,
+			'variance'        => $variance,
+			'monthly_data'    => $monthly_data,
+			'collection_data' => array(
+				'paid'    => $paid_count,
+				'unpaid'  => $unpaid_count,
+				'partial' => $partial_count,
+			),
+			'category_data'   => $category_data,
+		) );
+	}
+
+	/**
+	 * Get double-entry Money Flow Ledger.
+	 */
+	public function get_finance_ledger( $request ) {
+		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		}
+
+		$selected_year = sanitize_text_field( $request->get_param( 'year' ) );
+		if ( empty( $selected_year ) ) {
+			$selected_year = wp_date( 'Y' );
+		}
+
+		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$entries = $ledger_mgr->get_ledger_entries( $selected_year );
+
+		return rest_ensure_response( $entries ? $entries : array() );
+	}
+
+	/**
+	 * Reconcile physical funds with system balances.
+	 */
+	public function reconcile_funds( $request ) {
+		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		}
+
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$year = isset( $params['year'] ) ? sanitize_text_field( $params['year'] ) : wp_date( 'Y' );
+		$bank = isset( $params['actual_bank'] ) ? floatval( $params['actual_bank'] ) : 0;
+		$cash = isset( $params['actual_cash'] ) ? floatval( $params['actual_cash'] ) : 0;
+		$opening_bank = isset( $params['opening_bank'] ) ? floatval( $params['opening_bank'] ) : null;
+		$opening_cash = isset( $params['opening_cash'] ) ? floatval( $params['opening_cash'] ) : null;
+
+		update_option( 'shubx51_actual_bank_' . $year, $bank );
+		update_option( 'shubx51_actual_cash_' . $year, $cash );
+		if ( $opening_bank !== null ) {
+			update_option( 'shubx51_opening_bank_' . $year, $opening_bank );
+		}
+		if ( $opening_cash !== null ) {
+			update_option( 'shubx51_opening_cash_' . $year, $opening_cash );
+		}
+
+		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_entries = $ledger_mgr->get_ledger_entries( $year );
+		$last_entry = ! empty( $ledger_entries ) ? end( $ledger_entries ) : null;
+		$net_balance = ( floatval( $last_entry['bank_balance'] ?? 0 ) ) + ( floatval( $last_entry['cash_balance'] ?? 0 ) );
+		$actual_total = $bank + $cash;
+		$variance = $actual_total - $net_balance;
+
+		return rest_ensure_response( array(
+			'success'      => true,
+			'message'      => __( 'Funds reconciled successfully.', 'society-hubx' ),
+			'actual_bank'  => $bank,
+			'actual_cash'  => $cash,
+			'actual_total' => $actual_total,
+			'net_balance'  => $net_balance,
+			'variance'     => $variance,
+		) );
+	}
+
+	/**
+	 * Generate Ad-hoc collection invoices across all active flats.
+	 */
+	public function generate_adhoc_invoices( $request ) {
+		if ( ! class_exists( 'SHUBX51_Account_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+		}
+
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$month = isset( $params['month'] ) ? sanitize_text_field( $params['month'] ) : wp_date( 'Y-m' );
+		$amount = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
+		$description = isset( $params['description'] ) ? sanitize_text_field( $params['description'] ) : 'Ad-hoc Collection';
+		$due_date = isset( $params['due_date'] ) ? sanitize_text_field( $params['due_date'] ) : wp_date( 'Y-m-d', strtotime( '+7 days' ) );
+
+		if ( $amount <= 0 ) {
+			return new WP_Error( 'rest_invalid_amount', __( 'Valid ad-hoc amount is required.', 'society-hubx' ), array( 'status' => 400 ) );
+		}
+
+		$account_mgr = new SHUBX51_Account_Manager();
+		$count = $account_mgr->perform_bulk_invoice_generation( $month, $amount, 'adhoc', $due_date, $description );
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'count'   => $count,
+			'message' => sprintf( __( '%d ad-hoc invoices created successfully.', 'society-hubx' ), $count ),
+		) );
+	}
+
+	/**
+	 * Record an offline payment on an invoice.
+	 */
+	public function record_invoice_payment( $request ) {
+		if ( ! class_exists( 'SHUBX51_Account_Manager' ) ) {
+			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+		}
+
+		$id = sanitize_text_field( $request->get_param( 'id' ) );
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$amount = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
+		$method = isset( $params['method'] ) ? sanitize_text_field( $params['method'] ) : 'UPI';
+		$date = isset( $params['date'] ) ? sanitize_text_field( $params['date'] ) : wp_date( 'Y-m-d' );
+		$reference = isset( $params['reference'] ) ? sanitize_text_field( $params['reference'] ) : '-';
+
+		if ( $amount <= 0 ) {
+			return new WP_Error( 'rest_invalid_amount', __( 'Payment amount must be greater than zero.', 'society-hubx' ), array( 'status' => 400 ) );
+		}
+
+		$account_mgr = new SHUBX51_Account_Manager();
+		$res = $account_mgr->perform_record_payment( array(
+			'invoice_id' => $id,
+			'amount'     => $amount,
+			'method'     => $method,
+			'date'       => $date,
+			'reference'  => $reference,
+		) );
+
+		if ( is_wp_error( $res ) ) {
+			return $res;
+		}
+
+		return rest_ensure_response( array(
+			'success' => true,
+			'message' => __( 'Payment recorded successfully.', 'society-hubx' ),
+		) );
 	}
 
 	public function user_logged_in_check( $request ) {
