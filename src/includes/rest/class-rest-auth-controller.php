@@ -3,21 +3,21 @@
  * Class: REST Auth Controller
  * Mobile & client authentication, user profile hydration, and session validation.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Auth_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -94,7 +94,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 		$password = isset( $params['password'] ) ? $params['password'] : '';
 
 		if ( empty( $username ) || empty( $password ) ) {
-			return new WP_Error( 'rest_invalid_credentials', __( 'Username/Email and password are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_credentials', __( 'Username/Email and password are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		// Support login by email or username
@@ -102,7 +102,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 
 		if ( ! $user ) {
 			// Check if phone number was entered
-			$db = new SHUBX51_DB_Router();
+			$db = new NAMMASOCIETY51_DB_Router();
 			$residents = $db->get( 'residents', array( 'phone' => $username ) );
 			if ( ! empty( $residents ) && ! empty( $residents[0]['wp_user_id'] ) ) {
 				$user = get_user_by( 'id', (int) $residents[0]['wp_user_id'] );
@@ -110,13 +110,13 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! $user ) {
-			return new WP_Error( 'rest_user_not_found', __( 'No user account found with the provided credentials.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_user_not_found', __( 'No user account found with the provided credentials.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$authenticated = wp_authenticate( $user->user_login, $password );
 
 		if ( is_wp_error( $authenticated ) ) {
-			return new WP_Error( 'rest_auth_failed', __( 'Invalid username or password.', 'society-hubx' ), array( 'status' => 401 ) );
+			return new WP_Error( 'rest_auth_failed', __( 'Invalid username or password.', 'namma-society' ), array( 'status' => 401 ) );
 		}
 
 		// Generate authentication token for mobile API (URL-safe Base64)
@@ -147,7 +147,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_current_user_profile( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		$profile_data = $this->build_user_profile( $user_id );
 		return rest_ensure_response( array( 'success' => true, 'data' => $profile_data ) );
@@ -160,10 +160,10 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function update_current_user_profile( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
 		if ( ! $user_id ) {
-			return new WP_Error( 'rest_not_logged_in', __( 'You must be logged in to update your profile.', 'society-hubx' ), array( 'status' => 401 ) );
+			return new WP_Error( 'rest_not_logged_in', __( 'You must be logged in to update your profile.', 'namma-society' ), array( 'status' => 401 ) );
 		}
 
 		$params = $request->get_json_params();
@@ -183,11 +183,11 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 		}
 
 		if ( isset( $params['avatar_url'] ) ) {
-			update_user_meta( $user_id, 'shubx51_custom_avatar', esc_url_raw( $params['avatar_url'] ) );
+			update_user_meta( $user_id, 'nammasociety51_custom_avatar', esc_url_raw( $params['avatar_url'] ) );
 		}
 
 		// Update corresponding resident record if exists
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$resident = $db->get_resident_by_wp_id( $user_id );
 		if ( $resident && ! empty( $resident['id'] ) ) {
 			$res_update = array();
@@ -218,7 +218,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 		}
 
 		$profile_data = $this->build_user_profile( $user_id );
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Profile updated successfully.', 'society-hubx' ), 'data' => $profile_data ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Profile updated successfully.', 'namma-society' ), 'data' => $profile_data ) );
 	}
 
 	/**
@@ -229,8 +229,8 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 */
 	private function build_user_profile( $user_id ) {
 		$user = get_userdata( $user_id );
-		$db = new SHUBX51_DB_Router();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$db = new NAMMASOCIETY51_DB_Router();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 
 		$resident = $db->get_resident_by_wp_id( $user_id );
 		$is_admin = current_user_can( 'manage_options' ) || $rbac->has_capability( $user_id, 'residents_manage' );
@@ -273,7 +273,7 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 			}
 		}
 
-		$custom_avatar = get_user_meta( $user_id, 'shubx51_custom_avatar', true );
+		$custom_avatar = get_user_meta( $user_id, 'nammasociety51_custom_avatar', true );
 		if ( empty( $custom_avatar ) && ! empty( $resident['profile_photo'] ) ) {
 			$custom_avatar = $resident['profile_photo'];
 		}
@@ -314,10 +314,15 @@ class SHUBX51_REST_Auth_Controller extends WP_REST_Controller {
 	 */
 	public function logout( $request ) {
 		wp_logout();
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Logged out successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Logged out successfully.', 'namma-society' ) ) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Auth_Controller' ) && ! class_exists( 'SHUBX51_REST_Auth_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Auth_Controller', 'SHUBX51_REST_Auth_Controller' );
 }

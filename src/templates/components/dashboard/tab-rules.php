@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var array $data Dashboard data
  */
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 $user_id = get_current_user_id();
 $residents = $db->get( 'residents', array( 'where' => array( 'wp_user_id' => $user_id ) ) );
 $resident_id = !empty($residents) ? $residents[0]['id'] : '';
@@ -25,8 +25,8 @@ $categories = $db->get( 'rule_categories', array( 'where' => array( 'is_active' 
 
 // Get pending acknowledgments
 global $wpdb;
-$rules_table = "{$wpdb->prefix}shubx51_rules";
-$acks_table = "{$wpdb->prefix}shubx51_rule_acknowledgments";
+$rules_table = "{$wpdb->prefix}nammasociety51_rules";
+$acks_table = "{$wpdb->prefix}nammasociety51_rule_acknowledgments";
 
 $pending_rules = $wpdb->get_results($wpdb->prepare("
     SELECT r.* FROM $rules_table r

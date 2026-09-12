@@ -44,8 +44,8 @@ if (!empty($data['pending_payment_requests'])) {
 }
 
 // Helper for Indian Numbering Format
-if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
-    function SHUBX_in_fmt($num, $decimals = 2) {
+if ( ! function_exists( 'NAMMASOCIETY_in_fmt' ) ) {
+    function NAMMASOCIETY_in_fmt($num, $decimals = 2) {
         $num = (float)$num;
         if (class_exists('NumberFormatter')) {
             $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
@@ -84,28 +84,28 @@ if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
     <?php include 'components/dashboard/tab-community.php'; ?>
     <?php include 'components/dashboard/tab-notifications.php'; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'notices' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'notices' ) ) : ?>
         <?php include 'components/dashboard/tab-notices.php'; ?>
     <?php endif; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'helpdesk' ) ) : ?>
         <?php include 'components/dashboard/tab-requests.php'; ?>
     <?php endif; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'finance' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'finance' ) ) : ?>
         <?php include 'components/dashboard/tab-accounts.php'; ?>
         <?php include 'components/dashboard/tab-expenses.php'; ?>
     <?php endif; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'facilities' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'facilities' ) ) : ?>
         <?php include 'components/dashboard/tab-facilities.php'; ?>
     <?php endif; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'polls' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'polls' ) ) : ?>
         <?php include 'components/dashboard/tab-polls.php'; ?>
     <?php endif; ?>
 
-    <?php if ( ! class_exists( 'SHUBX51_Module_Registry' ) || SHUBX51_Module_Registry::is_enabled( 'rules' ) ) : ?>
+    <?php if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) || NAMMASOCIETY51_Module_Registry::is_enabled( 'rules' ) ) : ?>
         <?php include 'components/dashboard/tab-rules.php'; ?>
     <?php endif; ?>
 
@@ -114,15 +114,15 @@ if ( ! function_exists( 'SHUBX_in_fmt' ) ) {
 <!-- Replace simplified visible/hidden logic with Bootstrap Modals -->
 
 <!-- Modals & Scripts -->
-<?php include SHUBX51_PLUGIN_DIR . 'templates/components/dashboard/modals.php'; ?>
+<?php include NAMMASOCIETY51_PLUGIN_DIR . 'templates/components/dashboard/modals.php'; ?>
 
 <!-- Global Toasts Container -->
 <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 100070;">
-    <div id="shubx-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="nammasociety-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-3 py-3 px-4">
-                <i id="shubx-toast-icon" class="bi fs-4"></i>
-                <div id="shubx-toast-message" class="fw-bold"></div>
+                <i id="nammasociety-toast-icon" class="bi fs-4"></i>
+                <div id="nammasociety-toast-message" class="fw-bold"></div>
             </div>
             <button type="button" class="btn-close btn-close-white me-3 m-auto opacity-50" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>

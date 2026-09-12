@@ -3,21 +3,21 @@
  * Class: REST Polls Controller
  * Endpoints for Digital Democracy (Society Polls & Voting).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Polls_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -93,7 +93,7 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 	 * List polls.
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$polls = $db->get( 'polls' );
 
 		if ( empty( $polls ) ) {
@@ -108,11 +108,11 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$polls = $db->get( 'polls', array( 'id' => $id ) );
 
 		if ( empty( $polls ) ) {
-			return new WP_Error( 'rest_poll_not_found', __( 'Poll not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_poll_not_found', __( 'Poll not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$poll = $polls[0];
@@ -166,7 +166,7 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 		$options = isset( $params['options'] ) ? (array) $params['options'] : array();
 
 		if ( empty( $title ) || count( $options ) < 2 ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Title and at least 2 options are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Title and at least 2 options are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$clean_options = array_values( array_filter( array_map( 'sanitize_text_field', $options ) ) );
@@ -182,7 +182,7 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 			'created_by'  => get_current_user_id(),
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'polls', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -203,17 +203,17 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 
 		$option = isset( $params['option'] ) ? sanitize_text_field( $params['option'] ) : '';
 		if ( empty( $option ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Vote option is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Vote option is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$polls = $db->get( 'polls', array( 'id' => $id ) );
 		if ( empty( $polls ) ) {
-			return new WP_Error( 'rest_poll_not_found', __( 'Poll not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_poll_not_found', __( 'Poll not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		if ( ( $polls[0]['status'] ?? '' ) !== 'open' ) {
-			return new WP_Error( 'rest_poll_closed', __( 'This poll is closed.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_poll_closed', __( 'This poll is closed.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$user_id = get_current_user_id();
@@ -222,7 +222,7 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 
 		$votes = $db->get( 'votes', array( 'where' => array( 'poll_id' => $id, 'user_id' => $user_id ) ) );
 		if ( ! empty( $votes ) ) {
-			return new WP_Error( 'rest_already_voted', __( 'You have already voted on this poll.', 'society-hubx' ), array( 'status' => 409 ) );
+			return new WP_Error( 'rest_already_voted', __( 'You have already voted on this poll.', 'namma-society' ), array( 'status' => 409 ) );
 		}
 
 		$vote_data = array(
@@ -238,7 +238,7 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Vote recorded successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Vote recorded successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -246,14 +246,14 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 	 */
 	public function close_poll( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'polls', array( 'status' => 'closed' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Poll closed successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Poll closed successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -261,23 +261,28 @@ class SHUBX51_REST_Polls_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'polls', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Poll deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Poll deleted successfully.', 'namma-society' ) ) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function polls_manage_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'polls_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Polls_Controller' ) && ! class_exists( 'SHUBX51_REST_Polls_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Polls_Controller', 'SHUBX51_REST_Polls_Controller' );
 }

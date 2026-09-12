@@ -3,41 +3,41 @@
  * Module: Resident Manager
  * Handles the "Residents" table and WP User Sync.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Resident_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
 
 	private $db;
 	private $drive;
 	private $media;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
-		$this->drive = new SHUBX51_Drive_Manager();
-		$this->media = new SHUBX51_Media_Manager();
+		$this->db = new NAMMASOCIETY51_DB_Router();
+		$this->drive = new NAMMASOCIETY51_Drive_Manager();
+		$this->media = new NAMMASOCIETY51_Media_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		// AJAX Actions
-		add_action( 'wp_ajax_shubx51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'wp_ajax_shubx51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'wp_ajax_shubx51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'wp_ajax_shubx51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'wp_ajax_shubx51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'wp_ajax_shubx51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'wp_ajax_nammasociety51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'wp_ajax_nammasociety51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'wp_ajax_nammasociety51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'wp_ajax_nammasociety51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_history', array( $this, 'handle_delete_history' ) );
 
 		// Legacy Admin Post Actions (optional cleanup if no longer used)
-		add_action( 'admin_post_shubx51_add_resident', array( $this, 'handle_add_resident' ) );
-		add_action( 'admin_post_shubx51_edit_resident', array( $this, 'handle_edit_resident' ) );
-		add_action( 'admin_post_shubx51_delete_resident', array( $this, 'handle_delete_resident' ) );
-		add_action( 'admin_post_shubx51_restore_resident', array( $this, 'handle_restore_resident' ) );
-		add_action( 'admin_post_shubx51_move_to_history', array( $this, 'handle_move_to_history' ) );
-		add_action( 'admin_post_shubx51_delete_history', array( $this, 'handle_delete_history' ) );
-		add_action( 'admin_post_shubx51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_nammasociety51_add_resident', array( $this, 'handle_add_resident' ) );
+		add_action( 'admin_post_nammasociety51_edit_resident', array( $this, 'handle_edit_resident' ) );
+		add_action( 'admin_post_nammasociety51_delete_resident', array( $this, 'handle_delete_resident' ) );
+		add_action( 'admin_post_nammasociety51_restore_resident', array( $this, 'handle_restore_resident' ) );
+		add_action( 'admin_post_nammasociety51_move_to_history', array( $this, 'handle_move_to_history' ) );
+		add_action( 'admin_post_nammasociety51_delete_history', array( $this, 'handle_delete_history' ) );
+		add_action( 'admin_post_nammasociety51_bulk_import_residents', array( $this, 'handle_bulk_import' ) );
 
 
 		// Self-Heal Schema (Ensure columns exist)
@@ -50,8 +50,8 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		}
         
         // Register Module
-        add_filter( 'shubx51_get_module_residents', array( $this, 'get_instance' ) );
-        add_filter( 'shubx51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
+        add_filter( 'nammasociety51_get_module_residents', array( $this, 'get_instance' ) );
+        add_filter( 'nammasociety51_get_module_family', array( $this, 'get_instance' ) ); // Handle Family Requests
 	}
 
     public function get_instance() {
@@ -95,7 +95,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                 }
                 if ( $user && ! is_wp_error( $user ) ) {
                     $this->db->update('residents', ['wp_user_id' => $user->ID], ['id' => $id]);
-                    update_user_meta( $user->ID, 'shubx51_flat_no', $updated_resident['flat_no'] );
+                    update_user_meta( $user->ID, 'nammasociety51_flat_no', $updated_resident['flat_no'] );
                     $this->sync_wp_user_roles( $user->ID, $id );
                 }
             }
@@ -113,11 +113,11 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Residents Directory',
 			'Residents',
 			'read', // Granular check in render_page
-			'shubx51-residents',
+			'nammasociety51-residents',
 			array( $this, 'render_page' )
 		);
 	}
@@ -128,13 +128,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	public function handle_add_resident() {
 		if ( wp_doing_ajax() ) {
             ob_start();
-            check_ajax_referer( 'shubx51_resident_nonce' );
+            check_ajax_referer( 'nammasociety51_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'shubx51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'nammasociety51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 	
     // IF ADMIN: Immediate
-   $rbac = SHUBX51_Plugin::get_instance()->rbac;
+   $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
    $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
    if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
        $post_data['status'] = 'approved';
@@ -153,13 +153,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
        $post_data['id'] = uniqid('res_');
        $this->process_add_resident( $post_data );
 
-       require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-       $rm = new SHUBX51_Request_Manager();
+       require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+       $rm = new NAMMASOCIETY51_Request_Manager();
        $res = $rm->create_request( 'residents', 'add', $post_data, $post_data['id'], 'residents', $post_data['flat_no'] );
        
         if ( wp_doing_ajax() ) {
            $debug = ob_get_clean();
-           if(!empty($debug)) error_log('SHUBX Resident Add Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+           if(!empty($debug)) error_log('NAMMASOCIETY Resident Add Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
            
            // Aggressive Clean
            while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -169,7 +169,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
        }
    }
 
-	wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=added' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=added' ) );
 	exit;
 }
 
@@ -178,16 +178,16 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		if ( wp_doing_ajax() ) {
             ob_start();
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce($nonce, 'shubx51_resident_nonce') && ! wp_verify_nonce($nonce, 'shubx51_frontend_nonce') ) {
+            if ( ! wp_verify_nonce($nonce, 'nammasociety51_resident_nonce') && ! wp_verify_nonce($nonce, 'nammasociety51_frontend_nonce') ) {
                 ob_get_clean(); // Clean before error
                 // Aggressive Clean
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
-                error_log("SHUBX51 Error: Nonce verification failed for edit_resident"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                error_log("NAMMASOCIETY51 Error: Nonce verification failed for edit_resident"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_send_json_error(['message' => 'Nonce verification failed'], 403);
                 exit;
             }
         } else {
-		    if ( ! check_admin_referer( 'shubx51_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'nammasociety51_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
     
     $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
@@ -201,12 +201,12 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
     }
 
     // Handle Photo Upload (for both Admin and Resident requests)
-    error_log("SHUBX51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+    error_log("NAMMASOCIETY51 Debug: handle_edit_resident called. _FILES: " . (isset($_FILES['profile_photo']) ? 'Found' : 'Missing')); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
     
     if ( ! empty( $_FILES['profile_photo']['name'] ) ) {
         $photo_url = $this->handle_photo_upload($flat_no, $name);
         if ( is_wp_error( $photo_url ) ) {
-            error_log("SHUBX51 Error: Photo upload failed: " . $photo_url->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("NAMMASOCIETY51 Error: Photo upload failed: " . $photo_url->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
             if ( wp_doing_ajax() ) {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_error(['message' => 'Photo upload failed: ' . $photo_url->get_error_message()]);
@@ -214,12 +214,12 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             }
         } else {
             $post_data['profile_photo'] = $photo_url;
-            error_log("SHUBX51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("NAMMASOCIETY51 Debug: Photo uploaded successfully to: " . $photo_url); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         }
     }
     
     // IF ADMIN OR RESIDENT EDITING OWN BASIC PROFILE: Immediate
-    $rbac = SHUBX51_Plugin::get_instance()->rbac;
+    $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
     $is_admin = $rbac->has_capability( get_current_user_id(), 'residents_manage' );
     
     // Check if it's a self-profile edit (basic details only)
@@ -241,8 +241,8 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         }
 
         // 1. Synchronize with Request Manager if a pending request exists
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $sync_res = $rm->approve_request( $id );
         
         if ( ! is_wp_error( $sync_res ) ) {
@@ -253,7 +253,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Profile updated and request synchronized']);
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx-profile&status=updated' ) ); // Contextual redirect might be needed
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety-profile&status=updated' ) ); // Contextual redirect might be needed
             }
             exit;
         }
@@ -271,13 +271,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             exit;
         }
     } else {
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $res = $rm->create_request( 'residents', 'edit', $post_data, $id, 'residents', $post_data['flat_no'] ?? '' );
 
         if ( wp_doing_ajax() ) {
             $debug = ob_get_clean();
-            if(!empty($debug)) error_log('SHUBX Resident Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            if(!empty($debug)) error_log('NAMMASOCIETY Resident Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
             // Aggressive Clean
             while ( ob_get_level() > 0 ) { ob_end_clean(); }
@@ -291,7 +291,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
         }
     }
 
-	wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=updated' ) );
+	wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=updated' ) );
 	exit;
 }
     private function perform_edit_resident( $data ) {
@@ -413,7 +413,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 		// FIX: Ensure WP User Linkage
         $current_user_id = get_current_user_id();
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         $is_admin = $rbac && $rbac->has_capability( $current_user_id, 'residents_manage' );
         $wp_user_id = ! empty( $existing_resident['wp_user_id'] ) ? intval( $existing_resident['wp_user_id'] ) : 0;
 
@@ -438,7 +438,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                         'first_name'   => $update_data['name'],
                     ];
                     wp_update_user( $wp_user_data );
-                    update_user_meta( $wp_user_id, 'shubx51_flat_no', $update_data['flat_no'] );
+                    update_user_meta( $wp_user_id, 'nammasociety51_flat_no', $update_data['flat_no'] );
                     $this->sync_wp_user_roles( $wp_user_id, $resident_id );
                 }
             }
@@ -458,7 +458,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
                  
                  if ( $user && ! is_wp_error( $user ) ) {
                       $update_data['wp_user_id'] = $user->ID;
-                      update_user_meta( $user->ID, 'shubx51_flat_no', $update_data['flat_no'] );
+                      update_user_meta( $user->ID, 'nammasociety51_flat_no', $update_data['flat_no'] );
 
                       // Sync Profile Changes to WP User
                       $wp_user_data = [
@@ -486,19 +486,19 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 */
 	public function handle_delete_resident() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_delete_resident_nonce' );
+            check_ajax_referer( 'nammasociety51_delete_resident_nonce' );
         } else {
-		    if ( ! check_admin_referer( 'shubx51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
+		    if ( ! check_admin_referer( 'nammasociety51_delete_resident_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
         
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         if ( $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) {
             $res = $this->perform_delete_resident(['resident_id' => $resident_id]);
         } else {
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $rm->create_request( 'residents', 'delete', ['resident_id' => $resident_id], $resident_id, 'residents' );
         }
 
@@ -508,7 +508,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             wp_send_json_success(['message' => 'Resident archived successfully']);
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=archived' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=archived' ) );
 		exit;
 	}
 
@@ -517,12 +517,12 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
      */
     public function handle_move_to_history() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_move_to_history_nonce' );
+            check_ajax_referer( 'nammasociety51_move_to_history_nonce' );
         } else {
-            if ( ! check_admin_referer( 'shubx51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! check_admin_referer( 'nammasociety51_move_to_history_nonce' ) ) wp_die( 'Security check failed' );
         }
 
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die('Unauthorized');
 
         $resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -546,7 +546,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             }
         }
 
-        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=permanently_deleted' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=permanently_deleted' ) );
         exit;
     }
 
@@ -554,13 +554,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Restore Resident from Archive.
 	 */
 	public function handle_restore_resident() {
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_restore_resident_nonce' );
+			check_ajax_referer( 'nammasociety51_restore_resident_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_restore_resident_nonce' ) ) wp_die( 'Security check failed' );
 		}
 
 		$resident_id = isset( $_POST['resident_id'] ) ? sanitize_text_field( wp_unslash( $_POST['resident_id'] ) ) : '';
@@ -602,8 +602,8 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 
 			// Log Audit
 			$name = $to_restore['name'] ?? 'Unknown';
-			require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-			$rm = new SHUBX51_Request_Manager();
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+			$rm = new NAMMASOCIETY51_Request_Manager();
 			$rm->log_audit('resident_restored', 'residents', $resident_id, "Resident: $name (source: $source)");
 
 			if ( wp_doing_ajax() ) {
@@ -617,7 +617,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=restored' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=restored' ) );
 		exit;
 	}
 
@@ -655,13 +655,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Permanently Delete from History Archive.
 	 */
 	public function handle_delete_history() {
-    $rbac = SHUBX51_Plugin::get_instance()->rbac;
+    $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
     if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
     if ( wp_doing_ajax() ) {
-        check_ajax_referer( 'shubx51_delete_history_nonce' );
+        check_ajax_referer( 'nammasociety51_delete_history_nonce' );
     } else {
-	    if ( ! check_admin_referer( 'shubx51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
+	    if ( ! check_admin_referer( 'nammasociety51_delete_history_nonce' ) ) wp_die( 'Security check failed' );
     }
 
 	$history_id = isset( $_POST['history_id'] ) ? sanitize_text_field( wp_unslash( $_POST['history_id'] ) ) : '';
@@ -677,7 +677,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
             wp_send_json_error(['message' => 'Delete failed']);
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=history_deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=history_deleted' ) );
 		exit;
 	}
 
@@ -685,10 +685,10 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_manage' ) ) wp_die( 'Unauthorized' );
 
-		if ( ! check_admin_referer( 'shubx51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -720,7 +720,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-residents&status=imported&count=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -811,7 +811,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		}
 
 		// 1. Create WP User (if email provided, status is approved, and current user can manage residents).
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		$is_admin = $rbac && $rbac->has_capability( get_current_user_id(), 'residents_manage' );
 		if ( $data['email'] && $data['status'] === 'approved' && $is_admin ) {
 			$user = get_user_by( 'email', $data['email'] );
@@ -826,7 +826,7 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 			
 			if ( $user && ! is_wp_error( $user ) ) {
 				$data['wp_user_id'] = $user->ID;
-				update_user_meta( $user->ID, 'shubx51_flat_no', $data['flat_no'] );
+				update_user_meta( $user->ID, 'nammasociety51_flat_no', $data['flat_no'] );
 
                 // Sync Roles immediately
                 $this->sync_wp_user_roles( $user->ID, $data['id'] );
@@ -841,17 +841,17 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	}
 
 	public function render_page() {
-        $rbac = SHUBX51_Plugin::get_instance()->rbac;
+        $rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
         if ( ! $rbac->has_capability( get_current_user_id(), 'residents_view' ) ) {
             wp_die( 'You do not have permission to view the Residents Directory.' );
         }
 		// Pass Residents and Flats for the form dropdown
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $unified = $rm->get_unified_data( 'residents', 'residents', 'resident_history', true ); // Added load_relations
         $flats = $this->db->get('flats');
 		
-		SHUBX51_Admin_App::render_view('residents', [
+		NAMMASOCIETY51_Admin_App::render_view('residents', [
 			'residents' => $unified['active'], 
             'pending'   => $unified['pending'],
             'history'   => $unified['archived'],
@@ -863,16 +863,16 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 	 * Sync Society Roles to WordPress User Roles.
 	 */
 	public function sync_wp_user_roles( $user_id, $resident_id ) {
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		$society_roles = $this->db->get_mysql( 'resident_role_map', array( 'where' => array( 'resident_id' => $resident_id ) ) );
 		
 		$wp_user = new WP_User( $user_id );
 		if ( ! $wp_user->exists() ) return;
 
-		// 1. Remove all existing SHUBX roles from user
+		// 1. Remove all existing NAMMASOCIETY roles from user
 		$current_wp_roles = $wp_user->roles;
 		foreach ( $current_wp_roles as $role_slug ) {
-			if ( strpos( $role_slug, 'SHUBX_' ) === 0 ) {
+			if ( strpos( $role_slug, 'NAMMASOCIETY_' ) === 0 ) {
 				$wp_user->remove_role( $role_slug );
 			}
 		}
@@ -880,13 +880,13 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		// 2. Add new roles based on society mapping
 		foreach ( $society_roles as $map ) {
 			$role_id = $map['role_id'];
-			$wp_role_id = 'SHUBX_' . sanitize_title( $role_id );
+			$wp_role_id = 'NAMMASOCIETY_' . sanitize_title( $role_id );
             
             // Ensure role exists in WP (double check)
             if ( ! get_role( $wp_role_id ) ) {
                 $role_def = $rbac->get_role( $role_id );
                 $role_name = $role_def ? $role_def['name'] : ucfirst( str_replace( '_', ' ', $role_id ) );
-                add_role( $wp_role_id, 'SHUBX: ' . $role_name, array( 'read' => true ) );
+                add_role( $wp_role_id, 'NAMMASOCIETY: ' . $role_name, array( 'read' => true ) );
             }
 
 			$wp_user->add_role( $wp_role_id );
@@ -909,4 +909,9 @@ class SHUBX51_Resident_Manager implements SHUBX51_Module {
 		}
 		return null;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Resident_Manager' ) && ! class_exists( 'SHUBX51_Resident_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Resident_Manager', 'SHUBX51_Resident_Manager' );
 }

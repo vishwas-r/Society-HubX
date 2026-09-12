@@ -2,17 +2,17 @@
 /**
  * Interface: Module
  * 
- * Standard interface for all Society HubX modules to support
+ * Standard interface for all Namma Society modules to support
  * centralized request handling (Approval/Rejection).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-interface SHUBX51_Module {
+interface NAMMASOCIETY51_Module {
     /**
      * Get the unique slug for this module.
      * Used to route requests to the correct module.

@@ -3,43 +3,43 @@
  * Module: Account Manager
  * Handles Resident Invoices, Payments, and Maintenance Dues.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Account_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// Handlers
-		add_action( 'admin_post_shubx51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
-		add_action( 'admin_post_shubx51_record_payment', array( $this, 'handle_record_payment' ) );
-		add_action( 'admin_post_shubx51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
-		add_action( 'admin_post_shubx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
-		add_action( 'admin_post_shubx51_delete_payment', array( $this, 'handle_delete_payment' ) );
-		add_action( 'admin_post_shubx51_print_receipt', array( $this, 'handle_print_receipt' ) );
-		add_action( 'admin_post_shubx51_export_tally_xml', array( $this, 'handle_export_tally_xml' ) );
+		add_action( 'admin_post_nammasociety51_generate_invoices', array( $this, 'handle_generate_invoices' ) );
+		add_action( 'admin_post_nammasociety51_record_payment', array( $this, 'handle_record_payment' ) );
+		add_action( 'admin_post_nammasociety51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
+		add_action( 'admin_post_nammasociety51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
+		add_action( 'admin_post_nammasociety51_delete_payment', array( $this, 'handle_delete_payment' ) );
+		add_action( 'admin_post_nammasociety51_print_receipt', array( $this, 'handle_print_receipt' ) );
+		add_action( 'admin_post_nammasociety51_export_tally_xml', array( $this, 'handle_export_tally_xml' ) );
 
 		// AJAX for Residents
-		add_action( 'wp_ajax_shubx51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
+		add_action( 'wp_ajax_nammasociety51_submit_payment_request', array( $this, 'handle_submit_payment_request' ) );
 
 		// AJAX for Admin
-		add_action( 'wp_ajax_shubx51_record_payment', array( $this, 'handle_record_payment' ) );
-		add_action( 'wp_ajax_shubx51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
-		add_action( 'wp_ajax_shubx51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
-		add_action( 'wp_ajax_shubx51_delete_payment', array( $this, 'handle_delete_payment' ) );
+		add_action( 'wp_ajax_nammasociety51_record_payment', array( $this, 'handle_record_payment' ) );
+		add_action( 'wp_ajax_nammasociety51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_payment', array( $this, 'handle_delete_payment' ) );
 
 		// Register Module
-		add_filter( 'shubx51_get_module_accounts', array( $this, 'get_instance' ) );
-		add_filter( 'shubx51_get_module_account', array( $this, 'get_instance' ) );
+		add_filter( 'nammasociety51_get_module_accounts', array( $this, 'get_instance' ) );
+		add_filter( 'nammasociety51_get_module_account', array( $this, 'get_instance' ) );
 	}
 
 	public function get_instance() {
@@ -63,11 +63,11 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Society Accounts',
 			'Accounts',
 			'read', // Granular check inside render_page
-			'shubx51-accounts',
+			'nammasociety51-accounts',
 			array( $this, 'render_page' )
 		);
 	}
@@ -76,20 +76,20 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 * Render Admin View.
 	 */
 	public function render_page() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_view' ) ) {
             wp_die( 'You do not have permission to view accounts.' );
         }
-		SHUBX51_Admin_App::render_view('accounts');
+		NAMMASOCIETY51_Admin_App::render_view('accounts');
 	}
 
 	/**
 	 * Generate Monthly Invoices (Bulk or Single)
 	 */
 	public function handle_generate_invoices() {
-		if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'nammasociety51_account_action' ) ) wp_die( 'Security check failed' );
         
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) wp_die( 'Unauthorized' );
 
 		$month = isset( $_POST['month'] ) ? sanitize_text_field( wp_unslash( $_POST['month'] ) ) : ''; // YYYY-MM
@@ -101,26 +101,26 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		if ( ! $month || ! $amount ) wp_die( 'Invalid Data' );
 
         // Check if job already running
-        $job_key = "shubx51_job_bulk_invoice_{$month}_{$type}";
+        $job_key = "nammasociety51_job_bulk_invoice_{$month}_{$type}";
         $existing_job = get_option( $job_key );
         if ( $existing_job && $existing_job['status'] === 'running' ) {
-            wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&error=job_running' ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&error=job_running' ) );
             exit;
         }
 
         // Enterprise Upgrade: Background Processing
-        if ( class_exists('SHUBX51_Background_Worker') ) {
-            $worker = new SHUBX51_Background_Worker();
+        if ( class_exists('NAMMASOCIETY51_Background_Worker') ) {
+            $worker = new NAMMASOCIETY51_Background_Worker();
             if ( $worker->is_available() ) {
                 $worker->schedule_bulk_invoices( $month, $amount, $type );
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=scheduled' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=scheduled' ) );
                 exit;
             }
         }
         
         // Fallback to synchronous if worker missing or unavailable
         $this->perform_bulk_invoice_generation( $month, $amount, $type, $due_date, $description );
-        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=generated' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=generated' ) );
 		exit;
 	}
 
@@ -132,8 +132,8 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
      * @return array
      */
     public static function calculate_maintenance_charge( $flat, $custom_amount = null ) {
-        $calc_type = get_option( 'shubx51_billing_calc_type', 'fixed' );
-        $default_fixed = floatval( get_option( 'shubx51_maintenance_amount', 0 ) );
+        $calc_type = get_option( 'nammasociety51_billing_calc_type', 'fixed' );
+        $default_fixed = floatval( get_option( 'nammasociety51_maintenance_amount', 0 ) );
 
         if ( $custom_amount !== null && floatval( $custom_amount ) > 0 ) {
             $base_maintenance = floatval( $custom_amount );
@@ -145,7 +145,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
         } elseif ( $calc_type === 'sqft' ) {
             $sqft = is_array( $flat ) ? floatval( $flat['sq_foot'] ?? 0 ) : 0;
             if ( ! is_array( $flat ) || empty( $sqft ) ) {
-                $db = new SHUBX51_DB_Router();
+                $db = new NAMMASOCIETY51_DB_Router();
                 $flat_val = is_array( $flat ) ? ( $flat['flat_number'] ?? $flat['flat_no'] ?? '' ) : $flat;
                 $flat_data = $db->get_row_by_field( 'flats', 'flat_number', $flat_val );
                 if ( ! $flat_data ) {
@@ -156,10 +156,10 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                 }
             }
 
-            $rate_sqft = floatval( get_option( 'shubx51_billing_rate_per_sqft', 0 ) );
-            $fixed_base = floatval( get_option( 'shubx51_billing_fixed_base', 0 ) );
-            $sinking = floatval( get_option( 'shubx51_billing_sinking_fund', 0 ) );
-            $utility = floatval( get_option( 'shubx51_billing_utility_charge', 0 ) );
+            $rate_sqft = floatval( get_option( 'nammasociety51_billing_rate_per_sqft', 0 ) );
+            $fixed_base = floatval( get_option( 'nammasociety51_billing_fixed_base', 0 ) );
+            $sinking = floatval( get_option( 'nammasociety51_billing_sinking_fund', 0 ) );
+            $utility = floatval( get_option( 'nammasociety51_billing_utility_charge', 0 ) );
 
             $sqft_total = ( $sqft > 0 && $rate_sqft > 0 ) ? ( $sqft * $rate_sqft ) : 0;
             $base_maintenance = $sqft_total + $fixed_base + $sinking + $utility;
@@ -176,9 +176,9 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
         }
 
         // GST calculation
-        $gst_enabled = ( get_option( 'shubx51_gst_enabled', '0' ) === '1' );
-        $gst_rate = floatval( get_option( 'shubx51_gst_rate', 18 ) );
-        $gst_threshold = floatval( get_option( 'shubx51_gst_threshold', 7500 ) );
+        $gst_enabled = ( get_option( 'nammasociety51_gst_enabled', '0' ) === '1' );
+        $gst_rate = floatval( get_option( 'nammasociety51_gst_rate', 18 ) );
+        $gst_threshold = floatval( get_option( 'nammasociety51_gst_threshold', 7500 ) );
 
         $gst_amount = 0;
         if ( $gst_enabled && ( $gst_threshold <= 0 || $base_maintenance > $gst_threshold ) ) {
@@ -298,12 +298,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 */
 	public function handle_record_payment() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_account_action', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_account_action', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_account_action' ) ) wp_die( 'Security check failed' );
 		}
 		
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
             wp_die( 'Unauthorized' );
@@ -313,8 +313,8 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
         
         // 1. Synchronize with Request Manager if a pending request exists
         if ( ! empty( $invoice_id ) && $invoice_id !== 'Total Outstanding' ) {
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $sync_res = $rm->approve_request( $invoice_id );
             
             if ( ! is_wp_error( $sync_res ) ) {
@@ -322,7 +322,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                     while ( ob_get_level() > 0 ) ob_end_clean();
                     wp_send_json_success( array( 'message' => 'Payment approved successfully' ) );
                 }
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=payment_recorded' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=payment_recorded' ) );
                 exit;
             }
         }
@@ -342,7 +342,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
             while ( ob_get_level() > 0 ) ob_end_clean();
             wp_send_json_success( array( 'message' => 'Payment recorded successfully!' ) );
         }
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=payment_recorded' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=payment_recorded' ) );
 		exit;
 	}
 
@@ -361,7 +361,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
         $request_id = sanitize_text_field( $data['request_id'] ?? '' );
         
         // Debug Log
-        error_log("SHUBX51 Payment: Processing Payment for Flat: $block-$flat_no, Amount: $amount_remaining, Inv: $invoice_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+        error_log("NAMMASOCIETY51 Payment: Processing Payment for Flat: $block-$flat_no, Amount: $amount_remaining, Inv: $invoice_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		$affected_invoices = [];
 
@@ -394,7 +394,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                 return strtolower(trim($inv['status'] ?? '')) !== 'paid';
             });
 
-            error_log("SHUBX51 Payment: Found " . count($unpaid_invoices) . " unpaid invoices for FIFO."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("NAMMASOCIETY51 Payment: Found " . count($unpaid_invoices) . " unpaid invoices for FIFO."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
             foreach ( $unpaid_invoices as $inv ) {
                 if ( $amount_remaining <= 0 ) break;
@@ -417,13 +417,13 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                          $affected_invoices[] = $inv;
                      $amount_remaining -= $payment_towards_this_inv;
                      
-                     error_log("SHUBX51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                     error_log("NAMMASOCIETY51 Payment: Applied $payment_towards_this_inv to Invoice " . $inv['id']); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 }
             }
         }
 
         // Save all affected invoices (Status + Aggregate Data updates)
-        error_log("SHUBX51 Payment: Saving status for " . count($affected_invoices) . " affected invoices."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+        error_log("NAMMASOCIETY51 Payment: Saving status for " . count($affected_invoices) . " affected invoices."); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
         foreach ( $affected_invoices as $inv ) {
             $this->db->update( 'invoices', array( 
                 'status'     => $inv['status'],
@@ -505,7 +505,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 */
 	public function handle_submit_payment_request() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : ( isset( $_REQUEST['_ajax_nonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_ajax_nonce'] ) ) : '' );
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_frontend_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 		
@@ -541,7 +541,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 			'resident_name' => $resident ? $resident['name'] : 'Unknown'
 		];
 
-		$rm = new SHUBX51_Request_Manager();
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$res = $rm->create_request( 'accounts', 'record_payment', $payload, $invoice_id );
 
         if ( ! is_wp_error( $res ) ) {
@@ -561,12 +561,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 
 	public function handle_delete_payment() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_nonce' );
+			check_ajax_referer( 'nammasociety51_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_account_action' ) ) wp_die( 'Security check failed' );
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
             wp_die( 'Unauthorized' );
@@ -594,7 +594,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                 while ( ob_get_level() > 0 ) ob_end_clean();
                 wp_send_json_success( array( 'message' => 'Payment deleted successfully' ) );
             }
-            wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=updated' ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=updated' ) );
         } else {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Invoice not found' ), 404 );
             wp_die( 'Invoice not found' );
@@ -604,12 +604,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 
 	public function handle_edit_invoice() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_account_action', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_account_action', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_account_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_account_action' ) ) wp_die( 'Security check failed' );
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
             wp_die( 'Unauthorized' );
@@ -642,7 +642,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
                 while ( ob_get_level() > 0 ) ob_end_clean();
                 wp_send_json_success( array( 'message' => 'Invoice updated successfully' ) );
             }
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=updated' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=updated' ) );
 		} else {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Invoice not found' ), 404 );
 			wp_die( 'Invoice not found' );
@@ -652,12 +652,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 
 	public function handle_delete_invoice() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_delete_invoice_nonce' );
+			check_ajax_referer( 'nammasociety51_delete_invoice_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_delete_invoice_nonce' ) ) wp_die( 'Security check failed' );
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) ) {
             if ( wp_doing_ajax() ) wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
             wp_die( 'Unauthorized' );
@@ -670,12 +670,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 			while ( ob_get_level() > 0 ) ob_end_clean();
 			wp_send_json_success( array( 'message' => 'Invoice deleted successfully' ) );
 		}
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&success=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&success=deleted' ) );
 		exit;
 	}
 
 	public function handle_print_receipt() {
-		if ( ! check_admin_referer( 'shubx51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'nammasociety51_print_receipt_nonce' ) ) wp_die( 'Security check failed' );
 
 		$invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
 		$invoices = $this->db->get( 'invoices' );
@@ -691,7 +691,7 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		if ( ! $inv ) wp_die( 'Invoice not found' );
 
 		// Load Template directly
-		include SHUBX51_PLUGIN_DIR . 'templates/print-receipt.php';
+		include NAMMASOCIETY51_PLUGIN_DIR . 'templates/print-receipt.php';
 		exit;
 	}
 
@@ -699,11 +699,11 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 	 * Export Invoices and Receipts in Tally XML format.
 	 */
 	public function handle_export_tally_xml() {
-		if ( ! check_admin_referer( 'shubx51_account_action' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_account_action' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_view' ) ) {
 			wp_die( 'Unauthorized' );
 		}
@@ -711,7 +711,12 @@ class SHUBX51_Account_Manager implements SHUBX51_Module {
 		$month = isset( $_POST['month'] ) ? sanitize_text_field( wp_unslash( $_POST['month'] ) ) : ( isset( $_GET['month'] ) ? sanitize_text_field( wp_unslash( $_GET['month'] ) ) : '' );
 		$export_type = isset( $_POST['export_type'] ) ? sanitize_key( wp_unslash( $_POST['export_type'] ) ) : ( isset( $_GET['export_type'] ) ? sanitize_key( wp_unslash( $_GET['export_type'] ) ) : 'all' );
 
-		require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-tally-exporter.php';
-		SHUBX51_Tally_Exporter::export_xml( $month, $export_type );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-tally-exporter.php';
+		NAMMASOCIETY51_Tally_Exporter::export_xml( $month, $export_type );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Account_Manager' ) && ! class_exists( 'SHUBX51_Account_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Account_Manager', 'SHUBX51_Account_Manager' );
 }

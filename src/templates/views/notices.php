@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Integrates with AJAX CRUD and Enhanced Metadata.
  */
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 $notices = $db->get( 'notices' );
 $notices = array_reverse($notices); // Newest first
 
@@ -140,7 +140,7 @@ function renderNoticeList($list, $empty_title, $empty_msg) {
                 elseif($urgency === 'maintenance') { $border_class = 'border-warning border-opacity-50'; }
                 elseif($urgency === 'info') { $border_class = 'border-primary border-opacity-50'; }
             ?>
-                <div class="card <?php echo esc_html( $border_class ); ?> <?php echo esc_html( $glow_class ); ?> shadow-sm rounded-3 overflow-hidden bg-white shubx-notice-card" 
+                <div class="card <?php echo esc_html( $border_class ); ?> <?php echo esc_html( $glow_class ); ?> shadow-sm rounded-3 overflow-hidden bg-white nammasociety-notice-card" 
                      data-id="<?php echo esc_attr($n['id']); ?>" 
                      data-search="<?php echo esc_html( $search_text ); ?>"
                      data-urgency="<?php echo esc_html( $urgency ); ?>">
@@ -228,7 +228,7 @@ function getUrgencyIcon($urgency) {
 }
 
 // Modals
-add_action('shubx51_admin_modals', function() {
+add_action('nammasociety51_admin_modals', function() {
 ?>
 <!-- Notice Creator/Editor Modal -->
 <div class="modal fade" id="noticeModal" tabindex="-1" aria-hidden="true">
@@ -300,9 +300,9 @@ add_action('shubx51_admin_modals', function() {
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-secondary text-uppercase tracking-wider">Options</label>
                             <div class="d-flex gap-4 pt-2">
-                                <label class="shubx-toggle">
+                                <label class="nammasociety-toggle">
                                     <input type="checkbox" name="is_pinned" id="n-pinned" value="1">
-                                    <span class="shubx-toggle-slider"></span>
+                                    <span class="nammasociety-toggle-slider"></span>
                                 </label>
                                 <span class="small fw-bold text-dark pt-1">Pin to Top</span>
                             </div>

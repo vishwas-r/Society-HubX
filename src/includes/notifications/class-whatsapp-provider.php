@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interface {
+class NAMMASOCIETY51_WhatsApp_Provider implements NAMMASOCIETY51_Notification_Provider_Interface {
     
     public function send($user_id, $content, $args = []) {
         $config = $this->get_config();
@@ -21,7 +21,7 @@ class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interfa
             return new WP_Error('budget_exceeded', 'WhatsApp monthly budget reached');
         }
 
-        $resident = SHUBX51_Plugin::get_instance()->db->get_resident_by_wp_id($user_id);
+        $resident = NAMMASOCIETY51_Plugin::get_instance()->db->get_resident_by_wp_id($user_id);
         if (!$resident || empty($resident['phone'])) {
             return new WP_Error('invalid_phone', 'Resident phone number not found');
         }
@@ -54,7 +54,7 @@ class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interfa
     }
 
     private function get_config() {
-        $channels = SHUBX51_Plugin::get_instance()->db->get('notification_channels');
+        $channels = NAMMASOCIETY51_Plugin::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'whatsapp') {
                 $settings = json_decode($c['config'], true) ?: [];
@@ -64,4 +64,9 @@ class SHUBX51_WhatsApp_Provider implements SHUBX51_Notification_Provider_Interfa
         }
         return [];
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_WhatsApp_Provider' ) && ! class_exists( 'SHUBX51_WhatsApp_Provider', false ) ) {
+	class_alias( 'NAMMASOCIETY51_WhatsApp_Provider', 'SHUBX51_WhatsApp_Provider' );
 }

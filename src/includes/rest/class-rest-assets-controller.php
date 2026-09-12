@@ -3,21 +3,21 @@
  * Class: REST Assets Controller
  * Endpoints for managing society assets registry.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Assets_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -74,7 +74,7 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 	 * List assets.
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$assets = $db->get( 'assets' );
 		return rest_ensure_response( $assets ? $assets : array() );
 	}
@@ -84,11 +84,11 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$assets = $db->get( 'assets', array( 'id' => $id ) );
 
 		if ( empty( $assets ) ) {
-			return new WP_Error( 'rest_asset_not_found', __( 'Asset not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_asset_not_found', __( 'Asset not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $assets[0] );
@@ -105,7 +105,7 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 
 		$name = isset( $params['name'] ) ? sanitize_text_field( $params['name'] ) : '';
 		if ( empty( $name ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Asset name is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Asset name is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -121,7 +121,7 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 			'description'     => isset( $params['description'] ) ? sanitize_textarea_field( $params['description'] ) : '',
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'assets', $data );
 
 		if ( is_wp_error( $result ) ) {
@@ -141,10 +141,10 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'assets', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_asset_not_found', __( 'Asset not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_asset_not_found', __( 'Asset not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -181,7 +181,7 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Asset updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Asset updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -189,23 +189,28 @@ class SHUBX51_REST_Assets_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'assets', array( 'status' => 'Archived' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Asset archived successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Asset archived successfully.', 'namma-society' ) ) );
 	}
 
 	public function get_items_permissions_check( $request ) {
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'assets_view' ) || current_user_can( 'manage_options' );
 	}
 
 	public function create_item_permissions_check( $request ) {
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'assets_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Assets_Controller' ) && ! class_exists( 'SHUBX51_REST_Assets_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Assets_Controller', 'SHUBX51_REST_Assets_Controller' );
 }

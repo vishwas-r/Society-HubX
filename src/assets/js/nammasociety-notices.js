@@ -1,5 +1,5 @@
 ﻿/**
- * SHUBX Notices JS (Modernized)
+ * NAMMASOCIETY Notices JS (Modernized)
  * Handles AJAX CRUD, Tabs, Pinned Logic, and TinyMCE.
  */
 (function ($) {
@@ -14,8 +14,8 @@
     async function fetchModuleConfig() {
         if (Config.initialized) return;
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'notices' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -81,9 +81,9 @@
 
         const formData = new FormData(form);
         const isUpdate = formData.get('id');
-        const action = isUpdate ? 'shubx51_update_notice' : 'shubx51_add_notice';
+        const action = isUpdate ? 'nammasociety51_update_notice' : 'nammasociety51_add_notice';
 
-        SHUBX.ajax({
+        NAMMASOCIETY.ajax({
             action: action,
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
@@ -97,19 +97,19 @@
 
     function deleteNotice(id) {
         if (!confirm('Permanently remove this announcement? This cannot be undone.')) return;
-        SHUBX.ajax({
-            action: 'shubx51_delete_notice',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_delete_notice',
             data: { id, _wpnonce: Config.deleteNonce },
             successMessage: 'Notice removed',
             onSuccess: function () {
-                $(`.shubx-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
+                $(`.nammasociety-notice-card[data-id="${id}"]`).fadeOut(400, function () { $(this).remove(); });
             }
         });
     }
 
     function togglePin(id, pinned) {
-        SHUBX.ajax({
-            action: 'shubx51_toggle_pin',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_toggle_pin',
             data: { id, pinned, _wpnonce: Config.nonce },
             successMessage: pinned ? 'Notice pinned to top' : 'Notice unpinned',
             reload: true
@@ -133,8 +133,8 @@
             e.preventDefault();
             const id = $(this).data('id');
 
-            SHUBX.ajax({
-                action: 'shubx51_get_notice',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_notice',
                 data: { id, _wpnonce: Config.nonce },
                 onSuccess: function (data) {
                     openNoticeModal(data);
@@ -160,7 +160,7 @@
             const q = searchInput.value.toLowerCase();
             const urg = urgencyFilter.value.toLowerCase();
 
-            $('.shubx-notice-card').each(function () {
+            $('.nammasociety-notice-card').each(function () {
                 const text = $(this).data('search') || '';
                 const cardUrg = $(this).data('urgency') || '';
 

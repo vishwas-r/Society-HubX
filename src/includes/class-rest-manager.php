@@ -3,19 +3,21 @@
  * Class: REST API Manager
  * Handles registration of REST routes and authentication.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Manager {
+class NAMMASOCIETY51_REST_Manager {
 
 	/**
 	 * API Namespace for the plugin.
 	 */
-	const NAMESPACE = 'society-hubx/v1';
+	const NAMESPACE = 'nammasociety/v1';
+	const NAMESPACE_51 = 'nammasociety51/v1';
+	const LEGACY_NAMESPACE = 'society-hubx/v1';
 
 	/**
 	 * Register hooks.
@@ -84,7 +86,7 @@ class SHUBX51_REST_Manager {
 			return true;
 		}
 
-		$reason = is_string( $auth_result ) ? $auth_result : __( 'Please log in to continue.', 'society-hubx' );
+		$reason = is_string( $auth_result ) ? $auth_result : __( 'Please log in to continue.', 'namma-society' );
 		return new WP_Error( 'rest_not_logged_in', $reason, array( 'status' => 401 ) );
 	}
 
@@ -105,17 +107,17 @@ class SHUBX51_REST_Manager {
 			if ( ! empty( $auth_header ) ) {
 				$source = 'request_authorization_header';
 			} else {
-				$auth_header = $request->get_header( 'x-shubx-auth' );
+				$auth_header = $request->get_header( 'x-nammasociety-auth' );
 				if ( ! empty( $auth_header ) ) {
-					$source = 'request_x_shubx_auth_header';
+					$source = 'request_x_nammasociety_auth_header';
 				} else {
 					$auth_header = $request->get_header( 'x-society-token' );
 					if ( ! empty( $auth_header ) ) {
 						$source = 'request_x_society_token_header';
 					} else {
-						$auth_header = $request->get_param( 'shubx_token' );
+						$auth_header = $request->get_param( 'nammasociety_token' );
 						if ( ! empty( $auth_header ) ) {
-							$source = 'request_param_shubx_token';
+							$source = 'request_param_nammasociety_token';
 						}
 					}
 				}
@@ -128,7 +130,7 @@ class SHUBX51_REST_Manager {
 			if ( is_array( $headers ) ) {
 				foreach ( $headers as $key => $value ) {
 					$lower_key = strtolower( $key );
-					if ( in_array( $lower_key, array( 'authorization', 'x-shubx-auth', 'x-society-token' ), true ) ) {
+					if ( in_array( $lower_key, array( 'authorization', 'x-nammasociety-auth', 'x-society-token' ), true ) ) {
 						$auth_header = sanitize_text_field( $value );
 						$source = "getallheaders_{$lower_key}";
 						break;
@@ -145,9 +147,9 @@ class SHUBX51_REST_Manager {
 			} elseif ( ! empty( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) ) {
 				$auth_header = sanitize_text_field( wp_unslash( $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ) );
 				$source = 'server_redirect_http_authorization';
-			} elseif ( ! empty( $_SERVER['HTTP_X_SHUBX_AUTH'] ) ) {
-				$auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_SHUBX_AUTH'] ) );
-				$source = 'server_http_x_shubx_auth';
+			} elseif ( ! empty( $_SERVER['HTTP_X_NAMMASOCIETY_AUTH'] ) ) {
+				$auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_NAMMASOCIETY_AUTH'] ) );
+				$source = 'server_http_x_nammasociety_auth';
 			} elseif ( ! empty( $_SERVER['HTTP_X_SOCIETY_TOKEN'] ) ) {
 				$auth_header = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_SOCIETY_TOKEN'] ) );
 				$source = 'server_http_x_society_token';
@@ -155,22 +157,22 @@ class SHUBX51_REST_Manager {
 		}
 
 		// 4. Fallback to $_REQUEST
-		if ( empty( $auth_header ) && ! empty( $_REQUEST['shubx_token'] ) ) {
-			$auth_header = sanitize_text_field( wp_unslash( $_REQUEST['shubx_token'] ) );
-			$source = 'request_global_shubx_token';
+		if ( empty( $auth_header ) && ! empty( $_REQUEST['nammasociety_token'] ) ) {
+			$auth_header = sanitize_text_field( wp_unslash( $_REQUEST['nammasociety_token'] ) );
+			$source = 'request_global_nammasociety_token';
 		}
 
 		if ( empty( $auth_header ) ) {
-			error_log( '[SHUBX Mobile Auth] No authentication token received.' );
-			return $return_reason ? __( 'No authentication token provided.', 'society-hubx' ) : false;
+			error_log( '[NAMMASOCIETY Mobile Auth] No authentication token received.' );
+			return $return_reason ? __( 'No authentication token provided.', 'namma-society' ) : false;
 		}
 
 		$token = trim( str_ireplace( 'Bearer ', '', $auth_header ) );
 		$token = trim( $token, "\"' \t\n\r\0\x0B" );
 		$parts = explode( '.', $token );
 		if ( count( $parts ) !== 2 ) {
-			error_log( "[SHUBX Mobile Auth] Malformed token from [{$source}]. Expected 2 parts separated by dot." );
-			return $return_reason ? __( 'Malformed authentication token.', 'society-hubx' ) : false;
+			error_log( "[NAMMASOCIETY Mobile Auth] Malformed token from [{$source}]. Expected 2 parts separated by dot." );
+			return $return_reason ? __( 'Malformed authentication token.', 'namma-society' ) : false;
 		}
 
 		$payload_encoded = $parts[0];
@@ -190,24 +192,24 @@ class SHUBX51_REST_Manager {
 		}
 
 		if ( ! $is_valid ) {
-			error_log( "[SHUBX Mobile Auth] Token signature mismatch from [{$source}]." );
-			return $return_reason ? __( 'Invalid authentication token signature.', 'society-hubx' ) : false;
+			error_log( "[NAMMASOCIETY Mobile Auth] Token signature mismatch from [{$source}]." );
+			return $return_reason ? __( 'Invalid authentication token signature.', 'namma-society' ) : false;
 		}
 
 		// Decode URL-safe Base64 payload
 		$payload_json = base64_decode( strtr( $payload_encoded, '-_', '+/' ) );
 		$payload = json_decode( $payload_json, true );
 		if ( empty( $payload['user_id'] ) || empty( $payload['expires'] ) ) {
-			error_log( "[SHUBX Mobile Auth] Corrupt token payload from [{$source}]." );
-			return $return_reason ? __( 'Corrupt authentication token payload.', 'society-hubx' ) : false;
+			error_log( "[NAMMASOCIETY Mobile Auth] Corrupt token payload from [{$source}]." );
+			return $return_reason ? __( 'Corrupt authentication token payload.', 'namma-society' ) : false;
 		}
 
 		if ( time() > intval( $payload['expires'] ) ) {
-			error_log( "[SHUBX Mobile Auth] Token expired for user {$payload['user_id']} at {$payload['expires']} (current: " . time() . ')' );
-			return $return_reason ? __( 'Authentication token has expired.', 'society-hubx' ) : false;
+			error_log( "[NAMMASOCIETY Mobile Auth] Token expired for user {$payload['user_id']} at {$payload['expires']} (current: " . time() . ')' );
+			return $return_reason ? __( 'Authentication token has expired.', 'namma-society' ) : false;
 		}
 
-		error_log( "[SHUBX Mobile Auth] Successfully authenticated user {$payload['user_id']} ({$payload['username']}) via [{$source}]." );
+		error_log( "[NAMMASOCIETY Mobile Auth] Successfully authenticated user {$payload['user_id']} ({$payload['username']}) via [{$source}]." );
 		return (int) $payload['user_id'];
 	}
 
@@ -216,74 +218,74 @@ class SHUBX51_REST_Manager {
 	 */
 	public function register_routes() {
 		// Include controller classes
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-discovery-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-auth-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-flats-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-vehicles-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-documents-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-facilities-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-finance-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-assets-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-notices-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-polls-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-rules-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-requests-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-notifications-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-settings-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-visitors-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-helpdesk-controller.php';
-		require_once SHUBX51_PLUGIN_DIR . 'includes/rest/class-rest-emergency-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-discovery-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-auth-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-flats-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-residents-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-vehicles-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-documents-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-facilities-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-finance-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-assets-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-notices-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-polls-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-staff-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-rules-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-requests-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-notifications-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-activity-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-payments-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-settings-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-visitors-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-helpdesk-controller.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/rest/class-rest-emergency-controller.php';
 
 		// Instantiate & register core endpoints
-		( new SHUBX51_REST_Discovery_Controller() )->register_routes();
-		( new SHUBX51_REST_Auth_Controller() )->register_routes();
-		( new SHUBX51_REST_Flats_Controller() )->register_routes();
-		( new SHUBX51_REST_Residents_Controller() )->register_routes();
-		( new SHUBX51_REST_Activity_Controller() )->register_routes();
-		( new SHUBX51_REST_Notifications_Controller() )->register_routes();
-		( new SHUBX51_REST_Settings_Controller() )->register_routes();
-		( new SHUBX51_REST_Emergency_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Discovery_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Auth_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Flats_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Residents_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Activity_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Notifications_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Settings_Controller() )->register_routes();
+		( new NAMMASOCIETY51_REST_Emergency_Controller() )->register_routes();
 
 		// Conditional modules based on Society Settings
-		if ( class_exists( 'SHUBX51_Module_Registry' ) ) {
-			if ( SHUBX51_Module_Registry::is_enabled( 'visitors' ) ) {
-				( new SHUBX51_REST_Visitors_Controller() )->register_routes();
+		if ( class_exists( 'NAMMASOCIETY51_Module_Registry' ) ) {
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'visitors' ) ) {
+				( new NAMMASOCIETY51_REST_Visitors_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'vehicles' ) ) {
-				( new SHUBX51_REST_Vehicles_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'vehicles' ) ) {
+				( new NAMMASOCIETY51_REST_Vehicles_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'documents' ) ) {
-				( new SHUBX51_REST_Documents_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'documents' ) ) {
+				( new NAMMASOCIETY51_REST_Documents_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'facilities' ) ) {
-				( new SHUBX51_REST_Facilities_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'facilities' ) ) {
+				( new NAMMASOCIETY51_REST_Facilities_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'finance' ) ) {
-				( new SHUBX51_REST_Finance_Controller() )->register_routes();
-				( new SHUBX51_REST_Payments_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'finance' ) ) {
+				( new NAMMASOCIETY51_REST_Finance_Controller() )->register_routes();
+				( new NAMMASOCIETY51_REST_Payments_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'assets' ) ) {
-				( new SHUBX51_REST_Assets_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'assets' ) ) {
+				( new NAMMASOCIETY51_REST_Assets_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'notices' ) ) {
-				( new SHUBX51_REST_Notices_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'notices' ) ) {
+				( new NAMMASOCIETY51_REST_Notices_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
-				( new SHUBX51_REST_Polls_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'polls' ) ) {
+				( new NAMMASOCIETY51_REST_Polls_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'staff' ) ) {
-				( new SHUBX51_REST_Staff_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'staff' ) ) {
+				( new NAMMASOCIETY51_REST_Staff_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'rules' ) ) {
-				( new SHUBX51_REST_Rules_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'rules' ) ) {
+				( new NAMMASOCIETY51_REST_Rules_Controller() )->register_routes();
 			}
-			if ( SHUBX51_Module_Registry::is_enabled( 'helpdesk' ) ) {
-				( new SHUBX51_REST_Requests_Controller() )->register_routes();
-				( new SHUBX51_REST_Helpdesk_Controller() )->register_routes();
+			if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'helpdesk' ) ) {
+				( new NAMMASOCIETY51_REST_Requests_Controller() )->register_routes();
+				( new NAMMASOCIETY51_REST_Helpdesk_Controller() )->register_routes();
 			}
 		}
 	}
@@ -298,9 +300,14 @@ class SHUBX51_REST_Manager {
 	public static function check_permission( $request ) {
 		// API Key authentication can be added here
 		if ( ! is_user_logged_in() ) {
-			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.', 'society-hubx' ), array( 'status' => 401 ) );
+			return new WP_Error( 'rest_unauthorized', __( 'You must be logged in to access this endpoint.', 'namma-society' ), array( 'status' => 401 ) );
 		}
 
 		return true;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Manager' ) && ! class_exists( 'SHUBX51_REST_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Manager', 'SHUBX51_REST_Manager' );
 }

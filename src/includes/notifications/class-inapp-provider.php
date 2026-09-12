@@ -8,10 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_InApp_Provider implements SHUBX51_Notification_Provider_Interface {
+class NAMMASOCIETY51_InApp_Provider implements NAMMASOCIETY51_Notification_Provider_Interface {
     
     public function send($user_id, $content, $args = []) {
-        $db = SHUBX51_Plugin::get_instance()->db;
+        $db = NAMMASOCIETY51_Plugin::get_instance()->db;
 
         $inserted = $db->insert('inapp_notifications', [
             'user_id'    => $user_id,
@@ -39,10 +39,15 @@ class SHUBX51_InApp_Provider implements SHUBX51_Notification_Provider_Interface 
 
     public function is_ready() {
         // In-App is usually always ready if the DB is up, but we respect the Admin toggle
-        $channels = SHUBX51_Plugin::get_instance()->db->get('notification_channels');
+        $channels = NAMMASOCIETY51_Plugin::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'inapp') return (bool) $c['is_active'];
         }
         return true; 
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_InApp_Provider' ) && ! class_exists( 'SHUBX51_InApp_Provider', false ) ) {
+	class_alias( 'NAMMASOCIETY51_InApp_Provider', 'SHUBX51_InApp_Provider' );
 }

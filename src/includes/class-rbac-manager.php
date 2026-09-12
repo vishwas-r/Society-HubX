@@ -3,22 +3,22 @@
  * Class: RBAC Manager
  * Handles Granular Role-Based Access Control.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_RBAC_Manager {
+class NAMMASOCIETY51_RBAC_Manager {
 
 	private $db;
 	private $roles_table;
 
 	public function __construct() {
 		global $wpdb;
-		$this->db = new SHUBX51_DB_Router();
-		$this->roles_table = "{$wpdb->prefix}shubx51_roles";
+		$this->db = new NAMMASOCIETY51_DB_Router();
+		$this->roles_table = "{$wpdb->prefix}nammasociety51_roles";
 	}
 
 	/**
@@ -102,9 +102,9 @@ class SHUBX51_RBAC_Manager {
 		);
 
 		// Sync with WordPress Roles
-		$wp_role_id = 'SHUBX_' . sanitize_title( $role_id );
+		$wp_role_id = 'NAMMASOCIETY_' . sanitize_title( $role_id );
 		if ( ! get_role( $wp_role_id ) ) {
-			add_role( $wp_role_id, 'SHUBX: ' . $name, array( 'read' => true ) );
+			add_role( $wp_role_id, 'NAMMASOCIETY: ' . $name, array( 'read' => true ) );
 		}
 
 		$existing = $this->get_role( $role_id );
@@ -166,4 +166,9 @@ class SHUBX51_RBAC_Manager {
 	public function delete_role( $role_id ) {
 		return $this->db->delete( 'roles', array( 'id' => $role_id ) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_RBAC_Manager' ) && ! class_exists( 'SHUBX51_RBAC_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_RBAC_Manager', 'SHUBX51_RBAC_Manager' );
 }

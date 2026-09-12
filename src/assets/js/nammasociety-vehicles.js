@@ -1,5 +1,5 @@
 /**
- * SHUBX Vehicles Management JS
+ * NAMMASOCIETY Vehicles Management JS
  */
 (function ($) {
     'use strict';
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'vehicles' },
                 showOverlay: false, // Silent fetch for config
                 suppressErrorToast: true
@@ -132,7 +132,7 @@
         $form.find('[name="sticker"]').val(vehicle.sticker || '');
         $form.find('[name="flat_no"]').val(vehicle.flat_no || '');
         $form.find('[name="vehicle_id"]').val(vehicle.id);
-        $form.find('[name="action"]').val('shubx51_edit_vehicle');
+        $form.find('[name="action"]').val('nammasociety51_edit_vehicle');
 
         $('#vehicleModalTitle').text('Edit Vehicle: ' + vehicle.number);
         vehicleModal.show();
@@ -141,7 +141,7 @@
     function resetVehicleForm() {
         const $form = $('#add-vehicle-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('shubx51_add_vehicle');
+        $form.find('[name="action"]').val('nammasociety51_add_vehicle');
         $('#vehicleModalTitle').text('Add New Vehicle');
     }
 
@@ -158,8 +158,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
-            SHUBX.ajax({
-                action: 'shubx51_delete_vehicle',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_vehicle',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -184,8 +184,8 @@
     };
 
     window.restoreVehicle = async function (id) {
-        SHUBX.ajax({
-            action: 'shubx51_restore_vehicle',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_restore_vehicle',
             data: {
                 id: id,
                 _wpnonce: Config.nonce
@@ -242,7 +242,7 @@
                     const action = $form.find('[name="action"]').val();
                     const formData = new FormData($form[0]);
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),

@@ -3,25 +3,25 @@
  * Module: General Request Manager
  * Handles generic resident requests (CCTV, Swimming Pool, Play-time, etc.).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_General_Request_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_General_Request_Manager implements NAMMASOCIETY51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
         
         // Register Module
-        add_filter( 'shubx51_get_module_general', array( $this, 'get_instance' ) );
+        add_filter( 'nammasociety51_get_module_general', array( $this, 'get_instance' ) );
         
         // AJAX Handlers
-        add_action( 'wp_ajax_shubx51_submit_general_request', array( $this, 'handle_submit_request' ) );
+        add_action( 'wp_ajax_nammasociety51_submit_general_request', array( $this, 'handle_submit_request' ) );
 	}
 
 	public function get_instance() {
@@ -43,7 +43,7 @@ class SHUBX51_General_Request_Manager implements SHUBX51_Module {
 	 * Handle request submission from Resident (Frontend).
 	 */
 	public function handle_submit_request() {
-		check_ajax_referer( 'shubx51_frontend_nonce' ); // Standard frontend nonce for this plugin
+		check_ajax_referer( 'nammasociety51_frontend_nonce' ); // Standard frontend nonce for this plugin
 		
 		$category = isset( $_POST['category'] ) ? sanitize_text_field( wp_unslash( $_POST['category'] ) ) : '';
 		$comments = isset( $_POST['comments'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comments'] ) ) : '';
@@ -59,12 +59,12 @@ class SHUBX51_General_Request_Manager implements SHUBX51_Module {
 			'category'      => $category,
 			'comments'      => $comments,
 			'resident_id'   => $user_id,
-			'flat_no'       => $resident ? SHUBX51_Plugin::get_instance()->db->get_flat_display_name($resident['flat_no']) : 'Unknown',
+			'flat_no'       => $resident ? NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name($resident['flat_no']) : 'Unknown',
 			'resident_name' => $resident ? $resident['name'] : 'Unknown'
 		];
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-		$rm = new SHUBX51_Request_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$res = $rm->create_request( 'general', 'general_request', $payload );
 
 		if ( is_wp_error( $res ) ) {
@@ -75,4 +75,9 @@ class SHUBX51_General_Request_Manager implements SHUBX51_Module {
 	}
 }
 
-new SHUBX51_General_Request_Manager();
+new NAMMASOCIETY51_General_Request_Manager();
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_General_Request_Manager' ) && ! class_exists( 'SHUBX51_General_Request_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_General_Request_Manager', 'SHUBX51_General_Request_Manager' );
+}

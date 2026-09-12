@@ -3,21 +3,21 @@
  * Class: REST Requests Controller
  * Endpoints for Request Approval Workflow (Resident Submissions, Admin Approvals).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Requests_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -105,11 +105,11 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 	 * List approval requests.
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$requests = $db->get( 'requests' );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'requests_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -132,11 +132,11 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$requests = $db->get( 'requests', array( 'id' => $id ) );
 
 		if ( empty( $requests ) ) {
-			return new WP_Error( 'rest_request_not_found', __( 'Request not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_request_not_found', __( 'Request not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $requests[0] );
@@ -147,15 +147,15 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 	 */
 	public function approve_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-		$rm = new SHUBX51_Request_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$result = $rm->approve_request( $id );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request approved successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request approved successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -166,15 +166,15 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 		$params = $request->get_json_params();
 		$note = isset( $params['admin_note'] ) ? sanitize_textarea_field( $params['admin_note'] ) : '';
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-		$rm = new SHUBX51_Request_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$result = $rm->reject_request( $id, $note );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request rejected successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request rejected successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -187,11 +187,11 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 		$note = isset( $params['admin_note'] ) ? sanitize_textarea_field( $params['admin_note'] ) : '';
 
 		if ( empty( $ids ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Request IDs are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Request IDs are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-		$rm = new SHUBX51_Request_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$count = 0;
 
 		foreach ( $ids as $id ) {
@@ -224,15 +224,15 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 		$entity_id    = isset( $params['entity_id'] ) ? sanitize_text_field( $params['entity_id'] ) : uniqid();
 		$flat_no      = isset( $params['flat_no'] ) ? sanitize_text_field( $params['flat_no'] ) : '';
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-		$rm = new SHUBX51_Request_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+		$rm = new NAMMASOCIETY51_Request_Manager();
 		$req_id = $rm->create_request( $module, $request_type, $payload, $entity_id, $flat_no );
 
 		if ( is_wp_error( $req_id ) ) {
 			return $req_id;
 		}
 
-		return new WP_REST_Response( array( 'success' => true, 'id' => $req_id, 'message' => __( 'Request submitted successfully.', 'society-hubx' ) ), 201 );
+		return new WP_REST_Response( array( 'success' => true, 'id' => $req_id, 'message' => __( 'Request submitted successfully.', 'namma-society' ) ), 201 );
 	}
 
 	/**
@@ -240,23 +240,28 @@ class SHUBX51_REST_Requests_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'requests', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Request deleted successfully.', 'namma-society' ) ) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function requests_manage_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'requests_manage' ) || $rbac->has_capability( get_current_user_id(), 'finance_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Requests_Controller' ) && ! class_exists( 'SHUBX51_REST_Requests_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Requests_Controller', 'SHUBX51_REST_Requests_Controller' );
 }

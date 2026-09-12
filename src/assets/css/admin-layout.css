@@ -1,5 +1,5 @@
 /* 
- * Society HubX - Admin Layout (Bootstrap Migration)
+ * Namma Society - Admin Layout (Bootstrap Migration)
  * Replacing Tailwind utilities with custom classes + Bootstrap 5
  */
 
@@ -24,83 +24,83 @@
  * ============================================================ */
 /* Default / Orange Palette */
 :root,
-[data-shubx-palette="orange"],
-#shubx51-app-root[data-shubx-palette="orange"],
-[data-bs-theme="light"][data-shubx-palette="orange"],
-#shubx51-app-root[data-bs-theme="light"][data-shubx-palette="orange"] {
+[data-nammasociety-palette="orange"],
+#nammasociety51-app-root[data-nammasociety-palette="orange"],
+[data-bs-theme="light"][data-nammasociety-palette="orange"],
+#nammasociety51-app-root[data-bs-theme="light"][data-nammasociety-palette="orange"] {
     --bs-primary: #ea580c;
     --bs-primary-rgb: 234, 88, 12;
     --custom-primary-color: #ea580c;
     --custom-primary-hover: #c2410c;
     --custom-primary-shadow: rgba(234, 88, 12, 0.25);
-    --shubx-subtle-bg: rgba(234, 88, 12, 0.08);
-    --shubx-subtle-border: rgba(234, 88, 12, 0.2);
-    --shubx-stat-primary: #ea580c;
-    --shubx-stat-primary-border: #ea580c;
+    --nammasociety-subtle-bg: rgba(234, 88, 12, 0.08);
+    --nammasociety-subtle-border: rgba(234, 88, 12, 0.2);
+    --nammasociety-stat-primary: #ea580c;
+    --nammasociety-stat-primary-border: #ea580c;
 }
 
 /* Indigo Palette */
-[data-shubx-palette="indigo"],
-#shubx51-app-root[data-shubx-palette="indigo"],
-[data-bs-theme="light"][data-shubx-palette="indigo"],
-#shubx51-app-root[data-bs-theme="light"][data-shubx-palette="indigo"] {
+[data-nammasociety-palette="indigo"],
+#nammasociety51-app-root[data-nammasociety-palette="indigo"],
+[data-bs-theme="light"][data-nammasociety-palette="indigo"],
+#nammasociety51-app-root[data-bs-theme="light"][data-nammasociety-palette="indigo"] {
     --bs-primary: #4f46e5;
     --bs-primary-rgb: 79, 70, 229;
     --custom-primary-color: #4f46e5;
     --custom-primary-hover: #4338ca;
     --custom-primary-shadow: rgba(79, 70, 229, 0.25);
-    --shubx-subtle-bg: rgba(79, 70, 229, 0.08);
-    --shubx-subtle-border: rgba(79, 70, 229, 0.2);
-    --shubx-stat-primary: #4f46e5;
-    --shubx-stat-primary-border: #4338ca;
+    --nammasociety-subtle-bg: rgba(79, 70, 229, 0.08);
+    --nammasociety-subtle-border: rgba(79, 70, 229, 0.2);
+    --nammasociety-stat-primary: #4f46e5;
+    --nammasociety-stat-primary-border: #4338ca;
 }
 
 /* Emerald Palette */
-[data-shubx-palette="emerald"],
-#shubx51-app-root[data-shubx-palette="emerald"],
-[data-bs-theme="light"][data-shubx-palette="emerald"],
-#shubx51-app-root[data-bs-theme="light"][data-shubx-palette="emerald"] {
+[data-nammasociety-palette="emerald"],
+#nammasociety51-app-root[data-nammasociety-palette="emerald"],
+[data-bs-theme="light"][data-nammasociety-palette="emerald"],
+#nammasociety51-app-root[data-bs-theme="light"][data-nammasociety-palette="emerald"] {
     --bs-primary: #059669;
     --bs-primary-rgb: 5, 150, 105;
     --custom-primary-color: #059669;
     --custom-primary-hover: #047857;
     --custom-primary-shadow: rgba(5, 150, 105, 0.25);
-    --shubx-subtle-bg: rgba(5, 150, 105, 0.08);
-    --shubx-subtle-border: rgba(5, 150, 105, 0.2);
-    --shubx-stat-primary: #059669;
-    --shubx-stat-primary-border: #047857;
+    --nammasociety-subtle-bg: rgba(5, 150, 105, 0.08);
+    --nammasociety-subtle-border: rgba(5, 150, 105, 0.2);
+    --nammasociety-stat-primary: #059669;
+    --nammasociety-stat-primary-border: #047857;
 }
 
 /* Ocean Blue Palette */
-[data-shubx-palette="ocean"],
-#shubx51-app-root[data-shubx-palette="ocean"],
-[data-bs-theme="light"][data-shubx-palette="ocean"],
-#shubx51-app-root[data-bs-theme="light"][data-shubx-palette="ocean"] {
+[data-nammasociety-palette="ocean"],
+#nammasociety51-app-root[data-nammasociety-palette="ocean"],
+[data-bs-theme="light"][data-nammasociety-palette="ocean"],
+#nammasociety51-app-root[data-bs-theme="light"][data-nammasociety-palette="ocean"] {
     --bs-primary: #0284c7;
     --bs-primary-rgb: 2, 132, 199;
     --custom-primary-color: #0284c7;
     --custom-primary-hover: #0369a1;
     --custom-primary-shadow: rgba(2, 132, 199, 0.25);
-    --shubx-subtle-bg: rgba(2, 132, 199, 0.08);
-    --shubx-subtle-border: rgba(2, 132, 199, 0.2);
-    --shubx-stat-primary: #0284c7;
-    --shubx-stat-primary-border: #0369a1;
+    --nammasociety-subtle-bg: rgba(2, 132, 199, 0.08);
+    --nammasociety-subtle-border: rgba(2, 132, 199, 0.2);
+    --nammasociety-stat-primary: #0284c7;
+    --nammasociety-stat-primary-border: #0369a1;
 }
 
 /* Crimson Rose Palette */
-[data-shubx-palette="rose"],
-#shubx51-app-root[data-shubx-palette="rose"],
-[data-bs-theme="light"][data-shubx-palette="rose"],
-#shubx51-app-root[data-bs-theme="light"][data-shubx-palette="rose"] {
+[data-nammasociety-palette="rose"],
+#nammasociety51-app-root[data-nammasociety-palette="rose"],
+[data-bs-theme="light"][data-nammasociety-palette="rose"],
+#nammasociety51-app-root[data-bs-theme="light"][data-nammasociety-palette="rose"] {
     --bs-primary: #e11d48;
     --bs-primary-rgb: 225, 29, 72;
     --custom-primary-color: #e11d48;
     --custom-primary-hover: #be123c;
     --custom-primary-shadow: rgba(225, 29, 72, 0.25);
-    --shubx-subtle-bg: rgba(225, 29, 72, 0.08);
-    --shubx-subtle-border: rgba(225, 29, 72, 0.2);
-    --shubx-stat-primary: #e11d48;
-    --shubx-stat-primary-border: #be123c;
+    --nammasociety-subtle-bg: rgba(225, 29, 72, 0.08);
+    --nammasociety-subtle-border: rgba(225, 29, 72, 0.2);
+    --nammasociety-stat-primary: #e11d48;
+    --nammasociety-stat-primary-border: #be123c;
 }
 
 /* ============================================================
@@ -122,13 +122,13 @@
 
 .bg-primary.bg-opacity-10,
 .bg-primary-subtle {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.08)) !important;
-    border-color: var(--shubx-subtle-border, rgba(var(--bs-primary-rgb), 0.2)) !important;
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.08)) !important;
+    border-color: var(--nammasociety-subtle-border, rgba(var(--bs-primary-rgb), 0.2)) !important;
     color: var(--custom-primary-color) !important;
 }
 
 .bg-primary.bg-opacity-20 {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.15)) !important;
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.15)) !important;
 }
 
 .btn-primary {
@@ -184,12 +184,12 @@
 }
 
 /* Fix WordPress Card Conflict */
-#shubx51-app-root .card {
+#nammasociety51-app-root .card {
     max-width: none !important;
 }
 
 /* App Root Overlay */
-#shubx51-app-root {
+#nammasociety51-app-root {
     position: fixed;
     top: 0;
     left: 0;
@@ -205,7 +205,7 @@
 }
 
 /* Sidebar */
-.shubx-sidebar {
+.nammasociety-sidebar {
     height: 100vh;
     position: relative;
     z-index: 20;
@@ -213,33 +213,33 @@
     background-color: #ffffff !important;
 }
 
-.shubx-sidebar hr {
+.nammasociety-sidebar hr {
     opacity: 0.1;
 }
 
-.shubx-sidebar .nav-link {
+.nammasociety-sidebar .nav-link {
     border-radius: 8px;
     padding: 10px 14px;
     transition: all 0.2s ease;
     color: var(--slate-600);
 }
 
-.shubx-sidebar .nav-link.active {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.1)) !important;
+.nammasociety-sidebar .nav-link.active {
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.1)) !important;
     color: var(--custom-primary-color) !important;
 }
 
-.shubx-sidebar .nav-link.active i,
-.shubx-sidebar .nav-link.active span {
+.nammasociety-sidebar .nav-link.active i,
+.nammasociety-sidebar .nav-link.active span {
     color: var(--custom-primary-color) !important;
 }
 
-.shubx-sidebar .nav-link:not(.active):hover {
+.nammasociety-sidebar .nav-link:not(.active):hover {
     background-color: var(--slate-50) !important;
     color: var(--slate-900) !important;
 }
 
-.shubx-sidebar .hover-indigo:hover {
+.nammasociety-sidebar .hover-indigo:hover {
     color: var(--custom-primary-color) !important;
 }
 
@@ -278,7 +278,7 @@
 }
 
 /* Main Content */
-.shubx-main {
+.nammasociety-main {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -289,7 +289,7 @@
     /* Prevent body scroll, container handles scroll */
 }
 
-.shubx-top-header {
+.nammasociety-top-header {
     height: 64px;
     background-color: #ffffff;
     border-bottom: 1px solid var(--slate-200);
@@ -300,7 +300,7 @@
     z-index: 10;
 }
 
-.shubx-page-title {
+.nammasociety-page-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--slate-800);
@@ -308,7 +308,7 @@
 }
 
 /* User Profile */
-.shubx-user-avatar {
+.nammasociety-user-avatar {
     height: 2rem;
     /* h-8 */
     width: 2rem;
@@ -322,7 +322,7 @@
     overflow: hidden;
 }
 
-.shubx-content-scroll {
+.nammasociety-content-scroll {
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
@@ -736,15 +736,15 @@
 }
 
 /* Modal & Form Fixes */
-.shubx-form-max {
+.nammasociety-form-max {
     max-width: 800px;
 }
 
 /* Bootstrap Form Overrides (Specificity Bridge) */
-#shubx51-app-root .form-control,
-#shubx51-app-root .form-select,
-#shubx51-modals-root .form-control,
-#shubx51-modals-root .form-select {
+#nammasociety51-app-root .form-control,
+#nammasociety51-app-root .form-select,
+#nammasociety51-modals-root .form-control,
+#nammasociety51-modals-root .form-select {
     display: block;
     width: 100%;
     padding: 0.6rem 1rem;
@@ -759,10 +759,10 @@
     height: auto;
 }
 
-#shubx51-app-root .form-control:focus,
-#shubx51-app-root .form-select:focus,
-#shubx51-modals-root .form-control:focus,
-#shubx51-modals-root .form-select:focus {
+#nammasociety51-app-root .form-control:focus,
+#nammasociety51-app-root .form-select:focus,
+#nammasociety51-modals-root .form-control:focus,
+#nammasociety51-modals-root .form-select:focus {
     color: var(--slate-900);
     background-color: #fff;
     border-color: var(--custom-primary-color);
@@ -770,8 +770,8 @@
     outline: 0;
 }
 
-#shubx51-app-root .form-label,
-#shubx51-modals-root .form-label {
+#nammasociety51-app-root .form-label,
+#nammasociety51-modals-root .form-label {
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
     font-weight: 600;
@@ -780,7 +780,7 @@
     letter-spacing: 0.025em;
 }
 
-#shubx51-app-root .form-check-input:checked {
+#nammasociety51-app-root .form-check-input:checked {
     background-color: var(--slate-100);
     border-color: var(--custom-primary-color);
 }
@@ -876,15 +876,15 @@
 }
 
 /* Toast Custom Colors (Tailwind compatibility & Visibility Fix) */
-#shubx-global-toast .btn-close {
+#nammasociety-global-toast .btn-close {
     filter: invert(1) grayscale(100%) brightness(200%);
 }
 
-#shubx-toast-message {
+#nammasociety-toast-message {
     color: #ffffff !important;
 }
 
-#shubx-toast-icon {
+#nammasociety-toast-icon {
     color: #ffffff !important;
 }
 
@@ -915,21 +915,21 @@
     border-color: var(--custom-primary-subtle) !important;
 }
 
-/* --- SHUBX Premium Toggle Switch --- */
-.shubx-toggle {
+/* --- NAMMASOCIETY Premium Toggle Switch --- */
+.nammasociety-toggle {
     position: relative;
     display: inline-block;
     width: 60px;
     height: 32px;
 }
 
-.shubx-toggle input {
+.nammasociety-toggle input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.shubx-toggle-slider {
+.nammasociety-toggle-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -941,7 +941,7 @@
     border-radius: 34px;
 }
 
-.shubx-toggle-slider:before {
+.nammasociety-toggle-slider:before {
     position: absolute;
     content: "";
     height: 24px;
@@ -953,38 +953,38 @@
     border-radius: 50%;
 }
 
-input:checked+.shubx-toggle-slider {
+input:checked+.nammasociety-toggle-slider {
     background-color: #4BD865;
 }
 
-input:focus+.shubx-toggle-slider {
+input:focus+.nammasociety-toggle-slider {
     box-shadow: 0 0 1px #4BD865;
 }
 
-input:checked+.shubx-toggle-slider:before {
+input:checked+.nammasociety-toggle-slider:before {
     transform: translateX(28px);
 }
 
 /* Small Variant */
-.shubx-toggle-sm {
+.nammasociety-toggle-sm {
     width: 45px;
     height: 24px;
 }
 
-.shubx-toggle-sm .shubx-toggle-slider:before {
+.nammasociety-toggle-sm .nammasociety-toggle-slider:before {
     height: 18px;
     width: 18px;
     left: 3px;
     bottom: 3px;
 }
 
-input:checked+.shubx-toggle-sm .shubx-toggle-slider:before {
+input:checked+.nammasociety-toggle-sm .nammasociety-toggle-slider:before {
     transform: translateX(21px);
 }
 
 /* Backward compatibility for previous .toggle usage if any remains */
 .toggle {
-    @extend .shubx-toggle;
+    @extend .nammasociety-toggle;
 }
 
 /* Note: CSS doesn't support @extend, but keeping for reference if I need to find/replace */
@@ -1008,14 +1008,14 @@ input:checked+.shubx-toggle-sm .shubx-toggle-slider:before {
 .mce-statusbar { border: 0 !important; display: none !important; }
 
 /* Settings View Styles */
-.shubx-premium-toggle {
+.nammasociety-premium-toggle {
     width: 44px;
     height: 22px;
     position: relative;
     display: inline-block;
 }
-.shubx-premium-toggle input { opacity: 0; width: 0; height: 0; }
-.shubx-premium-toggle .slider {
+.nammasociety-premium-toggle input { opacity: 0; width: 0; height: 0; }
+.nammasociety-premium-toggle .slider {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -1023,7 +1023,7 @@ input:checked+.shubx-toggle-sm .shubx-toggle-slider:before {
     transition: .4s;
     border-radius: 34px;
 }
-.shubx-premium-toggle .slider:before {
+.nammasociety-premium-toggle .slider:before {
     position: absolute;
     content: "";
     height: 18px; width: 18px;
@@ -1033,8 +1033,8 @@ input:checked+.shubx-toggle-sm .shubx-toggle-slider:before {
     border-radius: 50%;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-.shubx-premium-toggle input:checked + .slider { background-color: var(--bs-primary); }
-.shubx-premium-toggle input:checked + .slider:before { transform: translateX(22px); }
+.nammasociety-premium-toggle input:checked + .slider { background-color: var(--bs-primary); }
+.nammasociety-premium-toggle input:checked + .slider:before { transform: translateX(22px); }
 
 /* Accordion Tweaks */
 .accordion-button:not(.collapsed) {
@@ -1068,7 +1068,7 @@ input:checked+.shubx-toggle-sm .shubx-toggle-slider:before {
  * ============================================================ */
 
 /* Isolate from WP Admin Styles */
-#shubx51-app-root * { box-sizing: border-box; }
+#nammasociety51-app-root * { box-sizing: border-box; }
 
 /* Hide Default WP Elements if leaks */
 #wpadminbar, #adminmenumain, #wpfooter { display: none !important; }
@@ -1081,14 +1081,14 @@ html { margin-top: 0 !important; }
 /* Typography — Import Outfit & Inter */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
-#shubx51-app-root {
+#nammasociety51-app-root {
     font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 /* Helper for centered layout */
-.shubx-content-scroll > .container {
+.nammasociety-content-scroll > .container {
     max-width: 1200px;
 }
 
@@ -1097,32 +1097,32 @@ html { margin-top: 0 !important; }
 }
 
 @media (min-width: 992px) {
-    .shubx-sidebar {
+    .nammasociety-sidebar {
         width: 280px !important;
         min-width: 280px !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 }
 
-.shubx-sidebar.collapsed {
+.nammasociety-sidebar.collapsed {
     width: 80px !important;
     min-width: 80px !important;
 }
 
-.shubx-sidebar.collapsed .fw-bold,
-.shubx-sidebar.collapsed .text-nowrap,
-.shubx-sidebar.collapsed hr,
-.shubx-sidebar.collapsed .shubx-sidebar-footer-text {
+.nammasociety-sidebar.collapsed .fw-bold,
+.nammasociety-sidebar.collapsed .text-nowrap,
+.nammasociety-sidebar.collapsed hr,
+.nammasociety-sidebar.collapsed .nammasociety-sidebar-footer-text {
     display: none !important;
 }
 
-.shubx-sidebar.collapsed .nav-link {
+.nammasociety-sidebar.collapsed .nav-link {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
 }
 
-.shubx-sidebar.collapsed .nav-link i {
+.nammasociety-sidebar.collapsed .nav-link i {
     margin: 0 !important;
 }
 
@@ -1152,117 +1152,117 @@ html { margin-top: 0 !important; }
 
 /* Dark Mode - Orange Palette (Default) */
 [data-bs-theme="dark"],
-[data-bs-theme="dark"][data-shubx-palette="orange"],
-#shubx51-app-root[data-bs-theme="dark"][data-shubx-palette="orange"] {
+[data-bs-theme="dark"][data-nammasociety-palette="orange"],
+#nammasociety51-app-root[data-bs-theme="dark"][data-nammasociety-palette="orange"] {
     --bs-primary: #f97316;
     --bs-primary-rgb: 249, 115, 22;
     --bs-primary-text-emphasis: #fdba74;
     --custom-primary-color: #fb923c;
     --custom-primary-hover: #ea580c;
     --custom-primary-shadow: rgba(249, 115, 22, 0.3);
-    --shubx-subtle-bg: rgba(249, 115, 22, 0.14);
-    --shubx-subtle-border: rgba(249, 115, 22, 0.3);
-    --shubx-stat-primary: #7c2d12;
-    --shubx-stat-primary-border: #9a3412;
+    --nammasociety-subtle-bg: rgba(249, 115, 22, 0.14);
+    --nammasociety-subtle-border: rgba(249, 115, 22, 0.3);
+    --nammasociety-stat-primary: #7c2d12;
+    --nammasociety-stat-primary-border: #9a3412;
 }
 
 /* Dark Mode - Indigo Palette */
-[data-bs-theme="dark"][data-shubx-palette="indigo"],
-#shubx51-app-root[data-bs-theme="dark"][data-shubx-palette="indigo"] {
+[data-bs-theme="dark"][data-nammasociety-palette="indigo"],
+#nammasociety51-app-root[data-bs-theme="dark"][data-nammasociety-palette="indigo"] {
     --bs-primary: #6366f1;
     --bs-primary-rgb: 99, 102, 241;
     --bs-primary-text-emphasis: #a5b4fc;
     --custom-primary-color: #818cf8;
     --custom-primary-hover: #4f46e5;
     --custom-primary-shadow: rgba(99, 102, 241, 0.3);
-    --shubx-subtle-bg: rgba(99, 102, 241, 0.14);
-    --shubx-subtle-border: rgba(99, 102, 241, 0.3);
-    --shubx-stat-primary: #312e81;
-    --shubx-stat-primary-border: #4338ca;
+    --nammasociety-subtle-bg: rgba(99, 102, 241, 0.14);
+    --nammasociety-subtle-border: rgba(99, 102, 241, 0.3);
+    --nammasociety-stat-primary: #312e81;
+    --nammasociety-stat-primary-border: #4338ca;
 }
 
 /* Dark Mode - Emerald Palette */
-[data-bs-theme="dark"][data-shubx-palette="emerald"],
-#shubx51-app-root[data-bs-theme="dark"][data-shubx-palette="emerald"] {
+[data-bs-theme="dark"][data-nammasociety-palette="emerald"],
+#nammasociety51-app-root[data-bs-theme="dark"][data-nammasociety-palette="emerald"] {
     --bs-primary: #10b981;
     --bs-primary-rgb: 16, 185, 129;
     --bs-primary-text-emphasis: #6ee7b7;
     --custom-primary-color: #34d399;
     --custom-primary-hover: #059669;
     --custom-primary-shadow: rgba(16, 185, 129, 0.3);
-    --shubx-subtle-bg: rgba(16, 185, 129, 0.14);
-    --shubx-subtle-border: rgba(16, 185, 129, 0.3);
-    --shubx-stat-primary: #064e3b;
-    --shubx-stat-primary-border: #065f46;
+    --nammasociety-subtle-bg: rgba(16, 185, 129, 0.14);
+    --nammasociety-subtle-border: rgba(16, 185, 129, 0.3);
+    --nammasociety-stat-primary: #064e3b;
+    --nammasociety-stat-primary-border: #065f46;
 }
 
 /* Dark Mode - Ocean Blue Palette */
-[data-bs-theme="dark"][data-shubx-palette="ocean"],
-#shubx51-app-root[data-bs-theme="dark"][data-shubx-palette="ocean"] {
+[data-bs-theme="dark"][data-nammasociety-palette="ocean"],
+#nammasociety51-app-root[data-bs-theme="dark"][data-nammasociety-palette="ocean"] {
     --bs-primary: #38bdf8;
     --bs-primary-rgb: 56, 189, 248;
     --bs-primary-text-emphasis: #bae6fd;
     --custom-primary-color: #7dd3fc;
     --custom-primary-hover: #0284c7;
     --custom-primary-shadow: rgba(56, 189, 248, 0.3);
-    --shubx-subtle-bg: rgba(56, 189, 248, 0.14);
-    --shubx-subtle-border: rgba(56, 189, 248, 0.3);
-    --shubx-stat-primary: #0c4a6e;
-    --shubx-stat-primary-border: #0369a1;
+    --nammasociety-subtle-bg: rgba(56, 189, 248, 0.14);
+    --nammasociety-subtle-border: rgba(56, 189, 248, 0.3);
+    --nammasociety-stat-primary: #0c4a6e;
+    --nammasociety-stat-primary-border: #0369a1;
 }
 
 /* Dark Mode - Crimson Rose Palette */
-[data-bs-theme="dark"][data-shubx-palette="rose"],
-#shubx51-app-root[data-bs-theme="dark"][data-shubx-palette="rose"] {
+[data-bs-theme="dark"][data-nammasociety-palette="rose"],
+#nammasociety51-app-root[data-bs-theme="dark"][data-nammasociety-palette="rose"] {
     --bs-primary: #fb7185;
     --bs-primary-rgb: 251, 113, 133;
     --bs-primary-text-emphasis: #fecdd3;
     --custom-primary-color: #fda4af;
     --custom-primary-hover: #e11d48;
     --custom-primary-shadow: rgba(251, 113, 133, 0.3);
-    --shubx-subtle-bg: rgba(251, 113, 133, 0.14);
-    --shubx-subtle-border: rgba(251, 113, 133, 0.3);
-    --shubx-stat-primary: #881337;
-    --shubx-stat-primary-border: #9f1239;
+    --nammasociety-subtle-bg: rgba(251, 113, 133, 0.14);
+    --nammasociety-subtle-border: rgba(251, 113, 133, 0.3);
+    --nammasociety-stat-primary: #881337;
+    --nammasociety-stat-primary-border: #9f1239;
 }
 
-[data-bs-theme="dark"] #shubx51-app-root {
+[data-bs-theme="dark"] #nammasociety51-app-root {
     background-color: #0b0f19 !important;
     color: #f8fafc !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar {
+[data-bs-theme="dark"] .nammasociety-sidebar {
     background-color: #090d16 !important;
     border-color: #1e293b !important;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.4) !important;
 }
 
-[data-bs-theme="dark"] .shubx-top-header {
+[data-bs-theme="dark"] .nammasociety-top-header {
     background-color: #0f172a !important;
     border-color: #1e293b !important;
 }
 
-[data-bs-theme="dark"] .shubx-content-scroll {
+[data-bs-theme="dark"] .nammasociety-content-scroll {
     background-color: #0b0f19 !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link {
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link {
     color: #94a3b8 !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link:hover {
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link:hover {
     background-color: #1e293b !important;
     color: #ffffff !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link.active {
-    background-color: var(--shubx-subtle-bg, rgba(249, 115, 22, 0.15)) !important;
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link.active {
+    background-color: var(--nammasociety-subtle-bg, rgba(249, 115, 22, 0.15)) !important;
     color: var(--custom-primary-color, #fb923c) !important;
 }
 
 /* Cards & Surfaces */
 [data-bs-theme="dark"] .card,
-[data-bs-theme="dark"] .shubx-layer {
+[data-bs-theme="dark"] .nammasociety-layer {
     background-color: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
@@ -1288,8 +1288,8 @@ html { margin-top: 0 !important; }
 /* Soft translucent tinted backgrounds */
 [data-bs-theme="dark"] .bg-primary.bg-opacity-10,
 [data-bs-theme="dark"] .bg-primary-subtle {
-    background-color: var(--shubx-subtle-bg, rgba(249, 115, 22, 0.14)) !important;
-    border-color: var(--shubx-subtle-border, rgba(249, 115, 22, 0.3)) !important;
+    background-color: var(--nammasociety-subtle-bg, rgba(249, 115, 22, 0.14)) !important;
+    border-color: var(--nammasociety-subtle-border, rgba(249, 115, 22, 0.3)) !important;
     color: var(--custom-primary-color, #fdba74) !important;
 }
 
@@ -1323,8 +1323,8 @@ html { margin-top: 0 !important; }
 
 /* Solid Stat Cards in Rules (Dark mode variants) */
 [data-bs-theme="dark"] .card.bg-primary:not(.bg-opacity-10) {
-    background-color: var(--shubx-stat-primary, #7c2d12) !important;
-    border: 1px solid var(--shubx-stat-primary-border, #9a3412) !important;
+    background-color: var(--nammasociety-stat-primary, #7c2d12) !important;
+    border: 1px solid var(--nammasociety-stat-primary-border, #9a3412) !important;
     color: #ffffff !important;
 }
 [data-bs-theme="dark"] .card.bg-warning:not(.bg-opacity-10) {
@@ -1500,7 +1500,7 @@ html { margin-top: 0 !important; }
     border-color: var(--bs-primary) !important;
 }
 
-.shubx-theme-toggle-btn {
+.nammasociety-theme-toggle-btn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -1511,45 +1511,45 @@ html { margin-top: 0 !important; }
     transition: all 0.2s ease;
 }
 
-.shubx-theme-toggle-btn:hover {
+.nammasociety-theme-toggle-btn:hover {
     transform: scale(1.05);
 }
 
 /* Capability Cards */
-.shubx-cap-card {
+.nammasociety-cap-card {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
     min-height: 50px;
 }
 
-.shubx-cap-card:hover {
+.nammasociety-cap-card:hover {
     border-color: var(--custom-primary-color) !important;
     transform: translateY(-1px);
 }
 
-.shubx-cap-card .form-check {
+.nammasociety-cap-card .form-check {
     min-height: auto;
     padding-left: 0;
 }
 
-.shubx-cap-card .form-check-input {
+.nammasociety-cap-card .form-check-input {
     width: 1.15em;
     height: 1.15em;
     margin-top: 0;
     flex-shrink: 0;
 }
 
-.shubx-cap-card .form-check-label {
+.nammasociety-cap-card .form-check-label {
     line-height: 1.35;
 }
 
-[data-bs-theme="dark"] .shubx-cap-card {
+[data-bs-theme="dark"] .nammasociety-cap-card {
     background-color: #141e33 !important;
     border-color: #334155 !important;
 }
 
-[data-bs-theme="dark"] .shubx-cap-card.bg-primary {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.15)) !important;
+[data-bs-theme="dark"] .nammasociety-cap-card.bg-primary {
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.15)) !important;
     border-color: var(--custom-primary-color) !important;
 }
 
@@ -1558,42 +1558,42 @@ html { margin-top: 0 !important; }
    ========================================================================== */
 
 /* App Root & Scroll Canvas */
-[data-bs-theme="dark"] #shubx51-app-root,
-#shubx51-app-root[data-bs-theme="dark"] {
+[data-bs-theme="dark"] #nammasociety51-app-root,
+#nammasociety51-app-root[data-bs-theme="dark"] {
     background-color: #0b1120 !important;
     color: #f1f5f9 !important;
 }
 
-[data-bs-theme="dark"] .shubx-content-scroll,
+[data-bs-theme="dark"] .nammasociety-content-scroll,
 [data-bs-theme="dark"] .bg-slate-50 {
     background-color: #0b1120 !important;
     color: #f1f5f9 !important;
 }
 
 /* Sidebar */
-[data-bs-theme="dark"] .shubx-sidebar,
-[data-bs-theme="dark"] #shubx-sidebar {
+[data-bs-theme="dark"] .nammasociety-sidebar,
+[data-bs-theme="dark"] #nammasociety-sidebar {
     background-color: #0f172a !important;
     border-color: #1e293b !important;
     box-shadow: 4px 0 16px rgba(0, 0, 0, 0.4) !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link {
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link {
     color: #94a3b8 !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link:not(.active):hover {
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link:not(.active):hover {
     background-color: #1e293b !important;
     color: #f8fafc !important;
 }
 
-[data-bs-theme="dark"] .shubx-sidebar .nav-link.active {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.2)) !important;
+[data-bs-theme="dark"] .nammasociety-sidebar .nav-link.active {
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.2)) !important;
     color: var(--custom-primary-color) !important;
 }
 
 /* Header */
-[data-bs-theme="dark"] .shubx-top-header {
+[data-bs-theme="dark"] .nammasociety-top-header {
     background-color: #0f172a !important;
     border-color: #1e293b !important;
     color: #f8fafc !important;
@@ -1714,12 +1714,12 @@ html { margin-top: 0 !important; }
 }
 
 /* Palette Card Selection */
-[data-bs-theme="dark"] .shubx-palette-card {
+[data-bs-theme="dark"] .nammasociety-palette-card {
     background-color: #0f172a !important;
     border-color: #1e293b !important;
 }
 
-[data-bs-theme="dark"] .shubx-palette-card:hover {
+[data-bs-theme="dark"] .nammasociety-palette-card:hover {
     border-color: var(--custom-primary-color) !important;
     background-color: #141e33 !important;
 }
@@ -1727,45 +1727,45 @@ html { margin-top: 0 !important; }
 /* ============================================================
  * ADMIN SETTINGS PAGE DARK THEME SURFACES
  * ============================================================ */
-[data-bs-theme="dark"] .shubx-settings-card,
-#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-card,
-[data-bs-theme="dark"] .shubx-settings-tab-bar,
-#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-tab-bar,
-[data-bs-theme="dark"] .shubx-settings-card .card-body,
-#shubx51-app-root[data-bs-theme="dark"] .shubx-settings-card .card-body,
+[data-bs-theme="dark"] .nammasociety-settings-card,
+#nammasociety51-app-root[data-bs-theme="dark"] .nammasociety-settings-card,
+[data-bs-theme="dark"] .nammasociety-settings-tab-bar,
+#nammasociety51-app-root[data-bs-theme="dark"] .nammasociety-settings-tab-bar,
+[data-bs-theme="dark"] .nammasociety-settings-card .card-body,
+#nammasociety51-app-root[data-bs-theme="dark"] .nammasociety-settings-card .card-body,
 [data-bs-theme="dark"] .settings-tab-pane,
-#shubx51-app-root[data-bs-theme="dark"] .settings-tab-pane {
+#nammasociety51-app-root[data-bs-theme="dark"] .settings-tab-pane {
     background-color: #1e293b !important;
     border-color: #334155 !important;
     color: #f8fafc !important;
 }
 
-[data-bs-theme="dark"] #shubx-settings-tabs .nav-link {
+[data-bs-theme="dark"] #nammasociety-settings-tabs .nav-link {
     color: #94a3b8 !important;
     background: transparent !important;
 }
 
-[data-bs-theme="dark"] #shubx-settings-tabs .nav-link.active {
+[data-bs-theme="dark"] #nammasociety-settings-tabs .nav-link.active {
     color: var(--custom-primary-color, #fb923c) !important;
     border-color: var(--custom-primary-color, #fb923c) !important;
 }
 
-[data-bs-theme="dark"] #shubx-settings-tabs .nav-link:hover:not(.active) {
+[data-bs-theme="dark"] #nammasociety-settings-tabs .nav-link:hover:not(.active) {
     color: #f8fafc !important;
 }
 
 [data-bs-theme="dark"] .accordion-button,
 [data-bs-theme="dark"] .accordion-button.bg-white,
 [data-bs-theme="dark"] .accordion-item,
-#shubx51-app-root[data-bs-theme="dark"] .accordion-button,
-#shubx51-app-root[data-bs-theme="dark"] .accordion-item {
+#nammasociety51-app-root[data-bs-theme="dark"] .accordion-button,
+#nammasociety51-app-root[data-bs-theme="dark"] .accordion-item {
     background-color: #1e293b !important;
     color: #f8fafc !important;
     border-color: #334155 !important;
 }
 
 [data-bs-theme="dark"] .accordion-body,
-#shubx51-app-root[data-bs-theme="dark"] .accordion-body {
+#nammasociety51-app-root[data-bs-theme="dark"] .accordion-body {
     background-color: #0f172a !important;
     color: #f1f5f9 !important;
-}
+}

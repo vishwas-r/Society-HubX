@@ -1,3 +1,9 @@
+// Backward Compatibility Aliases for Namma Society
+window.SHUBXCharts = window.NAMMASOCIETYCharts = window.NAMMASOCIETYCharts || [];
+window.SHUBXApiRequest = function(...args) { return window.NAMMASOCIETYApiRequest ? window.NAMMASOCIETYApiRequest(...args) : null; };
+window.SHUBXShowToast = function(...args) { return window.NAMMASOCIETYShowToast ? window.NAMMASOCIETYShowToast(...args) : null; };
+window.SHUBXBulkProcess = function(...args) { return window.NAMMASOCIETYBulkProcess ? window.NAMMASOCIETYBulkProcess(...args) : null; };
+
 
 /**
  * Admin App JS
@@ -98,14 +104,14 @@
         });
 
         // 4. Sidebar Toggle Logic
-        const sidebar = document.getElementById('shubx-sidebar');
-        const sidebarToggle = document.getElementById('shubx-sidebar-toggle');
-        const sidebarClose = document.getElementById('shubx-sidebar-close');
-        const sidebarBackdrop = document.getElementById('shubx-sidebar-backdrop');
+        const sidebar = document.getElementById('nammasociety-sidebar');
+        const sidebarToggle = document.getElementById('nammasociety-sidebar-toggle');
+        const sidebarClose = document.getElementById('nammasociety-sidebar-close');
+        const sidebarBackdrop = document.getElementById('nammasociety-sidebar-backdrop');
 
         if (sidebar && sidebarToggle) {
             // Restore state from localStorage
-            const isCollapsed = localStorage.getItem('SHUBX_sidebar_collapsed') === 'true';
+            const isCollapsed = localStorage.getItem('NAMMASOCIETY_sidebar_collapsed') === 'true';
             if (isCollapsed && window.innerWidth >= 992) {
                 sidebar.classList.add('collapsed');
             }
@@ -124,7 +130,7 @@
                 } else {
                     // Desktop: Toggle collapse
                     sidebar.classList.toggle('collapsed');
-                    localStorage.setItem('SHUBX_sidebar_collapsed', sidebar.classList.contains('collapsed'));
+                    localStorage.setItem('NAMMASOCIETY_sidebar_collapsed', sidebar.classList.contains('collapsed'));
                 }
             });
         }
@@ -143,8 +149,8 @@
 
         // 5. Global Chart Responsiveness (Chart.js)
         window.addEventListener('resize', debounce(() => {
-            if (window.SHUBXCharts && Array.isArray(window.SHUBXCharts)) {
-                window.SHUBXCharts.forEach(chart => {
+            if (window.NAMMASOCIETYCharts && Array.isArray(window.NAMMASOCIETYCharts)) {
+                window.NAMMASOCIETYCharts.forEach(chart => {
                     if (typeof chart.resize === 'function') chart.resize();
                 });
             }
@@ -188,7 +194,7 @@
      * Global AJAX API Wrapper - MOVED TO core.js
      */
     /*
-    window.SHUBXApiRequest = async function (action, data = {}) { ... };
+    window.NAMMASOCIETYApiRequest = async function (action, data = {}) { ... };
     */
 
 
@@ -199,7 +205,7 @@
      * Show Global Toast - MOVED TO core.js
      */
     /*
-    window.SHUBXShowToast = function (msg, type = 'success') {
+    window.NAMMASOCIETYShowToast = function (msg, type = 'success') {
         ...
     };
     */
@@ -213,8 +219,8 @@
         // 1. Direct Message Parameter
         const msg = params.get('msg');
         const error = params.get('error');
-        if (msg) return window.SHUBXShowToast(decodeURIComponent(msg.replace(/\+/g, ' ')), 'success');
-        if (error) return window.SHUBXShowToast(decodeURIComponent(error.replace(/\+/g, ' ')), 'error');
+        if (msg) return window.NAMMASOCIETYShowToast(decodeURIComponent(msg.replace(/\+/g, ' ')), 'success');
+        if (error) return window.NAMMASOCIETYShowToast(decodeURIComponent(error.replace(/\+/g, ' ')), 'error');
 
         // 2. Status Code Parameter
         const status = params.get('status');
@@ -234,7 +240,7 @@
 
             const statusCode = status || success;
             if (statusMap[statusCode]) {
-                window.SHUBXShowToast(statusMap[statusCode], 'success');
+                window.NAMMASOCIETYShowToast(statusMap[statusCode], 'success');
             }
         }
 
@@ -264,7 +270,7 @@
             payload = JSON.parse(data.payload || '{}');
             original = JSON.parse(data.original || '{}');
         } catch (err) {
-            console.error('SHUBX: Error parsing request payload', err, data.payload);
+            console.error('NAMMASOCIETY: Error parsing request payload', err, data.payload);
         }
 
         // Relocate to body if not already there to fix z-index/stacking context issues in WP Admin
@@ -390,11 +396,11 @@
             const id = approveBtn.dataset.id;
             if (!confirm('Approve this request?')) return;
 
-            SHUBX.ajax({
-                action: 'shubx51_approve_request',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_approve_request',
                 data: {
                     id: id,
-                    _wpnonce: typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : ''
+                    _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
                 },
                 loadingButton: approveBtn,
                 successMessage: 'Request approved successfully!',
@@ -408,12 +414,12 @@
             const reason = prompt('Reason for rejection (optional):');
             if (reason === null) return; // Cancelled prompt
 
-            SHUBX.ajax({
-                action: 'shubx51_reject_request',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_reject_request',
                 data: {
                     id: id,
                     admin_note: reason,
-                    _wpnonce: typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : ''
+                    _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
                 },
                 loadingButton: rejectBtn,
                 successMessage: 'Request rejected.',
@@ -425,10 +431,10 @@
     /**
      * Bulk Action Logic
      */
-    window.SHUBXBulkProcess = function (action) {
-        const checkboxes = document.querySelectorAll('.shubx-bulk-checkbox:checked');
+    window.NAMMASOCIETYBulkProcess = function (action) {
+        const checkboxes = document.querySelectorAll('.nammasociety-bulk-checkbox:checked');
         if (checkboxes.length === 0) {
-            SHUBX.toast.warning('Please select at least one item');
+            NAMMASOCIETY.toast.warning('Please select at least one item');
             return;
         }
 
@@ -441,13 +447,13 @@
             if (!confirm(`Are you sure you want to approve ${ids.length} items?`)) return;
         }
 
-        SHUBX.ajax({
-            action: 'shubx51_bulk_process_requests',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_bulk_process_requests',
             data: {
                 ids: ids,
                 bulk_action: action,
                 note: note,
-                _wpnonce: typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : ''
+                _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
             },
             successMessage: `Bulk ${action} processed successfully!`,
             reload: true
@@ -457,19 +463,19 @@
     // --- Bulk Checkbox Helpers ---
     document.addEventListener('change', function (e) {
         if (e.target.id === 'bulk-select-all') {
-            const checkboxes = document.querySelectorAll('.shubx-bulk-checkbox:not(:disabled)');
+            const checkboxes = document.querySelectorAll('.nammasociety-bulk-checkbox:not(:disabled)');
             checkboxes.forEach(cb => cb.checked = e.target.checked);
             updateBulkToolbar();
         }
 
-        if (e.target.classList.contains('shubx-bulk-checkbox')) {
+        if (e.target.classList.contains('nammasociety-bulk-checkbox')) {
             updateBulkToolbar();
         }
     });
 
     function updateBulkToolbar() {
-        const checked = document.querySelectorAll('.shubx-bulk-checkbox:checked').length;
-        const toolbar = document.querySelector('.shubx-bulk-actions');
+        const checked = document.querySelectorAll('.nammasociety-bulk-checkbox:checked').length;
+        const toolbar = document.querySelector('.nammasociety-bulk-actions');
         const countSpan = document.getElementById('selected-count');
 
         if (toolbar) {

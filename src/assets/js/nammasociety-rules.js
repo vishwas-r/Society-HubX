@@ -1,5 +1,5 @@
 /**
- * SHUBX Rules Management JS
+ * NAMMASOCIETY Rules Management JS
  */
 (function ($) {
     'use strict';
@@ -18,8 +18,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'rules' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -109,8 +109,8 @@
         const formData = new FormData(e.target);
         const isEdit = formData.get('rule_id') !== '';
 
-        SHUBX.ajax({
-            action: isEdit ? 'shubx51_edit_rule' : 'shubx51_add_rule',
+        NAMMASOCIETY.ajax({
+            action: isEdit ? 'nammasociety51_edit_rule' : 'nammasociety51_add_rule',
             data: Object.fromEntries(formData),
             loadingButton: $(e.target).find('button[type="submit"]'),
             successMessage: 'Rule saved successfully!',
@@ -125,8 +125,8 @@
         if (!confirm('Publish this rule? Residents will be notified.')) return;
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_publish_rule',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_publish_rule',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -140,8 +140,8 @@
         if (!confirm('Archive this rule? It will be hidden from residents.')) return;
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_delete_rule',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_delete_rule',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -157,8 +157,8 @@
         versionHistoryModal.show();
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_get_version_history',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_get_version_history',
             data: {
                 rule_id: ruleId,
                 _wpnonce: Config.nonce
@@ -214,8 +214,8 @@
         e.preventDefault();
         const formData = new FormData(e.target);
 
-        SHUBX.ajax({
-            action: 'shubx51_manage_category',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_manage_category',
             data: Object.fromEntries(formData),
             loadingButton: $(e.target).find('button[type="submit"]'),
             successMessage: 'Category saved successfully!',
@@ -230,8 +230,8 @@
         if (!confirm('Are you sure you want to delete this category? This cannot be undone.')) return;
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_manage_category',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_manage_category',
             data: {
                 category_action: 'delete',
                 category_id: catId,
@@ -276,8 +276,8 @@
         if (notes === null) return;
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_resolve_violation',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_resolve_violation',
             data: {
                 violation_id: violationId,
                 status: 'resolved',
@@ -293,8 +293,8 @@
         if (!confirm('Send acknowledgment reminders to all residents with pending acknowledgments?')) return;
         await fetchModuleConfig();
 
-        SHUBX.ajax({
-            action: 'shubx51_send_acknowledgment_reminders',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_send_acknowledgment_reminders',
             data: {
                 _wpnonce: Config.nonce
             },

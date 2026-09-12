@@ -173,7 +173,7 @@
         form.reset();
 
         const actionInput = form.querySelector('[name="action"]');
-        if (actionInput) actionInput.value = 'shubx51_add_resident';
+        if (actionInput) actionInput.value = 'nammasociety51_add_resident';
 
         const idInput = form.querySelector('[name="resident_id"]');
         if (idInput) idInput.value = '';
@@ -252,7 +252,7 @@
                 }
             });
 
-            setVal('action', 'shubx51_edit_resident');
+            setVal('action', 'nammasociety51_edit_resident');
             setVal('resident_id', r.id);
 
             const title = document.getElementById('modal-title');
@@ -304,7 +304,7 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             try {
-                await SHUBX.ajax('shubx51_delete_resident', {
+                await NAMMASOCIETY.ajax('nammasociety51_delete_resident', {
                     resident_id: id,
                     _wpnonce: Config.deleteNonce
                 }, {
@@ -323,7 +323,7 @@
 
     async function restoreResident(id) {
         try {
-            await SHUBX.ajax('shubx51_restore_resident', {
+            await NAMMASOCIETY.ajax('nammasociety51_restore_resident', {
                 resident_id: id,
                 _wpnonce: Config.restoreNonce
             }, {
@@ -356,10 +356,10 @@
 
         newConfirmBtn.addEventListener('click', async function () {
             try {
-                const action = (source === 'history') ? 'shubx51_delete_history' : 'shubx51_move_to_history';
+                const action = (source === 'history') ? 'nammasociety51_delete_history' : 'nammasociety51_move_to_history';
                 const nonce = (source === 'history') ? Config.deleteHistoryNonce : Config.moveToHistoryNonce;
 
-                await SHUBX.ajax(action, {
+                await NAMMASOCIETY.ajax(action, {
                     ...(source === 'history' ? { history_id: id } : { resident_id: id }),
                     _wpnonce: nonce
                 }, {
@@ -381,8 +381,8 @@
         if (State.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'residents' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -412,14 +412,14 @@
                     e.preventDefault();
                     const formData = new FormData(form);
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: formData.get('action'),
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
-                        successMessage: (formData.get('action') === 'shubx51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
+                        successMessage: (formData.get('action') === 'nammasociety51_add_resident' && !Config.isAdmin) ? 'Update request submitted' : 'Resident saved successfully',
                         onSuccess: function () {
                             closeResidentModal();
-                            window.location.href = window.location.origin + window.location.pathname + '?page=shubx51-residents';
+                            window.location.href = window.location.origin + window.location.pathname + '?page=nammasociety51-residents';
                         }
                     });
                 });

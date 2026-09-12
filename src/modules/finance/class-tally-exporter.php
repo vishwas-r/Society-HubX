@@ -3,14 +3,14 @@
  * Tally ERP 9 / Tally Prime Accounting Export Bridge.
  * Generates standards-compliant Tally XML for Ledgers, Sales Invoices, and Payment Receipts.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Tally_Exporter {
+class NAMMASOCIETY51_Tally_Exporter {
 
 	/**
 	 * Generate and stream Tally XML export download.
@@ -44,9 +44,9 @@ class SHUBX51_Tally_Exporter {
 	 * @return string
 	 */
 	public static function build_tally_xml( $month = '', $export_type = 'all' ): string {
-		$db = new SHUBX51_DB_Router();
-		$company_name = get_option( 'shubx51_society_name', 'Housing Society' );
-		$bank_name = get_option( 'shubx51_bank_name', 'Bank Account' );
+		$db = new NAMMASOCIETY51_DB_Router();
+		$company_name = get_option( 'nammasociety51_society_name', 'Housing Society' );
+		$bank_name = get_option( 'nammasociety51_bank_name', 'Bank Account' );
 
 		// Query Invoices
 		$inv_where = array();
@@ -196,4 +196,9 @@ class SHUBX51_Tally_Exporter {
 
 		return implode( "\n", $xml );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Tally_Exporter' ) && ! class_exists( 'SHUBX51_Tally_Exporter', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Tally_Exporter', 'SHUBX51_Tally_Exporter' );
 }

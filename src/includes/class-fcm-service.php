@@ -4,30 +4,30 @@
  * Pure PHP Firebase Cloud Messaging (FCM HTTP v1) Dispatcher.
  * Zero external Composer dependencies: Uses native PHP openssl_sign() for RS256 JWT auth.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_FCM_Service {
+class NAMMASOCIETY51_FCM_Service {
 
 	/**
 	 * Initialize event listeners.
 	 */
 	public static function init() {
-		add_action( 'shubx51_emergency_sos_triggered', array( __CLASS__, 'on_emergency_sos' ), 10, 1 );
-		add_action( 'shubx51_visitor_entry_requested', array( __CLASS__, 'on_visitor_entry' ), 10, 1 );
-		add_action( 'shubx51_helpdesk_ticket_updated', array( __CLASS__, 'on_helpdesk_event' ), 10, 3 );
-		add_action( 'shubx51_notice_published', array( __CLASS__, 'on_notice_published' ), 10, 2 );
-		add_action( 'shubx51_invoice_generated', array( __CLASS__, 'on_invoice_generated' ), 10, 2 );
+		add_action( 'nammasociety51_emergency_sos_triggered', array( __CLASS__, 'on_emergency_sos' ), 10, 1 );
+		add_action( 'nammasociety51_visitor_entry_requested', array( __CLASS__, 'on_visitor_entry' ), 10, 1 );
+		add_action( 'nammasociety51_helpdesk_ticket_updated', array( __CLASS__, 'on_helpdesk_event' ), 10, 3 );
+		add_action( 'nammasociety51_notice_published', array( __CLASS__, 'on_notice_published' ), 10, 2 );
+		add_action( 'nammasociety51_invoice_generated', array( __CLASS__, 'on_invoice_generated' ), 10, 2 );
 	}
 
 	/**
 	 * Default Central Gateway URL (Master SaaS Relay on demo.nodko.guru via Central Manager plugin).
 	 */
-	const CENTRAL_GATEWAY_URL = 'https://demo.nodko.guru/wp-json/shubx-central/v1/dispatch';
+	const CENTRAL_GATEWAY_URL = 'https://demo.nodko.guru/wp-json/nammasociety-central/v1/dispatch';
 
 	/**
 	 * Check if FCM / Central Gateway is enabled.
@@ -35,9 +35,9 @@ class SHUBX51_FCM_Service {
 	 * @return bool
 	 */
 	public static function is_enabled() {
-		$enabled     = get_option( 'shubx51_fcm_enabled', '1' );
-		$gateway_url = get_option( 'shubx51_central_gateway_url', self::CENTRAL_GATEWAY_URL );
-		$project_id  = get_option( 'shubx51_fcm_project_id', 'push-notification-test-10650' );
+		$enabled     = get_option( 'nammasociety51_fcm_enabled', '1' );
+		$gateway_url = get_option( 'nammasociety51_central_gateway_url', self::CENTRAL_GATEWAY_URL );
+		$project_id  = get_option( 'nammasociety51_fcm_project_id', 'push-notification-test-10650' );
 		return ( '1' === (string) $enabled && ( ! empty( $gateway_url ) || ! empty( $project_id ) ) );
 	}
 
@@ -49,8 +49,8 @@ class SHUBX51_FCM_Service {
 	public static function get_public_config() {
 		return array(
 			'fcm_enabled' => self::is_enabled(),
-			'sender_id'   => get_option( 'shubx51_fcm_sender_id', '1019582320607' ),
-			'project_id'  => get_option( 'shubx51_fcm_project_id', 'push-notification-test-10650' ),
+			'sender_id'   => get_option( 'nammasociety51_fcm_sender_id', '1019582320607' ),
+			'project_id'  => get_option( 'nammasociety51_fcm_project_id', 'push-notification-test-10650' ),
 		);
 	}
 
@@ -65,8 +65,8 @@ class SHUBX51_FCM_Service {
 	 * @return array|WP_Error
 	 */
 	public static function dispatch_via_central_gateway( $tokens, $title, $body, $data = array(), $priority = 'high' ) {
-		$gateway_url = get_option( 'shubx51_central_gateway_url', self::CENTRAL_GATEWAY_URL );
-		$api_key     = get_option( 'shubx51_central_gateway_key', 'shubx_live_nodko_default' );
+		$gateway_url = get_option( 'nammasociety51_central_gateway_url', self::CENTRAL_GATEWAY_URL );
+		$api_key     = get_option( 'nammasociety51_central_gateway_key', 'nammasociety_live_nodko_default' );
 		$site_domain = home_url();
 
 		$device_tokens = is_array( $tokens ) ? array_values( array_unique( array_filter( $tokens ) ) ) : array( $tokens );
@@ -90,8 +90,8 @@ class SHUBX51_FCM_Service {
 			'timeout' => 10,
 			'headers' => array(
 				'Content-Type'           => 'application/json; UTF-8',
-				'X-SHUBX-API-KEY'        => $api_key,
-				'X-SHUBX-SOCIETY-DOMAIN' => $site_domain,
+				'X-NAMMASOCIETY-API-KEY'        => $api_key,
+				'X-NAMMASOCIETY-SOCIETY-DOMAIN' => $site_domain,
 			),
 			'body'    => json_encode( $payload ),
 		) );
@@ -105,7 +105,7 @@ class SHUBX51_FCM_Service {
 
 		if ( $code >= 200 && $code < 300 && ! empty( $body_parsed['success'] ) ) {
 			// Cache updated usage stats returned by Central Gateway
-			update_option( 'shubx51_gateway_usage_cached', array(
+			update_option( 'nammasociety51_gateway_usage_cached', array(
 				'monthly_usage' => $body_parsed['monthly_usage'] ?? 0,
 				'monthly_limit' => $body_parsed['monthly_limit'] ?? 5000,
 				'remaining'     => $body_parsed['remaining'] ?? 5000,
@@ -113,12 +113,17 @@ class SHUBX51_FCM_Service {
 				'synced_at'     => current_time( 'mysql' ),
 			) );
 
+			// Record push telemetry on targeted device tokens
+			self::log_push_telemetry( $device_tokens, $title, 'delivered' );
+
 			return array(
 				'success'    => true,
 				'dispatched' => (int) ( $body_parsed['dispatched'] ?? count( $device_tokens ) ),
 				'details'    => $body_parsed,
 			);
 		}
+
+		self::log_push_telemetry( $device_tokens, $title, 'failed' );
 
 		return new WP_Error( 'gateway_error', $body_parsed['message'] ?? ( 'Gateway HTTP ' . $code ), array( 'status' => $code ) );
 	}
@@ -130,16 +135,16 @@ class SHUBX51_FCM_Service {
 	 * @return string|WP_Error
 	 */
 	public static function get_access_token() {
-		$cached_token = get_transient( 'shubx51_fcm_access_token' );
+		$cached_token = get_transient( 'nammasociety51_fcm_access_token' );
 		if ( $cached_token ) {
 			return $cached_token;
 		}
 
-		$client_email = get_option( 'shubx51_fcm_client_email', '' );
-		$private_key  = get_option( 'shubx51_fcm_private_key', '' );
+		$client_email = get_option( 'nammasociety51_fcm_client_email', '' );
+		$private_key  = get_option( 'nammasociety51_fcm_private_key', '' );
 
 		if ( empty( $client_email ) || empty( $private_key ) ) {
-			return new WP_Error( 'fcm_not_configured', __( 'Firebase credentials are not configured.', 'society-hubx' ) );
+			return new WP_Error( 'fcm_not_configured', __( 'Firebase credentials are not configured.', 'namma-society' ) );
 		}
 
 		$now         = time();
@@ -156,7 +161,7 @@ class SHUBX51_FCM_Service {
 		$signed    = openssl_sign( "{$jwt_header}.{$jwt_payload}", $signature, $private_key, 'SHA256' );
 
 		if ( ! $signed ) {
-			return new WP_Error( 'fcm_sign_failed', __( 'Failed to sign JWT with the provided RSA private key.', 'society-hubx' ) );
+			return new WP_Error( 'fcm_sign_failed', __( 'Failed to sign JWT with the provided RSA private key.', 'namma-society' ) );
 		}
 
 		$jwt_signature = rtrim( strtr( base64_encode( $signature ), '+/', '-_' ), '=' );
@@ -178,10 +183,10 @@ class SHUBX51_FCM_Service {
 		$body = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( empty( $body['access_token'] ) ) {
 			$error_desc = isset( $body['error_description'] ) ? $body['error_description'] : ( $body['error'] ?? 'Unknown OAuth2 error' );
-			return new WP_Error( 'fcm_oauth_failed', sprintf( __( 'Google OAuth2 failed: %s', 'society-hubx' ), $error_desc ) );
+			return new WP_Error( 'fcm_oauth_failed', sprintf( __( 'Google OAuth2 failed: %s', 'namma-society' ), $error_desc ) );
 		}
 
-		set_transient( 'shubx51_fcm_access_token', $body['access_token'], 55 * MINUTE_IN_SECONDS );
+		set_transient( 'nammasociety51_fcm_access_token', $body['access_token'], 55 * MINUTE_IN_SECONDS );
 		return $body['access_token'];
 	}
 
@@ -197,7 +202,7 @@ class SHUBX51_FCM_Service {
 	 */
 	public static function send_notification( $token, $title, $body, $data = array(), $priority = 'high' ) {
 		// Mock / development token bypass - simulate delivery so test alerts succeed during development/testing
-		if ( strpos( $token, 'shubx_dev_' ) === 0 || strpos( $token, 'mock_' ) === 0 ) {
+		if ( strpos( $token, 'nammasociety_dev_' ) === 0 || strpos( $token, 'mock_' ) === 0 ) {
 			return array(
 				'success'    => true,
 				'message_id' => 'dev_mock_dispatch_' . time(),
@@ -205,9 +210,9 @@ class SHUBX51_FCM_Service {
 			);
 		}
 
-		$project_id = get_option( 'shubx51_fcm_project_id', '' );
+		$project_id = get_option( 'nammasociety51_fcm_project_id', '' );
 		if ( empty( $project_id ) ) {
-			return new WP_Error( 'fcm_no_project', __( 'Firebase Project ID missing.', 'society-hubx' ) );
+			return new WP_Error( 'fcm_no_project', __( 'Firebase Project ID missing.', 'namma-society' ) );
 		}
 
 		$access_token = self::get_access_token();
@@ -307,11 +312,11 @@ class SHUBX51_FCM_Service {
 		}
 
 		global $wpdb;
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 
 		// Auto-reactivate mock/dev tokens that may have been deactivated
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "UPDATE {$table} SET is_active = 1 WHERE device_token LIKE 'shubx_dev_%' OR device_token LIKE 'mock_%'" );
+		$wpdb->query( "UPDATE {$table} SET is_active = 1 WHERE device_token LIKE 'nammasociety_dev_%' OR device_token LIKE 'mock_%'" );
 
 		$tokens = array();
 		$flat_clean = trim( (string) $flat_no );
@@ -366,7 +371,7 @@ class SHUBX51_FCM_Service {
 		if ( empty( $tokens ) ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$resident_uids = $wpdb->get_col( $wpdb->prepare(
-				"SELECT wp_user_id FROM {$wpdb->prefix}shubx51_residents WHERE (flat_no = %s OR flat_no LIKE %s) AND wp_user_id > 0",
+				"SELECT wp_user_id FROM {$wpdb->prefix}nammasociety51_residents WHERE (flat_no = %s OR flat_no LIKE %s) AND wp_user_id > 0",
 				$flat_clean,
 				'%' . $wpdb->esc_like( $flat_clean ) . '%'
 			) );
@@ -450,11 +455,11 @@ class SHUBX51_FCM_Service {
 		}
 
 		global $wpdb;
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 
 		// Auto-reactivate mock/dev tokens that may have been deactivated
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->query( "UPDATE {$table} SET is_active = 1 WHERE device_token LIKE 'shubx_dev_%' OR device_token LIKE 'mock_%'" );
+		$wpdb->query( "UPDATE {$table} SET is_active = 1 WHERE device_token LIKE 'nammasociety_dev_%' OR device_token LIKE 'mock_%'" );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$tokens = $wpdb->get_col( "SELECT DISTINCT device_token FROM {$table} WHERE is_active = 1" );
@@ -508,7 +513,7 @@ class SHUBX51_FCM_Service {
 		}
 
 		global $wpdb;
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$residents = $db->get( 'residents', array( 'status' => 'approved' ) );
 
 		$user_ids = array();
@@ -527,7 +532,7 @@ class SHUBX51_FCM_Service {
 			return 0;
 		}
 
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 		$in_sql = implode( ',', array_map( 'intval', array_unique( $user_ids ) ) );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -561,11 +566,11 @@ class SHUBX51_FCM_Service {
 	 * @param string $token Device token.
 	 */
 	public static function deactivate_token( $token ) {
-		if ( empty( $token ) || strpos( $token, 'shubx_dev_' ) === 0 || strpos( $token, 'mock_' ) === 0 ) {
+		if ( empty( $token ) || strpos( $token, 'nammasociety_dev_' ) === 0 || strpos( $token, 'mock_' ) === 0 ) {
 			return false;
 		}
 		global $wpdb;
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		return $wpdb->update(
 			$table,
@@ -582,7 +587,7 @@ class SHUBX51_FCM_Service {
 	 */
 	public static function register_token( $data ) {
 		global $wpdb;
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 
 		$device_token = sanitize_text_field( $data['device_token'] ?? '' );
 		if ( empty( $device_token ) ) {
@@ -592,6 +597,12 @@ class SHUBX51_FCM_Service {
 		$user_id      = isset( $data['user_id'] ) ? (int) $data['user_id'] : 0;
 		$flat_no      = sanitize_text_field( $data['flat_no'] ?? '' );
 		$block        = sanitize_text_field( $data['block'] ?? '' );
+		$society_id   = sanitize_text_field( $data['society_id'] ?? get_option( 'nammasociety51_society_id', '1' ) );
+		if ( empty( $society_id ) ) {
+			$society_id = '1';
+		}
+		$society_name = sanitize_text_field( $data['society_name'] ?? get_option( 'nammasociety51_society_name', get_bloginfo( 'name' ) ) );
+
 		$platform     = sanitize_key( $data['platform'] ?? 'android' );
 		$device_name  = sanitize_text_field( $data['device_name'] ?? '' );
 		$device_model = sanitize_text_field( $data['device_model'] ?? '' );
@@ -616,6 +627,8 @@ class SHUBX51_FCM_Service {
 
 		$fields = array(
 			'user_id'      => $user_id,
+			'society_id'   => $society_id,
+			'society_name' => $society_name,
 			'flat_no'      => $flat_no,
 			'block'        => $block,
 			'platform'     => $platform,
@@ -635,8 +648,10 @@ class SHUBX51_FCM_Service {
 				array( 'id' => $existing['id'] )
 			);
 		} else {
-			$fields['device_token'] = $device_token;
-			$fields['created_at']   = $now;
+			$fields['device_token']      = $device_token;
+			$fields['total_pushes_sent'] = 0;
+			$fields['last_push_status']  = 'active';
+			$fields['created_at']        = $now;
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->insert(
 				$table,
@@ -644,7 +659,216 @@ class SHUBX51_FCM_Service {
 			);
 		}
 
+		// Relay registration to Central Manager / Cloud Gateway asynchronously
+		self::sync_device_to_central( array_merge( $fields, array(
+			'device_token' => $device_token,
+			'user_id'      => $user_id,
+		) ) );
+
 		return true;
+	}
+
+	/**
+	 * Synchronize registered mobile device token with Central Manager / Cloud Gateway.
+	 * Dispatched asynchronously / non-blocking to prevent any latency on mobile app login.
+	 *
+	 * @param array $device_data Device metadata.
+	 * @return void
+	 */
+	public static function sync_device_to_central( $device_data ) {
+		$gateway_url = get_option( 'nammasociety51_gateway_url', 'https://demo.nodko.guru/dispatch.php' );
+		$api_key     = get_option( 'nammasociety51_gateway_api_key', 'nammasociety_live_nodko_default' );
+		$site_domain = wp_parse_url( home_url(), PHP_URL_HOST );
+
+		if ( empty( $gateway_url ) ) {
+			return;
+		}
+
+		$user_id       = isset( $device_data['user_id'] ) ? (int) $device_data['user_id'] : 0;
+		$resident_name = '';
+		$user_login    = '';
+		if ( $user_id > 0 ) {
+			$user = get_userdata( $user_id );
+			if ( $user ) {
+				$resident_name = $user->display_name;
+				$user_login    = $user->user_login;
+			}
+		}
+
+		$sync_payload = array(
+			'action'         => 'sync_device',
+			'api_key'        => $api_key,
+			'society_id'     => sanitize_text_field( $device_data['society_id'] ?? $site_domain ),
+			'society_name'   => sanitize_text_field( $device_data['society_name'] ?? get_bloginfo( 'name' ) ),
+			'society_domain' => $site_domain,
+			'device_token'   => sanitize_text_field( $device_data['device_token'] ?? '' ),
+			'device_name'    => sanitize_text_field( $device_data['device_name'] ?? '' ),
+			'device_model'   => sanitize_text_field( $device_data['device_model'] ?? '' ),
+			'platform'       => sanitize_key( $device_data['platform'] ?? 'android' ),
+			'app_version'    => sanitize_text_field( $device_data['app_version'] ?? '1.0.0' ),
+			'ip_address'     => sanitize_text_field( $device_data['ip_address'] ?? '' ),
+			'resident_name'  => $resident_name,
+			'user_login'     => $user_login,
+			'block'          => sanitize_text_field( $device_data['block'] ?? '' ),
+			'flat_no'        => sanitize_text_field( $device_data['flat_no'] ?? '' ),
+		);
+
+		// 1. Direct in-memory sync if Central Manager is running on the same WordPress instance
+		if ( class_exists( 'NammaSociety_Central_DB' ) ) {
+			NammaSociety_Central_DB::get_or_create_society( $site_domain, $sync_payload['society_name'] );
+			NammaSociety_Central_DB::upsert_device( $sync_payload );
+		} elseif ( class_exists( 'NAMMASOCIETY_Central_DB' ) ) {
+			NAMMASOCIETY_Central_DB::get_or_create_society( $site_domain, $sync_payload['society_name'] );
+			NAMMASOCIETY_Central_DB::upsert_device( $sync_payload );
+		}
+
+		// 2. Determine remote target sync URL and dispatch asynchronously
+		$target_sync_url = $gateway_url;
+		if ( strpos( $gateway_url, 'dispatch.php' ) !== false ) {
+			// Standalone Cloud Gateway
+			$target_sync_url = $gateway_url;
+		} elseif ( strpos( $gateway_url, '/dispatch' ) !== false ) {
+			// WordPress Central Manager REST route
+			$target_sync_url = str_replace( '/dispatch', '/devices/sync', $gateway_url );
+		} else {
+			// Base domain or WP root
+			$target_sync_url = rtrim( $gateway_url, '/' ) . '/wp-json/nammasociety-central/v1/devices/sync';
+		}
+
+		wp_remote_post( $target_sync_url, array(
+			'method'      => 'POST',
+			'timeout'     => 3,
+			'blocking'    => false, // Non-blocking async fire-and-forget
+			'headers'     => array(
+				'Content-Type'           => 'application/json; UTF-8',
+				'X-NAMMASOCIETY-API-KEY'        => $api_key,
+				'X-NAMMASOCIETY-SOCIETY-DOMAIN' => $site_domain,
+			),
+			'body'        => json_encode( $sync_payload ),
+		) );
+	}
+
+	/**
+	 * Record telemetry metrics for dispatched push notifications.
+	 *
+	 * @param array|string $tokens Device token(s) targeted.
+	 * @param string       $title Notification title.
+	 * @param string       $status Status ('delivered' or 'failed').
+	 */
+	public static function log_push_telemetry( $tokens, $title = '', $status = 'delivered' ) {
+		global $wpdb;
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
+		if ( empty( $tokens ) ) {
+			return;
+		}
+		$tokens = is_array( $tokens ) ? array_values( array_unique( array_filter( $tokens ) ) ) : array( $tokens );
+		if ( empty( $tokens ) ) {
+			return;
+		}
+
+		$now          = current_time( 'mysql' );
+		$title_clean  = sanitize_text_field( $title );
+		$status_clean = sanitize_key( $status );
+
+		$placeholders = implode( ',', array_fill( 0, count( $tokens ), '%s' ) );
+		$sql = "UPDATE {$table} 
+				SET total_pushes_sent = total_pushes_sent + 1,
+					last_dispatched_at = %s,
+					last_push_status = %s,
+					last_push_title = %s
+				WHERE device_token IN ({$placeholders})";
+
+		$params = array_merge( array( $now, $status_clean, $title_clean ), $tokens );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$wpdb->query( $wpdb->prepare( $sql, $params ) );
+
+		// Mirror to Central Manager database if installed locally
+		if ( class_exists( 'NammaSociety_Central_DB' ) ) {
+			NammaSociety_Central_DB::record_device_telemetry( $tokens, $title_clean, $status_clean );
+			$soc_domain = wp_parse_url( home_url(), PHP_URL_HOST );
+			$soc_id     = preg_replace( '/[^a-zA-Z0-9_\-\.]/', '_', strtolower( $soc_domain ) );
+			$cnt        = count( $tokens );
+			NammaSociety_Central_DB::record_dispatch( $soc_id, 'general', $cnt, ( $status_clean === 'delivered' ? $cnt : 0 ), ( $status_clean === 'delivered' ? 0 : $cnt ) );
+		} elseif ( class_exists( 'NAMMASOCIETY_Central_DB' ) ) {
+			NAMMASOCIETY_Central_DB::record_device_telemetry( $tokens, $title_clean, $status_clean );
+			$soc_domain = wp_parse_url( home_url(), PHP_URL_HOST );
+			$soc_id     = preg_replace( '/[^a-zA-Z0-9_\-\.]/', '_', strtolower( $soc_domain ) );
+			$cnt        = count( $tokens );
+			NAMMASOCIETY_Central_DB::record_dispatch( $soc_id, 'general', $cnt, ( $status_clean === 'delivered' ? $cnt : 0 ), ( $status_clean === 'delivered' ? 0 : $cnt ) );
+		}
+	}
+
+	/**
+	 * De-register a single device by ID.
+	 *
+	 * @param int $id Device ID.
+	 * @return int|false
+	 */
+	public static function delete_device( $id ) {
+		global $wpdb;
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		return $wpdb->delete( $table, array( 'id' => (int) $id ), array( '%d' ) );
+	}
+
+	/**
+	 * Send test ping to a single specific device by ID.
+	 *
+	 * @param int    $id Device ID.
+	 * @param string $title Ping title.
+	 * @param string $body Ping body.
+	 * @return array|WP_Error
+	 */
+	public static function ping_single_device( $id, $title = '', $body = '' ) {
+		global $wpdb;
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$device = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", $id ), ARRAY_A );
+		if ( ! $device || empty( $device['device_token'] ) ) {
+			return new WP_Error( 'device_not_found', __( 'Device not found or push token is empty.', 'namma-society' ) );
+		}
+
+		$title = ! empty( $title ) ? $title : sprintf( __( '🔔 Diagnostic Ping (%s)', 'namma-society' ), $device['device_name'] ?: 'Mobile' );
+		$body  = ! empty( $body ) ? $body : sprintf( __( 'Test alert delivered to %s (%s). Push telemetry active!', 'namma-society' ), $device['device_model'] ?: 'Phone', $device['flat_no'] ?: 'Society' );
+
+		// 1. Try central gateway
+		$res = self::dispatch_via_central_gateway(
+			array( $device['device_token'] ),
+			$title,
+			$body,
+			array(
+				'type'       => 'diagnostic_ping',
+				'device_id'  => $id,
+				'society_id' => $device['society_id'] ?? '1',
+				'timestamp'  => time(),
+			),
+			'high'
+		);
+
+		if ( ! is_wp_error( $res ) && ! empty( $res['success'] ) ) {
+			return $res;
+		}
+
+		// 2. Fallback to direct send
+		$direct_res = self::send_notification(
+			$device['device_token'],
+			$title,
+			$body,
+			array(
+				'type'       => 'diagnostic_ping',
+				'device_id'  => $id,
+				'society_id' => $device['society_id'] ?? '1',
+				'timestamp'  => time(),
+			),
+			'high'
+		);
+
+		if ( ! is_wp_error( $direct_res ) && ! empty( $direct_res['success'] ) ) {
+			self::log_push_telemetry( array( $device['device_token'] ), $title, 'delivered' );
+			return $direct_res;
+		}
+
+		return $res;
 	}
 
 	// =========================================================================
@@ -781,4 +1005,9 @@ class SHUBX51_FCM_Service {
 
 		self::send_to_flat( $flat_no, $title, $body, $data, 'normal' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_FCM_Service' ) && ! class_exists( 'SHUBX51_FCM_Service', false ) ) {
+	class_alias( 'NAMMASOCIETY51_FCM_Service', 'SHUBX51_FCM_Service' );
 }

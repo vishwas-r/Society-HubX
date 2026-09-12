@@ -3,26 +3,26 @@
  * Module: Ledger Manager
  * Aggregates Financial Data (Invoices & Expenses) for Audit.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Ledger_Manager {
+class NAMMASOCIETY51_Ledger_Manager {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_shubx51_reconcile_balance', array( $this, 'handle_reconcile_balance' ) );
+		add_action( 'admin_post_nammasociety51_reconcile_balance', array( $this, 'handle_reconcile_balance' ) );
 	}
 
 	    public function handle_reconcile_balance() {
-        if ( ! check_admin_referer( 'shubx51_reconcile_nonce' ) ) wp_die( 'Security check failed' );
+        if ( ! check_admin_referer( 'nammasociety51_reconcile_nonce' ) ) wp_die( 'Security check failed' );
         if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Unauthorized' );
 
         $year = isset( $_POST['year'] ) ? sanitize_text_field( wp_unslash( $_POST['year'] ) ) : '';
@@ -31,22 +31,22 @@ class SHUBX51_Ledger_Manager {
         $opening_bank = isset( $_POST['opening_bank'] ) ? floatval( wp_unslash( $_POST['opening_bank'] ) ) : 0;
         $opening_cash = isset( $_POST['opening_cash'] ) ? floatval( wp_unslash( $_POST['opening_cash'] ) ) : 0;
 
-        update_option( 'shubx51_actual_bank_' . $year, $bank );
-        update_option( 'shubx51_actual_cash_' . $year, $cash );
-        update_option( 'shubx51_opening_bank_' . $year, $opening_bank );
-        update_option( 'shubx51_opening_cash_' . $year, $opening_cash );
+        update_option( 'nammasociety51_actual_bank_' . $year, $bank );
+        update_option( 'nammasociety51_actual_cash_' . $year, $cash );
+        update_option( 'nammasociety51_opening_bank_' . $year, $opening_bank );
+        update_option( 'nammasociety51_opening_cash_' . $year, $opening_cash );
 
-        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-accounts&tab=ledger&year=' . $year . '&success=reconciled' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-accounts&tab=ledger&year=' . $year . '&success=reconciled' ) );
         exit;
     }
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Audit Ledger',
 			'Audit Ledger',
 			'manage_options',
-			'shubx51-accounts&tab=ledger',
+			'nammasociety51-accounts&tab=ledger',
 			'' // No title, just a link
 		);
 	}
@@ -170,8 +170,8 @@ class SHUBX51_Ledger_Manager {
 			return strtotime( $a['date'] ) - strtotime( $b['date'] );
 		});
 
-		$opening_bank = floatval( get_option( 'shubx51_opening_bank_' . $year, get_option( 'shubx51_opening_bank', 0 ) ) );
-		$opening_cash = floatval( get_option( 'shubx51_opening_cash_' . $year, get_option( 'shubx51_opening_cash', 0 ) ) );
+		$opening_bank = floatval( get_option( 'nammasociety51_opening_bank_' . $year, get_option( 'nammasociety51_opening_bank', 0 ) ) );
+		$opening_cash = floatval( get_option( 'nammasociety51_opening_cash_' . $year, get_option( 'nammasociety51_opening_cash', 0 ) ) );
 		
 		// Prepend Opening Balance Entry
 		array_unshift($entries, array(
@@ -211,7 +211,7 @@ class SHUBX51_Ledger_Manager {
 	}
 
 	public function render_page() {
-		SHUBX51_Admin_App::render_view('ledger');
+		NAMMASOCIETY51_Admin_App::render_view('ledger');
 	}
 
     /**
@@ -339,4 +339,9 @@ class SHUBX51_Ledger_Manager {
         
         return $summary;
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) && ! class_exists( 'SHUBX51_Ledger_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Ledger_Manager', 'SHUBX51_Ledger_Manager' );
 }

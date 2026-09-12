@@ -3,7 +3,7 @@
  * Class: Data Migrator
  * Handles migration from JSON blobs to relational MySQL tables.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Data migration routines require direct database table reads and writes.
 
 
-class SHUBX51_Data_Migrator {
+class NAMMASOCIETY51_Data_Migrator {
 
 	/**
 	 * Run all migrations.
@@ -23,7 +23,7 @@ class SHUBX51_Data_Migrator {
 		self::migrate_staff_flats();
 		self::migrate_payments();
 		
-		update_option( 'shubx51_storage_migrated', '1.0.2' );
+		update_option( 'nammasociety51_storage_migrated', '1.0.2' );
 	}
 
 	/**
@@ -31,8 +31,8 @@ class SHUBX51_Data_Migrator {
 	 */
 	public static function migrate_resident_roles() {
 		global $wpdb;
-		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}shubx51_residents", ARRAY_A );
-		$map_table = "{$wpdb->prefix}shubx51_resident_role_map";
+		$residents = $wpdb->get_results( "SELECT id, roles FROM {$wpdb->prefix}nammasociety51_residents", ARRAY_A );
+		$map_table = "{$wpdb->prefix}nammasociety51_resident_role_map";
 
 		foreach ( $residents as $res ) {
 			if ( empty( $res['roles'] ) ) continue;
@@ -54,8 +54,8 @@ class SHUBX51_Data_Migrator {
 	 */
 	public static function migrate_staff_flats() {
 		global $wpdb;
-		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}shubx51_daily_help", ARRAY_A );
-		$map_table = "{$wpdb->prefix}shubx51_staff_flats";
+		$staff = $wpdb->get_results( "SELECT id, flats_served FROM {$wpdb->prefix}nammasociety51_daily_help", ARRAY_A );
+		$map_table = "{$wpdb->prefix}nammasociety51_staff_flats";
 
 		foreach ( $staff as $s ) {
 			if ( empty( $s['flats_served'] ) ) continue;
@@ -73,9 +73,9 @@ class SHUBX51_Data_Migrator {
 
 	public static function migrate_payments() {
 		global $wpdb;
-		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}shubx51_invoices", ARRAY_A );
-		$payments_table = "{$wpdb->prefix}shubx51_payments";
-        $invoices_table = "{$wpdb->prefix}shubx51_invoices";
+		$invoices = $wpdb->get_results( "SELECT id, payments FROM {$wpdb->prefix}nammasociety51_invoices", ARRAY_A );
+		$payments_table = "{$wpdb->prefix}nammasociety51_payments";
+        $invoices_table = "{$wpdb->prefix}nammasociety51_invoices";
 
 		foreach ( $invoices as $inv ) {
 			if ( empty( $inv['payments'] ) ) continue;
@@ -107,4 +107,9 @@ class SHUBX51_Data_Migrator {
             $wpdb->update( $invoices_table, ['total_paid' => $total_paid], ['id' => $inv['id']] );
 		}
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Data_Migrator' ) && ! class_exists( 'SHUBX51_Data_Migrator', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Data_Migrator', 'SHUBX51_Data_Migrator' );
 }

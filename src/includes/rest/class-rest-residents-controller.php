@@ -3,21 +3,21 @@
  * Class: REST Residents Controller
  * Endpoints for managing society residents.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Residents_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -106,7 +106,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 
 		$page     = max( 1, intval( $request->get_param( 'page' ) ?: 1 ) );
 		$per_page = intval( $request->get_param( 'per_page' ) ?: 25 );
@@ -148,7 +148,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 			return $response;
 		}
 
-		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
+		$privileged = NAMMASOCIETY51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 
 		// Eliminate N+1 query: fetch all associated flats in a single lookup
 		$flat_ids = array_unique( array_filter( array_column( $residents, 'flat_no' ) ) );
@@ -169,8 +169,8 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 			$resident['flat_display'] = isset( $flat_display_map[ $fid ] ) ? $flat_display_map[ $fid ] : $fid;
 
 			if ( ! $privileged ) {
-				$resident['phone'] = SHUBX51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
-				$resident['email'] = SHUBX51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
+				$resident['phone'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
+				$resident['email'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
 			}
 		}
 
@@ -188,21 +188,21 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = $request->get_param( 'id' );
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$resident = $db->get_row( 'residents', $id );
 
 		if ( ! $resident ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		if ( ! empty( $resident['flat_no'] ) ) {
 			$resident['flat_display'] = $db->get_flat_display_name( $resident['flat_no'] );
 		}
 
-		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
+		$privileged = NAMMASOCIETY51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'residents_manage' );
 		if ( ! $privileged && intval( $resident['wp_user_id'] ?? 0 ) !== get_current_user_id() ) {
-			$resident['phone'] = SHUBX51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
-			$resident['email'] = SHUBX51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
+			$resident['phone'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $resident['phone'] ?? '' );
+			$resident['email'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $resident['email'] ?? '' );
 		}
 
 		return rest_ensure_response( $resident );
@@ -220,7 +220,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$resident_manager = new SHUBX51_Resident_Manager();
+		$resident_manager = new NAMMASOCIETY51_Resident_Manager();
 		$result = $resident_manager->add_resident( $params );
 
 		if ( is_wp_error( $result ) ) {
@@ -243,10 +243,10 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$existing = $db->get_row( 'residents', $id );
 		if ( ! $existing ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -274,7 +274,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -285,14 +285,14 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = $request->get_param( 'id' );
-		$resident_manager = new SHUBX51_Resident_Manager();
+		$resident_manager = new NAMMASOCIETY51_Resident_Manager();
 		$result = $resident_manager->archive_resident( $id );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident archived successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident archived successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -303,14 +303,14 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function restore_item( $request ) {
 		$id = $request->get_param( 'id' );
-		$resident_manager = new SHUBX51_Resident_Manager();
+		$resident_manager = new NAMMASOCIETY51_Resident_Manager();
 		$result = $resident_manager->restore_resident( $id );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident restored successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Resident restored successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -321,11 +321,11 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function get_family_items( $request ) {
 		$id = $request->get_param( 'id' );
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$resident = $db->get_row( 'residents', $id );
 
 		if ( ! $resident ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$flat_no = $resident['flat_no'] ?? '';
@@ -342,11 +342,11 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 */
 	public function add_family_item( $request ) {
 		$id = $request->get_param( 'id' );
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$resident = $db->get_row( 'residents', $id );
 
 		if ( ! $resident ) {
-			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_resident_not_found', __( 'Resident not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$params = $request->get_json_params();
@@ -358,7 +358,7 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 		$relation = isset( $params['relation'] ) ? sanitize_text_field( $params['relation'] ) : '';
 
 		if ( empty( $name ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Family member name is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Family member name is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -383,33 +383,33 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for viewing residents.
 	 */
 	public function get_items_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
 	 * Permissions check for viewing a single resident.
 	 */
 	public function get_item_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		if ( $rbac->has_capability( $user_id, 'residents_view' ) || current_user_can( 'manage_options' ) ) {
 			return true;
 		}
 		$id = $request->get_param( 'id' );
-		$resident = SHUBX51_Plugin::get_instance()->db->get_row( 'residents', $id );
+		$resident = NAMMASOCIETY51_Plugin::get_instance()->db->get_row( 'residents', $id );
 		if ( $resident && intval( $resident['wp_user_id'] ?? 0 ) === $user_id ) {
 			return true;
 		}
-		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to access this resident record.', 'society-hubx' ), array( 'status' => 403 ) );
+		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to access this resident record.', 'namma-society' ), array( 'status' => 403 ) );
 	}
 
 	/**
 	 * Permissions check for creating/managing residents.
 	 */
 	public function create_item_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'residents_manage' ) || current_user_can( 'manage_options' );
 	}
 
@@ -417,18 +417,18 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	 * Permissions check for updating a resident.
 	 */
 	public function update_item_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		if ( $rbac->has_capability( $user_id, 'residents_manage' ) || current_user_can( 'manage_options' ) ) {
 			return true;
 		}
 		$id = $request->get_param( 'id' );
-		$resident = SHUBX51_Plugin::get_instance()->db->get_row( 'residents', $id );
+		$resident = NAMMASOCIETY51_Plugin::get_instance()->db->get_row( 'residents', $id );
 		if ( $resident && intval( $resident['wp_user_id'] ?? 0 ) === $user_id ) {
 			return true;
 		}
-		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to update this resident.', 'society-hubx' ), array( 'status' => 403 ) );
+		return new WP_Error( 'rest_forbidden', __( 'You do not have permission to update this resident.', 'namma-society' ), array( 'status' => 403 ) );
 	}
 
 	/**
@@ -437,4 +437,9 @@ class SHUBX51_REST_Residents_Controller extends WP_REST_Controller {
 	public function delete_item_permissions_check( $request ) {
 		return $this->create_item_permissions_check( $request );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Residents_Controller' ) && ! class_exists( 'SHUBX51_REST_Residents_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Residents_Controller', 'SHUBX51_REST_Residents_Controller' );
 }

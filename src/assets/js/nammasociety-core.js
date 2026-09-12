@@ -1,5 +1,5 @@
 ﻿/**
- * SHUBX Core Utilities
+ * NAMMASOCIETY Core Utilities
  * Shared between Admin App and Resident Dashboard.
  */
 (function ($) {
@@ -11,11 +11,11 @@
      * @param {string} type 'success' | 'error'
      */
     window.SHUBXShowToast = function (msg, type = 'success') {
-        const toastEl = document.getElementById('shubx-global-toast');
-        const iconEl = document.getElementById('shubx-toast-icon');
-        const msgEl = document.getElementById('shubx-toast-message');
+        const toastEl = document.getElementById('nammasociety-global-toast');
+        const iconEl = document.getElementById('nammasociety-toast-icon');
+        const msgEl = document.getElementById('nammasociety-toast-message');
         if (!toastEl || !msgEl || !iconEl) {
-            console.warn('SHUBX: Toast elements missing from DOM');
+            console.warn('NAMMASOCIETY: Toast elements missing from DOM');
             return;
         }
 
@@ -51,7 +51,7 @@
      * @returns {Promise}
      */
     window.SHUBXApiRequest = function (action, data = {}) {
-        return SHUBX.ajax({
+        return NAMMASOCIETY.ajax({
             action: action,
             data: data
         });

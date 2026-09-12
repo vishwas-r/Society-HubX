@@ -3,7 +3,7 @@
  * Class: DB Schema
  * Defines the SQL table structures and handles creation/updates via dbDelta.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,12 +13,58 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Core database schema setup routines require direct DDL queries.
 
 
-class SHUBX51_DB_Schema {
+class NAMMASOCIETY51_DB_Schema {
 
 	/**
 	 * Create or update all plugin tables.
 	 */
+	
+	/**
+	 * Automatically migrate existing data from legacy shubx51_* tables and options to nammasociety51_*.
+	 */
+	public static function maybe_migrate_legacy_tables() {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$legacy_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $wpdb->esc_like( $wpdb->prefix . 'shubx51_' ) . '%' ) );
+		if ( ! empty( $legacy_tables ) ) {
+			foreach ( $legacy_tables as $old_table ) {
+				$new_table = str_replace( $wpdb->prefix . 'shubx51_', $wpdb->prefix . 'nammasociety51_', $old_table );
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$new_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $new_table ) );
+
+				if ( ! $new_exists ) {
+					// Safely rename old table to new table
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$wpdb->query( "RENAME TABLE `{$old_table}` TO `{$new_table}`" );
+				} else {
+					// Copy rows if new table is empty but old table has data
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$new_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$new_table}`" );
+					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+					$old_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$old_table}`" );
+					if ( $new_count === 0 && $old_count > 0 ) {
+						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+						$wpdb->query( "INSERT INTO `{$new_table}` SELECT * FROM `{$old_table}`" );
+					}
+				}
+			}
+		}
+
+		// Also migrate legacy WordPress options: shubx51_* -> nammasociety51_*
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$legacy_options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name, option_value, autoload FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'shubx51_' ) . '%' ), ARRAY_A );
+		if ( ! empty( $legacy_options ) ) {
+			foreach ( $legacy_options as $opt ) {
+				$new_opt_name = str_replace( 'shubx51_', 'nammasociety51_', $opt['option_name'] );
+				if ( get_option( $new_opt_name ) === false ) {
+					update_option( $new_opt_name, maybe_unserialize( $opt['option_value'] ), $opt['autoload'] );
+				}
+			}
+		}
+	}
+
 	public static function create_tables() {
+		self::maybe_migrate_legacy_tables();
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -27,7 +73,7 @@ class SHUBX51_DB_Schema {
 		$tables = array();
 
 		// 1. Flats Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_flats (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_number varchar(20) DEFAULT '' NOT NULL,
@@ -42,7 +88,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 2. Residents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_residents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_residents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -67,7 +113,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 3. Resident History Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_history (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_resident_history (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -87,7 +133,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 4. Expenses Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_expenses (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_expenses (
 			id varchar(50) NOT NULL,
 			title varchar(255) DEFAULT '' NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -105,7 +151,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 5. Assets Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_assets (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_assets (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			value decimal(15,2) DEFAULT 0 NOT NULL,
@@ -121,7 +167,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 6. Notices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notices (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			content longtext NOT NULL,
@@ -138,7 +184,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 7. Invoices Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_invoices (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_invoices (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -161,7 +207,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 8. Receipts Table (for tracking receipt numbers)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_receipts (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_receipts (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			receipt_number varchar(50) NOT NULL,
@@ -172,7 +218,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 9. Polls Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_polls (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_polls (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			description text NOT NULL,
@@ -184,7 +230,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 10. Votes Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_votes (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_votes (
 			id int(11) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			poll_id varchar(50) NOT NULL,
@@ -198,7 +244,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 11. Vehicles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_vehicles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_vehicles (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -216,7 +262,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Facilities Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_facilities (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_facilities (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			rate decimal(10,2) DEFAULT 0 NOT NULL,
@@ -230,7 +276,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 12. Bookings Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_bookings (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_bookings (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -248,7 +294,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 13. Daily Help Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_daily_help (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_daily_help (
 			id varchar(50) NOT NULL,
 			name varchar(255) NOT NULL,
 			role varchar(50) DEFAULT '' NOT NULL,
@@ -262,7 +308,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 14. Rules Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rules (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_rules (
 			id varchar(50) NOT NULL,
 			title varchar(255) NOT NULL,
 			slug varchar(255) NOT NULL,
@@ -291,7 +337,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Rule Versions Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_versions (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_rule_versions (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			rule_id varchar(50) NOT NULL,
 			version int(11) NOT NULL,
@@ -306,7 +352,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Rule Acknowledgments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_acknowledgments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_rule_acknowledgments (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -325,7 +371,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Rule Violations Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_violations (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_rule_violations (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			rule_id varchar(50) NOT NULL,
@@ -354,7 +400,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Rule Categories Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_rule_categories (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_rule_categories (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			slug varchar(100) NOT NULL,
@@ -369,7 +415,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Documents Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_documents (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_documents (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
@@ -387,7 +433,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 15. Requests Table (Audit Trail)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_requests (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_requests (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			module varchar(50) DEFAULT '' NOT NULL,
@@ -409,7 +455,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 16. Audit Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_audit_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_audit_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			action varchar(100) NOT NULL,
@@ -423,7 +469,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 17. Meta Table (Key-Value Store)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_meta (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_meta (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			meta_key varchar(255) NOT NULL,
 			meta_value longtext NOT NULL,
@@ -433,7 +479,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 18. Notification Channels
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_channels (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notification_channels (
 			channel_slug varchar(20) NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
 			config longtext NOT NULL,
@@ -441,7 +487,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 19. Notification Events
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_events (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notification_events (
 			event_slug varchar(50) NOT NULL,
 			module varchar(20) NOT NULL,
 			default_channels varchar(255) NOT NULL,
@@ -449,7 +495,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 20. Notification Templates
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_templates (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notification_templates (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			event_slug varchar(50) NOT NULL,
 			channel varchar(20) NOT NULL,
@@ -464,7 +510,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 21. Notification Preferences
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_preferences (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notification_preferences (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -476,7 +522,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 22. Notification Logs
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_notification_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_notification_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -494,7 +540,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 23. In-App Notifications
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_inapp_notifications (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_inapp_notifications (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) NOT NULL,
 			event_slug varchar(50) NOT NULL,
@@ -508,7 +554,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 24. Custom Roles Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_roles (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_roles (
 			id varchar(50) NOT NULL,
 			name varchar(100) NOT NULL,
 			capabilities longtext NOT NULL,
@@ -519,7 +565,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 25. Staff-Flat Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_flats (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_staff_flats (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			staff_id varchar(50) NOT NULL,
 			flat_id varchar(50) NOT NULL,
@@ -529,7 +575,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 26. Resident-Role Mapping Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_role_map (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_resident_role_map (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			resident_id varchar(50) NOT NULL,
 			role_id varchar(50) NOT NULL,
@@ -539,7 +585,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 27. Resident-Flat Mapping Table (Multi-Flat Ownership)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_resident_flat_map (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_resident_flat_map (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			resident_id varchar(50) NOT NULL,
 			flat_id varchar(50) NOT NULL,
@@ -551,7 +597,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 28. Detailed Payments Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_payments (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_payments (
 			id varchar(50) NOT NULL,
 			invoice_id varchar(50) NOT NULL,
 			amount decimal(15,2) NOT NULL,
@@ -567,7 +613,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 29. Staff Attendance Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_attendance (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_staff_attendance (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			staff_id varchar(50) NOT NULL,
 			date date NOT NULL,
@@ -582,7 +628,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 30. Staff Concerns Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_staff_concerns (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_staff_concerns (
 			id varchar(50) NOT NULL,
 			staff_id varchar(50) NOT NULL,
 			type varchar(20) DEFAULT 'society' NOT NULL,
@@ -598,7 +644,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 31. Visitors Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_visitors (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_visitors (
 			id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) NOT NULL,
@@ -621,7 +667,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 32. Visitor Passes Table (Pre-Approved Passes)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_visitor_passes (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_visitor_passes (
 			id varchar(50) NOT NULL,
 			resident_id varchar(50) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
@@ -641,7 +687,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 33. Guard Audit Logs Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_guard_logs (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_guard_logs (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			guard_user_id bigint(20) NOT NULL,
 			gate_id varchar(50) DEFAULT 'Main Gate' NOT NULL,
@@ -656,7 +702,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 34. Helpdesk Tickets Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_helpdesk_tickets (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_helpdesk_tickets (
 			id varchar(50) NOT NULL,
 			ticket_number varchar(30) NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
@@ -685,7 +731,7 @@ class SHUBX51_DB_Schema {
 		) $charset_collate;";
 
 		// 35. Ticket Conversation & Replies Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_ticket_replies (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_ticket_replies (
 			id bigint(20) NOT NULL AUTO_INCREMENT,
 			ticket_id varchar(50) NOT NULL,
 			user_id bigint(20) NOT NULL,
@@ -698,10 +744,12 @@ class SHUBX51_DB_Schema {
 			KEY user_id (user_id)
 		) $charset_collate;";
 
-		// 36. Device Tokens Table (FCM Push Notifications)
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_device_tokens (
+		// 36. Device Tokens Table (FCM Push Notifications & Telemetry)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_device_tokens (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			user_id bigint(20) unsigned DEFAULT 0 NOT NULL,
+			society_id varchar(50) DEFAULT '1' NOT NULL,
+			society_name varchar(255) DEFAULT '' NOT NULL,
 			block varchar(20) DEFAULT '' NOT NULL,
 			flat_no varchar(50) DEFAULT '' NOT NULL,
 			device_token text NOT NULL,
@@ -711,18 +759,23 @@ class SHUBX51_DB_Schema {
 			app_version varchar(20) DEFAULT '' NOT NULL,
 			ip_address varchar(50) DEFAULT '' NOT NULL,
 			is_active tinyint(1) DEFAULT 1 NOT NULL,
+			total_pushes_sent int(11) unsigned DEFAULT 0 NOT NULL,
+			last_dispatched_at datetime NULL DEFAULT NULL,
+			last_push_status varchar(50) DEFAULT 'active' NOT NULL,
+			last_push_title varchar(255) DEFAULT '' NOT NULL,
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			updated_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id),
 			KEY flat_no (flat_no),
 			KEY block (block),
 			KEY user_id (user_id),
+			KEY society_id (society_id),
 			KEY platform (platform),
 			KEY is_active (is_active)
 		) $charset_collate;";
 
 		// 37. Emergency SOS Alerts Forensic Audit Table
-		$tables[] = "CREATE TABLE {$wpdb->prefix}shubx51_emergency_alerts (
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_emergency_alerts (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			alert_id varchar(50) NOT NULL,
 			user_id bigint(20) unsigned DEFAULT 0 NOT NULL,
@@ -760,6 +813,8 @@ class SHUBX51_DB_Schema {
 			dbDelta( $sql );
 		}
 
+		self::upgrade_device_tokens_table();
+
 		self::seed_defaults();
 	}
 
@@ -770,7 +825,7 @@ class SHUBX51_DB_Schema {
 		global $wpdb;
 
 		// 1. Channels
-		$channels_table = "{$wpdb->prefix}shubx51_notification_channels";
+		$channels_table = "{$wpdb->prefix}nammasociety51_notification_channels";
 		$existing_channels = $wpdb->get_var("SELECT COUNT(*) FROM $channels_table");
 		
 		if ($existing_channels == 0) {
@@ -785,18 +840,18 @@ class SHUBX51_DB_Schema {
 			if ( ! $has_push ) {
 				$wpdb->insert( $channels_table, array(
 					'channel_slug' => 'push',
-					'is_active'    => get_option( 'shubx51_fcm_enabled', '0' ) === '1' ? 1 : 0,
+					'is_active'    => get_option( 'nammasociety51_fcm_enabled', '0' ) === '1' ? 1 : 0,
 					'config'       => json_encode( array(
-						'project_id'   => get_option( 'shubx51_fcm_project_id', '' ),
-						'client_email' => get_option( 'shubx51_fcm_client_email', '' ),
-						'sender_id'    => get_option( 'shubx51_fcm_sender_id', '' ),
+						'project_id'   => get_option( 'nammasociety51_fcm_project_id', '' ),
+						'client_email' => get_option( 'nammasociety51_fcm_client_email', '' ),
+						'sender_id'    => get_option( 'nammasociety51_fcm_sender_id', '' ),
 					) ),
 				) );
 			}
 		}
 
 		// 2. Events
-		$events_table = "{$wpdb->prefix}shubx51_notification_events";
+		$events_table = "{$wpdb->prefix}nammasociety51_notification_events";
 		$default_events = [
 			['event_slug' => 'visitor_checkin', 'module' => 'visitors', 'default_channels' => 'inapp,whatsapp,email'],
 			['event_slug' => 'invoice_generated', 'module' => 'accounts', 'default_channels' => 'email,inapp'],
@@ -826,12 +881,12 @@ class SHUBX51_DB_Schema {
 		}
 
 		// 3. Templates (Default V1)
-		$templates_table = "{$wpdb->prefix}shubx51_notification_templates";
+		$templates_table = "{$wpdb->prefix}nammasociety51_notification_templates";
 		$default_templates = [
 			// Visitor Templates
 			['event_slug' => 'visitor_checkin', 'channel' => 'inapp', 'subject' => 'Visitor Arrived', 'content' => 'Visitor {visitor_name} has arrived at the gate.'],
 			['event_slug' => 'visitor_checkin', 'channel' => 'email', 'subject' => 'Visitor Arrived at Gate {flat_no}', 'content' => 'Hello {resident_name},<br><br>Visitor <b>{visitor_name}</b> is waiting at the gate for Flat {flat_no}.'],
-			['event_slug' => 'visitor_checkin', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Alert: Visitor {visitor_name} is waiting for you at the gate.'],
+			['event_slug' => 'visitor_checkin', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Visitor {visitor_name} is waiting for you at the gate.'],
 			
 			// Invoice Generated Templates
 			['event_slug' => 'invoice_generated', 'channel' => 'inapp', 'subject' => 'New Invoice Generated', 'content' => 'A new invoice of {amount} has been generated for {month}.'],
@@ -840,7 +895,7 @@ class SHUBX51_DB_Schema {
 			// Payment Due Templates
 			['event_slug' => 'payment_due', 'channel' => 'inapp', 'subject' => 'Payment Reminder', 'content' => 'Your payment of {amount} is due on {due_date}.'],
 			['event_slug' => 'payment_due', 'channel' => 'email', 'subject' => 'Payment Reminder - {month}', 'content' => 'Hello {resident_name},<br><br>This is a reminder that your payment of <b>{amount}</b> for <b>{month}</b> is due tomorrow ({due_date}).'],
-			['event_slug' => 'payment_due', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Reminder: Your payment of {amount} for {month} is due on {due_date}. Please pay to avoid penalties.'],
+			['event_slug' => 'payment_due', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Reminder: Your payment of {amount} for {month} is due on {due_date}. Please pay to avoid penalties.'],
 			
 			// Request Approval Templates
 			['event_slug' => 'request_approved', 'channel' => 'inapp', 'subject' => 'Request Approved', 'content' => 'Your request for {request_type} was approved by {admin_name} on {time}.'],
@@ -858,11 +913,11 @@ class SHUBX51_DB_Schema {
 			['event_slug' => 'rule_updated', 'channel' => 'email', 'subject' => 'Updated Rule: {title}', 'content' => 'Hello {resident_name},<br><br>The rule <b>{title}</b> has been updated to version {version}.<br><br>Please review the changes at your earliest convenience.'],
 			
 			['event_slug' => 'acknowledgment_reminder', 'channel' => 'email', 'subject' => 'Pending Rule Acknowledgments - Action Required', 'content' => 'Hello {resident_name},<br><br>You have {count} pending rule acknowledgments.<br>Deadline: {deadline}<br><br>Please login to acknowledge these rules.'],
-			['event_slug' => 'acknowledgment_reminder', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Reminder: You have {count} pending rule acknowledgments. Deadline: {deadline}. Please login to acknowledge.'],
+			['event_slug' => 'acknowledgment_reminder', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Reminder: You have {count} pending rule acknowledgments. Deadline: {deadline}. Please login to acknowledge.'],
 			
 			['event_slug' => 'violation_reported', 'channel' => 'inapp', 'subject' => 'Violation Reported', 'content' => 'A violation of "{rule_title}" has been reported against your flat. Fine: ₹{amount}'],
 			['event_slug' => 'violation_reported', 'channel' => 'email', 'subject' => 'Rule Violation Reported - Flat {flat_no}', 'content' => 'Hello {resident_name},<br><br>A violation of the rule <b>{rule_title}</b> has been reported against Flat {flat_no}.<br><br>Violation Date: {date}<br>Fine Amount: ₹{amount}<br><br>You may appeal this violation within 7 days.'],
-			['event_slug' => 'violation_reported', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Alert: A rule violation has been reported against Flat {flat_no}. Fine: ₹{amount}. Login to view details.'],
+			['event_slug' => 'violation_reported', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: A rule violation has been reported against Flat {flat_no}. Fine: ₹{amount}. Login to view details.'],
 			
 			['event_slug' => 'violation_resolved', 'channel' => 'inapp', 'subject' => 'Violation {status}', 'content' => 'The violation reported on {date} has been {status}.'],
 			['event_slug' => 'violation_resolved', 'channel' => 'email', 'subject' => 'Violation {status}', 'content' => 'Hello {resident_name},<br><br>The violation reported on {date} has been <b>{status}</b>.<br><br>Admin Notes: {notes}'],
@@ -879,7 +934,7 @@ class SHUBX51_DB_Schema {
 			
 			['event_slug' => 'flat_staff_concern', 'channel' => 'inapp', 'subject' => 'Flat Staff Concern', 'content' => 'Your staff {staff_name} raised a concern: {description}'],
 			['event_slug' => 'flat_staff_concern', 'channel' => 'email', 'subject' => 'Staff Concern: {staff_name}', 'content' => 'Hello {resident_name},<br><br>Your flat staff member <b>{staff_name}</b> has raised a concern.<br><br>Details: {description}'],
-			['event_slug' => 'flat_staff_concern', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'SHUBX Alert: Your staff {staff_name} raised a concern. Login to view details.']
+			['event_slug' => 'flat_staff_concern', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Your staff {staff_name} raised a concern. Login to view details.']
 		];
 
 		foreach ($default_templates as $tpl) {
@@ -892,7 +947,7 @@ class SHUBX51_DB_Schema {
 		}
 		
 		// 4. Seed Default Rule Categories
-		$categories_table = "{$wpdb->prefix}shubx51_rule_categories";
+		$categories_table = "{$wpdb->prefix}nammasociety51_rule_categories";
 		$existing_categories = $wpdb->get_var("SELECT COUNT(*) FROM $categories_table");
 		
 		if ($existing_categories == 0) {
@@ -914,11 +969,11 @@ class SHUBX51_DB_Schema {
 		}
 
 		// 5. Seed Default Roles
-		$roles_table = "{$wpdb->prefix}shubx51_roles";
+		$roles_table = "{$wpdb->prefix}nammasociety51_roles";
 		$existing_roles = $wpdb->get_var("SELECT COUNT(*) FROM $roles_table");
 		
 		if ($existing_roles == 0) {
-			$all_caps = array_keys(SHUBX51_RBAC_Manager::get_available_capabilities());
+			$all_caps = array_keys(NAMMASOCIETY51_RBAC_Manager::get_available_capabilities());
 			$default_roles = [
 				[
 					'id'           => 'society_admin',
@@ -953,6 +1008,36 @@ class SHUBX51_DB_Schema {
 			}
 		}
 	}
+
+	/**
+	 * Automatically upgrades the device tokens table if telemetry and society columns are missing.
+	 */
+	public static function upgrade_device_tokens_table() {
+		global $wpdb;
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$columns = $wpdb->get_col( "DESCRIBE {$table}", 0 );
+		if ( empty( $columns ) ) {
+			return;
+		}
+
+		$cols_to_add = array(
+			'society_id'         => "ADD COLUMN society_id varchar(50) DEFAULT '1' NOT NULL AFTER user_id",
+			'society_name'       => "ADD COLUMN society_name varchar(255) DEFAULT '' NOT NULL AFTER society_id",
+			'total_pushes_sent'  => "ADD COLUMN total_pushes_sent int(11) unsigned DEFAULT 0 NOT NULL AFTER is_active",
+			'last_dispatched_at' => "ADD COLUMN last_dispatched_at datetime NULL DEFAULT NULL AFTER total_pushes_sent",
+			'last_push_status'   => "ADD COLUMN last_push_status varchar(50) DEFAULT 'active' NOT NULL AFTER last_dispatched_at",
+			'last_push_title'    => "ADD COLUMN last_push_title varchar(255) DEFAULT '' NOT NULL AFTER last_push_status",
+		);
+
+		foreach ( $cols_to_add as $col => $sql ) {
+			if ( ! in_array( $col, $columns, true ) ) {
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+				$wpdb->query( "ALTER TABLE {$table} {$sql}" );
+			}
+		}
+	}
     
     /**
      * Clear all data from plugin tables.
@@ -964,41 +1049,41 @@ class SHUBX51_DB_Schema {
         global $wpdb;
         
         $tables = array(
-            'shubx51_flats',
-            'shubx51_residents',
-            'shubx51_resident_history',
-            'shubx51_expenses',
-            'shubx51_assets',
-            'shubx51_notices',
-            'shubx51_invoices',
-            'shubx51_receipts',
-            'shubx51_polls',
-            'shubx51_votes',
-            'shubx51_vehicles',
-            'shubx51_facilities',
-            'shubx51_bookings',
-            'shubx51_daily_help',
-            'shubx51_documents',
-            'shubx51_rules',
-            'shubx51_rule_versions',
-            'shubx51_rule_acknowledgments',
-            'shubx51_rule_violations',
-            'shubx51_rule_categories',
-            'shubx51_requests',
-            'shubx51_audit_logs',
-            'shubx51_meta',
-            'shubx51_notification_channels',
-            'shubx51_notification_events',
-            'shubx51_notification_templates',
-            'shubx51_notification_preferences',
-            'shubx51_notification_logs',
-            'shubx51_inapp_notifications',
-            'shubx51_roles',
-            'shubx51_staff_flats',
-            'shubx51_resident_role_map',
-            'shubx51_payments',
-            'shubx51_staff_attendance',
-            'shubx51_staff_concerns'
+            'nammasociety51_flats',
+            'nammasociety51_residents',
+            'nammasociety51_resident_history',
+            'nammasociety51_expenses',
+            'nammasociety51_assets',
+            'nammasociety51_notices',
+            'nammasociety51_invoices',
+            'nammasociety51_receipts',
+            'nammasociety51_polls',
+            'nammasociety51_votes',
+            'nammasociety51_vehicles',
+            'nammasociety51_facilities',
+            'nammasociety51_bookings',
+            'nammasociety51_daily_help',
+            'nammasociety51_documents',
+            'nammasociety51_rules',
+            'nammasociety51_rule_versions',
+            'nammasociety51_rule_acknowledgments',
+            'nammasociety51_rule_violations',
+            'nammasociety51_rule_categories',
+            'nammasociety51_requests',
+            'nammasociety51_audit_logs',
+            'nammasociety51_meta',
+            'nammasociety51_notification_channels',
+            'nammasociety51_notification_events',
+            'nammasociety51_notification_templates',
+            'nammasociety51_notification_preferences',
+            'nammasociety51_notification_logs',
+            'nammasociety51_inapp_notifications',
+            'nammasociety51_roles',
+            'nammasociety51_staff_flats',
+            'nammasociety51_resident_role_map',
+            'nammasociety51_payments',
+            'nammasociety51_staff_attendance',
+            'nammasociety51_staff_concerns'
         );
         
         foreach($tables as $t) {
@@ -1011,7 +1096,7 @@ class SHUBX51_DB_Schema {
      */
     public static function reset_json() {
         $uploads = wp_upload_dir();
-        $data_dir = $uploads['basedir'] . '/society-hubx/data/';
+        $data_dir = $uploads['basedir'] . '/namma-society/data/';
         
         if ( is_dir( $data_dir ) ) {
             $files = glob( $data_dir . '*.json' );
@@ -1032,4 +1117,9 @@ class SHUBX51_DB_Schema {
         self::reset_mysql();
         self::reset_json();
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_DB_Schema' ) && ! class_exists( 'SHUBX51_DB_Schema', false ) ) {
+	class_alias( 'NAMMASOCIETY51_DB_Schema', 'SHUBX51_DB_Schema' );
 }

@@ -9,10 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * View: Residents (Bootstrap Migration)
- * Integrates directly with SHUBX51_DB_Router for data.
+ * Integrates directly with NAMMASOCIETY51_DB_Router for data.
  */
 
-// Data is passed from SHUBX51_Resident_Manager::render_page via context
+// Data is passed from NAMMASOCIETY51_Resident_Manager::render_page via context
 // $residents, $pending, $history, $flats are available.
 
 if (!isset($residents)) $residents = array();
@@ -51,7 +51,7 @@ sort($unique_blocks);
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <div class="dropdown shubx-bulk-actions d-none">
+                    <div class="dropdown nammasociety-bulk-actions d-none">
                         <button class="btn btn-outline-secondary dropdown-toggle px-3 rounded-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 48px;">
                             Bulk Actions (<span id="selected-count">0</span>)
                         </button>
@@ -178,7 +178,7 @@ sort($unique_blocks);
 
                     // 0.1 Build Role Mapping for display
                     $role_map = array();
-                    $all_rbac_roles = SHUBX51_Plugin::get_instance()->rbac->get_all_roles();
+                    $all_rbac_roles = NAMMASOCIETY51_Plugin::get_instance()->rbac->get_all_roles();
                     if ( ! empty( $all_rbac_roles ) ) {
                         foreach ( $all_rbac_roles as $role_def ) {
                             $role_map[$role_def['id']] = $role_def['name'];
@@ -275,12 +275,12 @@ sort($unique_blocks);
                             data-blood="<?php echo esc_attr($blood); ?>"
                             data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['name']??''))); ?>">
                             <td class="ps-3 ps-md-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input shubx-bulk-checkbox shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input nammasociety-bulk-checkbox shadow-none">
                             </td>
                             <td class="ps-0 ps-md-2 py-4">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="js-view-resident-profile" role="button" data-resident-id="<?php echo esc_attr( $row['id'] ); ?>" title="View Resident Profile">
-                                        <?php echo SHUBX51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
+                                        <?php echo NAMMASOCIETY51_Admin_UI::render_avatar( $row['name'], $row['email'] ?? '', $row['profile_photo'] ?? '', 44 ); ?>
                                     </div>
                                     <div>
                                         <a href="#" class="text-decoration-none js-view-resident-profile" data-resident-id="<?php echo esc_attr( $row['id'] ); ?>" title="View Resident Profile">
@@ -289,7 +289,7 @@ sort($unique_blocks);
                                                 <i class="bi bi-box-arrow-up-right ms-1 text-primary opacity-50" style="font-size: 10px;"></i>
                                             </div>
                                         </a>
-                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
+                                        <div class="text-secondary small" style="font-size: 11px;"><?php echo esc_html( NAMMASOCIETY51_Privacy_Manager::mask_data($row['email'] ?? '-', 'email') ); ?></div>
                                     </div>
                                 </div>
                             </td>
@@ -325,15 +325,15 @@ sort($unique_blocks);
                                 if ($is_deletion_pending) {
                                     echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
                                 } else if ($is_update_pending) {
-                                    echo SHUBX51_Admin_UI::render_status_badge( 'pending' );
+                                    echo NAMMASOCIETY51_Admin_UI::render_status_badge( 'pending' );
                                     echo '<div class="small text-warning mt-1" style="font-size: 10px; font-weight: 600;">UPDATE PENDING</div>';
                                 } else {
-                                    echo SHUBX51_Admin_UI::render_status_badge( $status ); 
+                                    echo NAMMASOCIETY51_Admin_UI::render_status_badge( $status ); 
                                 }
                                 ?>
                             </td>
                             <td class="px-4 py-4">
-                                <div class="text-secondary fw-bold small"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data($row['phone'] ?? '-', 'phone') ); ?></div>
+                                <div class="text-secondary fw-bold small"><?php echo esc_html( NAMMASOCIETY51_Privacy_Manager::mask_data($row['phone'] ?? '-', 'phone') ); ?></div>
                             </td>
                             <td class="pe-3 pe-md-5 py-4 text-end">
                                 <div class="d-flex justify-content-end gap-2">
@@ -341,7 +341,7 @@ sort($unique_blocks);
                                         <i class="bi bi-eye fs-6"></i>
                                     </button>
                                     <?php if ( $is_request ) : ?>
-                                        <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
+                                        <?php echo NAMMASOCIETY51_Admin_UI::render_inline_actions( 'pending', $request_id, 'residents' ); ?>
                                     <?php elseif ( $status === 'rejected' ) : ?>
                                         <button class="btn btn-sm btn-light js-edit-resident text-primary border shadow-sm rounded-3 p-2" data-resident="<?php echo esc_attr(wp_json_encode($row)); ?>">
                                             <i class="bi bi-pencil-square fs-6"></i>
@@ -377,16 +377,16 @@ sort($unique_blocks);
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('shubx51_admin_modals', function() use ($flats) {
+add_action('nammasociety51_admin_modals', function() use ($flats) {
 ?>
 <!-- Modal Refactor to Bootstrap structure -->
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
             <form id="add-resident-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="shubx51_add_resident">
+                <input type="hidden" name="action" value="nammasociety51_add_resident">
                 <input type="hidden" name="resident_id" value="">
-                <?php wp_nonce_field( 'shubx51_resident_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_resident_nonce' ); ?>
                 
                 <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
                     <h5 class="fw-bold m-0" id="modal-title">Add New Resident</h5>
@@ -399,7 +399,7 @@ add_action('shubx51_admin_modals', function() use ($flats) {
                         'flats'   => $flats,
                         'resident' => [] // Will be populated by JS for edits
                     ];
-                    include SHUBX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+                    include NAMMASOCIETY51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
                     ?>
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">

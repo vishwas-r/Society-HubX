@@ -9,9 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$rbac = new SHUBX51_RBAC_Manager();
+$rbac = new NAMMASOCIETY51_RBAC_Manager();
 $roles = $rbac->get_all_roles();
-$available_caps = SHUBX51_RBAC_Manager::get_available_capabilities();
+$available_caps = NAMMASOCIETY51_RBAC_Manager::get_available_capabilities();
 
 $capability_groups = array(
     'governance' => array(
@@ -146,7 +146,7 @@ $capability_groups = array(
     </div>
 
 <?php
-add_action('shubx51_admin_modals', function() use ($capability_groups) {
+add_action('nammasociety51_admin_modals', function() use ($capability_groups) {
 ?>
 <!-- Role Modal -->
 <div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
@@ -167,9 +167,9 @@ add_action('shubx51_admin_modals', function() use ($capability_groups) {
             
             <form id="role-form" method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" class="d-flex flex-column overflow-hidden mb-0">
                 <div class="modal-body p-4 custom-scrollbar" style="max-height: calc(85vh - 130px); overflow-y: auto;">
-                    <input type="hidden" name="action" value="shubx51_save_role">
+                    <input type="hidden" name="action" value="nammasociety51_save_role">
                     <input type="hidden" name="role_id" id="role_id" value="">
-                    <?php wp_nonce_field('shubx51_role_nonce'); ?>
+                    <?php wp_nonce_field('nammasociety51_role_nonce'); ?>
                     
                     <!-- Role Name Input -->
                     <div class="mb-4">
@@ -234,7 +234,7 @@ add_action('shubx51_admin_modals', function() use ($capability_groups) {
                                                 $is_manage = ($cap_data['type'] === 'manage');
                                             ?>
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="shubx-cap-card p-2.5 px-3 rounded-3 border border-light bg-white h-100 transition-all hover-translate-y d-flex align-items-center justify-content-between cursor-pointer" onclick="shubxCardClick(event, 'cap_<?php echo esc_attr($key); ?>')">
+                                                    <div class="nammasociety-cap-card p-2.5 px-3 rounded-3 border border-light bg-white h-100 transition-all hover-translate-y d-flex align-items-center justify-content-between cursor-pointer" onclick="shubxCardClick(event, 'cap_<?php echo esc_attr($key); ?>')">
                                                         <div class="form-check m-0 d-flex align-items-center gap-2">
                                                             <input class="form-check-input cap-checkbox cap-group-<?php echo esc_attr($group_key); ?> shadow-none m-0 cursor-pointer" type="checkbox" name="capabilities[]" value="<?php echo esc_attr($key); ?>" id="cap_<?php echo esc_attr($key); ?>" onchange="shubxOnCapChange(this)">
                                                             <label class="form-check-label cursor-pointer text-dark fw-bold small mb-0 ms-1" for="cap_<?php echo esc_attr($key); ?>">

@@ -3,44 +3,44 @@
  * Class: Admin Settings
  * Renders the Plugin Settings Page.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Admin_Settings {
+class NAMMASOCIETY51_Admin_Settings {
 
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_init', array( $this, 'handle_setup_actions' ) );
 		add_action( 'admin_init', array( $this, 'handle_oauth_callback' ) );
-		add_action( 'admin_post_shubx51_reset_db', array( $this, 'handle_reset_db' ) );
+		add_action( 'admin_post_nammasociety51_reset_db', array( $this, 'handle_reset_db' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
-		add_action( 'admin_post_shubx51_setup_action', array( $this, 'handle_setup_actions' ) );
-		add_action( 'admin_post_shubx51_relaunch_wizard', array( $this, 'handle_relaunch_wizard' ) );
-		add_action( 'admin_post_shubx51_save_role', array( $this, 'handle_save_role' ) );
-		add_action( 'admin_post_shubx51_delete_role', array( $this, 'handle_delete_role' ) );
+		add_action( 'admin_post_nammasociety51_setup_action', array( $this, 'handle_setup_actions' ) );
+		add_action( 'admin_post_nammasociety51_relaunch_wizard', array( $this, 'handle_relaunch_wizard' ) );
+		add_action( 'admin_post_nammasociety51_save_role', array( $this, 'handle_save_role' ) );
+		add_action( 'admin_post_nammasociety51_delete_role', array( $this, 'handle_delete_role' ) );
 		add_action( 'admin_init', array( $this, 'maybe_redirect_to_setup' ) );
 		add_action( 'admin_notices', array( $this, 'render_setup_notice' ) );
-		add_action( 'wp_ajax_shubx51_toggle_module', array( $this, 'handle_toggle_module_ajax' ) );
-		add_action( 'wp_ajax_shubx51_upload_fcm_json', array( $this, 'handle_upload_fcm_json_ajax' ) );
-		add_action( 'wp_ajax_shubx51_send_test_push', array( $this, 'handle_send_test_push_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_toggle_module', array( $this, 'handle_toggle_module_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_upload_fcm_json', array( $this, 'handle_upload_fcm_json_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_send_test_push', array( $this, 'handle_send_test_push_ajax' ) );
 	}
 
 	public function maybe_redirect_to_setup() {
 		if ( ! is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) return;
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
-		$is_setup = get_option( 'shubx51_is_setup_complete' );
+		$is_setup = get_option( 'nammasociety51_is_setup_complete' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		// Only redirect if setup is not complete, they are not already on the setup page, and they are trying to access a Society HubX page
-		if ( ! $is_setup && $page !== 'shubx51-setup' && strpos( $page, 'shubx51-' ) === 0 ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-setup' ) );
+		// Only redirect if setup is not complete, they are not already on the setup page, and they are trying to access a Namma Society page
+		if ( ! $is_setup && $page !== 'nammasociety51-setup' && strpos( $page, 'nammasociety51-' ) === 0 ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-setup' ) );
 			exit;
 		}
 	}
@@ -48,10 +48,10 @@ class SHUBX51_Admin_Settings {
 
 	public function register_settings_page() {
 		add_menu_page(
-			'Society HubX',
-			'Society HubX',
+			'Namma Society',
+			'Namma Society',
 			'read', // RBAC checked in render functions
-			'shubx51-settings',
+			'nammasociety51-settings',
 			array( $this, 'render_settings_page' ),
 			'dashicons-building',
 			80
@@ -59,53 +59,53 @@ class SHUBX51_Admin_Settings {
 
 		// Rename first subcommand to "Dashboard" to better reflect the new UI
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Society Dashboard',
 			'Dashboard',
 			'read', // RBAC checked in render functions
-			'shubx51-settings',
+			'nammasociety51-settings',
 			array( $this, 'render_settings_page' )
 		);
 
 		// Activity Hub (Repurposed from Notifications)
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Activity Hub',
 			'Activity Hub',
 			'read', // RBAC checked in render functions
-			'shubx51-activity-hub',
+			'nammasociety51-activity-hub',
 			array( $this, 'render_activity_hub_page' )
 		);
 
 		// Global Settings Page
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Society Settings',
 			'Settings',
 			'read', // RBAC checked in render functions
-			'shubx51-global-settings',
+			'nammasociety51-global-settings',
 			array( $this, 'render_global_settings_page' )
 		);
 
 		// Democracy (Polls) Page
-		if ( class_exists( 'SHUBX51_Module_Registry' ) && SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
+		if ( class_exists( 'NAMMASOCIETY51_Module_Registry' ) && NAMMASOCIETY51_Module_Registry::is_enabled( 'polls' ) ) {
 			add_submenu_page(
-				'shubx51-settings',
+				'nammasociety51-settings',
 				'Digital Democracy',
 				'Democracy',
 				'read', // RBAC checked in render_polls_page
-				'shubx51-polls',
+				'nammasociety51-polls',
 				array( $this, 'render_polls_page' )
 			);
 		}
 
 		// Roles & Permissions Page
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Roles & Permissions',
 			'Roles & CRM',
 			'manage_options', // Keep this restricted to WP Admins for safety
-			'shubx51-roles',
+			'nammasociety51-roles',
 			array( $this, 'render_roles_page' )
 		);
 
@@ -115,125 +115,126 @@ class SHUBX51_Admin_Settings {
 			'Society Setup',
 			'Setup',
 			'manage_options',
-			'shubx51-setup',
+			'nammasociety51-setup',
 			array( $this, 'render_setup_page' )
 		);
 	}
 
 	public function enqueue_admin_assets( $hook ) {
 		// Use the official hook check for the settings page
-		if ( strpos( $hook, 'shubx51-global-settings' ) !== false ) {
+		if ( strpos( $hook, 'nammasociety51-global-settings' ) !== false ) {
 			wp_enqueue_media();
 			wp_enqueue_script( 
-				'shubx51-admin-settings', 
-				SHUBX51_PLUGIN_URL . 'assets/js/admin-settings.js', 
+				'nammasociety51-admin-settings', 
+				NAMMASOCIETY51_PLUGIN_URL . 'assets/js/admin-settings.js', 
 				array( 'jquery', 'media-views' ), 
-				SHUBX51_VERSION, 
+				NAMMASOCIETY51_VERSION, 
 				false // Load in header so switchSettingsTab is defined early
 			);
-			wp_localize_script( 'shubx51-admin-settings', 'shubxAdmin', array(
+			wp_add_inline_script( 'nammasociety51-admin-settings', 'var shubxAdmin = typeof nammasocietyAdmin !== "undefined" ? nammasocietyAdmin : {};', 'after' );
+		wp_localize_script( 'nammasociety51-admin-settings', 'nammasocietyAdmin', array(
 				'ajax_url'  => admin_url( 'admin-ajax.php' ),
-				'fcm_nonce' => wp_create_nonce( 'shubx51_fcm_nonce' ),
+				'fcm_nonce' => wp_create_nonce( 'nammasociety51_fcm_nonce' ),
 			) );
 		}
 	}
 
 	public function register_settings() {
 		// General Options
-		register_setting( 'shubx51_options_group', 'shubx51_google_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_google_client_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_sync_frequency', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_maintenance_amount', array( 'sanitize_callback' => 'floatval' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_opening_bank', array( 'sanitize_callback' => 'floatval' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_opening_cash', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_google_client_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_google_client_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_sync_frequency', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_maintenance_amount', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_opening_bank', array( 'sanitize_callback' => 'floatval' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_opening_cash', array( 'sanitize_callback' => 'floatval' ) );
 
 		// Society Details
-		register_setting( 'shubx51_options_group', 'shubx51_society_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_society_address_line1', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_society_address_line2', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_society_city', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_society_pincode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_society_contact', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_address_line1', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_address_line2', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_city', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_pincode', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_society_contact', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Bank Details
-		register_setting( 'shubx51_options_group', 'shubx51_bank_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_bank_account', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_bank_ifsc', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_bank_upi', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_bank_qr', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_bank_name', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_bank_account', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_bank_ifsc', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_bank_upi', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_bank_qr', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
         // Approval Settings (manual/auto)
-		register_setting( 'shubx51_options_group', 'shubx51_approval_family', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_approval_help', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_approval_vehicle', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_approval_facility', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_approval_family', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_approval_help', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_approval_vehicle', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_approval_facility', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Log Governance
-		register_setting( 'shubx51_options_group', 'shubx51_enable_audit', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_log_retention', array( 'sanitize_callback' => 'intval' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_enable_audit', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_log_retention', array( 'sanitize_callback' => 'intval' ) );
 		
 		// Privacy & DPDP
-		register_setting( 'shubx51_options_group', 'shubx51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_privacy_masking', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_privacy_export_notice', array( 'sanitize_callback' => 'sanitize_textarea_field' ) );
 
 		// Active Modules & Feature Toggles
-		register_setting( 'shubx51_options_group', 'shubx51_active_modules' );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_active_modules' );
 
 		// Maintenance Formula & GST Settings
-		register_setting( 'shubx51_options_group', 'shubx51_billing_calc_type', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'fixed' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_billing_rate_per_sqft', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_billing_fixed_base', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_billing_sinking_fund', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_billing_utility_charge', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_gst_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_gst_rate', array( 'sanitize_callback' => 'floatval', 'default' => 18.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_gst_threshold', array( 'sanitize_callback' => 'floatval', 'default' => 7500.0 ) );
-		register_setting( 'shubx51_options_group', 'shubx51_auto_invoicing_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_billing_calc_type', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'fixed' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_billing_rate_per_sqft', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_billing_fixed_base', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_billing_sinking_fund', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_billing_utility_charge', array( 'sanitize_callback' => 'floatval', 'default' => 0.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_gst_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_gst_rate', array( 'sanitize_callback' => 'floatval', 'default' => 18.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_gst_threshold', array( 'sanitize_callback' => 'floatval', 'default' => 7500.0 ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_auto_invoicing_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
 
 		// Payment Gateway & API Security Settings
-		register_setting( 'shubx51_options_group', 'shubx51_active_payment_gateway', array( 'sanitize_callback' => 'sanitize_key' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_biometric_api_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_active_payment_gateway', array( 'sanitize_callback' => 'sanitize_key' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_biometric_api_secret', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 
 		// Branding & Theme Preferences
-		register_setting( 'shubx51_options_group', 'shubx51_color_palette', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'orange' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_default_theme', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'light' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_color_palette', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'orange' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_default_theme', array( 'sanitize_callback' => 'sanitize_key', 'default' => 'light' ) );
 
 		// Firebase Cloud Messaging (FCM) Settings
-		register_setting( 'shubx51_options_group', 'shubx51_fcm_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_fcm_project_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_fcm_client_email', array( 'sanitize_callback' => 'sanitize_email' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_fcm_private_key', array( 'sanitize_callback' => 'trim' ) );
-		register_setting( 'shubx51_options_group', 'shubx51_fcm_sender_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_fcm_enabled', array( 'sanitize_callback' => 'sanitize_key', 'default' => '0' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_fcm_project_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_fcm_client_email', array( 'sanitize_callback' => 'sanitize_email' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_fcm_private_key', array( 'sanitize_callback' => 'trim' ) );
+		register_setting( 'nammasociety51_options_group', 'nammasociety51_fcm_sender_id', array( 'sanitize_callback' => 'sanitize_text_field' ) );
 	}
 
 	public function handle_setup_actions() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
 		// 1. Setup Wizard Steps
-		if ( isset( $_POST['shubx51_setup_step'] ) && check_admin_referer( 'shubx51_setup_nonce' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
-			$step = sanitize_text_field( wp_unslash( $_POST['shubx51_setup_step'] ) );
-			$results = SHUBX51_Setup_Wizard::save_step( $step, map_deep( wp_unslash( $_POST ), 'sanitize_text_field' ) );
+		if ( isset( $_POST['nammasociety51_setup_step'] ) && check_admin_referer( 'nammasociety51_setup_nonce' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
+			$step = sanitize_text_field( wp_unslash( $_POST['nammasociety51_setup_step'] ) );
+			$results = NAMMASOCIETY51_Setup_Wizard::save_step( $step, map_deep( wp_unslash( $_POST ), 'sanitize_text_field' ) );
 			
 			if ( $step === 'finalize' ) {
-				wp_safe_redirect( admin_url( 'admin.php?page=shubx51-settings&setup_complete=1' ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-settings&setup_complete=1' ) );
 			} else {
 				$next_step = 1;
 				if ( $step === 'identity' ) $next_step = 2;
 				elseif ( $step === 'property' ) $next_step = 3;
 				elseif ( $step === 'financials' ) $next_step = 4;
 				
-				wp_safe_redirect( admin_url( 'admin.php?page=shubx51-setup&step=' . $next_step ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-setup&step=' . $next_step ) );
 			}
 			exit;
 		}
 
 		// 2. Legacy Setup Wizard (Google Sync)
-		if ( isset( $_POST['shubx51_action'] ) && check_admin_referer( 'shubx51_setup', 'shubx51_nonce' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
-			if ( 'run_setup' === $_POST['shubx51_action'] || 'run_setup_offline' === $_POST['shubx51_action'] ) {
-				// $results = SHUBX51_Setup_Wizard::run_setup();
-				// add_settings_error( 'shubx51_messages', 'shubx51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
+		if ( isset( $_POST['nammasociety51_action'] ) && check_admin_referer( 'nammasociety51_setup', 'nammasociety51_nonce' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-setup-wizard.php';
+			if ( 'run_setup' === $_POST['nammasociety51_action'] || 'run_setup_offline' === $_POST['nammasociety51_action'] ) {
+				// $results = NAMMASOCIETY51_Setup_Wizard::run_setup();
+				// add_settings_error( 'nammasociety51_messages', 'nammasociety51_setup_result', is_array( $results ) ? implode('<br>', $results) : $results, 'success' );
 			}
 		}
 	}
@@ -244,31 +245,31 @@ class SHUBX51_Admin_Settings {
 	 */
 	public function handle_reset_db() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'shubx51_reset_nonce' );
+		check_admin_referer( 'nammasociety51_reset_nonce' );
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-db-schema.php';
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-db-schema.php';
 		
-		SHUBX51_DB_Schema::reset_mysql();
+		NAMMASOCIETY51_DB_Schema::reset_mysql();
 		$msg = 'reset_mysql_done';
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-global-settings&tab=database&' . $msg . '=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-global-settings&tab=database&' . $msg . '=1' ) );
 		exit;
 	}
 
 	public function handle_relaunch_wizard() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'shubx51_relaunch_nonce' );
+		check_admin_referer( 'nammasociety51_relaunch_nonce' );
 
-		update_option( 'shubx51_is_setup_complete', false );
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-setup' ) );
+		update_option( 'nammasociety51_is_setup_complete', false );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-setup' ) );
 		exit;
 	}
 
 	public function handle_save_role() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'shubx51_role_nonce' );
+		check_admin_referer( 'nammasociety51_role_nonce' );
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
 		$name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 		$capabilities = isset( $_POST['capabilities'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['capabilities'] ) ) : array();
@@ -280,25 +281,25 @@ class SHUBX51_Admin_Settings {
 
 		$rbac->save_role( $role_id, $name, $capabilities );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-roles&success=role_saved' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-roles&success=role_saved' ) );
 		exit;
 	}
 
 	public function handle_delete_role() {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die('Unauthorized');
-		check_admin_referer( 'shubx51_role_nonce' );
+		check_admin_referer( 'nammasociety51_role_nonce' );
 
 		$role_id = isset( $_POST['role_id'] ) ? sanitize_text_field( wp_unslash( $_POST['role_id'] ) ) : '';
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$rbac->delete_role( $role_id );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-roles&success=role_deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-roles&success=role_deleted' ) );
 		exit;
 	}
 
 	private function record_exists( $table, $row, $original_id = null ) {
 		global $wpdb;
-		$sql_table = $wpdb->prefix . 'shubx51_' . $table;
+		$sql_table = $wpdb->prefix . 'nammasociety51_' . $table;
 		
 		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Schema check query requires dynamic table name.
 		// 1. Check by ID if available (and if the table uses this ID type)
@@ -335,7 +336,7 @@ class SHUBX51_Admin_Settings {
 	 */
 	public function handle_oauth_callback() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- External Google OAuth callback check.
-		if ( isset( $_GET['page'] ) && 'shubx51-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) && isset( $_GET['code'] ) ) {
+		if ( isset( $_GET['page'] ) && 'nammasociety51-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) && isset( $_GET['code'] ) ) {
 			// Verify nonce or capability here if possible, but Google callbacks are standard.
 			if ( ! current_user_can( 'manage_options' ) ) {
 				return;
@@ -343,81 +344,81 @@ class SHUBX51_Admin_Settings {
 
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- External Google OAuth callback.
 			$code = sanitize_text_field( wp_unslash( $_GET['code'] ) );
-			$result = SHUBX51_Google_API_Handler::exchange_code_for_token( $code );
+			$result = NAMMASOCIETY51_Google_API_Handler::exchange_code_for_token( $code );
 
 			if ( is_wp_error( $result ) ) {
-				add_settings_error( 'shubx51_messages', 'shubx51_auth_error', 'Auth Failed: ' . $result->get_error_message(), 'error' );
+				add_settings_error( 'nammasociety51_messages', 'nammasociety51_auth_error', 'Auth Failed: ' . $result->get_error_message(), 'error' );
 			} else {
-				add_settings_error( 'shubx51_messages', 'shubx51_auth_success', 'Successfully connected to Google!', 'success' );
+				add_settings_error( 'nammasociety51_messages', 'nammasociety51_auth_success', 'Successfully connected to Google!', 'success' );
 				// Redirect to remove 'code' from URL.
-				wp_safe_redirect( admin_url( 'admin.php?page=shubx51-settings&success=1' ) );
+				wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-settings&success=1' ) );
 				exit;
 			}
 		}
 	}
 
 	public function render_settings_page() {
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'dashboard_view' ) ) {
 			wp_die( 'You do not have permission to view the Society Dashboard.' );
 		}
 		// Default to Dashboard view
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-		SHUBX51_Admin_App::render_view('dashboard');
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+		NAMMASOCIETY51_Admin_App::render_view('dashboard');
 	}
 
 	public function render_global_settings_page() {
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			wp_die( 'You do not have permission to manage Society Settings.' );
 		}
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SHUBX51_Admin_App::render_view( 'settings' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        NAMMASOCIETY51_Admin_App::render_view( 'settings' );
 	}
 
     public function render_polls_page() {
-        if ( class_exists( 'SHUBX51_Module_Registry' ) && ! SHUBX51_Module_Registry::is_enabled( 'polls' ) ) {
-            wp_die( esc_html__( 'The Digital Democracy & Polls module has been disabled by your society administration.', 'society-hubx' ), 403 );
+        if ( class_exists( 'NAMMASOCIETY51_Module_Registry' ) && ! NAMMASOCIETY51_Module_Registry::is_enabled( 'polls' ) ) {
+            wp_die( esc_html__( 'The Digital Democracy & Polls module has been disabled by your society administration.', 'namma-society' ), 403 );
         }
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'polls_view' ) ) {
             wp_die( 'You do not have permission to access Digital Democracy.' );
         }
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SHUBX51_Admin_App::render_view( 'polls' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        NAMMASOCIETY51_Admin_App::render_view( 'polls' );
     }
 
 	/**
 	 * AJAX Handler: Toggle a module ON or OFF.
 	 */
 	public function handle_toggle_module_ajax() {
-		check_ajax_referer( 'shubx51_module_toggle_nonce', 'nonce' );
+		check_ajax_referer( 'nammasociety51_module_toggle_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'namma-society' ) ), 403 );
 		}
 
 		$module = isset( $_POST['module'] ) ? sanitize_key( wp_unslash( $_POST['module'] ) ) : '';
 		$status = isset( $_POST['status'] ) ? (int) $_POST['status'] : 0;
 
 		if ( empty( $module ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Missing module slug.', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Missing module slug.', 'namma-society' ) ), 400 );
 		}
 
-		if ( ! class_exists( 'SHUBX51_Module_Registry' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Module registry not loaded.', 'society-hubx' ) ), 500 );
+		if ( ! class_exists( 'NAMMASOCIETY51_Module_Registry' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Module registry not loaded.', 'namma-society' ) ), 500 );
 		}
 
-		$success = SHUBX51_Module_Registry::set_module_status( $module, (bool) $status );
+		$success = NAMMASOCIETY51_Module_Registry::set_module_status( $module, (bool) $status );
 		if ( ! $success ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Failed to update module status. Core master data modules cannot be disabled.', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Failed to update module status. Core master data modules cannot be disabled.', 'namma-society' ) ), 400 );
 		}
 
 		wp_send_json_success( array(
 			'message' => sprintf(
 				// translators: %1$s is the module slug, %2$s is the status (enabled/disabled).
-				esc_html__( 'Module "%1$s" is now %2$s.', 'society-hubx' ),
+				esc_html__( 'Module "%1$s" is now %2$s.', 'namma-society' ),
 				$module,
-				$status ? esc_html__( 'enabled', 'society-hubx' ) : esc_html__( 'disabled', 'society-hubx' )
+				$status ? esc_html__( 'enabled', 'namma-society' ) : esc_html__( 'disabled', 'namma-society' )
 			),
 			'module'  => $module,
 			'enabled' => (bool) $status,
@@ -428,11 +429,11 @@ class SHUBX51_Admin_Settings {
 	 * AJAX Handler: Upload and parse Firebase Service Account JSON.
 	 */
 	public function handle_upload_fcm_json_ajax() {
-		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed.', 'society-hubx' ) ), 403 );
+		if ( ! check_ajax_referer( 'nammasociety51_fcm_nonce', 'nonce', false ) && ! check_ajax_referer( 'nammasociety51_request_action', '_ajax_nonce', false ) && ! check_ajax_referer( 'nammasociety51_request_action', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed.', 'namma-society' ) ), 403 );
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'society-hubx' ) ), 403 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized', 'namma-society' ) ), 403 );
 		}
 
 		$json_str = '';
@@ -444,12 +445,12 @@ class SHUBX51_Admin_Settings {
 		}
 
 		if ( empty( $json_str ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'No JSON data or file received.', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'No JSON data or file received.', 'namma-society' ) ), 400 );
 		}
 
 		$data = json_decode( $json_str, true );
 		if ( empty( $data ) || ! is_array( $data ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Invalid JSON file. Please ensure you uploaded a valid Firebase Service Account key.', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Invalid JSON file. Please ensure you uploaded a valid Firebase Service Account key.', 'namma-society' ) ), 400 );
 		}
 
 		$project_id   = sanitize_text_field( $data['project_id'] ?? '' );
@@ -457,19 +458,19 @@ class SHUBX51_Admin_Settings {
 		$private_key  = trim( $data['private_key'] ?? '' );
 
 		if ( empty( $project_id ) || empty( $client_email ) || empty( $private_key ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Missing required fields in JSON. Expected "project_id", "client_email", and "private_key".', 'society-hubx' ) ), 400 );
+			wp_send_json_error( array( 'message' => esc_html__( 'Missing required fields in JSON. Expected "project_id", "client_email", and "private_key".', 'namma-society' ) ), 400 );
 		}
 
-		update_option( 'shubx51_fcm_project_id', $project_id );
-		update_option( 'shubx51_fcm_client_email', $client_email );
-		update_option( 'shubx51_fcm_private_key', $private_key );
-		update_option( 'shubx51_fcm_enabled', '1' );
+		update_option( 'nammasociety51_fcm_project_id', $project_id );
+		update_option( 'nammasociety51_fcm_client_email', $client_email );
+		update_option( 'nammasociety51_fcm_private_key', $private_key );
+		update_option( 'nammasociety51_fcm_enabled', '1' );
 
 		// Clear cached access token so next request generates fresh token with new credentials
-		delete_transient( 'shubx51_fcm_access_token' );
+		delete_transient( 'nammasociety51_fcm_access_token' );
 
 		wp_send_json_success( array(
-			'message'      => esc_html__( 'Firebase credentials successfully configured and enabled!', 'society-hubx' ),
+			'message'      => esc_html__( 'Firebase credentials successfully configured and enabled!', 'namma-society' ),
 			'project_id'   => $project_id,
 			'client_email' => $client_email,
 		) );
@@ -479,27 +480,27 @@ class SHUBX51_Admin_Settings {
 	 * AJAX Handler: Dispatch test push notification.
 	 */
 	public function handle_send_test_push_ajax() {
-		if ( ! check_ajax_referer( 'shubx51_fcm_nonce', 'nonce', false ) && 
-		     ! check_ajax_referer( 'shubx51_request_action', '_ajax_nonce', false ) && 
-		     ! check_ajax_referer( 'shubx51_request_action', 'nonce', false ) &&
-		     ! check_ajax_referer( 'shubx51_settings_nonce', 'nonce', false ) &&
-		     ! check_ajax_referer( 'shubx51_admin_nonce', 'nonce', false ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed. Please refresh the page and try again.', 'society-hubx' ) ) );
+		if ( ! check_ajax_referer( 'nammasociety51_fcm_nonce', 'nonce', false ) && 
+		     ! check_ajax_referer( 'nammasociety51_request_action', '_ajax_nonce', false ) && 
+		     ! check_ajax_referer( 'nammasociety51_request_action', 'nonce', false ) &&
+		     ! check_ajax_referer( 'nammasociety51_settings_nonce', 'nonce', false ) &&
+		     ! check_ajax_referer( 'nammasociety51_admin_nonce', 'nonce', false ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Security check failed. Please refresh the page and try again.', 'namma-society' ) ) );
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized: Administrator privileges required.', 'society-hubx' ) ) );
+			wp_send_json_error( array( 'message' => esc_html__( 'Unauthorized: Administrator privileges required.', 'namma-society' ) ) );
 		}
 
-		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'FCM Service class not available.', 'society-hubx' ) ) );
+		if ( ! class_exists( 'NAMMASOCIETY51_FCM_Service' ) ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'FCM Service class not available.', 'namma-society' ) ) );
 		}
 
-		if ( ! SHUBX51_FCM_Service::is_enabled() ) {
-			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are currently disabled for this society. Please enable the Push toggle in settings.', 'society-hubx' ) ) );
+		if ( ! NAMMASOCIETY51_FCM_Service::is_enabled() ) {
+			wp_send_json_error( array( 'message' => esc_html__( 'Push notifications are currently disabled for this society. Please enable the Push toggle in settings.', 'namma-society' ) ) );
 		}
 
-		$title = esc_html__( '🧪 NammaSociety Test Alert', 'society-hubx' );
-		$body  = sprintf( esc_html__( 'Test notification from %s. Push notifications are working!', 'society-hubx' ), get_bloginfo( 'name' ) );
+		$title = esc_html__( '🧪 NammaSociety Test Alert', 'namma-society' );
+		$body  = sprintf( esc_html__( 'Test notification from %s. Push notifications are working!', 'namma-society' ), get_bloginfo( 'name' ) );
 		$data  = array(
 			'type'      => 'test_ping',
 			'timestamp' => time(),
@@ -514,7 +515,7 @@ class SHUBX51_Admin_Settings {
 			$target_uids[] = $current_uid;
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		if ( ! empty( $flat_no ) ) {
 			$residents = $db->get( 'residents', array( 'where' => array( 'flat_no' => $flat_no ) ) );
 			if ( ! empty( $residents ) ) {
@@ -542,20 +543,20 @@ class SHUBX51_Admin_Settings {
 
 		// 2. Dispatch FCM push notification
 		if ( ! empty( $flat_no ) ) {
-			$sent = SHUBX51_FCM_Service::send_to_flat( $flat_no, $title, $body, $data, 'high' );
+			$sent = NAMMASOCIETY51_FCM_Service::send_to_flat( $flat_no, $title, $body, $data, 'high' );
 		} else {
-			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
+			$sent = NAMMASOCIETY51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
 		}
 
 		// 3. Return clean diagnostic JSON without throwing HTTP 404
-		$usage_info = get_option( 'shubx51_gateway_usage_cached', array() );
+		$usage_info = get_option( 'nammasociety51_gateway_usage_cached', array() );
 		$usage_note = isset( $usage_info['monthly_usage'] ) ? sprintf( ' [Gateway Usage: %d / %d]', $usage_info['monthly_usage'], $usage_info['monthly_limit'] ?? 5000 ) : '';
 
 		if ( $sent > 0 ) {
 			wp_send_json_success( array(
 				'message'    => sprintf(
 					// translators: %d is the number of devices reached.
-					esc_html__( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.%s', 'society-hubx' ),
+					esc_html__( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.%s', 'namma-society' ),
 					$sent,
 					$usage_note
 				),
@@ -565,8 +566,8 @@ class SHUBX51_Admin_Settings {
 		} else {
 			wp_send_json_success( array(
 				'message'    => sprintf(
-					esc_html__( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices linked for "%s" - please log into the mobile app to register device token).%s', 'society-hubx' ),
-					! empty( $flat_no ) ? $flat_no : esc_html__( 'all', 'society-hubx' ),
+					esc_html__( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices linked for "%s" - please log into the mobile app to register device token).%s', 'namma-society' ),
+					! empty( $flat_no ) ? $flat_no : esc_html__( 'all', 'namma-society' ),
 					$usage_note
 				),
 				'dispatched' => 0,
@@ -577,40 +578,45 @@ class SHUBX51_Admin_Settings {
 	}
 
 	public function render_activity_hub_page() {
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'dashboard_view' ) ) {
 			wp_die( 'You do not have permission to access the Activity Hub.' );
 		}
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SHUBX51_Admin_App::render_view( 'activity-hub' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        NAMMASOCIETY51_Admin_App::render_view( 'activity-hub' );
 	}
 
 	public function render_roles_page() {
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SHUBX51_Admin_App::render_view( 'roles' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        NAMMASOCIETY51_Admin_App::render_view( 'roles' );
 	}
 
 	public function render_setup_page() {
-		require_once SHUBX51_PLUGIN_DIR . 'admin/class-admin-app.php';
-        SHUBX51_Admin_App::render_view( 'setup' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
+        NAMMASOCIETY51_Admin_App::render_view( 'setup' );
 	}
 
 	public function render_setup_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
-		if ( get_option( 'shubx51_is_setup_complete' ) ) return;
+		if ( get_option( 'nammasociety51_is_setup_complete' ) ) return;
 
 		// Don't show notice on the setup page itself
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading page slug only, no data processing.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		if ( $page === 'shubx51-setup' ) return;
+		if ( $page === 'nammasociety51-setup' ) return;
 
 		echo '<div class="notice notice-warning is-dismissible">';
 		echo '<p>' . sprintf(
 			// translators: %1$s is an opening <a> tag, %2$s is the closing </a> tag.
-			esc_html__( 'Society HubX – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'society-hubx' ),
-			'<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-setup' ) ) . '"><strong>',
+			esc_html__( 'Namma Society – Society Management Portal is active but setup is incomplete. %1$sClick here to run the Setup Wizard%2$s to initialize database tables and configure settings.', 'namma-society' ),
+			'<a href="' . esc_url( admin_url( 'admin.php?page=nammasociety51-setup' ) ) . '"><strong>',
 			'</strong></a>'
 		) . '</p>';
 		echo '</div>';
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Admin_Settings' ) && ! class_exists( 'SHUBX51_Admin_Settings', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Admin_Settings', 'SHUBX51_Admin_Settings' );
 }

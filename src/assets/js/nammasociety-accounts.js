@@ -12,8 +12,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'accounts' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -53,8 +53,8 @@
 
             if (!confirm(`Are you sure you want to ${actionLabel} this payment notification?`)) return;
 
-            SHUBX.ajax({
-                action: isApprove ? 'shubx51_approve_request' : 'shubx51_reject_request',
+            NAMMASOCIETY.ajax({
+                action: isApprove ? 'nammasociety51_approve_request' : 'nammasociety51_reject_request',
                 data: {
                     id: requestId,
                     _ajax_nonce: window.shubx51RequestNonce
@@ -77,13 +77,13 @@
     else init();
 
     function getModal(id) {
-        if (!window._SHUBX_modals) window._SHUBX_modals = {};
-        if (!window._SHUBX_modals[id]) {
+        if (!window._NAMMASOCIETY_modals) window._NAMMASOCIETY_modals = {};
+        if (!window._NAMMASOCIETY_modals[id]) {
             const el = document.getElementById(id);
             if (!el) return null;
-            window._SHUBX_modals[id] = new bootstrap.Modal(el);
+            window._NAMMASOCIETY_modals[id] = new bootstrap.Modal(el);
         }
-        return window._SHUBX_modals[id];
+        return window._NAMMASOCIETY_modals[id];
     }
 
 
@@ -223,8 +223,8 @@
         if (!confirm('Permanently delete this invoice?')) return;
         const id = btn.getAttribute('data-id');
 
-        SHUBX.ajax({
-            action: 'shubx51_delete_invoice',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_delete_invoice',
             data: {
                 id: id,
                 _wpnonce: (window.SHUBXAccountsData && window.SHUBXAccountsData.deleteInvoiceNonce) ? window.SHUBXAccountsData.deleteInvoiceNonce : undefined
@@ -242,8 +242,8 @@
         const invoiceId = btn.getAttribute('data-invoice-id');
         const txnId = btn.getAttribute('data-txn-id');
 
-        SHUBX.ajax({
-            action: 'shubx51_delete_payment',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_delete_payment',
             data: {
                 invoice_id: invoiceId,
                 txn_id: txnId,
@@ -262,8 +262,8 @@
         const form = e.target;
         const formData = new FormData(form);
 
-        SHUBX.ajax({
-            action: 'shubx51_edit_invoice',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_edit_invoice',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Invoice updated successfully',
@@ -277,12 +277,12 @@
         const formData = new FormData(form);
 
         if (!formData.get('amount') || !formData.get('method')) {
-            SHUBX.toast.warning('Please fill in all required fields');
+            NAMMASOCIETY.toast.warning('Please fill in all required fields');
             return;
         }
 
-        SHUBX.ajax({
-            action: 'shubx51_record_payment',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_record_payment',
             data: formData,
             loadingButton: $(form).find('button[type="submit"]'),
             successMessage: 'Payment recorded successfully!',
@@ -397,7 +397,7 @@ window.openAdminReceipt = function (btn) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'action=shubx51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + activeNonce
+        body: 'action=nammasociety51_get_receipt&invoice_id=' + encodeURIComponent(invoiceId) + '&nonce=' + activeNonce
     })
         .then(response => response.json())
         .then(data => {
@@ -514,7 +514,7 @@ function populateReceiptModal(receiptData) {
         <!-- Footer -->
         <div class="receipt-footer-standard">
             <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-            <p class="mb-0">Society HubX - Empowering Communities</p>
+            <p class="mb-0">Namma Society - Empowering Communities</p>
         </div>
     `;
 }
@@ -579,7 +579,7 @@ function applyAccountSearch() {
     const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
     
     // Determine which tab is active
-    const invoiceTab = document.querySelector('[href="?page=shubx51-accounts&tab=invoices"]');
+    const invoiceTab = document.querySelector('[href="?page=nammasociety51-accounts&tab=invoices"]');
     const isInvoicesTab = invoiceTab && invoiceTab.classList.contains('active');
     
     if (isInvoicesTab) {
@@ -636,7 +636,7 @@ function applyAccountSearch() {
             searchInput.addEventListener('input', applyAccountSearch);
             searchInput.addEventListener('focus', function () {
                 // Re-index on focus based on active tab
-                const invoiceTab = document.querySelector('[href="?page=shubx51-accounts&tab=invoices"]');
+                const invoiceTab = document.querySelector('[href="?page=nammasociety51-accounts&tab=invoices"]');
                 const isInvoicesTab = invoiceTab && invoiceTab.classList.contains('active');
                 
                 if (window.SHUBXCreateFuse) {
@@ -886,8 +886,8 @@ function initAdminPaymentSync() {
         
         try {
             const formData = new URLSearchParams();
-            formData.append('action', 'shubx51_poll_state_hash');
-            const adminNonce = (typeof window.shubx51_admin_nonce !== 'undefined') ? window.shubx51_admin_nonce : '';
+            formData.append('action', 'nammasociety51_poll_state_hash');
+            const adminNonce = (typeof window.nammasociety51_admin_nonce !== 'undefined') ? window.nammasociety51_admin_nonce : '';
             formData.append('_wpnonce', adminNonce);
             
             const activeAjaxurl = (typeof window.ajaxurl !== 'undefined') ? window.ajaxurl : '';
@@ -901,13 +901,13 @@ function initAdminPaymentSync() {
                 if (currentHash === null) {
                     currentHash = res.data.hash;
                 } else if (currentHash !== res.data.hash) {
-                    console.log('SHUBX Admin: State Hash changed. Syncing UI...');
+                    console.log('NAMMASOCIETY Admin: State Hash changed. Syncing UI...');
                     currentHash = res.data.hash;
                     await refreshAdminDashboard();
                 }
             }
         } catch(e) {
-            console.error('SHUBX Admin Sync Error:', e);
+            console.error('NAMMASOCIETY Admin Sync Error:', e);
         }
         
         isPolling = false;
@@ -944,12 +944,12 @@ function initAdminPaymentSync() {
                     }
                 });
                 
-                if (window.SHUBX && window.SHUBX.toast) {
-                    SHUBX.toast.success('Live Update: Financials synced in real-time.', { icon: 'check-circle' });
+                if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+                    NAMMASOCIETY.toast.success('Live Update: Financials synced in real-time.', { icon: 'check-circle' });
                 }
             }
         } catch(e) {
-            console.error('SHUBX Admin Refresh Error:', e);
+            console.error('NAMMASOCIETY Admin Refresh Error:', e);
         }
     }
     

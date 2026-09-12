@@ -4,23 +4,23 @@
  * Handles File Operations: Folders, Uploads, List.
  * Switches between Google Drive (Connected) and Local Uploads (Offline).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Drive_Manager {
+class NAMMASOCIETY51_Drive_Manager {
 
 	private $is_connected;
 	private $local_root;
 
 	public function __construct() {
-		$this->is_connected = (bool) get_option( 'shubx51_google_refresh_token' );
+		$this->is_connected = (bool) get_option( 'nammasociety51_google_refresh_token' );
 		
 		$upload_dir = wp_upload_dir();
-		$this->local_root = $upload_dir['basedir'] . '/society-hubx/docs/';
+		$this->local_root = $upload_dir['basedir'] . '/namma-society/docs/';
 		
 		if ( ! $this->is_connected && ! file_exists( $this->local_root ) ) {
 			wp_mkdir_p( $this->local_root );
@@ -32,12 +32,12 @@ class SHUBX51_Drive_Manager {
 	 */
 	public function get_system_folder( $name ) {
 		if ( $this->is_connected ) {
-			$root_id = get_option( 'shubx51_drive_root_id' );
+			$root_id = get_option( 'nammasociety51_drive_root_id' );
 			if ( ! $root_id ) return new WP_Error( 'no_root', 'System Root not found.' );
 
 			// Search for folder in Root
 			$q = "name = '{$name}' and '{$root_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
+			$res = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
 			
 			if ( ! is_wp_error( $res ) && ! empty( $res['files'] ) ) {
 				return $res['files'][0]['id'];
@@ -49,7 +49,7 @@ class SHUBX51_Drive_Manager {
 				'mimeType' => 'application/vnd.google-apps.folder',
 				'parents' => array( $root_id ),
 			);
-			$new = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
+			$new = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
 			return $new['id'] ?? new WP_Error( 'create_fail', 'Failed to create system folder.' );
 
 		} else {
@@ -74,14 +74,14 @@ class SHUBX51_Drive_Manager {
 
 		if ( $this->is_connected ) {
 			// Remote Drive Logic.
-			$root_id = get_option( 'shubx51_drive_root_id' );
+			$root_id = get_option( 'nammasociety51_drive_root_id' );
 			if ( ! $root_id ) {
 				return new WP_Error( 'no_root', 'System Root Folder not found. Run Setup.' );
 			}
 			
 			// Find 'Resident_Docs' folder first.
 			$q = "name = 'Resident_Docs' and '{$root_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
+			$res = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) );
 			
 			if ( is_wp_error( $res ) ) return $res;
 			
@@ -94,7 +94,7 @@ class SHUBX51_Drive_Manager {
 			
 			// Now search for Flat Folder inside Resident_Docs.
 			$q_flat = "name = '{$flat_no}' and '{$parent_id}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
-			$res_flat = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q_flat ) );
+			$res_flat = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q_flat ) );
 			
 			if ( ! empty( $res_flat['files'] ) ) {
 				return $res_flat['files'][0]['id'];
@@ -106,7 +106,7 @@ class SHUBX51_Drive_Manager {
 				'mimeType' => 'application/vnd.google-apps.folder',
 				'parents' => array( $parent_id ),
 			);
-			$new = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
+			$new = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files', 'POST', $body );
 			
 			return isset( $new['id'] ) ? $new['id'] : new WP_Error( 'create_failed', 'Could not create drive folder.' );
 
@@ -133,7 +133,7 @@ class SHUBX51_Drive_Manager {
 
 		if ( $this->is_connected ) {
 			$q = "'{$folder_id}' in parents and trashed = false";
-			$res = SHUBX51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) . '&fields=files(id,name,webViewLink,thumbnailLink,mimeType)' );
+			$res = NAMMASOCIETY51_Google_API_Handler::api_request( 'https://www.googleapis.com/drive/v3/files?q=' . urlencode( $q ) . '&fields=files(id,name,webViewLink,thumbnailLink,mimeType)' );
 			
 			if ( ! is_wp_error( $res ) && ! empty( $res['files'] ) ) {
 				foreach ( $res['files'] as $f ) {
@@ -152,7 +152,7 @@ class SHUBX51_Drive_Manager {
 				$upload_url = wp_upload_dir();
 				// This assumes folder_id follows local_root pattern
 				$rel = str_replace( $this->local_root, '', $folder_id );
-				$base_url = $upload_url['baseurl'] . '/society-hubx/docs/' . $rel . '/';
+				$base_url = $upload_url['baseurl'] . '/namma-society/docs/' . $rel . '/';
 				
 				foreach ( $items as $item ) {
 					if ( '.' !== $item && '..' !== $item ) {
@@ -202,7 +202,7 @@ class SHUBX51_Drive_Manager {
 
 			$args = array(
 				'headers' => array(
-					'Authorization' => 'Bearer ' . SHUBX51_Google_API_Handler::get_valid_token(),
+					'Authorization' => 'Bearer ' . NAMMASOCIETY51_Google_API_Handler::get_valid_token(),
 					'Content-Type'  => 'multipart/related; boundary=' . $boundary,
 				),
 				'body'    => $payload,
@@ -276,4 +276,9 @@ class SHUBX51_Drive_Manager {
 			return new WP_Error( 'not_found', 'File not found.' );
 		}
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Drive_Manager' ) && ! class_exists( 'SHUBX51_Drive_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Drive_Manager', 'SHUBX51_Drive_Manager' );
 }

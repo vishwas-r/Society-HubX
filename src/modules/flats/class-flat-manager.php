@@ -3,44 +3,44 @@
  * Module: Flat Manager
  * Handles Flats/Units Master Data (Block, Number, Parking).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Flat_Manager {
+class NAMMASOCIETY51_Flat_Manager {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		
 		// AJAX
-		add_action( 'wp_ajax_shubx51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'wp_ajax_shubx51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'wp_ajax_shubx51_get_flat', array( $this, 'handle_get_flat' ) );
-		add_action( 'wp_ajax_shubx51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'wp_ajax_shubx51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'wp_ajax_shubx51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_get_flat', array( $this, 'handle_get_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_hard_delete_flat', array( $this, 'handle_hard_delete_flat' ) );
 
-		add_action( 'admin_post_shubx51_add_flat', array( $this, 'handle_add_flat' ) );
-		add_action( 'admin_post_shubx51_edit_flat', array( $this, 'handle_edit_flat' ) );
-		add_action( 'admin_post_shubx51_delete_flat', array( $this, 'handle_delete_flat' ) );
-		add_action( 'admin_post_shubx51_restore_flat', array( $this, 'handle_restore_flat' ) );
-		add_action( 'admin_post_shubx51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
+		add_action( 'admin_post_nammasociety51_add_flat', array( $this, 'handle_add_flat' ) );
+		add_action( 'admin_post_nammasociety51_edit_flat', array( $this, 'handle_edit_flat' ) );
+		add_action( 'admin_post_nammasociety51_delete_flat', array( $this, 'handle_delete_flat' ) );
+		add_action( 'admin_post_nammasociety51_restore_flat', array( $this, 'handle_restore_flat' ) );
+		add_action( 'admin_post_nammasociety51_bulk_import_flats', array( $this, 'handle_bulk_import' ) );
 	}
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Society Units / Flats',
 			'Flats & Units',
 			'read', // Granular check inside render_page
-			'shubx51-flats',
+			'nammasociety51-flats',
 			array( $this, 'render_page' )
 		);
 	}
@@ -50,14 +50,14 @@ class SHUBX51_Flat_Manager {
 	 */
 	public function handle_add_flat() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_add_flat_nonce' );
+			check_ajax_referer( 'nammasociety51_add_flat_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_add_flat_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -76,7 +76,7 @@ class SHUBX51_Flat_Manager {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-flats&success=1' ) );
 		exit;
 	}
 
@@ -84,8 +84,8 @@ class SHUBX51_Flat_Manager {
 	 * Handle Get Single Flat via AJAX.
 	 */
 	public function handle_get_flat() {
-		check_ajax_referer( 'shubx51_add_flat_nonce' );
-		$rbac = new SHUBX51_RBAC_Manager();
+		check_ajax_referer( 'nammasociety51_add_flat_nonce' );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_view' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -106,9 +106,9 @@ class SHUBX51_Flat_Manager {
 	 * Handle Edit.
 	 */
 	public function handle_hard_delete_flat() {
-		check_ajax_referer( 'shubx51_hard_delete_flat_nonce' );
+		check_ajax_referer( 'nammasociety51_hard_delete_flat_nonce' );
 
-		if ( ! current_user_can( 'manage_options' ) && ! (new SHUBX51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
+		if ( ! current_user_can( 'manage_options' ) && ! (new NAMMASOCIETY51_RBAC_Manager())->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
 
@@ -124,17 +124,17 @@ class SHUBX51_Flat_Manager {
 
 	public function handle_edit_flat() {
 		if ( wp_doing_ajax() ) {
-			if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_flat_nonce' ) ) {
+			if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_add_flat_nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 				exit;
 			}
 		} else {
-			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_add_flat_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -180,20 +180,20 @@ class SHUBX51_Flat_Manager {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1&msg=Updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-flats&success=1&msg=Updated' ) );
 		exit;
 	}
 
 	public function handle_delete_flat() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_delete_flat_nonce' );
+			check_ajax_referer( 'nammasociety51_delete_flat_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_delete_flat_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_delete_flat_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -212,20 +212,20 @@ class SHUBX51_Flat_Manager {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&status=deleted' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-flats&status=deleted' ) );
 		exit;
 	}
 
 	public function handle_restore_flat() {
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_add_flat_nonce' );
+			check_ajax_referer( 'nammasociety51_add_flat_nonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_add_flat_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_add_flat_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -244,7 +244,7 @@ class SHUBX51_Flat_Manager {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&success=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-flats&success=1' ) );
 		exit;
 	}
 
@@ -252,11 +252,11 @@ class SHUBX51_Flat_Manager {
 	 * Handle Bulk Import.
 	 */
 	public function handle_bulk_import() {
-		if ( ! check_admin_referer( 'shubx51_bulk_import_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_bulk_import_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'flats_manage' ) ) {
 			wp_die( 'Unauthorized' );
 		}
@@ -289,7 +289,7 @@ class SHUBX51_Flat_Manager {
 			}
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-flats&imported=' . $count . '&errors=' . $errors ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-flats&imported=' . $count . '&errors=' . $errors ) );
 		exit;
 	}
 
@@ -323,10 +323,15 @@ class SHUBX51_Flat_Manager {
 	}
 
 	public function render_page() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'flats_view' ) ) {
             wp_die( 'You do not have permission to view flats.' );
         }
-		SHUBX51_Admin_App::render_view('flats');
+		NAMMASOCIETY51_Admin_App::render_view('flats');
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Flat_Manager' ) && ! class_exists( 'SHUBX51_Flat_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Flat_Manager', 'SHUBX51_Flat_Manager' );
 }

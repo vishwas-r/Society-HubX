@@ -8,23 +8,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Notification_Dispatcher {
+class NAMMASOCIETY51_Notification_Dispatcher {
     /**
-     * @var SHUBX51_Notification_Provider_Interface[]
+     * @var NAMMASOCIETY51_Notification_Provider_Interface[]
      */
     private $providers = [];
 
     /**
-     * @var SHUBX51_DB_Router
+     * @var NAMMASOCIETY51_DB_Router
      */
     private $db;
 
     public function __construct($db = null) {
-        $this->db = $db ?: SHUBX51_Plugin::get_instance()->db;
+        $this->db = $db ?: NAMMASOCIETY51_Plugin::get_instance()->db;
         $this->load_providers();
         
         // Hook into Action Scheduler for background processing
-        add_action('shubx51_async_notification', [$this, 'dispatch_now'], 10, 4);
+        add_action('nammasociety51_async_notification', [$this, 'dispatch_now'], 10, 4);
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -41,9 +41,9 @@ class SHUBX51_Notification_Dispatcher {
         require_once plugin_dir_path(__FILE__) . 'class-whatsapp-provider.php';
         require_once plugin_dir_path(__FILE__) . 'class-inapp-provider.php';
 
-        $this->providers['email']    = new SHUBX51_Email_Provider();
-        $this->providers['whatsapp'] = new SHUBX51_WhatsApp_Provider();
-        $this->providers['inapp']    = new SHUBX51_InApp_Provider();
+        $this->providers['email']    = new NAMMASOCIETY51_Email_Provider();
+        $this->providers['whatsapp'] = new NAMMASOCIETY51_WhatsApp_Provider();
+        $this->providers['inapp']    = new NAMMASOCIETY51_InApp_Provider();
     }
 
     /**
@@ -61,7 +61,7 @@ class SHUBX51_Notification_Dispatcher {
         }
 
         if ($async && function_exists('as_enqueue_async_action')) {
-            as_enqueue_async_action('shubx51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
+            as_enqueue_async_action('nammasociety51_async_notification', [$event_slug, $user_id, $data, $actor_id]);
             return true;
         }
 
@@ -192,4 +192,9 @@ class SHUBX51_Notification_Dispatcher {
             }
         }
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Notification_Dispatcher' ) && ! class_exists( 'SHUBX51_Notification_Dispatcher', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Notification_Dispatcher', 'SHUBX51_Notification_Dispatcher' );
 }

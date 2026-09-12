@@ -3,21 +3,21 @@
  * Class: REST Notices Controller
  * Endpoints for managing society notice board.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Notices_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -86,7 +86,7 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 	 * List notices.
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$notices = $db->get( 'notices' );
 
 		if ( empty( $notices ) ) {
@@ -94,7 +94,7 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'notices_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -139,11 +139,11 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$notices = $db->get( 'notices', array( 'id' => $id ) );
 
 		if ( empty( $notices ) ) {
-			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $notices[0] );
@@ -162,7 +162,7 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 		$content = isset( $params['content'] ) ? wp_kses_post( $params['content'] ) : '';
 
 		if ( empty( $title ) || empty( $content ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Title and content are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Title and content are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -178,7 +178,7 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 			'created_at'  => current_time( 'mysql' ),
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'notices', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -197,10 +197,10 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'notices', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -228,7 +228,7 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notice updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notice updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -236,14 +236,14 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'notices', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notice deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notice deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -251,10 +251,10 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 	 */
 	public function toggle_pin( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'notices', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_notice_not_found', __( 'Notice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$new_pin = empty( $existing[0]['pinned'] ) ? 1 : 0;
@@ -268,12 +268,17 @@ class SHUBX51_REST_Notices_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function notices_manage_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'notices_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Notices_Controller' ) && ! class_exists( 'SHUBX51_REST_Notices_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Notices_Controller', 'SHUBX51_REST_Notices_Controller' );
 }

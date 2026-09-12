@@ -3,14 +3,14 @@
  * Class: Admin App
  * Handles the full-screen "App Mode" rendering for the admin panel.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Admin_App {
+class NAMMASOCIETY51_Admin_App {
 
 	/**
 	 * Render a specific view in the App Wrapper.
@@ -28,9 +28,14 @@ class SHUBX51_Admin_App {
 
         // Include the wrapper. 
         // The wrapper will handle including templates/views/$view_name.php
-		include SHUBX51_PLUGIN_DIR . 'templates/admin-app-wrapper.php';
+		include NAMMASOCIETY51_PLUGIN_DIR . 'templates/admin-app-wrapper.php';
 		
         // Exit to prevent WP Footer/Admin Bar from rendering after our full-screen overlay
         exit;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Admin_App' ) && ! class_exists( 'SHUBX51_Admin_App', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Admin_App', 'SHUBX51_Admin_App' );
 }

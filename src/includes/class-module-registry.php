@@ -3,19 +3,19 @@
  * Class: Module Registry
  * Manages society modules, active states, and feature flags.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Module_Registry {
+class NAMMASOCIETY51_Module_Registry {
 
 	/**
 	 * Option key for stored module settings.
 	 */
-	const OPTION_KEY = 'shubx51_active_modules';
+	const OPTION_KEY = 'nammasociety51_active_modules';
 
 	/**
 	 * Get the full dictionary of all recognized modules.
@@ -26,104 +26,104 @@ class SHUBX51_Module_Registry {
 		return array(
 			'flats'       => array(
 				'slug'        => 'flats',
-				'name'        => __( 'Flats & Units', 'society-hubx' ),
-				'description' => __( 'Unit & Block Master, square footage, floor planning, and occupancy status.', 'society-hubx' ),
+				'name'        => __( 'Flats & Units', 'namma-society' ),
+				'description' => __( 'Unit & Block Master, square footage, floor planning, and occupancy status.', 'namma-society' ),
 				'icon'        => 'bi-building',
 				'locked'      => true, // Core master data cannot be disabled
 				'category'    => 'core',
 			),
 			'residents'   => array(
 				'slug'        => 'residents',
-				'name'        => __( 'Resident Directory', 'society-hubx' ),
-				'description' => __( 'Resident profiles, ownership mapping, family members, and roles.', 'society-hubx' ),
+				'name'        => __( 'Resident Directory', 'namma-society' ),
+				'description' => __( 'Resident profiles, ownership mapping, family members, and roles.', 'namma-society' ),
 				'icon'        => 'bi-people-fill',
 				'locked'      => true, // Core master data cannot be disabled
 				'category'    => 'core',
 			),
 			'visitors'    => array(
 				'slug'        => 'visitors',
-				'name'        => __( 'Visitor Management (VMS)', 'society-hubx' ),
-				'description' => __( 'Gate passes, security guard log, guest pre-approvals, delivery, and cab entries.', 'society-hubx' ),
+				'name'        => __( 'Visitor Management (VMS)', 'namma-society' ),
+				'description' => __( 'Gate passes, security guard log, guest pre-approvals, delivery, and cab entries.', 'namma-society' ),
 				'icon'        => 'bi-shield-check',
 				'locked'      => false,
 				'category'    => 'security',
 			),
 			'finance'     => array(
 				'slug'        => 'finance',
-				'name'        => __( 'Accounts & Finance', 'society-hubx' ),
-				'description' => __( 'Monthly maintenance invoicing, expenses ledger, dues tracking, and payment receipts.', 'society-hubx' ),
+				'name'        => __( 'Accounts & Finance', 'namma-society' ),
+				'description' => __( 'Monthly maintenance invoicing, expenses ledger, dues tracking, and payment receipts.', 'namma-society' ),
 				'icon'        => 'bi-cash-coin',
 				'locked'      => false,
 				'category'    => 'operations',
 			),
 			'facilities'  => array(
 				'slug'        => 'facilities',
-				'name'        => __( 'Facilities & Bookings', 'society-hubx' ),
-				'description' => __( 'Clubhouse, tennis court, swimming pool reservations, and slot availability calendar.', 'society-hubx' ),
+				'name'        => __( 'Facilities & Bookings', 'namma-society' ),
+				'description' => __( 'Clubhouse, tennis court, swimming pool reservations, and slot availability calendar.', 'namma-society' ),
 				'icon'        => 'bi-calendar-check',
 				'locked'      => false,
 				'category'    => 'community',
 			),
 			'staff'       => array(
 				'slug'        => 'staff',
-				'name'        => __( 'Daily Help & Staff', 'society-hubx' ),
-				'description' => __( 'Domestic maids, cooks, maintenance staff directory, attendance, and flat associations.', 'society-hubx' ),
+				'name'        => __( 'Daily Help & Staff', 'namma-society' ),
+				'description' => __( 'Domestic maids, cooks, maintenance staff directory, attendance, and flat associations.', 'namma-society' ),
 				'icon'        => 'bi-person-badge',
 				'locked'      => false,
 				'category'    => 'security',
 			),
 			'helpdesk'    => array(
 				'slug'        => 'helpdesk',
-				'name'        => __( 'Helpdesk & Requests', 'society-hubx' ),
-				'description' => __( 'Resident service requests, maintenance complaints, technician assignment, and SLA tracking.', 'society-hubx' ),
+				'name'        => __( 'Helpdesk & Requests', 'namma-society' ),
+				'description' => __( 'Resident service requests, maintenance complaints, technician assignment, and SLA tracking.', 'namma-society' ),
 				'icon'        => 'bi-tools',
 				'locked'      => false,
 				'category'    => 'operations',
 			),
 			'rules'       => array(
 				'slug'        => 'rules',
-				'name'        => __( 'Rules & Compliance', 'society-hubx' ),
-				'description' => __( 'Society bylaws, versioned rules, digital acknowledgments, and violation penalty management.', 'society-hubx' ),
+				'name'        => __( 'Rules & Compliance', 'namma-society' ),
+				'description' => __( 'Society bylaws, versioned rules, digital acknowledgments, and violation penalty management.', 'namma-society' ),
 				'icon'        => 'bi-file-earmark-ruled',
 				'locked'      => false,
 				'category'    => 'governance',
 			),
 			'documents'   => array(
 				'slug'        => 'documents',
-				'name'        => __( 'Document Vault', 'society-hubx' ),
-				'description' => __( 'Secure repository for society registration docs, meeting minutes, and flat papers.', 'society-hubx' ),
+				'name'        => __( 'Document Vault', 'namma-society' ),
+				'description' => __( 'Secure repository for society registration docs, meeting minutes, and flat papers.', 'namma-society' ),
 				'icon'        => 'bi-folder2-open',
 				'locked'      => false,
 				'category'    => 'governance',
 			),
 			'notices'     => array(
 				'slug'        => 'notices',
-				'name'        => __( 'Notice Board', 'society-hubx' ),
-				'description' => __( 'Official broadcasts, circulars, urgent announcements, and event notifications.', 'society-hubx' ),
+				'name'        => __( 'Notice Board', 'namma-society' ),
+				'description' => __( 'Official broadcasts, circulars, urgent announcements, and event notifications.', 'namma-society' ),
 				'icon'        => 'bi-megaphone',
 				'locked'      => false,
 				'category'    => 'community',
 			),
 			'polls'       => array(
 				'slug'        => 'polls',
-				'name'        => __( 'Digital Democracy & Polls', 'society-hubx' ),
-				'description' => __( 'Online voting, AGM resolutions, community opinion polls, and decision tracking.', 'society-hubx' ),
+				'name'        => __( 'Digital Democracy & Polls', 'namma-society' ),
+				'description' => __( 'Online voting, AGM resolutions, community opinion polls, and decision tracking.', 'namma-society' ),
 				'icon'        => 'bi-ui-checks-grid',
 				'locked'      => false,
 				'category'    => 'governance',
 			),
 			'vehicles'    => array(
 				'slug'        => 'vehicles',
-				'name'        => __( 'Vehicles & Parking', 'society-hubx' ),
-				'description' => __( 'Resident vehicle registration, parking slot tracking, and parking pass stickers.', 'society-hubx' ),
+				'name'        => __( 'Vehicles & Parking', 'namma-society' ),
+				'description' => __( 'Resident vehicle registration, parking slot tracking, and parking pass stickers.', 'namma-society' ),
 				'icon'        => 'bi-car-front',
 				'locked'      => false,
 				'category'    => 'operations',
 			),
 			'assets'      => array(
 				'slug'        => 'assets',
-				'name'        => __( 'Asset Management', 'society-hubx' ),
-				'description' => __( 'Infrastructure assets, lifts, generators, pumps, warranties, and AMC maintenance contracts.', 'society-hubx' ),
+				'name'        => __( 'Asset Management', 'namma-society' ),
+				'description' => __( 'Infrastructure assets, lifts, generators, pumps, warranties, and AMC maintenance contracts.', 'namma-society' ),
 				'icon'        => 'bi-box-seam',
 				'locked'      => false,
 				'category'    => 'operations',
@@ -233,4 +233,9 @@ class SHUBX51_Module_Registry {
 		}
 		return $features;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Module_Registry' ) && ! class_exists( 'SHUBX51_Module_Registry', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Module_Registry', 'SHUBX51_Module_Registry' );
 }

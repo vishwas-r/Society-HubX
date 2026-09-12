@@ -10,16 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
-<div class="shubx-login-wrapper d-flex align-items-center justify-content-center min-vh-100">
+<div class="nammasociety-login-wrapper d-flex align-items-center justify-content-center min-vh-100">
     <!-- Animated Background -->
-    <div class="shubx-login-bg"></div>
+    <div class="nammasociety-login-bg"></div>
 
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <!-- 1. Intro Card -->
-                <div id="intro-card" class="shubx-login-card p-4 p-md-5 text-center">
-                    <div class="shubx-brand-icon mb-4 mx-auto">
+                <div id="intro-card" class="nammasociety-login-card p-4 p-md-5 text-center">
+                    <div class="nammasociety-brand-icon mb-4 mx-auto">
                         <i class="bi bi-building-fill text-white fs-2"></i>
                     </div>
                     <h1 class="h3 fw-bold text-dark mb-2"><?php echo esc_html( $society_info['name'] ); ?></h1>
@@ -42,10 +42,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div>
 
                 <!-- 2. Login Card (Initially Hidden) -->
-                <div id="login-card" class="shubx-login-card p-4 p-md-5 d-none">
+                <div id="login-card" class="nammasociety-login-card p-4 p-md-5 d-none">
                     <!-- Logo / Brand -->
                     <div class="text-center mb-4">
-                        <img src="<?php echo esc_url( SHUBX51_PLUGIN_URL . 'assets/images/hubx-logo.png' ); ?>" alt="Society HubX" class="mb-3 mx-auto shadow-sm" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover;">
+                        <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/hubx-logo.png' ); ?>" alt="Namma Society" class="mb-3 mx-auto shadow-sm" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover;">
                         <h2 class="h4 fw-bold text-dark m-0">Member Login</h2>
                         <p class="text-secondary small">Sign in to your society account</p>
                     </div>
@@ -55,7 +55,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                     <!-- Login Form -->
                     <form id="resident-login-form" method="post">
-                        <?php wp_nonce_field( 'shubx51_login_nonce', 'login_nonce' ); ?>
+                        <?php wp_nonce_field( 'nammasociety51_login_nonce', 'login_nonce' ); ?>
                         
                         <div class="form-floating mb-3">
                             <input type="text" name="user_login" class="form-control" id="floatingInput" placeholder="Username" required>

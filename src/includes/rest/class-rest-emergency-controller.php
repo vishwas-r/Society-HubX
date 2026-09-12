@@ -2,16 +2,16 @@
 /**
  * REST API Controller for Emergency SOS & Security Alarms.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Emergency_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 	protected $rest_base = 'emergency';
 
 	public function register_routes() {
@@ -82,7 +82,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 	}
 
 	public function check_auth( $request = null ) {
-		$auth = SHUBX51_REST_Manager::authenticate_request( $request );
+		$auth = NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		if ( is_wp_error( $auth ) ) {
 			return $auth;
 		}
@@ -99,7 +99,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 
 		$user_id = get_current_user_id();
 		$user    = wp_get_current_user();
-		$db      = new SHUBX51_DB_Router();
+		$db      = new NAMMASOCIETY51_DB_Router();
 		$resident = $user_id ? $db->get_row_by_field( 'residents', 'wp_user_id', $user_id ) : null;
 
 		// Dynamically resolve Block & Flat (Zero hardcoding)
@@ -237,7 +237,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 		) );
 
 		// 6. Dispatch Action for Push Notification / SMS / Siren
-		do_action( 'shubx51_emergency_sos_triggered', array(
+		do_action( 'nammasociety51_emergency_sos_triggered', array(
 			'alert_id'           => $alert_id,
 			'type'               => $type,
 			'flat_no'            => $flat_no,
@@ -256,7 +256,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 			'success'    => true,
 			'status'     => 'active',
 			'alert_id'   => $alert_id,
-			'message'    => sprintf( __( 'Emergency %s alert (%s) broadcast to Security Desk and Emergency Teams.', 'society-hubx' ), strtoupper( $type ), $alert_id ),
+			'message'    => sprintf( __( 'Emergency %s alert (%s) broadcast to Security Desk and Emergency Teams.', 'namma-society' ), strtoupper( $type ), $alert_id ),
 			'alert_info' => array(
 				'alert_id'    => $alert_id,
 				'type'        => $type,
@@ -276,7 +276,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 	 */
 	public function get_emergency_alerts( WP_REST_Request $request ) {
 		$status = sanitize_text_field( $request->get_param( 'status' ) ?? 'all' );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$args = array();
 		if ( ! empty( $status ) && 'all' !== $status ) {
@@ -302,7 +302,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
 		$user = wp_get_current_user();
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$now = current_time( 'mysql' );
 		$result = $db->update(
@@ -334,7 +334,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Emergency alert acknowledged by responders.', 'society-hubx' ),
+			'message' => __( 'Emergency alert acknowledged by responders.', 'namma-society' ),
 		) );
 	}
 
@@ -345,7 +345,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
 		$user = wp_get_current_user();
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$now = current_time( 'mysql' );
 		$result = $db->update(
@@ -376,7 +376,7 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Emergency incident marked as resolved.', 'society-hubx' ),
+			'message' => __( 'Emergency incident marked as resolved.', 'namma-society' ),
 		) );
 	}
 
@@ -384,42 +384,42 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 	 * GET /emergency/contacts
 	 */
 	public function get_contacts() {
-		$gate_phone = get_option( 'shubx51_society_contact', '' );
-		$emergency_phone = get_option( 'shubx51_society_emergency', $gate_phone );
+		$gate_phone = get_option( 'nammasociety51_society_contact', '' );
+		$emergency_phone = get_option( 'nammasociety51_society_emergency', $gate_phone );
 
 		$contacts = array(
 			array(
-				'title'       => __( 'Security Main Gate', 'society-hubx' ),
+				'title'       => __( 'Security Main Gate', 'namma-society' ),
 				'phone'       => $gate_phone,
 				'icon'        => 'shield-fill-check',
 				'is_internal' => true,
 			),
 			array(
-				'title'       => __( 'Society Estate Manager', 'society-hubx' ),
+				'title'       => __( 'Society Estate Manager', 'namma-society' ),
 				'phone'       => $emergency_phone,
 				'icon'        => 'person-badge',
 				'is_internal' => true,
 			),
 			array(
-				'title'       => __( 'National Emergency Helpline', 'society-hubx' ),
+				'title'       => __( 'National Emergency Helpline', 'namma-society' ),
 				'phone'       => '112',
 				'icon'        => 'telephone-fill',
 				'is_internal' => false,
 			),
 			array(
-				'title'       => __( 'Ambulance', 'society-hubx' ),
+				'title'       => __( 'Ambulance', 'namma-society' ),
 				'phone'       => '108',
 				'icon'        => 'heart-pulse-fill',
 				'is_internal' => false,
 			),
 			array(
-				'title'       => __( 'Fire Station', 'society-hubx' ),
+				'title'       => __( 'Fire Station', 'namma-society' ),
 				'phone'       => '101',
 				'icon'        => 'fire',
 				'is_internal' => false,
 			),
 			array(
-				'title'       => __( 'Police Control Room', 'society-hubx' ),
+				'title'       => __( 'Police Control Room', 'namma-society' ),
 				'phone'       => '100',
 				'icon'        => 'shield-lock-fill',
 				'is_internal' => false,
@@ -431,4 +431,9 @@ class SHUBX51_REST_Emergency_Controller extends WP_REST_Controller {
 			'contacts' => $contacts,
 		) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Emergency_Controller' ) && ! class_exists( 'SHUBX51_REST_Emergency_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Emergency_Controller', 'SHUBX51_REST_Emergency_Controller' );
 }

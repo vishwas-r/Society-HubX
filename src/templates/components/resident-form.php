@@ -121,7 +121,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
             <?php 
-            $display_flat = SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $flat_no );
+            $display_flat = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $flat_no );
             ?>
             <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($display_flat); ?>" disabled>
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
@@ -183,7 +183,7 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
 
      <!-- Society Role (Admin Only) -->
      <?php if($is_admin): 
-        $all_rbac_roles = SHUBX51_Plugin::get_instance()->rbac->get_all_roles();
+        $all_rbac_roles = NAMMASOCIETY51_Plugin::get_instance()->rbac->get_all_roles();
         $selected_roles = is_array($role) ? $role : array_filter(explode(',', (string)$role));
      ?>
         <div class="col-12 text-start" id="society-role-wrapper-<?php echo esc_html( $context ); ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">

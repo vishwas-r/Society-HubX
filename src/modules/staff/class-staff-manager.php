@@ -3,14 +3,14 @@
  * Module: Staff Manager
  * Handles Maintenance Staff & Daily Help.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class SHUBX51_Staff_Manager implements SHUBX51_Module
+class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
 {
 
     private $db;
@@ -18,27 +18,27 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
 
     public function __construct()
     {
-        $this->db = new SHUBX51_DB_Router();
-        $this->drive = new SHUBX51_Drive_Manager();
+        $this->db = new NAMMASOCIETY51_DB_Router();
+        $this->drive = new NAMMASOCIETY51_Drive_Manager();
 
         add_action('admin_menu', array($this, 'register_menu'), 200);
         add_action('rest_api_init', array($this, 'register_rest_routes'));
 
         // AJAX
-        add_action('wp_ajax_shubx51_add_staff', array($this, 'handle_add_staff'));
-        add_action('wp_ajax_shubx51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('wp_ajax_shubx51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('wp_ajax_shubx51_restore_staff', array($this, 'handle_restore_staff'));
-        add_action('wp_ajax_shubx51_mark_attendance', array($this, 'handle_mark_attendance'));
-        add_action('wp_ajax_shubx51_raise_concern', array($this, 'handle_raise_concern'));
-        add_action('wp_ajax_shubx51_get_attendance_report', array($this, 'handle_get_attendance_report'));
+        add_action('wp_ajax_nammasociety51_add_staff', array($this, 'handle_add_staff'));
+        add_action('wp_ajax_nammasociety51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('wp_ajax_nammasociety51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('wp_ajax_nammasociety51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('wp_ajax_nammasociety51_mark_attendance', array($this, 'handle_mark_attendance'));
+        add_action('wp_ajax_nammasociety51_raise_concern', array($this, 'handle_raise_concern'));
+        add_action('wp_ajax_nammasociety51_get_attendance_report', array($this, 'handle_get_attendance_report'));
 
-        add_action('admin_post_shubx51_add_staff', array($this, 'handle_add_staff'));
-        add_action('admin_post_shubx51_edit_staff', array($this, 'handle_edit_staff'));
-        add_action('admin_post_shubx51_delete_staff', array($this, 'handle_delete_staff'));
-        add_action('admin_post_shubx51_restore_staff', array($this, 'handle_restore_staff'));
-        add_action('admin_post_shubx51_mark_attendance', array($this, 'handle_mark_attendance'));
-        add_action('admin_post_shubx51_raise_concern', array($this, 'handle_raise_concern'));
+        add_action('admin_post_nammasociety51_add_staff', array($this, 'handle_add_staff'));
+        add_action('admin_post_nammasociety51_edit_staff', array($this, 'handle_edit_staff'));
+        add_action('admin_post_nammasociety51_delete_staff', array($this, 'handle_delete_staff'));
+        add_action('admin_post_nammasociety51_restore_staff', array($this, 'handle_restore_staff'));
+        add_action('admin_post_nammasociety51_mark_attendance', array($this, 'handle_mark_attendance'));
+        add_action('admin_post_nammasociety51_raise_concern', array($this, 'handle_raise_concern'));
 
         // Self-Heal Schema (Ensure columns exist)
         if (is_admin()) {
@@ -51,7 +51,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         }
 
         // Register Module
-        add_filter('shubx51_get_module_daily_help', array($this, 'get_instance'));
+        add_filter('nammasociety51_get_module_daily_help', array($this, 'get_instance'));
     }
 
     public function get_instance()
@@ -60,13 +60,13 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     }
 
     public function register_rest_routes() {
-        register_rest_route('society-hubx/v1', '/staff/biometric-sync', array(
+        register_rest_route('namma-society/v1', '/staff/biometric-sync', array(
             'methods'  => 'POST',
             'callback' => array($this, 'handle_biometric_sync'),
             'permission_callback' => array($this, 'check_biometric_auth'),
         ));
 
-        register_rest_route('shubx51/v1', '/biometric-sync', array(
+        register_rest_route('nammasociety51/v1', '/biometric-sync', array(
             'methods'  => 'POST',
             'callback' => array($this, 'handle_biometric_sync'),
             'permission_callback' => array($this, 'check_biometric_auth'), // Legacy alias
@@ -80,14 +80,14 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         if (current_user_can('manage_options')) {
             return true;
         }
-        if (class_exists('SHUBX51_RBAC_Manager')) {
-            $rbac = new SHUBX51_RBAC_Manager();
+        if (class_exists('NAMMASOCIETY51_RBAC_Manager')) {
+            $rbac = new NAMMASOCIETY51_RBAC_Manager();
             if ($rbac->has_capability(get_current_user_id(), 'staff_manage')) {
                 return true;
             }
         }
 
-        $stored_secret = get_option('shubx51_biometric_api_secret', '');
+        $stored_secret = get_option('nammasociety51_biometric_api_secret', '');
         $provided_token = $request->get_header('x-device-token');
         if (empty($provided_token)) {
             $auth_header = $request->get_header('authorization');
@@ -101,12 +101,12 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             $is_valid = true;
         }
 
-        $is_valid = apply_filters('shubx51_biometric_auth_check', $is_valid, $request);
+        $is_valid = apply_filters('nammasociety51_biometric_auth_check', $is_valid, $request);
 
         if (!$is_valid) {
             return new WP_Error(
                 'rest_forbidden',
-                __('Invalid or missing biometric hardware device token. Set X-Device-Token header.', 'society-hubx'),
+                __('Invalid or missing biometric hardware device token. Set X-Device-Token header.', 'namma-society'),
                 array('status' => 401)
             );
         }
@@ -208,7 +208,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // Handle Profile Photo Upload (Avatar)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_add_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
-            $media = new SHUBX51_Media_Manager();
+            $media = new NAMMASOCIETY51_Media_Manager();
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
             $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $db_data['name'], 'staffs');
@@ -283,7 +283,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         // Handle Profile Photo Upload (Avatar)
         // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_edit_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['profile_photo']) && !empty($_FILES['profile_photo']['name'])) {
-            $media = new SHUBX51_Media_Manager();
+            $media = new NAMMASOCIETY51_Media_Manager();
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is sanitized via sanitize_file_array.
             $clean_photo = $this->sanitize_file_array( $_FILES['profile_photo'] );
             $photo_url = $media->upload_profile_photo($clean_photo, 'staff', $update_data['name'], 'staffs');
@@ -311,21 +311,21 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     public function handle_restore_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('shubx51_staff_nonce'))
+            if (!check_admin_referer('nammasociety51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $id = isset($_POST['staff_id']) ? sanitize_text_field( wp_unslash( $_POST['staff_id'] ) ) : (isset($_GET['staff_id']) ? sanitize_text_field( wp_unslash( $_GET['staff_id'] ) ) : '');
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ($rbac->has_capability( get_current_user_id(), 'staff_manage' )) {
             $this->db->update('daily_help', array('status' => 'approved'), array('id' => $id));
 
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $rm->log_audit('staff_restored', 'daily_help', $id, "Staff ID: $id");
 
             if (wp_doing_ajax()) {
@@ -338,34 +338,34 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=updated'));
         exit;
     }
 
     public function register_menu()
     {
         add_submenu_page(
-            'shubx51-settings',
+            'nammasociety51-settings',
             'Staff & Help',
             'Staff & Help',
             'read', // Granular check inside render_page
-            'shubx51-staff',
+            'nammasociety51-staff',
             array($this, 'render_page')
         );
     }
 
     public function render_page()
     {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'staff_view' ) ) {
             wp_die( 'You do not have permission to view staff records.' );
         }
 
-        $rm = new SHUBX51_Request_Manager();
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $unified = $rm->get_unified_data('daily_help', 'daily_help', '', true);
         $flats = $this->db->get('flats');
 
-        SHUBX51_Admin_App::render_view('staff', [
+        NAMMASOCIETY51_Admin_App::render_view('staff', [
             'staff' => $unified['active'],
             'pending' => $unified['pending'],
             'archived' => array_filter($unified['active'], function ($s) {
@@ -379,17 +379,17 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('shubx51_staff_nonce'))
+            if (!check_admin_referer('nammasociety51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
         $post_data['id'] = uniqid('staff_');
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
@@ -412,13 +412,13 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             $post_data['status'] = 'pending';
             $this->perform_add_staff($post_data);
 
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $res = $rm->create_request('daily_help', 'add', $post_data, $post_data['id'], 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SHUBX Staff Add Request Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                    error_log('NAMMASOCIETY Staff Add Request Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -433,7 +433,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=added'));
+        wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=added'));
         exit;
     }
 
@@ -441,24 +441,24 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     {
         if (wp_doing_ajax()) {
             ob_start();
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('shubx51_staff_nonce'))
+            if (!check_admin_referer('nammasociety51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
         $id = isset( $post_data['staff_id'] ) ? $post_data['staff_id'] : '';
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
         if ($has_manage) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $sync_res = $rm->approve_request($id);
 
             if (!is_wp_error($sync_res)) {
@@ -471,7 +471,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                     wp_send_json_success(['message' => 'Staff updated and request synchronized']);
                 }
                 else {
-                    wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
+                    wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=updated'));
                 }
                 exit;
             }
@@ -492,12 +492,12 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
         else {
-            $rm = new SHUBX51_Request_Manager();
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $res = $rm->create_request('daily_help', 'edit', $post_data, $id, 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 $debug = ob_get_clean();
                 if (!empty($debug))
-                    error_log('SHUBX Staff Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                    error_log('NAMMASOCIETY Staff Edit Debug: ' . $debug); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
                 // Aggressive Clean
                 while (ob_get_level() > 0) {
@@ -512,31 +512,31 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=updated'));
+        wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=updated'));
         exit;
     }
 
     public function handle_delete_staff()
     {
         if (wp_doing_ajax()) {
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         }
         else {
-            if (!check_admin_referer('shubx51_staff_nonce'))
+            if (!check_admin_referer('nammasociety51_staff_nonce'))
                 wp_die('Security check failed');
         }
 
         $post_data = map_deep( wp_unslash( $_POST ), 'sanitize_text_field' );
         $id = isset( $post_data['staff_id'] ) ? $post_data['staff_id'] : '';
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         $has_manage = $rbac->has_capability( get_current_user_id(), 'staff_manage' );
 
         // IF ADMIN or has staff_manage: Immediate
         if ($has_manage) {
             // 1. Synchronize with Request Manager if a pending request exists
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $sync_res = $rm->approve_request($id);
 
             if (!is_wp_error($sync_res)) {
@@ -548,7 +548,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                     wp_send_json_success(['message' => 'Staff record archived and request synchronized']);
                 }
                 else {
-                    wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=deleted'));
+                    wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=deleted'));
                 }
                 exit;
             }
@@ -556,8 +556,8 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             $res = $this->perform_delete_staff(['id' => $id]);
         }
         else {
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $res = $rm->create_request('daily_help', 'delete', ['staff_id' => $id, 'id' => $id], $id, 'daily_help', $post_data['flat_no'] ?? '');
             if (wp_doing_ajax()) {
                 // Aggressive Clean
@@ -570,7 +570,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             }
         }
 
-        wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=deleted'));
+        wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=deleted'));
         exit;
     }
 
@@ -588,9 +588,9 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     }
     public function handle_mark_attendance() {
         if (wp_doing_ajax()) {
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         } else {
-            if (!check_admin_referer('shubx51_staff_nonce')) wp_die('Security check failed');
+            if (!check_admin_referer('nammasociety51_staff_nonce')) wp_die('Security check failed');
         }
 
         $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
@@ -620,16 +620,16 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             if (is_wp_error($res)) wp_send_json_error(['message' => $res->get_error_message()]);
             wp_send_json_success(['message' => 'Attendance marked successfully']);
         } else {
-            wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=attendance_marked'));
+            wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=attendance_marked'));
         }
         exit;
     }
 
     public function handle_raise_concern() {
         if (wp_doing_ajax()) {
-            check_ajax_referer('shubx51_staff_nonce');
+            check_ajax_referer('nammasociety51_staff_nonce');
         } else {
-            if (!check_admin_referer('shubx51_staff_nonce')) wp_die('Security check failed');
+            if (!check_admin_referer('nammasociety51_staff_nonce')) wp_die('Security check failed');
         }
 
         $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
@@ -674,11 +674,11 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
         $res = $this->db->insert('staff_concerns', $data);
 
         // Notify
-        if (class_exists('SHUBX51_Plugin')) {
-            $shubx = SHUBX51_Plugin::get_instance();
+        if (class_exists('NAMMASOCIETY51_Plugin')) {
+            $nammasociety = NAMMASOCIETY51_Plugin::get_instance();
             if ($type === 'society') {
                 // Alert association members
-                $shubx->notifications->trigger('society_staff_concern', 0, [
+                $nammasociety->notifications->trigger('society_staff_concern', 0, [
                     'staff_name' => $staff['name'],
                     'description' => $description
                 ], 0, 'admin'); 
@@ -687,7 +687,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
                 $residents = $this->db->get('residents');
                 foreach($residents as $r) {
                     if($r['flat_no'] === $flat_no && $r['status'] === 'approved') {
-                        $shubx->notifications->trigger('flat_staff_concern', $r['wp_user_id'], [
+                        $nammasociety->notifications->trigger('flat_staff_concern', $r['wp_user_id'], [
                             'staff_name' => $staff['name'],
                             'description' => $description,
                             'resident_name' => $r['name']
@@ -701,13 +701,13 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
             if (is_wp_error($res)) wp_send_json_error(['message' => $res->get_error_message()]);
             wp_send_json_success(['message' => 'Concern raised successfully']);
         } else {
-            wp_safe_redirect(admin_url('admin.php?page=shubx51-staff&status=concern_raised'));
+            wp_safe_redirect(admin_url('admin.php?page=nammasociety51-staff&status=concern_raised'));
         }
         exit;
     }
 
     public function handle_get_attendance_report() {
-        if (!check_ajax_referer('shubx51_staff_nonce', false, false)) {
+        if (!check_ajax_referer('nammasociety51_staff_nonce', false, false)) {
             wp_send_json_error(['message' => 'Security check failed']);
         }
         $month = isset($_POST['month']) ? sanitize_text_field(wp_unslash($_POST['month'])) : wp_date('Y-m');
@@ -756,3 +756,7 @@ class SHUBX51_Staff_Manager implements SHUBX51_Module
     }
 }
 
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Staff_Manager' ) && ! class_exists( 'SHUBX51_Staff_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Staff_Manager', 'SHUBX51_Staff_Manager' );
+}

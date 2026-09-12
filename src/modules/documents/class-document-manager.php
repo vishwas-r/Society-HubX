@@ -3,40 +3,40 @@
  * Module: Document Manager
  * Handles the "Document Vault".
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Document_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_Document_Manager implements NAMMASOCIETY51_Module {
 
 	private $drive;
 	private $db;
 
 	public function __construct() {
-		$this->drive = new SHUBX51_Drive_Manager();
-		$this->db    = new SHUBX51_DB_Router();
+		$this->drive = new NAMMASOCIETY51_Drive_Manager();
+		$this->db    = new NAMMASOCIETY51_DB_Router();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_shubx51_upload_doc', array( $this, 'handle_upload' ) );
-		add_action( 'wp_ajax_shubx51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'admin_post_nammasociety51_upload_doc', array( $this, 'handle_upload' ) );
+		add_action( 'wp_ajax_nammasociety51_upload_doc', array( $this, 'handle_upload' ) );
 		
-		add_action( 'admin_post_shubx51_approve_doc', array( $this, 'handle_approve' ) );
-		add_action( 'wp_ajax_shubx51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'admin_post_nammasociety51_approve_doc', array( $this, 'handle_approve' ) );
+		add_action( 'wp_ajax_nammasociety51_approve_doc', array( $this, 'handle_approve' ) );
 
-		add_action( 'admin_post_shubx51_reject_doc', array( $this, 'handle_reject' ) );
-		add_action( 'wp_ajax_shubx51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'admin_post_nammasociety51_reject_doc', array( $this, 'handle_reject' ) );
+		add_action( 'wp_ajax_nammasociety51_reject_doc', array( $this, 'handle_reject' ) );
 
-		add_action( 'admin_post_shubx51_delete_doc', array( $this, 'handle_delete' ) );
-		add_action( 'wp_ajax_shubx51_delete_doc', array( $this, 'handle_delete' ) );
-		add_action( 'wp_ajax_shubx51_edit_doc_meta', array( $this, 'handle_edit_meta' ) );
-		add_action( 'wp_ajax_shubx51_restore_doc', array( $this, 'handle_restore' ) );
-		add_action( 'wp_ajax_shubx51_get_doc', array( $this, 'handle_get_doc' ) );
+		add_action( 'admin_post_nammasociety51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_doc', array( $this, 'handle_delete' ) );
+		add_action( 'wp_ajax_nammasociety51_edit_doc_meta', array( $this, 'handle_edit_meta' ) );
+		add_action( 'wp_ajax_nammasociety51_restore_doc', array( $this, 'handle_restore' ) );
+		add_action( 'wp_ajax_nammasociety51_get_doc', array( $this, 'handle_get_doc' ) );
 
         // Module Registration
-        add_filter( 'shubx51_get_module_documents', array( $this, 'get_instance' ) );
+        add_filter( 'nammasociety51_get_module_documents', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -67,11 +67,11 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Document Vault',
 			'Documents',
 			'manage_options',
-			'shubx51-documents',
+			'nammasociety51-documents',
 			array( $this, 'render_page' )
 		);
 	}
@@ -83,7 +83,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		if ( ! is_user_logged_in() ) wp_die('Authentication required');
 		
 		// Use check_ajax_referer for both Admin & Frontend AJAX
-		check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
+		check_ajax_referer( 'nammasociety51_document_nonce', '_wpnonce' );
 
 		$user_id = get_current_user_id();
 		$is_admin = current_user_can('manage_options');
@@ -115,7 +115,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 			
 			if ( is_wp_error( $res ) ) {
 				if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) wp_send_json_error( array( 'message' => $res->get_error_message() ) );
-                wp_safe_redirect( add_query_arg( array( 'page' => 'shubx51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
+                wp_safe_redirect( add_query_arg( array( 'page' => 'nammasociety51-documents', 'flat' => $flat_no, 'error' => urlencode($res->get_error_message()) ), admin_url('admin.php') ) );
                 exit;
 			} else {
                 // Insert Metadata
@@ -137,7 +137,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
                 // 3. Create Approval Request if Resident
                 if ( ! $is_admin ) {
-                    $rm = new SHUBX51_Request_Manager();
+                    $rm = new NAMMASOCIETY51_Request_Manager();
                     $rm->create_request( 'documents', 'upload', $new_doc, $doc_id, 'documents', $flat_no );
                 }
 
@@ -145,7 +145,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
                     wp_send_json_success( array( 'message' => 'Upload successful' ) );
                 } else {
                     $redirect = $is_admin 
-						? add_query_arg( array( 'page' => 'shubx51-documents', 'flat' => $flat_no, 'success' => '1' ), admin_url('admin.php') )
+						? add_query_arg( array( 'page' => 'nammasociety51-documents', 'flat' => $flat_no, 'success' => '1' ), admin_url('admin.php') )
 						: wp_get_referer();
                     wp_safe_redirect( $redirect );
                 }
@@ -157,13 +157,13 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 	public function handle_approve() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
-		$rbac = new SHUBX51_RBAC_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -174,14 +174,14 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
         $request_id = isset( $_REQUEST['request_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['request_id'] ) ) : '';
         if ( ! empty( $request_id ) ) {
-            $rm = new SHUBX51_Request_Manager();
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $res = $rm->approve_request( $request_id );
             
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document approved'] );
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-documents&updated=1' ) );
             }
             exit;
         }
@@ -190,13 +190,13 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 	public function handle_reject() {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
-		$rbac = new SHUBX51_RBAC_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -209,14 +209,14 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
         $note = isset( $_REQUEST['admin_note'] ) ? sanitize_textarea_field( wp_unslash( $_REQUEST['admin_note'] ) ) : '';
 
         if ( ! empty( $request_id ) ) {
-            $rm = new SHUBX51_Request_Manager();
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $res = $rm->reject_request( $request_id, $note );
 
             if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                 if ( is_wp_error( $res ) ) wp_send_json_error( ['message' => $res->get_error_message()] );
                 wp_send_json_success( ['message' => 'Document rejected'] );
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-documents&updated=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-documents&updated=1' ) );
             }
             exit;
         }
@@ -240,9 +240,9 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 	private function update_status( $status ) {
 		// Use check_ajax_referer if AJAX, else check_admin_referer
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_doc_action' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_doc_action' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
@@ -253,7 +253,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
         // 1. Synchronize with Request Manager if a pending request exists
         if ( in_array( $status, array( 'approved', 'rejected' ) ) ) {
-            $rm = new SHUBX51_Request_Manager();
+            $rm = new NAMMASOCIETY51_Request_Manager();
             // Passing doc_id here works because RM has a fallback to search by entity_id
             $res = ( $status === 'approved' ) ? $rm->approve_request( $doc_id ) : $rm->reject_request( $doc_id );
             
@@ -262,7 +262,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
                 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
                     wp_send_json_success( array( 'message' => 'Document processed and request synced.' ) );
                 } else {
-                    wp_safe_redirect( admin_url( 'admin.php?page=shubx51-documents&updated=1' ) );
+                    wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-documents&updated=1' ) );
                 }
                 exit;
             }
@@ -271,19 +271,19 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		$this->db->update( 'documents', array( 'status' => $status ), array( 'id' => $doc_id ) );
 
         // Manual Notification Trigger (Backup for direct admin actions)
-        if ( class_exists('SHUBX51_Plugin') ) {
+        if ( class_exists('NAMMASOCIETY51_Plugin') ) {
             $docs = $this->db->get('documents');
             $doc = null;
             foreach($docs as $d) { if($d['id'] === $doc_id) { $doc = $d; break; } }
             
             if ( $doc && !empty($doc['uploaded_by']) && in_array($status, ['approved', 'rejected']) ) {
-                $shubx = SHUBX51_Plugin::get_instance();
+                $nammasociety = NAMMASOCIETY51_Plugin::get_instance();
                 $event = ($status === 'approved') ? 'request_approved' : 'request_rejected';
                 
                 $admin_user = wp_get_current_user();
                 $admin_name = $admin_user ? $admin_user->display_name : 'Admin';
 
-                $shubx->notifications->trigger($event, $doc['uploaded_by'], [
+                $nammasociety->notifications->trigger($event, $doc['uploaded_by'], [
                     'resident_name' => 'Resident', // Logic to fetch name if needed
                     'request_type'  => 'Document',
                     'admin_name'    => $admin_name,
@@ -296,25 +296,25 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document status updated to ' . $status ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-documents&updated=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-documents&updated=1' ) );
 		}
 		exit;
 	}
 
 	public function handle_delete() {
-		// Nonce check: JS uses Config.nonce (shubx51_document_nonce)
+		// Nonce check: JS uses Config.nonce (nammasociety51_document_nonce)
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			check_ajax_referer( 'shubx51_document_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_document_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
+			if ( ! check_admin_referer( 'nammasociety51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		}
 		
 		$flat_no = isset( $_REQUEST['flat'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['flat'] ) ) : '';
 		$doc_id = isset( $_REQUEST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['doc_id'] ) ) : '';
 
 		$user_id = get_current_user_id();
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
-		$is_admin = current_user_can( 'manage_options' ) || ( new SHUBX51_RBAC_Manager() )->has_capability( $user_id, 'documents_manage' );
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$is_admin = current_user_can( 'manage_options' ) || ( new NAMMASOCIETY51_RBAC_Manager() )->has_capability( $user_id, 'documents_manage' );
 
 		if ( ! $is_admin ) {
 			$doc = null;
@@ -341,20 +341,20 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			wp_send_json_success( array( 'message' => 'Document marked for deletion' ) );
 		} else {
-			wp_safe_redirect( add_query_arg( array( 'page' => 'shubx51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
+			wp_safe_redirect( add_query_arg( array( 'page' => 'nammasociety51-documents', 'flat' => $flat_no, 'deleted' => '1' ), admin_url('admin.php') ) );
 		}
 		exit;
 	}
 
 	public function handle_edit_meta() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_doc_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 
 		$user_id = get_current_user_id();
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
-		$rbac = new SHUBX51_RBAC_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = current_user_can( 'manage_options' ) || $rbac->has_capability( $user_id, 'documents_manage' );
 
 		$doc_id = isset( $_POST['doc_id'] ) ? sanitize_text_field( wp_unslash( $_POST['doc_id'] ) ) : ( isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '' );
@@ -392,12 +392,12 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 	public function handle_restore() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_doc_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 
-		require_once SHUBX51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
-		$rbac = new SHUBX51_RBAC_Manager();
+		require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-rbac-manager.php';
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! current_user_can( 'manage_options' ) && ! $rbac->has_capability( get_current_user_id(), 'documents_manage' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -413,7 +413,7 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 
 	public function handle_get_doc() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_doc_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_document_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_doc_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_frontend_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 
@@ -427,6 +427,11 @@ class SHUBX51_Document_Manager implements SHUBX51_Module {
 	}
 
 	public function render_page() {
-		SHUBX51_Admin_App::render_view('documents');
+		NAMMASOCIETY51_Admin_App::render_view('documents');
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Document_Manager' ) && ! class_exists( 'SHUBX51_Document_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Document_Manager', 'SHUBX51_Document_Manager' );
 }

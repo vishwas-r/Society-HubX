@@ -1,23 +1,23 @@
 ﻿/**
- * SHUBX Toast Notification System
- * Lightweight toast notification library for Society HubX
+ * NAMMASOCIETY Toast Notification System
+ * Lightweight toast notification library for Namma Society
  * 
  * Usage:
- * SHUBX.toast.success('Operation completed!');
- * SHUBX.toast.error('An error occurred');
- * SHUBX.toast.warning('Please review');
- * SHUBX.toast.info('New notification');
+ * NAMMASOCIETY.toast.success('Operation completed!');
+ * NAMMASOCIETY.toast.error('An error occurred');
+ * NAMMASOCIETY.toast.warning('Please review');
+ * NAMMASOCIETY.toast.info('New notification');
  */
 (function () {
     'use strict';
 
-    // Create SHUBX namespace if it doesn't exist
-    window.SHUBX = window.SHUBX || {};
+    // Create NAMMASOCIETY namespace if it doesn't exist
+    window.NAMMASOCIETY = window.NAMMASOCIETY || {};
 
     /**
      * Toast Notification API
      */
-    window.SHUBX.toast = {
+    window.NAMMASOCIETY.toast = {
         /**
          * Show success toast
          * @param {string} message Toast message
@@ -61,12 +61,12 @@
          * @param {number} duration Duration in ms
          */
         show: function (message, type = 'success', duration = 3000) {
-            const toastEl = document.getElementById('shubx-global-toast');
-            const iconEl = document.getElementById('shubx-toast-icon');
-            const msgEl = document.getElementById('shubx-toast-message');
+            const toastEl = document.getElementById('nammasociety-global-toast');
+            const iconEl = document.getElementById('nammasociety-toast-icon');
+            const msgEl = document.getElementById('nammasociety-toast-message');
 
             if (!toastEl || !msgEl || !iconEl) {
-                console.warn('SHUBX Toast: Toast elements missing from DOM');
+                console.warn('NAMMASOCIETY Toast: Toast elements missing from DOM');
                 // Fallback to alert if toast not available
                 alert(message);
                 return;
@@ -112,7 +112,7 @@
 
     // Maintain backward compatibility with old API
     window.SHUBXShowToast = function (msg, type = 'success') {
-        SHUBX.toast.show(msg, type);
+        NAMMASOCIETY.toast.show(msg, type);
     };
 
 })();

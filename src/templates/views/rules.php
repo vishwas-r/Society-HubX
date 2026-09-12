@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Manages society rules, acknowledgments, and violations
  */
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 
 // Get data
 $rules = isset($rules) ? $rules : $db->get('rules');
@@ -26,7 +26,7 @@ $total_violations = count($violations);
 $pending_violations = count(array_filter($violations, fn($v) => $v['status'] === 'pending'));
 
 global $wpdb;
-$acks_table = "{$wpdb->prefix}shubx51_rule_acknowledgments";
+$acks_table = "{$wpdb->prefix}nammasociety51_rule_acknowledgments";
 $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->get_var("SELECT COUNT(*) FROM $acks_table");
 ?>
 
@@ -383,8 +383,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
             <?php
             // Get acknowledgment stats per rule
-            $rules_table = "{$wpdb->prefix}shubx51_rules";
-            $residents_table = "{$wpdb->prefix}shubx51_residents";
+            $rules_table = "{$wpdb->prefix}nammasociety51_rules";
+            $residents_table = "{$wpdb->prefix}nammasociety51_residents";
             $ack_stats = $wpdb->get_results("
                 SELECT r.id, r.title, r.requires_acknowledgment, r.acknowledgment_deadline,
                        COUNT(DISTINCT a.resident_id) as ack_count,
@@ -543,8 +543,8 @@ $total_acks = isset($total_acknowledgments) ? $total_acknowledgments : $wpdb->ge
 
 <?php
 // Modals
-add_action('shubx51_admin_modals', function() use ($categories) {
-    $nonce = wp_create_nonce('shubx51_rule_nonce');
+add_action('nammasociety51_admin_modals', function() use ($categories) {
+    $nonce = wp_create_nonce('nammasociety51_rule_nonce');
 ?>
 
 <!-- Add/Edit Rule Modal -->

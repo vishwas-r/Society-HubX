@@ -1,5 +1,5 @@
 /**
- * SHUBX Flats Management JS
+ * NAMMASOCIETY Flats Management JS
  */
 (function ($) {
     'use strict';
@@ -20,8 +20,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'flats' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -146,7 +146,7 @@
         $form.find('[name="parking_slot"]').val(flat.parking_slot || '');
         $form.find('[name="status"]').val(flat.status || 'vacant');
         $form.find('[name="parking_status"]').val(flat.parking_status || 'available');
-        $form.find('[name="action"]').val('shubx51_edit_flat');
+        $form.find('[name="action"]').val('nammasociety51_edit_flat');
         $form.find('[name="flat_id"]').val(flat.id || '');
 
         $('#flatModalTitle').text('Edit Unit: ' + flat.id);
@@ -156,7 +156,7 @@
     function resetFlatForm() {
         const $form = $('#add-flat-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('shubx51_add_flat');
+        $form.find('[name="action"]').val('nammasociety51_add_flat');
         $('#flatModalTitle').text('Add New Unit');
     }
 
@@ -182,8 +182,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SHUBX.ajax({
-                action: 'shubx51_delete_flat',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.deleteNonce
@@ -220,8 +220,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SHUBX.ajax({
-                action: 'shubx51_hard_delete_flat',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_hard_delete_flat',
                 data: {
                     flat_id: id,
                     _wpnonce: Config.hardDeleteNonce
@@ -237,8 +237,8 @@
     };
 
     window.restoreFlat = function (id) {
-        SHUBX.ajax({
-            action: 'shubx51_restore_flat',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_restore_flat',
             data: {
                 flat_id: id,
                 _wpnonce: Config.nonce
@@ -307,15 +307,15 @@
                     const formData = new FormData($form[0]);
                     const action = formData.get('action');
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),
                         onSuccess: function (resp) {
                             const rows = resp && (typeof resp.rows_affected !== 'undefined') ? resp.rows_affected : null;
 
-                            if (action === 'shubx51_edit_flat' && rows === 0) {
-                                SHUBX.toast.info('Save completed: No changes detected.');
+                            if (action === 'nammasociety51_edit_flat' && rows === 0) {
+                                NAMMASOCIETY.toast.info('Save completed: No changes detected.');
                             } else {
                                 closeFlatModal();
                                 window.location.reload();

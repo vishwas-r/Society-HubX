@@ -14,20 +14,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 $profile_resident = $data['resident'] ?? [];
 
 // Retrieve bank details from settings
-$bank_name = get_option('shubx51_bank_name', 'Society Bank');
-$acct_no   = get_option('shubx51_bank_account', 'Not Set');
-$ifsc      = get_option('shubx51_bank_ifsc', 'Not Set');
-$upi       = get_option('shubx51_bank_upi', 'Not Set');
-$qr_url    = get_option('shubx51_bank_qr');
+$bank_name = get_option('nammasociety51_bank_name', 'Society Bank');
+$acct_no   = get_option('nammasociety51_bank_account', 'Not Set');
+$ifsc      = get_option('nammasociety51_bank_ifsc', 'Not Set');
+$upi       = get_option('nammasociety51_bank_upi', 'Not Set');
+$qr_url    = get_option('nammasociety51_bank_qr');
 ?>
 
 <!-- 1. Family Member Modal (Add/Edit) -->
 <div class="modal fade" id="familyModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content border-0 shadow-lg rounded-3" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" method="POST" enctype="multipart/form-data">
-      <input type="hidden" name="action" value="shubx51_add_family">
-      <?php wp_nonce_field( 'shubx51_add_family_nonce' ); ?>
-      <?php wp_nonce_field( 'shubx51_edit_family_nonce', '_wpnonce_edit_family' ); ?>
+      <input type="hidden" name="action" value="nammasociety51_add_family">
+      <?php wp_nonce_field( 'nammasociety51_add_family_nonce' ); ?>
+      <?php wp_nonce_field( 'nammasociety51_edit_family_nonce', '_wpnonce_edit_family' ); ?>
       <input type="hidden" name="member_id" value="">
       <input type="hidden" name="resident_id" value="">
       
@@ -44,7 +44,7 @@ $qr_url    = get_option('shubx51_bank_qr');
                   'type'    => 'family'
               ] 
           ];
-          include SHUBX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+          include NAMMASOCIETY51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
       </div>
       <div class="modal-footer border-top-0 bg-light px-4 py-3">
@@ -255,12 +255,12 @@ $qr_url    = get_option('shubx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-         <input type="hidden" name="action" value="shubx51_add_daily_help">
+         <input type="hidden" name="action" value="nammasociety51_add_daily_help">
          <input type="hidden" name="help_id" value="">
          <input type="hidden" name="document_url" value="">
-          <?php wp_nonce_field('shubx51_add_help_nonce', '_wpnonce_add_help'); ?>
-          <?php wp_nonce_field('shubx51_edit_help_nonce', '_wpnonce_edit_help'); ?>
-          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('shubx51_add_help_nonce')); ?>">
+          <?php wp_nonce_field('nammasociety51_add_help_nonce', '_wpnonce_add_help'); ?>
+          <?php wp_nonce_field('nammasociety51_edit_help_nonce', '_wpnonce_edit_help'); ?>
+          <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('nammasociety51_add_help_nonce')); ?>">
          
          <div class="row g-3 mb-3">
              <div class="col-md-7">
@@ -333,11 +333,11 @@ $qr_url    = get_option('shubx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-         <input type="hidden" name="action" value="shubx51_add_vehicle_frontend">
+         <input type="hidden" name="action" value="nammasociety51_add_vehicle_frontend">
          <input type="hidden" name="vehicle_id" value="">
-         <?php wp_nonce_field('shubx51_add_vehicle_frontend_nonce', '_wpnonce_add_vehicle_frontend'); ?>
-         <?php wp_nonce_field('shubx51_edit_vehicle_action', 'shubx51_edit_vehicle_token', true, true); ?>
-         <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('shubx51_add_vehicle_frontend_nonce')); ?>">
+         <?php wp_nonce_field('nammasociety51_add_vehicle_frontend_nonce', '_wpnonce_add_vehicle_frontend'); ?>
+         <?php wp_nonce_field('nammasociety51_edit_vehicle_action', 'nammasociety51_edit_vehicle_token', true, true); ?>
+         <input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('nammasociety51_add_vehicle_frontend_nonce')); ?>">
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Vehicle Number <span class="text-danger">*</span></label>
              <input type="text" name="number" class="form-control rounded-3 border-light shadow-none font-monospace" placeholder="KA52AB1234" required>
@@ -379,8 +379,8 @@ $qr_url    = get_option('shubx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-         <input type="hidden" name="action" value="shubx51_upload_doc">
-         <?php wp_nonce_field('shubx51_document_nonce'); ?>
+         <input type="hidden" name="action" value="nammasociety51_upload_doc">
+         <?php wp_nonce_field('nammasociety51_document_nonce'); ?>
          <div class="mb-3">
              <label class="form-label small fw-bold text-secondary text-uppercase">Document Name <span class="text-danger">*</span></label>
              <input type="text" name="doc_name" class="form-control rounded-3 border-light shadow-none" placeholder="Maintenance Bill/Possession Letter" required>
@@ -473,9 +473,9 @@ $qr_url    = get_option('shubx51_bank_qr');
         <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4">
-         <input type="hidden" name="action" value="shubx51_book_facility">
+         <input type="hidden" name="action" value="nammasociety51_book_facility">
          <input type="hidden" name="resident_id" value="<?php echo esc_attr($r['flat_no'] ?? ''); ?>">
-         <?php wp_nonce_field('shubx51_facility_nonce'); ?>
+         <?php wp_nonce_field('nammasociety51_facility_nonce'); ?>
          
          <div class="mb-4">
              <label class="form-label small fw-bold text-secondary text-uppercase">Facility <span class="text-danger">*</span></label>
@@ -581,7 +581,7 @@ $qr_url    = get_option('shubx51_bank_qr');
           ];
           // Pass variables to scope for included file (backup)
           $resident = $profile_resident;
-          include SHUBX51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
+          include NAMMASOCIETY51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
           ?>
         </form>
       </div>
@@ -686,9 +686,9 @@ $qr_url    = get_option('shubx51_bank_qr');
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="resident-attendance-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
-                <input type="hidden" name="action" value="shubx51_mark_attendance">
+                <input type="hidden" name="action" value="nammasociety51_mark_attendance">
                 <input type="hidden" name="staff_id" id="res-attendance-staff-id" value="">
-                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Status <span class="text-danger">*</span></label>
@@ -716,9 +716,9 @@ $qr_url    = get_option('shubx51_bank_qr');
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="resident-concern-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
-                <input type="hidden" name="action" value="shubx51_raise_concern">
+                <input type="hidden" name="action" value="nammasociety51_raise_concern">
                 <input type="hidden" name="staff_id" id="res-concern-staff-id" value="">
-                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Describe the concern/issue <span class="text-danger">*</span></label>

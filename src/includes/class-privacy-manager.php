@@ -3,19 +3,19 @@
  * Class: Privacy Manager
  * Handles DPDP/GDPR Compliance (Data Export & Erasure).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Privacy_Manager {
+class NAMMASOCIETY51_Privacy_Manager {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 		
 		// Register WP Privacy Hooks
 		add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_exporters' ) );
@@ -26,8 +26,8 @@ class SHUBX51_Privacy_Manager {
 	 * Register Data Exporters.
 	 */
 	public function register_exporters( $exporters ) {
-		$exporters['society-hubx'] = array(
-			'exporter_friendly_name' => __( 'Society HubX Data', 'society-hubx' ),
+		$exporters['namma-society'] = array(
+			'exporter_friendly_name' => __( 'Namma Society Data', 'namma-society' ),
 			'callback'               => array( $this, 'export_society_data' ),
 		);
 		return $exporters;
@@ -37,8 +37,8 @@ class SHUBX51_Privacy_Manager {
 	 * Register Data Erasers.
 	 */
 	public function register_erasers( $erasers ) {
-		$erasers['society-hubx'] = array(
-			'eraser_friendly_name' => __( 'Society HubX Data', 'society-hubx' ),
+		$erasers['namma-society'] = array(
+			'eraser_friendly_name' => __( 'Namma Society Data', 'namma-society' ),
 			'callback'             => array( $this, 'erase_society_data' ),
 		);
 		return $erasers;
@@ -55,16 +55,16 @@ class SHUBX51_Privacy_Manager {
 		foreach ( $residents as $resident ) {
 			$item_id = "resident-{$resident['id']}";
 			$data = array(
-				array( 'name' => __( 'Name', 'society-hubx' ), 'value' => $resident['name'] ),
-				array( 'name' => __( 'Flat No', 'society-hubx' ), 'value' => $resident['flat_no'] ),
-				array( 'name' => __( 'Phone', 'society-hubx' ), 'value' => $resident['phone'] ),
-				array( 'name' => __( 'Type', 'society-hubx' ), 'value' => $resident['type'] ),
-				array( 'name' => __( 'DOB', 'society-hubx' ), 'value' => $resident['dob'] ?? '' ),
+				array( 'name' => __( 'Name', 'namma-society' ), 'value' => $resident['name'] ),
+				array( 'name' => __( 'Flat No', 'namma-society' ), 'value' => $resident['flat_no'] ),
+				array( 'name' => __( 'Phone', 'namma-society' ), 'value' => $resident['phone'] ),
+				array( 'name' => __( 'Type', 'namma-society' ), 'value' => $resident['type'] ),
+				array( 'name' => __( 'DOB', 'namma-society' ), 'value' => $resident['dob'] ?? '' ),
 			);
 
 			$data_to_export[] = array(
-				'group_id'    => 'society-hubx-residents',
-				'group_label' => __( 'Society Residents', 'society-hubx' ),
+				'group_id'    => 'namma-society-residents',
+				'group_label' => __( 'Society Residents', 'namma-society' ),
 				'item_id'     => $item_id,
 				'data'        => $data,
 			);
@@ -87,7 +87,7 @@ class SHUBX51_Privacy_Manager {
 
 		foreach ( $residents as $resident ) {
 			$anon_data = array(
-				'name'          => __( 'Anonymized', 'society-hubx' ),
+				'name'          => __( 'Anonymized', 'namma-society' ),
 				'email'         => '',
 				'phone'         => '0000000000',
 				'profile_photo' => '',
@@ -110,7 +110,7 @@ class SHUBX51_Privacy_Manager {
 	 * Helper: Mask PII for UI Display.
 	 */
 	public static function mask_data( $data, $type = 'phone' ) {
-		if ( ! get_option( 'shubx51_privacy_masking', 1 ) ) {
+		if ( ! get_option( 'nammasociety51_privacy_masking', 1 ) ) {
 			return $data;
 		}
 
@@ -118,8 +118,8 @@ class SHUBX51_Privacy_Manager {
 			return $data;
 		}
 		// If current user has high privileges, don't mask
-		$shubx = SHUBX51_Plugin::get_instance();
-		if ( $shubx->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
+		$nammasociety = NAMMASOCIETY51_Plugin::get_instance();
+		if ( $nammasociety->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
 			return $data;
 		}
 
@@ -136,4 +136,9 @@ class SHUBX51_Privacy_Manager {
 
 		return $data;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Privacy_Manager' ) && ! class_exists( 'SHUBX51_Privacy_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Privacy_Manager', 'SHUBX51_Privacy_Manager' );
 }

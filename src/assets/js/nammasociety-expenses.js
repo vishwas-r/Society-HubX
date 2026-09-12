@@ -1,5 +1,5 @@
 ﻿/**
- * SHUBX Expenses JS
+ * NAMMASOCIETY Expenses JS
  * - Intercepts expense form submission (handles file upload via fetch)
  * - Handles approve and delete actions via centralized confirmation modal and SHUBXApiRequest
  * - Shows spinners and uses SHUBXShowToast for feedback
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'expenses' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -37,8 +37,8 @@
     }
 
     function approveExpense(id) {
-        SHUBX.ajax({
-            action: 'shubx51_approve_expense',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_approve_expense',
             data: { expense_id: id, _wpnonce: Config.nonce },
             successMessage: 'Expense approved successfully',
             reload: true
@@ -51,8 +51,8 @@
 
         if (!modalEl || !confirmBtn) {
             if (!confirm('Delete this expense?')) return;
-            SHUBX.ajax({
-                action: 'shubx51_delete_expense',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 reload: true
             });
@@ -64,8 +64,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', function () {
-            SHUBX.ajax({
-                action: 'shubx51_delete_expense',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_expense',
                 data: { id: id, date: date, _wpnonce: Config.deleteNonce },
                 successMessage: 'Expense deleted',
                 onSuccess: function () {
@@ -92,9 +92,9 @@
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const formData = new FormData(form);
-                    if (!formData.get('action')) formData.append('action', 'shubx51_add_expense');
+                    if (!formData.get('action')) formData.append('action', 'nammasociety51_add_expense');
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: formData.get('action'),
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),

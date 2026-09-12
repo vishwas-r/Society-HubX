@@ -10,7 +10,7 @@
         $('.settings-tab-pane').addClass('hidden');
         $('#tab-content-' + tab).removeClass('hidden');
 
-        $('#shubx-settings-tabs button').removeClass('active border-primary text-primary')
+        $('#nammasociety-settings-tabs button').removeClass('active border-primary text-primary')
             .addClass('border-transparent text-muted');
 
         $('#tab-btn-' + tab).removeClass('border-transparent text-muted')
@@ -45,7 +45,7 @@
         // --- 2. QR Upload (Media Library) ---
         const $btnUpload = $('#btn-upload-qr');
         const $btnRemove = $('#btn-remove-qr');
-        const $inputQr = $('#shubx51_bank_qr');
+        const $inputQr = $('#nammasociety51_bank_qr');
         const $preview = $('#qr-preview-container');
 
         if ($btnUpload.length) {
@@ -54,7 +54,7 @@
 
                 // Professional Check: Is wp.media available?
                 if (typeof wp === 'undefined' || !wp.media) {
-                    SHUBX.toast.error('WordPress Media Library not loaded properly. Please refresh the page.');
+                    NAMMASOCIETY.toast.error('WordPress Media Library not loaded properly. Please refresh the page.');
                     return;
                 }
 
@@ -88,7 +88,7 @@
             const $switch = $(this);
             const moduleSlug = $switch.data('module');
             const isEnabled = $switch.is(':checked') ? 1 : 0;
-            const nonce = $('#shubx51_module_toggle_nonce').val() || '';
+            const nonce = $('#nammasociety51_module_toggle_nonce').val() || '';
             const $badge = $('.status-badge-' + moduleSlug);
             const $alert = $('#module-toggle-alert');
 
@@ -98,7 +98,7 @@
                 url: ajaxurl,
                 type: 'POST',
                 data: {
-                    action: 'shubx51_toggle_module',
+                    action: 'nammasociety51_toggle_module',
                     module: moduleSlug,
                     status: isEnabled,
                     nonce: nonce
@@ -135,7 +135,7 @@
         });
 
         // --- 4. FCM Service Account JSON Upload ---
-        $('#shubx-fcm-file-input').on('change', function (e) {
+        $('#nammasociety-fcm-file-input').on('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -144,26 +144,26 @@
                 try {
                     const parsed = JSON.parse(event.target.result);
                     if (!parsed.project_id || !parsed.client_email || !parsed.private_key) {
-                        $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Invalid Firebase JSON: missing project_id, client_email, or private_key.</span>');
+                        $('#nammasociety-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Invalid Firebase JSON: missing project_id, client_email, or private_key.</span>');
                         return;
                     }
 
                     // Auto-fill form fields
-                    $('#shubx-fcm-project-id').val(parsed.project_id);
-                    $('#shubx-fcm-client-email').val(parsed.client_email);
-                    $('#shubx-fcm-private-key').val(parsed.private_key);
+                    $('#nammasociety-fcm-project-id').val(parsed.project_id);
+                    $('#nammasociety-fcm-client-email').val(parsed.client_email);
+                    $('#nammasociety-fcm-private-key').val(parsed.private_key);
                     if (parsed.project_number) {
-                        $('#shubx-fcm-sender-id').val(parsed.project_number);
+                        $('#nammasociety-fcm-sender-id').val(parsed.project_number);
                     }
 
-                    $('#shubx-fcm-upload-status').html('<span class="text-info"><i class="bi bi-arrow-repeat spin me-1"></i>Saving credentials...</span>');
+                    $('#nammasociety-fcm-upload-status').html('<span class="text-info"><i class="bi bi-arrow-repeat spin me-1"></i>Saving credentials...</span>');
 
                     const formData = new FormData();
-                    formData.append('action', 'shubx51_upload_fcm_json');
-                    formData.append('nonce', typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce || '' : '');
+                    formData.append('action', 'nammasociety51_upload_fcm_json');
+                    formData.append('nonce', typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).fcm_nonce || '' : '');
                     formData.append('fcm_json_raw', event.target.result);
 
-                    const ajaxUrl = typeof shubxAdmin !== 'undefined' ? shubxAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+                    const ajaxUrl = typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
 
                     $.ajax({
                         url: ajaxUrl,
@@ -173,18 +173,18 @@
                         contentType: false,
                         success: function (res) {
                             if (res.success) {
-                                $('#shubx-fcm-upload-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Firebase credentials saved & push enabled!</span>');
+                                $('#nammasociety-fcm-upload-status').html('<span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Firebase credentials saved & push enabled!</span>');
                                 setTimeout(function () { window.location.reload(); }, 1000);
                             } else {
-                                $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>' + (res.data ? res.data.message : 'Upload failed.') + '</span>');
+                                $('#nammasociety-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>' + (res.data ? res.data.message : 'Upload failed.') + '</span>');
                             }
                         },
                         error: function () {
-                            $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Network error saving credentials.</span>');
+                            $('#nammasociety-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Network error saving credentials.</span>');
                         }
                     });
                 } catch (err) {
-                    $('#shubx-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Could not parse JSON file. Ensure it is valid JSON.</span>');
+                    $('#nammasociety-fcm-upload-status').html('<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Could not parse JSON file. Ensure it is valid JSON.</span>');
                 }
             };
             reader.readAsText(file);
@@ -193,18 +193,18 @@
         // --- 5. FCM Test Push Trigger ---
         $('#btn-send-test-push').on('click', function () {
             const $btn = $(this);
-            const flatNo = $('#shubx-test-push-flat').val();
+            const flatNo = $('#nammasociety-test-push-flat').val();
             const originalText = $btn.html();
             $btn.prop('disabled', true).html('<i class="bi bi-arrow-repeat spin me-1"></i>Sending...');
 
-            const ajaxUrl = typeof shubxAdmin !== 'undefined' ? shubxAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+            const ajaxUrl = typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
 
             $.ajax({
                 url: ajaxUrl,
                 type: 'POST',
                 data: {
-                    action: 'shubx51_send_test_push',
-                    nonce: typeof shubxAdmin !== 'undefined' ? shubxAdmin.fcm_nonce || '' : '',
+                    action: 'nammasociety51_send_test_push',
+                    nonce: typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).fcm_nonce || '' : '',
                     target_flat: flatNo
                 },
                 success: function (res) {
@@ -226,28 +226,28 @@
 
     // --- 3. Color Palette & Theme Selection Helpers ---
     window.shubxSelectPalette = function (key) {
-        $('.shubx-palette-radio').each(function () {
+        $('.nammasociety-palette-radio').each(function () {
             this.checked = (this.value === key);
         });
-        $('.shubx-palette-card').removeClass('border-2 border-primary shadow-sm').addClass('border-light');
+        $('.nammasociety-palette-card').removeClass('border-2 border-primary shadow-sm').addClass('border-light');
         const $selectedRadio = $('#palette-radio-' + key);
         if ($selectedRadio.length) {
-            $selectedRadio.closest('.shubx-palette-card').addClass('border-2 border-primary shadow-sm').removeClass('border-light');
+            $selectedRadio.closest('.nammasociety-palette-card').addClass('border-2 border-primary shadow-sm').removeClass('border-light');
         }
-        $('.shubx-palette-check').addClass('d-none');
+        $('.nammasociety-palette-check').addClass('d-none');
         if ($selectedRadio.length) {
-            $selectedRadio.closest('.shubx-palette-card').find('.shubx-palette-check').removeClass('d-none');
+            $selectedRadio.closest('.nammasociety-palette-card').find('.nammasociety-palette-check').removeClass('d-none');
         }
 
         // Live update DOM
-        document.documentElement.setAttribute('data-shubx-palette', key);
-        var roots = document.querySelectorAll('#shubx51-app-root');
+        document.documentElement.setAttribute('data-nammasociety-palette', key);
+        var roots = document.querySelectorAll('#nammasociety51-app-root');
         if (roots && roots.length) {
-            roots.forEach(function (r) { r.setAttribute('data-shubx-palette', key); });
+            roots.forEach(function (r) { r.setAttribute('data-nammasociety-palette', key); });
         }
 
         // Set 1-year Cookie for PHP SSR
-        document.cookie = "shubx_palette=" + encodeURIComponent(key) + "; path=/; max-age=31536000; SameSite=Lax";
+        document.cookie = "nammasociety_palette=" + encodeURIComponent(key) + "; path=/; max-age=31536000; SameSite=Lax";
     };
 
     window.shubxSelectDefaultTheme = function (mode) {
@@ -255,11 +255,11 @@
             window.shubxApplyTheme(mode);
         } else {
             document.documentElement.setAttribute('data-bs-theme', mode);
-            var roots = document.querySelectorAll('#shubx51-app-root');
+            var roots = document.querySelectorAll('#nammasociety51-app-root');
             if (roots && roots.length) {
                 roots.forEach(function (r) { r.setAttribute('data-bs-theme', mode); });
             }
-            document.cookie = "shubx_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
+            document.cookie = "nammasociety_theme=" + encodeURIComponent(mode) + "; path=/; max-age=31536000; SameSite=Lax";
         }
     };
 

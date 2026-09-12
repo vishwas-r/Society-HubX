@@ -3,21 +3,21 @@
  * Class: REST Flats Controller
  * Endpoints for managing society flats and units.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Flats_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -89,7 +89,7 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$page     = max( 1, intval( $request->get_param( 'page' ) ?: 1 ) );
 		$per_page = intval( $request->get_param( 'per_page' ) ?: 25 );
@@ -136,11 +136,11 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$flats = $db->get( 'flats', array( 'id' => $id ) );
 
 		if ( empty( $flats ) ) {
-			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $flats[0] );
@@ -162,7 +162,7 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 		$flat_number = isset( $params['flat_number'] ) ? sanitize_text_field( $params['flat_number'] ) : '';
 
 		if ( empty( $block ) || empty( $flat_number ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Block and flat number are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Block and flat number are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -177,10 +177,10 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 			'parking_status' => isset( $params['parking_status'] ) ? sanitize_text_field( $params['parking_status'] ) : 'Available',
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'flats', array( 'id' => $data['id'] ) );
 		if ( ! empty( $existing ) ) {
-			return new WP_Error( 'rest_flat_exists', __( 'Flat already exists.', 'society-hubx' ), array( 'status' => 409 ) );
+			return new WP_Error( 'rest_flat_exists', __( 'Flat already exists.', 'namma-society' ), array( 'status' => 409 ) );
 		}
 
 		$result = $db->insert( 'flats', $data );
@@ -204,10 +204,10 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'flats', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -235,7 +235,7 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -246,11 +246,11 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'flats', array( 'id' => $id ) );
 
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_flat_not_found', __( 'Flat not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$hard = $request->get_param( 'force' );
@@ -264,7 +264,7 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat removed successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat removed successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -275,36 +275,36 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	 */
 	public function restore_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'flats', array( 'status' => 'vacant' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat restored successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Flat restored successfully.', 'namma-society' ) ) );
 	}
 
 	/**
 	 * Permission check for reading flats.
 	 */
 	public function get_items_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
 	 * Permission check for reading single flat.
 	 */
 	public function get_item_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
 	 * Permission check for creating flats.
 	 */
 	public function create_item_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'flats_manage' ) || current_user_can( 'manage_options' );
 	}
 
@@ -321,4 +321,9 @@ class SHUBX51_REST_Flats_Controller extends WP_REST_Controller {
 	public function delete_item_permissions_check( $request ) {
 		return $this->create_item_permissions_check( $request );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Flats_Controller' ) && ! class_exists( 'SHUBX51_REST_Flats_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Flats_Controller', 'SHUBX51_REST_Flats_Controller' );
 }

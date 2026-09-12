@@ -3,21 +3,21 @@
  * Class: REST Documents Controller
  * Endpoints for managing society document vault.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Documents_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -89,7 +89,7 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$documents = $db->get( 'documents' );
 
 		if ( empty( $documents ) ) {
@@ -97,7 +97,7 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'documents_manage' ) || current_user_can( 'manage_options' );
 
 		$resident = $db->get_resident_by_wp_id( $user_id );
@@ -133,11 +133,11 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$docs = $db->get( 'documents', array( 'id' => $id ) );
 
 		if ( empty( $docs ) ) {
-			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $docs[0] );
@@ -154,14 +154,14 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 
 		$title = isset( $params['title'] ) ? sanitize_text_field( $params['title'] ) : '';
 		if ( empty( $title ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Document title is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Document title is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'documents_manage' ) || current_user_can( 'manage_options' );
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$resident = $db->get_resident_by_wp_id( $user_id );
 		$flat_no = $is_admin && isset( $params['flat_no'] ) ? sanitize_text_field( $params['flat_no'] ) : ( $resident['flat_no'] ?? '' );
 
@@ -185,8 +185,8 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! $is_admin ) {
-			require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-			$rm = new SHUBX51_Request_Manager();
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+			$rm = new NAMMASOCIETY51_Request_Manager();
 			$rm->create_request( 'documents', 'upload', $data, $data['id'] );
 		}
 
@@ -206,10 +206,10 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'documents', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -228,7 +228,7 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -239,19 +239,19 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'documents', array( 'id' => $id ) );
 
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_doc_not_found', __( 'Document not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'documents_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin && (int) $existing[0]['uploaded_by'] !== $user_id ) {
-			return new WP_Error( 'rest_forbidden', __( 'Unauthorized to delete this document.', 'society-hubx' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'Unauthorized to delete this document.', 'namma-society' ), array( 'status' => 403 ) );
 		}
 
 		$result = $db->update( 'documents', array( 'status' => 'deleted' ), array( 'id' => $id ) );
@@ -259,7 +259,7 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -270,44 +270,44 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	 */
 	public function restore_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'documents', array( 'status' => 'approved' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document restored successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Document restored successfully.', 'namma-society' ) ) );
 	}
 
 	public function get_items_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function get_item_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function create_item_permissions_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function update_item_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( $rbac->has_capability( $user_id, 'documents_manage' ) || current_user_can( 'manage_options' ) ) {
 			return true;
 		}
 
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$docs = $db->get( 'documents', array( 'id' => $id ) );
 		if ( ! empty( $docs ) && (int) $docs[0]['uploaded_by'] === $user_id ) {
 			return true;
 		}
 
-		return new WP_Error( 'rest_forbidden', __( 'Unauthorized to update this document.', 'society-hubx' ), array( 'status' => 403 ) );
+		return new WP_Error( 'rest_forbidden', __( 'Unauthorized to update this document.', 'namma-society' ), array( 'status' => 403 ) );
 	}
 
 	public function delete_item_permissions_check( $request ) {
@@ -315,8 +315,13 @@ class SHUBX51_REST_Documents_Controller extends WP_REST_Controller {
 	}
 
 	public function admin_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'documents_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Documents_Controller' ) && ! class_exists( 'SHUBX51_REST_Documents_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Documents_Controller', 'SHUBX51_REST_Documents_Controller' );
 }

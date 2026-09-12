@@ -9,7 +9,7 @@
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$society_name = get_option('shubx51_society_name', get_bloginfo('name'));
+$society_name = get_option('nammasociety51_society_name', get_bloginfo('name'));
 $total_paid = 0;
 foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
 ?>
@@ -19,11 +19,11 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
     <meta charset="UTF-8">
     <title>Receipt #<?php echo esc_html( $inv['id'] ); ?></title>
     <?php
-    wp_enqueue_style( 'shubx51_receipt_css', SHUBX51_PLUGIN_URL . 'assets/css/receipt.css', array(), SHUBX51_VERSION );
-    wp_print_styles( 'shubx51_receipt_css' );
+    wp_enqueue_style( 'nammasociety51_receipt_css', NAMMASOCIETY51_PLUGIN_URL . 'assets/css/receipt.css', array(), NAMMASOCIETY51_VERSION );
+    wp_print_styles( 'nammasociety51_receipt_css' );
     ?>
 </head>
-<body class="shubx51-print-receipt-body">
+<body class="nammasociety51-print-receipt-body">
     <div class="no-print-area">
         <button class="btn btn-primary" onclick="window.print()">Print Receipt</button>
         <button class="btn" onclick="window.close()" style="margin-left:8px;">Close</button>
@@ -37,9 +37,9 @@ foreach ( $inv['payments'] as $p ) $total_paid += $p['amount'];
                 <h1><?php echo esc_html( $society_name ); ?></h1>
                 <div class="address">
                     <?php 
-                        $addr1 = get_option('shubx51_society_address_line1');
-                        $city  = get_option('shubx51_society_city');
-                        $pin   = get_option('shubx51_society_pincode');
+                        $addr1 = get_option('nammasociety51_society_address_line1');
+                        $city  = get_option('nammasociety51_society_city');
+                        $pin   = get_option('nammasociety51_society_pincode');
                         $parts = array_filter([$addr1, $city . ($pin ? " - $pin" : "")]);
                         echo implode(', ', array_map('esc_html', $parts));
                     ?>

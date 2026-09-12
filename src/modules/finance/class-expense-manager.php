@@ -3,48 +3,48 @@
  * Module: Expense Manager
  * Handles Expenses and Receipts.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Expense_Manager {
+class NAMMASOCIETY51_Expense_Manager {
 
 	private $db;
 	private $drive;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
-		$this->drive = new SHUBX51_Drive_Manager();
+		$this->db = new NAMMASOCIETY51_DB_Router();
+		$this->drive = new NAMMASOCIETY51_Drive_Manager();
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_shubx51_add_expense', array( $this, 'handle_add_expense' ) );
-		add_action( 'admin_post_shubx51_edit_expense', array( $this, 'handle_edit_expense' ) );
-		add_action( 'admin_post_shubx51_delete_expense', array( $this, 'handle_delete_expense' ) );
-		add_action( 'admin_post_shubx51_approve_expense', array( $this, 'handle_approve_expense' ) );
+		add_action( 'admin_post_nammasociety51_add_expense', array( $this, 'handle_add_expense' ) );
+		add_action( 'admin_post_nammasociety51_edit_expense', array( $this, 'handle_edit_expense' ) );
+		add_action( 'admin_post_nammasociety51_delete_expense', array( $this, 'handle_delete_expense' ) );
+		add_action( 'admin_post_nammasociety51_approve_expense', array( $this, 'handle_approve_expense' ) );
 		
 		// AJAX Handlers
-		add_action( 'wp_ajax_shubx51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
-		add_action( 'wp_ajax_shubx51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
-		add_action( 'wp_ajax_shubx51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
-		add_action( 'wp_ajax_shubx51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_add_expense', array( $this, 'handle_add_expense_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_edit_expense', array( $this, 'handle_edit_expense_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_delete_expense', array( $this, 'handle_delete_expense_ajax' ) );
+		add_action( 'wp_ajax_nammasociety51_approve_expense', array( $this, 'handle_approve_expense_ajax' ) );
 	}
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Accounts & Expenses',
 			'Expenses',
 			'manage_options',
-			'shubx51-expenses',
+			'nammasociety51-expenses',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function handle_add_expense() {
-		if ( ! check_admin_referer( 'shubx51_add_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_add_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -79,22 +79,22 @@ class SHUBX51_Expense_Manager {
 
 		if ( ! is_wp_error( $result ) ) {
             // Create a request for approval
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
             
             if ( ! is_wp_error( $req_id ) ) {
                 $this->db->update( 'requests', array( 'status' => 'pending_secretary' ), array( 'id' => $req_id ) );
             }
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&year=' . $year . '&success=1' ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		}
 		exit;
 	}
 
 	public function handle_edit_expense() {
-		if ( ! check_admin_referer( 'shubx51_edit_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_edit_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -126,15 +126,15 @@ class SHUBX51_Expense_Manager {
 		$result = $this->db->update( $table, $data, array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&year=' . $year . '&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&year=' . $year . '&success=1' ) );
 		}
 		exit;
 	}
 
 	public function handle_delete_expense() {
-		if ( ! check_admin_referer( 'shubx51_delete_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_delete_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -150,16 +150,16 @@ class SHUBX51_Expense_Manager {
 
 		$this->db->delete( $table, array( 'id' => $id ) );
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&year=' . $year . '&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&year=' . $year . '&deleted=1' ) );
 		exit;
 	}
 
 	public function handle_approve_expense() {
-		if ( ! check_admin_referer( 'shubx51_approve_expense_nonce' ) ) {
+		if ( ! check_admin_referer( 'nammasociety51_approve_expense_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_die( 'Unauthorized' );
 		}
@@ -170,20 +170,20 @@ class SHUBX51_Expense_Manager {
 		$year = gmdate( 'Y', strtotime( $date ) );
 
         // Direct approval is now replaced by multi-stage workflow if requested via Admin UI
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $result = $rm->approve_request( $id );
 
 		if ( is_wp_error( $result ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-expenses&year=' . $year . '&approved=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-expenses&year=' . $year . '&approved=1' ) );
 		}
 		exit;
 	}
 
 	public function render_page() {
-		SHUBX51_Admin_App::render_view('expenses');
+		NAMMASOCIETY51_Admin_App::render_view('expenses');
 	}
 	
 	/**
@@ -191,11 +191,11 @@ class SHUBX51_Expense_Manager {
 	 */
 	public function handle_add_expense_ajax() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_add_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_add_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 		
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -238,8 +238,8 @@ class SHUBX51_Expense_Manager {
 		
 		if ( ! is_wp_error( $result ) ) {
             // Create a request for approval
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             $req_id = $rm->create_request( 'expenses', 'add_expense', $data, $result );
  
             if ( ! is_wp_error( $req_id ) ) {
@@ -266,11 +266,11 @@ class SHUBX51_Expense_Manager {
 	 */
 	public function handle_edit_expense_ajax() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_edit_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_edit_expense_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 		
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -320,11 +320,11 @@ class SHUBX51_Expense_Manager {
 	 */
 	public function handle_delete_expense_ajax() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 		
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -352,11 +352,11 @@ class SHUBX51_Expense_Manager {
 	 */
 	public function handle_approve_expense_ajax() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 		
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'finance_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
 		}
@@ -391,4 +391,9 @@ class SHUBX51_Expense_Manager {
 			'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
 		);
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Expense_Manager' ) && ! class_exists( 'SHUBX51_Expense_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Expense_Manager', 'SHUBX51_Expense_Manager' );
 }

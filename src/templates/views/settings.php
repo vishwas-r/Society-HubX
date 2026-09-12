@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Assets for Settings (if any specific ones needed, usually handled by main helper)
 // Data for Communication Tab
-$db = SHUBX51_Plugin::get_instance()->db;
+$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 $channels  = $db->get('notification_channels');
 $events    = $db->get('notification_events');
 $templates = $db->get('notification_templates');
@@ -19,7 +19,7 @@ $templates = $db->get('notification_templates');
 ?>
 
 
-<div class="shubx-settings-v2">
+<div class="nammasociety-settings-v2">
     <!-- Page Header (Outside Card) -->
     <div class="mb-5 px-1 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
         <div>
@@ -35,7 +35,7 @@ $templates = $db->get('notification_templates');
     </div>
 
     <!-- Status Messages (Always outside cards for visibility) -->
-    <div class="shubx-messages-container mb-4">
+    <div class="nammasociety-messages-container mb-4">
         <?php if ( isset($_GET['migration_done']) ) : ?>
             <div class="alert bg-success bg-opacity-10 text-success border-success border-opacity-10 alert-dismissible shadow-sm border-0 rounded-3 p-4">
                 <div class="d-flex align-items-center gap-3">
@@ -74,11 +74,11 @@ $templates = $db->get('notification_templates');
     </div>
 
     <!-- Main Content Card -->
-    <div class="card border-0 shadow-sm rounded-3 overflow-hidden shubx-settings-card">
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden nammasociety-settings-card">
         
         <!-- Navigation Tabs (Integrated) -->
-        <div class="px-2 border-bottom border-light overflow-x-auto no-scrollbar shubx-settings-tab-bar">
-            <ul class="nav nav-tabs border-0 gap-5 text-nowrap flex-nowrap" id="shubx-settings-tabs" role="tablist">
+        <div class="px-2 border-bottom border-light overflow-x-auto no-scrollbar nammasociety-settings-tab-bar">
+            <ul class="nav nav-tabs border-0 gap-5 text-nowrap flex-nowrap" id="nammasociety-settings-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button id="tab-btn-profile" class="nav-link active py-3 px-0 border-0 border-bottom border-2 fw-bold text-primary border-primary" onclick="switchSettingsTab('profile')" type="button" role="tab" style="background:none;">
                         <i class="bi bi-building me-2"></i>Society Profile
@@ -114,7 +114,7 @@ $templates = $db->get('notification_templates');
                         <i class="bi bi-shield-lock me-2"></i>Privacy & DPDP
                     </button>
                 </li>
-                <?php do_action( 'shubx51_settings_tabs' ); ?>
+                <?php do_action( 'nammasociety51_settings_tabs' ); ?>
             </ul>
         </div>
         
@@ -124,40 +124,40 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Profile -->
                 <div class="settings-tab-pane" id="tab-content-profile">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'shubx51_options_group' ); ?>
+                        <?php settings_fields( 'nammasociety51_options_group' ); ?>
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="shubx51_bank_name" value="<?php echo esc_attr( get_option('shubx51_bank_name') ); ?>">
-                        <input type="hidden" name="shubx51_bank_account" value="<?php echo esc_attr( get_option('shubx51_bank_account') ); ?>">
-                        <input type="hidden" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>">
-                        <input type="hidden" name="shubx51_bank_qr" value="<?php echo esc_attr( get_option('shubx51_bank_qr') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_name" value="<?php echo esc_attr( get_option('nammasociety51_bank_name') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_account" value="<?php echo esc_attr( get_option('nammasociety51_bank_account') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_ifsc" value="<?php echo esc_attr( get_option('nammasociety51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_upi" value="<?php echo esc_attr( get_option('nammasociety51_bank_upi') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_qr" value="<?php echo esc_attr( get_option('nammasociety51_bank_qr') ); ?>">
                         
                         <div class="mb-5">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Public Details</h5>
                             <div class="row g-3">
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Official Society Name</label>
-                                    <input type="text" name="shubx51_society_name" value="<?php echo esc_attr( get_option('shubx51_society_name', 'Society Name') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_name" value="<?php echo esc_attr( get_option('nammasociety51_society_name', 'Society Name') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Address Line 1</label>
-                                    <input type="text" name="shubx51_society_address_line1" value="<?php echo esc_attr( get_option('shubx51_society_address_line1') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_address_line1" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line1') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Address Line 2</label>
-                                    <input type="text" name="shubx51_society_address_line2" value="<?php echo esc_attr( get_option('shubx51_society_address_line2') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_address_line2" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line2') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">City</label>
-                                    <input type="text" name="shubx51_society_city" value="<?php echo esc_attr( get_option('shubx51_society_city') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_city" value="<?php echo esc_attr( get_option('nammasociety51_society_city') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Pincode</label>
-                                    <input type="text" name="shubx51_society_pincode" value="<?php echo esc_attr( get_option('shubx51_society_pincode') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_pincode" value="<?php echo esc_attr( get_option('nammasociety51_society_pincode') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Office Contact (Email/Phone)</label>
-                                    <input type="text" name="shubx51_society_contact" value="<?php echo esc_attr( get_option('shubx51_society_contact') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_society_contact" value="<?php echo esc_attr( get_option('nammasociety51_society_contact') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -167,7 +167,7 @@ $templates = $db->get('notification_templates');
                             <p class="small text-muted mb-4">Select your society's primary brand palette and default appearance. The selected palette dynamically styles buttons, active tabs, highlights, and badges across both Light and Dark themes.</p>
                             
                             <?php
-                                $current_palette = get_option('shubx51_color_palette', 'orange');
+                                $current_palette = get_option('nammasociety51_color_palette', 'orange');
                                 $palettes = [
                                     'orange'  => ['name' => 'Sunset Orange', 'color' => '#ea580c', 'dark_color' => '#f97316', 'desc' => 'Warm, High-Energy, Modern'],
                                     'indigo'  => ['name' => 'Royal Indigo',  'color' => '#4f46e5', 'dark_color' => '#6366f1', 'desc' => 'Tech, Premium SaaS, Sleek'],
@@ -175,19 +175,19 @@ $templates = $db->get('notification_templates');
                                     'ocean'   => ['name' => 'Ocean Blue',    'color' => '#0284c7', 'dark_color' => '#38bdf8', 'desc' => 'Classic, Professional, Crisp'],
                                     'rose'    => ['name' => 'Crimson Rose',  'color' => '#e11d48', 'dark_color' => '#fb7185', 'desc' => 'Bold, Elegant, Contemporary'],
                                 ];
-                                $default_theme = get_option('shubx51_default_theme', 'light');
+                                $default_theme = get_option('nammasociety51_default_theme', 'light');
                             ?>
                             <div class="row g-3 mb-4">
                                 <?php foreach ( $palettes as $key => $p ): ?>
                                     <div class="col-6 col-md-4 col-xl-2.4">
-                                        <label class="shubx-palette-card card h-100 p-3 rounded-3 border <?php echo $current_palette === $key ? 'border-2 border-primary shadow-sm' : 'border-light'; ?> cursor-pointer transition-all hover-translate-y" style="cursor: pointer;" onclick="shubxSelectPalette('<?php echo esc_js($key); ?>')">
-                                            <input type="radio" name="shubx51_color_palette" value="<?php echo esc_attr($key); ?>" <?php checked($current_palette, $key); ?> class="d-none shubx-palette-radio" id="palette-radio-<?php echo esc_attr($key); ?>">
+                                        <label class="nammasociety-palette-card card h-100 p-3 rounded-3 border <?php echo $current_palette === $key ? 'border-2 border-primary shadow-sm' : 'border-light'; ?> cursor-pointer transition-all hover-translate-y" style="cursor: pointer;" onclick="shubxSelectPalette('<?php echo esc_js($key); ?>')">
+                                            <input type="radio" name="nammasociety51_color_palette" value="<?php echo esc_attr($key); ?>" <?php checked($current_palette, $key); ?> class="d-none nammasociety-palette-radio" id="palette-radio-<?php echo esc_attr($key); ?>">
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <div class="d-flex gap-1">
                                                     <span class="rounded-circle d-inline-block shadow-sm" style="width: 22px; height: 22px; background-color: <?php echo esc_attr($p['color']); ?>;" title="Light mode tone"></span>
                                                     <span class="rounded-circle d-inline-block shadow-sm" style="width: 22px; height: 22px; background-color: <?php echo esc_attr($p['dark_color']); ?>;" title="Dark mode tone"></span>
                                                 </div>
-                                                <i class="bi bi-check-circle-fill text-primary fs-5 <?php echo $current_palette === $key ? '' : 'd-none'; ?> shubx-palette-check"></i>
+                                                <i class="bi bi-check-circle-fill text-primary fs-5 <?php echo $current_palette === $key ? '' : 'd-none'; ?> nammasociety-palette-check"></i>
                                             </div>
                                             <div class="fw-bold small text-dark mb-1"><?php echo esc_html($p['name']); ?></div>
                                             <div class="text-muted" style="font-size: 11px; line-height: 1.3;"><?php echo esc_html($p['desc']); ?></div>
@@ -199,7 +199,7 @@ $templates = $db->get('notification_templates');
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Default Theme Mode</label>
-                                    <select name="shubx51_default_theme" class="form-select shadow-none rounded-3 border-light" onchange="shubxSelectDefaultTheme(this.value)">
+                                    <select name="nammasociety51_default_theme" class="form-select shadow-none rounded-3 border-light" onchange="shubxSelectDefaultTheme(this.value)">
                                         <option value="light" <?php selected($default_theme, 'light'); ?>>☀️ Light Mode (Default)</option>
                                         <option value="dark" <?php selected($default_theme, 'dark'); ?>>🌙 Dark Mode</option>
                                     </select>
@@ -215,16 +215,16 @@ $templates = $db->get('notification_templates');
                                     <label class="form-label small fw-bold text-secondary">Base Maintenance (₹)</label>
                                     <div class="input-group flex-nowrap">
                                         <span class="input-group-text bg-light border-0 text-muted rounded-start-3">₹</span>
-                                        <input type="number" name="shubx51_maintenance_amount" value="<?php echo esc_attr( get_option('shubx51_maintenance_amount', '5000') ); ?>" class="form-control shadow-none border-0 bg-light rounded-end-3 fw-bold">
+                                        <input type="number" name="nammasociety51_maintenance_amount" value="<?php echo esc_attr( get_option('nammasociety51_maintenance_amount', '5000') ); ?>" class="form-control shadow-none border-0 bg-light rounded-end-3 fw-bold">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Bank Opening Balance</label>
-                                    <input type="number" step="0.01" name="shubx51_opening_bank" value="<?php echo esc_attr( get_option('shubx51_opening_bank', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_opening_bank" value="<?php echo esc_attr( get_option('nammasociety51_opening_bank', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Cash Opening Balance</label>
-                                    <input type="number" step="0.01" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_opening_cash" value="<?php echo esc_attr( get_option('nammasociety51_opening_cash', '0') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -234,50 +234,50 @@ $templates = $db->get('notification_templates');
                             <div class="row g-3 mb-3">
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Billing Calculation Mode</label>
-                                    <select name="shubx51_billing_calc_type" class="form-select shadow-none border-light rounded-3">
-                                        <option value="fixed" <?php selected( get_option('shubx51_billing_calc_type', 'fixed'), 'fixed' ); ?>>Fixed Flat Amount</option>
-                                        <option value="sqft" <?php selected( get_option('shubx51_billing_calc_type', 'fixed'), 'sqft' ); ?>>Formula (Sq. Ft + Components)</option>
+                                    <select name="nammasociety51_billing_calc_type" class="form-select shadow-none border-light rounded-3">
+                                        <option value="fixed" <?php selected( get_option('nammasociety51_billing_calc_type', 'fixed'), 'fixed' ); ?>>Fixed Flat Amount</option>
+                                        <option value="sqft" <?php selected( get_option('nammasociety51_billing_calc_type', 'fixed'), 'sqft' ); ?>>Formula (Sq. Ft + Components)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Rate Per Sq. Ft (₹)</label>
-                                    <input type="number" step="0.01" name="shubx51_billing_rate_per_sqft" value="<?php echo esc_attr( get_option('shubx51_billing_rate_per_sqft', '3.50') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_billing_rate_per_sqft" value="<?php echo esc_attr( get_option('nammasociety51_billing_rate_per_sqft', '3.50') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Fixed Service Base (₹)</label>
-                                    <input type="number" step="0.01" name="shubx51_billing_fixed_base" value="<?php echo esc_attr( get_option('shubx51_billing_fixed_base', '500') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_billing_fixed_base" value="<?php echo esc_attr( get_option('nammasociety51_billing_fixed_base', '500') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Sinking Fund Component (₹)</label>
-                                    <input type="number" step="0.01" name="shubx51_billing_sinking_fund" value="<?php echo esc_attr( get_option('shubx51_billing_sinking_fund', '250') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_billing_sinking_fund" value="<?php echo esc_attr( get_option('nammasociety51_billing_sinking_fund', '250') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Utility / Water Component (₹)</label>
-                                    <input type="number" step="0.01" name="shubx51_billing_utility_charge" value="<?php echo esc_attr( get_option('shubx51_billing_utility_charge', '200') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.01" name="nammasociety51_billing_utility_charge" value="<?php echo esc_attr( get_option('nammasociety51_billing_utility_charge', '200') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">Recurring Auto-Invoicing (1st of Month)</label>
-                                    <select name="shubx51_auto_invoicing_enabled" class="form-select shadow-none border-light rounded-3">
-                                        <option value="0" <?php selected( get_option('shubx51_auto_invoicing_enabled', '0'), '0' ); ?>>Disabled (Manual Generation Only)</option>
-                                        <option value="1" <?php selected( get_option('shubx51_auto_invoicing_enabled', '0'), '1' ); ?>>Enabled (Auto-Generate on 1st)</option>
+                                    <select name="nammasociety51_auto_invoicing_enabled" class="form-select shadow-none border-light rounded-3">
+                                        <option value="0" <?php selected( get_option('nammasociety51_auto_invoicing_enabled', '0'), '0' ); ?>>Disabled (Manual Generation Only)</option>
+                                        <option value="1" <?php selected( get_option('nammasociety51_auto_invoicing_enabled', '0'), '1' ); ?>>Enabled (Auto-Generate on 1st)</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="row g-3 p-3 bg-light rounded-3 border border-light">
                                 <div class="col-md-4">
                                     <div class="form-check form-switch pt-2">
-                                        <input class="form-check-input" type="checkbox" name="shubx51_gst_enabled" value="1" id="gstSwitch" <?php checked( get_option('shubx51_gst_enabled', '0'), '1' ); ?>>
+                                        <input class="form-check-input" type="checkbox" name="nammasociety51_gst_enabled" value="1" id="gstSwitch" <?php checked( get_option('nammasociety51_gst_enabled', '0'), '1' ); ?>>
                                         <label class="form-check-label fw-bold text-dark small" for="gstSwitch">Enable GST Billing</label>
                                     </div>
                                     <div class="form-text small">Applies statutory GST if bill exceeds exemption limit.</div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">GST Rate (%)</label>
-                                    <input type="number" step="0.1" name="shubx51_gst_rate" value="<?php echo esc_attr( get_option('shubx51_gst_rate', '18') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="0.1" name="nammasociety51_gst_rate" value="<?php echo esc_attr( get_option('nammasociety51_gst_rate', '18') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-bold text-secondary">GST Exemption Threshold (₹)</label>
-                                    <input type="number" step="1" name="shubx51_gst_threshold" value="<?php echo esc_attr( get_option('shubx51_gst_threshold', '7500') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="number" step="1" name="nammasociety51_gst_threshold" value="<?php echo esc_attr( get_option('nammasociety51_gst_threshold', '7500') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                             </div>
                         </div>
@@ -291,43 +291,43 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Bank -->
                 <div class="settings-tab-pane hidden" id="tab-content-bank">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'shubx51_options_group' ); ?>
+                        <?php settings_fields( 'nammasociety51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="shubx51_society_name" value="<?php echo esc_attr( get_option('shubx51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line1" value="<?php echo esc_attr( get_option('shubx51_society_address_line1') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line2" value="<?php echo esc_attr( get_option('shubx51_society_address_line2') ); ?>">
-                        <input type="hidden" name="shubx51_society_city" value="<?php echo esc_attr( get_option('shubx51_society_city') ); ?>">
-                        <input type="hidden" name="shubx51_society_pincode" value="<?php echo esc_attr( get_option('shubx51_society_pincode') ); ?>">
-                        <input type="hidden" name="shubx51_society_contact" value="<?php echo esc_attr( get_option('shubx51_society_contact') ); ?>">
-                        <input type="hidden" name="shubx51_maintenance_amount" value="<?php echo esc_attr( get_option('shubx51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="shubx51_opening_bank" value="<?php echo esc_attr( get_option('shubx51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>">
-                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
-                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_name" value="<?php echo esc_attr( get_option('nammasociety51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line1" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line1') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line2" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line2') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_city" value="<?php echo esc_attr( get_option('nammasociety51_society_city') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_pincode" value="<?php echo esc_attr( get_option('nammasociety51_society_pincode') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_contact" value="<?php echo esc_attr( get_option('nammasociety51_society_contact') ); ?>">
+                        <input type="hidden" name="nammasociety51_maintenance_amount" value="<?php echo esc_attr( get_option('nammasociety51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_bank" value="<?php echo esc_attr( get_option('nammasociety51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_cash" value="<?php echo esc_attr( get_option('nammasociety51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_color_palette" value="<?php echo esc_attr( get_option('nammasociety51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="nammasociety51_default_theme" value="<?php echo esc_attr( get_option('nammasociety51_default_theme', 'light') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Beneficiary Details</h5>
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label small fw-bold text-secondary">Primary Bank Name</label>
-                                    <input type="text" name="shubx51_bank_name" value="<?php echo esc_attr( get_option('shubx51_bank_name') ); ?>" class="form-control shadow-none rounded-3 border-light">
+                                    <input type="text" name="nammasociety51_bank_name" value="<?php echo esc_attr( get_option('nammasociety51_bank_name') ); ?>" class="form-control shadow-none rounded-3 border-light">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Account Number</label>
-                                    <input type="text" name="shubx51_bank_account" value="<?php echo esc_attr( get_option('shubx51_bank_account') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace">
+                                    <input type="text" name="nammasociety51_bank_account" value="<?php echo esc_attr( get_option('nammasociety51_bank_account') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">IFSC Code</label>
-                                    <input type="text" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace text-uppercase">
+                                    <input type="text" name="nammasociety51_bank_ifsc" value="<?php echo esc_attr( get_option('nammasociety51_bank_ifsc') ); ?>" class="form-control shadow-none rounded-3 border-light font-monospace text-uppercase">
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label small fw-bold text-secondary">UPI ID for Direct Transfers</label>
-                                    <input type="text" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>" class="form-control shadow-none rounded-3 border-light text-primary fw-bold">
+                                    <input type="text" name="nammasociety51_bank_upi" value="<?php echo esc_attr( get_option('nammasociety51_bank_upi') ); ?>" class="form-control shadow-none rounded-3 border-light text-primary fw-bold">
                                 </div>
                                 <div class="col-12 mt-4">
                                     <label class="form-label small fw-bold text-secondary">Payment QR Image</label>
                                     <div class="d-flex align-items-start gap-4 p-3 bg-light rounded-3 border border-light">
                                         <div id="qr-preview-container" class="bg-white border border-light rounded-3 shadow-sm d-flex align-items-center justify-content-center p-2" style="width: 100px; height: 100px;">
-                                            <?php $qr_url = get_option('shubx51_bank_qr'); ?>
+                                            <?php $qr_url = get_option('nammasociety51_bank_qr'); ?>
                                             <?php if($qr_url): ?>
                                                 <img src="<?php echo esc_url($qr_url); ?>" class="img-fluid rounded-3">
                                             <?php else: ?>
@@ -335,7 +335,7 @@ $templates = $db->get('notification_templates');
                                             <?php endif; ?>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <input type="hidden" id="shubx51_bank_qr" name="shubx51_bank_qr" value="<?php echo esc_attr($qr_url); ?>">
+                                            <input type="hidden" id="nammasociety51_bank_qr" name="nammasociety51_bank_qr" value="<?php echo esc_attr($qr_url); ?>">
                                             <div class="d-flex flex-column gap-2">
                                                 <button type="button" id="btn-upload-qr" class="btn btn-sm btn-outline-primary fw-bold rounded-3">Select / Upload Image</button>
                                                 <?php if($qr_url): ?>
@@ -373,11 +373,11 @@ $templates = $db->get('notification_templates');
                                         if (!in_array('push', $channel_slugs)) {
                                             $channels[] = [
                                                 'channel_slug' => 'push',
-                                                'is_active'    => get_option('shubx51_fcm_enabled', '0') === '1' ? 1 : 0,
+                                                'is_active'    => get_option('nammasociety51_fcm_enabled', '0') === '1' ? 1 : 0,
                                                 'config'       => json_encode([
-                                                    'project_id'   => get_option('shubx51_fcm_project_id', ''),
-                                                    'client_email' => get_option('shubx51_fcm_client_email', ''),
-                                                    'sender_id'    => get_option('shubx51_fcm_sender_id', ''),
+                                                    'project_id'   => get_option('nammasociety51_fcm_project_id', ''),
+                                                    'client_email' => get_option('nammasociety51_fcm_client_email', ''),
+                                                    'sender_id'    => get_option('nammasociety51_fcm_sender_id', ''),
                                                 ]),
                                             ];
                                         }
@@ -399,8 +399,8 @@ $templates = $db->get('notification_templates');
                                                         <div class="p-3 bg-<?php echo esc_html( $color ); ?> bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                                             <i class="bi <?php echo esc_html( $icon ); ?> text-<?php echo esc_html( $color ); ?> fs-4"></i>
                                                         </div>
-                                                        <label class="shubx-premium-toggle">
-                                                            <input type="checkbox" class="shubx-channel-toggle" data-channel="<?php echo esc_html( $slug ); ?>" <?php checked($channel['is_active'], 1); ?>/>
+                                                        <label class="nammasociety-premium-toggle">
+                                                            <input type="checkbox" class="nammasociety-channel-toggle" data-channel="<?php echo esc_html( $slug ); ?>" <?php checked($channel['is_active'], 1); ?>/>
                                                             <span class="slider"></span>
                                                         </label>
                                                     </div>
@@ -411,7 +411,7 @@ $templates = $db->get('notification_templates');
                                                         <?php if($slug === 'inapp') echo 'Display alerts directly on resident dashboards.'; ?>
                                                         <?php if($slug === 'push') echo 'Mobile push alerts dispatched via NammaSociety Central Cloud Relay.'; ?>
                                                     </p>
-                                                    <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 shubx-configure-channel" data-channel="<?php echo esc_html( $slug ); ?>">
+                                                    <button class="btn btn-outline-secondary border-slate-200 text-slate-700 fw-bold small w-100 rounded-3 py-2 nammasociety-configure-channel" data-channel="<?php echo esc_html( $slug ); ?>">
                                                         <i class="bi bi-gear me-2"></i>Configure
                                                     </button>
                                                 </div>
@@ -456,32 +456,32 @@ $templates = $db->get('notification_templates');
                                                     <td><span class="badge bg-slate-100 text-slate-600 border border-slate-200 rounded-pill px-2"><?php echo esc_html( ucfirst($event['module']) ); ?></span></td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
-                                                            <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
+                                                            <label class="nammasociety-premium-toggle">
+                                                                <input type="checkbox" class="nammasociety-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="inapp" <?php checked(in_array('inapp', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
                                                     </td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
-                                                            <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
+                                                            <label class="nammasociety-premium-toggle">
+                                                                <input type="checkbox" class="nammasociety-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="email" <?php checked(in_array('email', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
                                                     </td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
-                                                            <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
+                                                            <label class="nammasociety-premium-toggle">
+                                                                <input type="checkbox" class="nammasociety-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="whatsapp" <?php checked(in_array('whatsapp', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
                                                     </td>
                                                     <td class="text-center">
                                                         <div class="d-flex justify-content-center">
-                                                            <label class="shubx-premium-toggle">
-                                                                <input type="checkbox" class="shubx-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="push" <?php checked(in_array('push', $enabled_channels)); ?>/>
+                                                            <label class="nammasociety-premium-toggle">
+                                                                <input type="checkbox" class="nammasociety-mapping-toggle" data-event="<?php echo esc_html( $event['event_slug'] ); ?>" data-channel="push" <?php checked(in_array('push', $enabled_channels)); ?>/>
                                                                 <span class="slider"></span>
                                                             </label>
                                                         </div>
@@ -520,7 +520,7 @@ $templates = $db->get('notification_templates');
                                                     </div>
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <span class="text-slate-400 x-small fw-medium">Version <?php echo esc_html( $template['version'] ); ?></span>
-                                                        <button class="btn btn-sm btn-link text-primary fw-bold p-0 x-small text-decoration-none shubx-edit-template" data-id="<?php echo esc_html( $template['id'] ); ?>">
+                                                        <button class="btn btn-sm btn-link text-primary fw-bold p-0 x-small text-decoration-none nammasociety-edit-template" data-id="<?php echo esc_html( $template['id'] ); ?>">
                                                             <i class="bi bi-pencil-square me-1"></i> Edit Content
                                                         </button>
                                                     </div>
@@ -543,7 +543,7 @@ $templates = $db->get('notification_templates');
                             <div id="collapseGovernance" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
                                 <div class="accordion-body p-4">
                                     <form method="post" action="options.php">
-                                        <?php settings_fields( 'shubx51_options_group' ); ?>
+                                        <?php settings_fields( 'nammasociety51_options_group' ); ?>
                                         <div class="row g-4">
                                             <div class="col-md-6">
                                                 <div class="p-3 bg-light rounded-4 border border-light d-flex align-items-center justify-content-between">
@@ -551,8 +551,8 @@ $templates = $db->get('notification_templates');
                                                         <label class="fw-bold text-dark small mb-0">System Activity Audit</label>
                                                         <p class="x-small text-muted m-0">Record admin/resident actions.</p>
                                                     </div>
-                                                    <label class="shubx-premium-toggle">
-                                                        <input type="checkbox" name="shubx51_enable_audit" value="1" <?php checked(get_option('shubx51_enable_audit', 1), 1); ?>/>
+                                                    <label class="nammasociety-premium-toggle">
+                                                        <input type="checkbox" name="nammasociety51_enable_audit" value="1" <?php checked(get_option('nammasociety51_enable_audit', 1), 1); ?>/>
                                                         <span class="slider"></span>
                                                     </label>
                                                 </div>
@@ -560,11 +560,11 @@ $templates = $db->get('notification_templates');
                                             <div class="col-md-6 text-end d-flex align-items-center gap-3">
                                                 <div class="flex-grow-1 text-start">
                                                     <label class="form-label small fw-bold text-dark mb-1">Retention Period</label>
-                                                    <select name="shubx51_log_retention" class="form-select shadow-none rounded-3 border-light fw-bold">
-                                                        <option value="30" <?php selected(get_option('shubx51_log_retention', 30), 30); ?>>30 Days</option>
-                                                        <option value="60" <?php selected(get_option('shubx51_log_retention'), 60); ?>>60 Days</option>
-                                                        <option value="90" <?php selected(get_option('shubx51_log_retention'), 90); ?>>90 Days</option>
-                                                        <option value="0" <?php selected(get_option('shubx51_log_retention'), 0); ?>>Unlimited</option>
+                                                    <select name="nammasociety51_log_retention" class="form-select shadow-none rounded-3 border-light fw-bold">
+                                                        <option value="30" <?php selected(get_option('nammasociety51_log_retention', 30), 30); ?>>30 Days</option>
+                                                        <option value="60" <?php selected(get_option('nammasociety51_log_retention'), 60); ?>>60 Days</option>
+                                                        <option value="90" <?php selected(get_option('nammasociety51_log_retention'), 90); ?>>90 Days</option>
+                                                        <option value="0" <?php selected(get_option('nammasociety51_log_retention'), 0); ?>>Unlimited</option>
                                                     </select>
                                                 </div>
                                                 <button type="submit" class="btn btn-primary fw-bold rounded-3 px-4 shadow-sm" style="height: 48px; margin-top: 24px;">Save Policy</button>
@@ -574,31 +574,139 @@ $templates = $db->get('notification_templates');
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 5. Registered Devices & Push Telemetry -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden" id="accordion-registered-devices">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold py-4 px-4 bg-white text-dark shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDevices">
+                                    <div class="d-flex align-items-center justify-content-between w-100 me-3 flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-phone-vibrate text-primary me-2 fs-5"></i>
+                                            <span>Registered Mobile Devices & Push Telemetry</span>
+                                        </div>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 small fw-bold" id="nammasociety-device-count-badge">
+                                            <i class="bi bi-broadcast me-1"></i> Live Roster
+                                        </span>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapseDevices" class="accordion-collapse collapse" data-bs-parent="#communicationAccordion">
+                                <div class="accordion-body p-4 bg-slate-50">
+                                    <!-- Summary KPI Cards -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-3 bg-white rounded-4 border shadow-sm h-100">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 11px;">Total Devices</div>
+                                                <div class="h3 fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                                                    <span id="nammasociety-kpi-total-devices">0</span>
+                                                    <i class="bi bi-phone text-muted fs-5"></i>
+                                                </div>
+                                                <div class="x-small text-muted mt-1">Connected mobile apps</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-3 bg-white rounded-4 border shadow-sm h-100">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 11px;">Active Tokens</div>
+                                                <div class="h3 fw-bold text-success m-0 d-flex align-items-center gap-2">
+                                                    <span id="nammasociety-kpi-active-devices">0</span>
+                                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                                </div>
+                                                <div class="x-small text-muted mt-1">Ready for push alerts</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-3 bg-white rounded-4 border shadow-sm h-100">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 11px;">Pushes Dispatched</div>
+                                                <div class="h3 fw-bold text-primary m-0 d-flex align-items-center gap-2">
+                                                    <span id="nammasociety-kpi-total-pushes">0</span>
+                                                    <i class="bi bi-send-check-fill text-primary fs-5"></i>
+                                                </div>
+                                                <div class="x-small text-muted mt-1">Total push deliveries</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3">
+                                            <div class="p-3 bg-white rounded-4 border shadow-sm h-100">
+                                                <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 11px;">Societies</div>
+                                                <div class="h3 fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                                                    <span id="nammasociety-kpi-total-societies">1</span>
+                                                    <i class="bi bi-building text-muted fs-5"></i>
+                                                </div>
+                                                <div class="x-small text-muted mt-1">Multi-society mapping</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action and Filter Bar -->
+                                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+                                        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 480px;">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                                <input type="text" class="form-control border-start-0 ps-0" id="nammasociety-devices-search" placeholder="Search by resident, device, unit, or society...">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary bg-white rounded-3 shadow-none px-3" id="btn-refresh-devices">
+                                                <i class="bi bi-arrow-clockwise me-1"></i> Refresh Devices
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Table Container -->
+                                    <div class="bg-white rounded-4 border shadow-sm overflow-hidden">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0 small">
+                                                <thead class="bg-light bg-opacity-75 border-bottom text-uppercase text-slate-500" style="font-size: 11px; letter-spacing: 0.05em;">
+                                                    <tr>
+                                                        <th class="ps-4 py-3">Device & Hardware</th>
+                                                        <th class="py-3">Society Details</th>
+                                                        <th class="py-3">Resident / User</th>
+                                                        <th class="py-3">Push Telemetry</th>
+                                                        <th class="py-3">Last Active</th>
+                                                        <th class="pe-4 py-3 text-end">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="nammasociety-devices-table-body">
+                                                    <tr>
+                                                        <td colspan="6" class="text-center py-5 text-muted">
+                                                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                                            Loading registered devices...
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Diagnostic Ping Feedback Alert -->
+                                    <div id="nammasociety-ping-feedback" class="mt-3" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tab: Approval Workflow -->
                 <div class="settings-tab-pane hidden" id="tab-content-approval">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'shubx51_options_group' ); ?>
+                        <?php settings_fields( 'nammasociety51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="shubx51_society_name" value="<?php echo esc_attr( get_option('shubx51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line1" value="<?php echo esc_attr( get_option('shubx51_society_address_line1') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line2" value="<?php echo esc_attr( get_option('shubx51_society_address_line2') ); ?>">
-                        <input type="hidden" name="shubx51_society_city" value="<?php echo esc_attr( get_option('shubx51_society_city') ); ?>">
-                        <input type="hidden" name="shubx51_society_pincode" value="<?php echo esc_attr( get_option('shubx51_society_pincode') ); ?>">
-                        <input type="hidden" name="shubx51_society_contact" value="<?php echo esc_attr( get_option('shubx51_society_contact') ); ?>">
-                        <input type="hidden" name="shubx51_maintenance_amount" value="<?php echo esc_attr( get_option('shubx51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="shubx51_opening_bank" value="<?php echo esc_attr( get_option('shubx51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_name" value="<?php echo esc_attr( get_option('nammasociety51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line1" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line1') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line2" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line2') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_city" value="<?php echo esc_attr( get_option('nammasociety51_society_city') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_pincode" value="<?php echo esc_attr( get_option('nammasociety51_society_pincode') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_contact" value="<?php echo esc_attr( get_option('nammasociety51_society_contact') ); ?>">
+                        <input type="hidden" name="nammasociety51_maintenance_amount" value="<?php echo esc_attr( get_option('nammasociety51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_bank" value="<?php echo esc_attr( get_option('nammasociety51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_cash" value="<?php echo esc_attr( get_option('nammasociety51_opening_cash', '0') ); ?>">
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="shubx51_bank_name" value="<?php echo esc_attr( get_option('shubx51_bank_name') ); ?>">
-                        <input type="hidden" name="shubx51_bank_account" value="<?php echo esc_attr( get_option('shubx51_bank_account') ); ?>">
-                        <input type="hidden" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>">
-                        <input type="hidden" name="shubx51_bank_qr" value="<?php echo esc_attr( get_option('shubx51_bank_qr') ); ?>">
-                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
-                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_name" value="<?php echo esc_attr( get_option('nammasociety51_bank_name') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_account" value="<?php echo esc_attr( get_option('nammasociety51_bank_account') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_ifsc" value="<?php echo esc_attr( get_option('nammasociety51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_upi" value="<?php echo esc_attr( get_option('nammasociety51_bank_upi') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_qr" value="<?php echo esc_attr( get_option('nammasociety51_bank_qr') ); ?>">
+                        <input type="hidden" name="nammasociety51_color_palette" value="<?php echo esc_attr( get_option('nammasociety51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="nammasociety51_default_theme" value="<?php echo esc_attr( get_option('nammasociety51_default_theme', 'light') ); ?>">
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">Verification Policies</h5>
                             <p class="small text-secondary mb-4">Control whether resident-submitted changes require admin oversight.</p>
@@ -606,10 +714,10 @@ $templates = $db->get('notification_templates');
                             <div class="d-flex flex-column gap-3">
                                 <?php 
                                 $policies = [
-                                    'shubx51_approval_family' => 'Resident Family Members',
-                                    'shubx51_approval_help'   => 'Domestic Help & Personal Staff',
-                                    'shubx51_approval_vehicle' => 'Private Vehicles',
-                                    'shubx51_approval_facility' => 'Facility & Amenity Bookings'
+                                    'nammasociety51_approval_family' => 'Resident Family Members',
+                                    'nammasociety51_approval_help'   => 'Domestic Help & Personal Staff',
+                                    'nammasociety51_approval_vehicle' => 'Private Vehicles',
+                                    'nammasociety51_approval_facility' => 'Facility & Amenity Bookings'
                                 ];
                                 foreach($policies as $opt => $label): ?>
                                     <div class="card border border-light shadow-none bg-light bg-opacity-50 rounded-3">
@@ -636,7 +744,7 @@ $templates = $db->get('notification_templates');
                         <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
                             <div>
                                 <h5 class="fw-bold text-primary m-0">Society Modules & Feature Toggles</h5>
-                                <p class="small text-secondary m-0 mt-1">Enable or disable modules to tailor Society HubX to your community. Disabled modules are immediately hidden from all menus, resident dashboards, and APIs.</p>
+                                <p class="small text-secondary m-0 mt-1">Enable or disable modules to tailor Namma Society to your community. Disabled modules are immediately hidden from all menus, resident dashboards, and APIs.</p>
                             </div>
                             <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 rounded-pill px-3 py-2 small fw-bold">
                                 <i class="bi bi-toggles me-1"></i> Live Feature Control
@@ -646,11 +754,11 @@ $templates = $db->get('notification_templates');
 
                     <div id="module-toggle-alert" class="alert d-none mb-4 rounded-3 p-3 small"></div>
 
-                    <input type="hidden" id="shubx51_module_toggle_nonce" value="<?php echo esc_attr( wp_create_nonce( 'shubx51_module_toggle_nonce' ) ); ?>">
+                    <input type="hidden" id="nammasociety51_module_toggle_nonce" value="<?php echo esc_attr( wp_create_nonce( 'nammasociety51_module_toggle_nonce' ) ); ?>">
 
                     <div class="row g-4">
                         <?php 
-                        $all_modules = class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::get_all_modules() : array();
+                        $all_modules = class_exists( 'NAMMASOCIETY51_Module_Registry' ) ? NAMMASOCIETY51_Module_Registry::get_all_modules() : array();
                         $category_colors = array(
                             'core'       => 'primary',
                             'security'   => 'danger',
@@ -660,7 +768,7 @@ $templates = $db->get('notification_templates');
                         );
 
                         foreach ( $all_modules as $mod_slug => $mod_data ) : 
-                            $is_active = class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::is_enabled( $mod_slug ) : true;
+                            $is_active = class_exists( 'NAMMASOCIETY51_Module_Registry' ) ? NAMMASOCIETY51_Module_Registry::is_enabled( $mod_slug ) : true;
                             $cat_color = $category_colors[ $mod_data['category'] ?? 'operations' ] ?? 'primary';
                         ?>
                             <div class="col-md-6 col-xl-4">
@@ -692,7 +800,7 @@ $templates = $db->get('notification_templates');
                                                 </div>
                                             <?php else : ?>
                                                 <span class="badge status-badge-<?php echo esc_attr( $mod_slug ); ?> <?php echo $is_active ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-muted'; ?> rounded-pill px-3 py-1 small fw-semibold">
-                                                    <?php echo $is_active ? esc_html__( 'Active', 'society-hubx' ) : esc_html__( 'Disabled', 'society-hubx' ); ?>
+                                                    <?php echo $is_active ? esc_html__( 'Active', 'namma-society' ) : esc_html__( 'Disabled', 'namma-society' ); ?>
                                                 </span>
                                                 <div class="form-check form-switch mb-0">
                                                     <input class="form-check-input module-toggle-switch shadow-none" 
@@ -754,8 +862,8 @@ $templates = $db->get('notification_templates');
                                                 </p>
                                             </div>
                                             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" class="mt-4">
-                                                <input type="hidden" name="action" value="shubx51_export_data">
-                                                <?php wp_nonce_field( 'shubx51_export_nonce' ); ?>
+                                                <input type="hidden" name="action" value="nammasociety51_export_data">
+                                                <?php wp_nonce_field( 'nammasociety51_export_nonce' ); ?>
                                                 <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-none">
                                                     <i class="bi bi-file-earmark-zip me-2"></i>Download .zip
                                                 </button>
@@ -780,13 +888,13 @@ $templates = $db->get('notification_templates');
                                                 </p>
                                             </div>
                                             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" enctype="multipart/form-data" class="mt-4">
-                                                <input type="hidden" name="action" value="shubx51_import_data">
-                                                <?php wp_nonce_field( 'shubx51_import_nonce' ); ?>
+                                                <input type="hidden" name="action" value="nammasociety51_import_data">
+                                                <?php wp_nonce_field( 'nammasociety51_import_nonce' ); ?>
                                                 
                                                 <div class="mb-3">
                                                     <select name="target_table" class="form-select shadow-none border-light bg-light small fw-bold rounded-3">
                                                         <?php 
-                                                        $tables = SHUBX51_DB_Router::TABLES;
+                                                        $tables = NAMMASOCIETY51_DB_Router::TABLES;
                                                         foreach($tables as $t) {
                                                             echo "<option value='{$t}'>Module: ".ucwords(str_replace('_', ' ', $t))."</option>";
                                                         }
@@ -829,8 +937,8 @@ $templates = $db->get('notification_templates');
                                         </div>
                                         <div>
                                             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                                                <input type="hidden" name="action" value="shubx51_relaunch_wizard">
-                                                <?php wp_nonce_field( 'shubx51_relaunch_nonce' ); ?>
+                                                <input type="hidden" name="action" value="nammasociety51_relaunch_wizard">
+                                                <?php wp_nonce_field( 'nammasociety51_relaunch_nonce' ); ?>
                                                 <button type="submit" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
                                                     Start Wizard
                                                 </button>
@@ -855,17 +963,17 @@ $templates = $db->get('notification_templates');
                                         </div>
                                         <div class="d-flex flex-column flex-sm-row gap-2">
                                             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                                                <input type="hidden" name="action" value="shubx51_reset_db">
+                                                <input type="hidden" name="action" value="nammasociety51_reset_db">
                                                 <input type="hidden" name="reset_type" value="mysql">
-                                                <?php wp_nonce_field( 'shubx51_reset_nonce' ); ?>
+                                                <?php wp_nonce_field( 'nammasociety51_reset_nonce' ); ?>
                                                 <button type="submit" onclick="return confirm('Wipe entire MySQL schema content? (Non-reversible)')" class="btn btn-danger fw-bold px-4 py-2 rounded-3 shadow-sm w-100">
                                                     Purge MySQL DB
                                                 </button>
                                             </form>
                                             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                                                <input type="hidden" name="action" value="shubx51_reset_db">
+                                                <input type="hidden" name="action" value="nammasociety51_reset_db">
                                                 <input type="hidden" name="reset_type" value="json">
-                                                <?php wp_nonce_field( 'shubx51_reset_nonce' ); ?>
+                                                <?php wp_nonce_field( 'nammasociety51_reset_nonce' ); ?>
                                                 <button type="submit" onclick="return confirm('Delete all JSON data files? (Non-reversible)')" class="btn btn-outline-danger fw-bold px-4 py-2 rounded-3 shadow-none w-100">
                                                     Purge JSON Files
                                                 </button>
@@ -882,25 +990,25 @@ $templates = $db->get('notification_templates');
                 <!-- Tab: Privacy & DPDP -->
                 <div class="tab-pane settings-tab-pane hidden" id="tab-content-privacy">
                     <form method="post" action="options.php">
-                        <?php settings_fields( 'shubx51_options_group' ); ?>
+                        <?php settings_fields( 'nammasociety51_options_group' ); ?>
                         <!-- Preserve Society Profile Settings -->
-                        <input type="hidden" name="shubx51_society_name" value="<?php echo esc_attr( get_option('shubx51_society_name', 'Society Name') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line1" value="<?php echo esc_attr( get_option('shubx51_society_address_line1') ); ?>">
-                        <input type="hidden" name="shubx51_society_address_line2" value="<?php echo esc_attr( get_option('shubx51_society_address_line2') ); ?>">
-                        <input type="hidden" name="shubx51_society_city" value="<?php echo esc_attr( get_option('shubx51_society_city') ); ?>">
-                        <input type="hidden" name="shubx51_society_pincode" value="<?php echo esc_attr( get_option('shubx51_society_pincode') ); ?>">
-                        <input type="hidden" name="shubx51_society_contact" value="<?php echo esc_attr( get_option('shubx51_society_contact') ); ?>">
-                        <input type="hidden" name="shubx51_maintenance_amount" value="<?php echo esc_attr( get_option('shubx51_maintenance_amount', '5000') ); ?>">
-                        <input type="hidden" name="shubx51_opening_bank" value="<?php echo esc_attr( get_option('shubx51_opening_bank', '0') ); ?>">
-                        <input type="hidden" name="shubx51_opening_cash" value="<?php echo esc_attr( get_option('shubx51_opening_cash', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_name" value="<?php echo esc_attr( get_option('nammasociety51_society_name', 'Society Name') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line1" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line1') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_address_line2" value="<?php echo esc_attr( get_option('nammasociety51_society_address_line2') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_city" value="<?php echo esc_attr( get_option('nammasociety51_society_city') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_pincode" value="<?php echo esc_attr( get_option('nammasociety51_society_pincode') ); ?>">
+                        <input type="hidden" name="nammasociety51_society_contact" value="<?php echo esc_attr( get_option('nammasociety51_society_contact') ); ?>">
+                        <input type="hidden" name="nammasociety51_maintenance_amount" value="<?php echo esc_attr( get_option('nammasociety51_maintenance_amount', '5000') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_bank" value="<?php echo esc_attr( get_option('nammasociety51_opening_bank', '0') ); ?>">
+                        <input type="hidden" name="nammasociety51_opening_cash" value="<?php echo esc_attr( get_option('nammasociety51_opening_cash', '0') ); ?>">
                         <!-- Preserve Bank Details -->
-                        <input type="hidden" name="shubx51_bank_name" value="<?php echo esc_attr( get_option('shubx51_bank_name') ); ?>">
-                        <input type="hidden" name="shubx51_bank_account" value="<?php echo esc_attr( get_option('shubx51_bank_account') ); ?>">
-                        <input type="hidden" name="shubx51_bank_ifsc" value="<?php echo esc_attr( get_option('shubx51_bank_ifsc') ); ?>">
-                        <input type="hidden" name="shubx51_bank_upi" value="<?php echo esc_attr( get_option('shubx51_bank_upi') ); ?>">
-                        <input type="hidden" name="shubx51_bank_qr" value="<?php echo esc_attr( get_option('shubx51_bank_qr') ); ?>">
-                        <input type="hidden" name="shubx51_color_palette" value="<?php echo esc_attr( get_option('shubx51_color_palette', 'orange') ); ?>">
-                        <input type="hidden" name="shubx51_default_theme" value="<?php echo esc_attr( get_option('shubx51_default_theme', 'light') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_name" value="<?php echo esc_attr( get_option('nammasociety51_bank_name') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_account" value="<?php echo esc_attr( get_option('nammasociety51_bank_account') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_ifsc" value="<?php echo esc_attr( get_option('nammasociety51_bank_ifsc') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_upi" value="<?php echo esc_attr( get_option('nammasociety51_bank_upi') ); ?>">
+                        <input type="hidden" name="nammasociety51_bank_qr" value="<?php echo esc_attr( get_option('nammasociety51_bank_qr') ); ?>">
+                        <input type="hidden" name="nammasociety51_color_palette" value="<?php echo esc_attr( get_option('nammasociety51_color_palette', 'orange') ); ?>">
+                        <input type="hidden" name="nammasociety51_default_theme" value="<?php echo esc_attr( get_option('nammasociety51_default_theme', 'light') ); ?>">
                         
                         <div class="mb-4">
                             <h5 class="fw-bold text-primary mb-4 border-bottom border-light pb-2">DPDP Compliance & Data Privacy</h5>
@@ -913,15 +1021,15 @@ $templates = $db->get('notification_templates');
                                             <label class="fw-bold text-dark small mb-1">Mask Resident Contact Information</label>
                                             <p class="x-small text-muted m-0">Enable phone/email obfuscation for unauthorized admin/staff viewers to protect personal identifiable info (PII).</p>
                                         </div>
-                                        <label class="shubx-premium-toggle">
-                                            <input type="checkbox" name="shubx51_privacy_masking" value="1" <?php checked(get_option('shubx51_privacy_masking', 1), 1); ?>/>
+                                        <label class="nammasociety-premium-toggle">
+                                            <input type="checkbox" name="nammasociety51_privacy_masking" value="1" <?php checked(get_option('nammasociety51_privacy_masking', 1), 1); ?>/>
                                             <span class="slider"></span>
                                         </label>
                                     </div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label small fw-bold text-secondary">Personal Data Export Consent Notice</label>
-                                    <textarea name="shubx51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_html( esc_textarea( get_option('shubx51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ) ); ?></textarea>
+                                    <textarea name="nammasociety51_privacy_export_notice" rows="4" class="form-control shadow-none rounded-3 border-light small font-monospace" placeholder="Consent text shown to residents when downloading personal archives..."><?php echo esc_html( esc_textarea( get_option('nammasociety51_privacy_export_notice', 'I consent to the processing and export of my societal personal data for audit purposes.') ) ); ?></textarea>
                                     <div class="x-small text-muted mt-1">This text is displayed during personal data exports.</div>
                                 </div>
                             </div>
@@ -931,27 +1039,27 @@ $templates = $db->get('notification_templates');
                         </div>
                     </form>
                 </div>
-                <?php do_action( 'shubx51_settings_tab_content' ); ?>
+                <?php do_action( 'nammasociety51_settings_tab_content' ); ?>
             </div>
         </div>
     </div>
 </div><?php
-// Hook modals into shubx51_admin_modals
-add_action('shubx51_admin_modals', function() {
+// Hook modals into nammasociety51_admin_modals
+add_action('nammasociety51_admin_modals', function() {
 ?>
 <!-- Channel Configuration Modal -->
-<div class="modal fade" id="shubx-channel-modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="nammasociety-channel-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-bold m-0"><span id="shubx-modal-channel-name">Channel</span> Configuration</h5>
+                <h5 class="fw-bold m-0"><span id="nammasociety-modal-channel-name">Channel</span> Configuration</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="shubx-channel-form">
+            <form id="nammasociety-channel-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="channel_slug" id="shubx-modal-channel-slug">
-                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('shubx51_request_action') ); ?>">
-                    <div id="shubx-channel-settings-fields">
+                    <input type="hidden" name="channel_slug" id="nammasociety-modal-channel-slug">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('nammasociety51_request_action') ); ?>">
+                    <div id="nammasociety-channel-settings-fields">
                         <!-- Fields dynamically rendered by JS -->
                     </div>
                 </div>
@@ -965,26 +1073,26 @@ add_action('shubx51_admin_modals', function() {
 </div>
 
 <!-- Template Editing Modal -->
-<div class="modal fade" id="shubx-template-modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="nammasociety-template-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0 px-4 pt-4">
-                <h5 class="fw-bold m-0">Edit Template: <span id="shubx-template-event-name" class="text-primary text-capitalize">Event</span></h5>
+                <h5 class="fw-bold m-0">Edit Template: <span id="nammasociety-template-event-name" class="text-primary text-capitalize">Event</span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="shubx-template-form">
+            <form id="nammasociety-template-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="id" id="shubx-template-id">
-                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('shubx51_request_action') ); ?>">
+                    <input type="hidden" name="id" id="nammasociety-template-id">
+                    <input type="hidden" name="_wpnonce" value="<?php echo esc_html( wp_create_nonce('nammasociety51_request_action') ); ?>">
                     
                     <div class="mb-3 subject-field">
                         <label class="form-label small fw-bold text-slate-700">Subject</label>
-                        <input type="text" class="form-control rounded-3" name="subject" id="shubx-template-subject" placeholder="Enter message subject">
+                        <input type="text" class="form-control rounded-3" name="subject" id="nammasociety-template-subject" placeholder="Enter message subject">
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Content</label>
-                        <textarea class="form-control rounded-3" name="content" id="shubx-template-content" rows="6" placeholder="Enter template body text" required></textarea>
+                        <textarea class="form-control rounded-3" name="content" id="nammasociety-template-content" rows="6" placeholder="Enter template body text" required></textarea>
                         <div class="form-text small text-muted">
                             Supported placeholders: <code>{resident_name}</code>, <code>{title}</code>, <code>{deadline}</code>, <code>{flat_no}</code>, <code>{amount}</code>, <code>{date}</code>, <code>{status}</code>, <code>{notes}</code> (depending on the event).
                         </div>

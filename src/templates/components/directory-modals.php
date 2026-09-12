@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 $all_flats = $db->get( 'flats' );
 if ( empty( $all_flats ) || ! is_array( $all_flats ) ) {
 	$all_flats = array();

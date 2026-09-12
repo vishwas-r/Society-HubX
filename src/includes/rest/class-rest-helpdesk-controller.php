@@ -2,16 +2,16 @@
 /**
  * REST API Controller for Helpdesk, Complaints, & Service Tickets.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 	protected $rest_base = 'helpdesk';
 
 	public function register_routes() {
@@ -87,7 +87,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 	}
 
 	public function check_auth( $request = null ) {
-		$auth = SHUBX51_REST_Manager::authenticate_request( $request );
+		$auth = NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		if ( is_wp_error( $auth ) ) {
 			return $auth;
 		}
@@ -96,7 +96,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
 	private function get_current_user_flat() {
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 		return $resident ? ( $resident['flat_no'] ?? '' ) : '';
 	}
@@ -105,7 +105,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 	 * GET /helpdesk/tickets
 	 */
 	public function get_tickets( WP_REST_Request $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$is_admin = current_user_can( 'manage_options' );
 		$user_flat = $this->get_current_user_flat();
 
@@ -148,10 +148,10 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 		$photos = $request->get_param( 'photos' );
 
 		if ( empty( $subject ) ) {
-			return new WP_Error( 'missing_subject', __( 'Subject is required for creating a ticket.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_subject', __( 'Subject is required for creating a ticket.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$user_id = get_current_user_id();
 		$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 
@@ -196,7 +196,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Service ticket raised successfully.', 'society-hubx' ),
+			'message' => __( 'Service ticket raised successfully.', 'namma-society' ),
 			'ticket'  => $ticket_data,
 		) );
 	}
@@ -206,7 +206,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 	 */
 	public function get_ticket( WP_REST_Request $request ) {
 		$ticket_id = sanitize_key( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$ticket = $db->get_row_by_field( 'helpdesk_tickets', 'id', $ticket_id );
 		if ( ! $ticket ) {
@@ -214,7 +214,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 		}
 
 		if ( ! $ticket ) {
-			return new WP_Error( 'not_found', __( 'Ticket not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Ticket not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		// Fetch replies
@@ -239,13 +239,13 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 		$message = sanitize_textarea_field( $request->get_param( 'message' ) );
 
 		if ( empty( $message ) ) {
-			return new WP_Error( 'missing_message', __( 'Reply message cannot be empty.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_message', __( 'Reply message cannot be empty.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$ticket = $db->get_row_by_field( 'helpdesk_tickets', 'id', $ticket_id );
 		if ( ! $ticket ) {
-			return new WP_Error( 'not_found', __( 'Ticket not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Ticket not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$reply_data = array(
@@ -262,7 +262,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Reply posted successfully.', 'society-hubx' ),
+			'message' => __( 'Reply posted successfully.', 'namma-society' ),
 			'reply'   => $reply_data,
 		) );
 	}
@@ -275,10 +275,10 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 		$rating = min( 5, max( 1, intval( $request->get_param( 'rating' ) ) ) );
 		$feedback = sanitize_textarea_field( $request->get_param( 'feedback' ) ?? '' );
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$ticket = $db->get_row_by_field( 'helpdesk_tickets', 'id', $ticket_id );
 		if ( ! $ticket ) {
-			return new WP_Error( 'not_found', __( 'Ticket not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Ticket not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$db->update( 'helpdesk_tickets', array(
@@ -288,7 +288,7 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Feedback submitted successfully.', 'society-hubx' ),
+			'message' => __( 'Feedback submitted successfully.', 'namma-society' ),
 		) );
 	}
 
@@ -300,14 +300,14 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 		$ticket_id = sanitize_key( $request->get_param( 'id' ) );
 		$entered_otp = sanitize_text_field( $request->get_param( 'otp' ) );
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$ticket = $db->get_row_by_field( 'helpdesk_tickets', 'id', $ticket_id );
 		if ( ! $ticket ) {
-			return new WP_Error( 'not_found', __( 'Ticket not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Ticket not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		if ( empty( $entered_otp ) || ! hash_equals( (string) $ticket['closure_otp'], (string) $entered_otp ) ) {
-			return new WP_Error( 'invalid_otp', __( 'Invalid closure OTP. Ask resident for the 4-digit code.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'invalid_otp', __( 'Invalid closure OTP. Ask resident for the 4-digit code.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$db->update( 'helpdesk_tickets', array(
@@ -318,7 +318,12 @@ class SHUBX51_REST_Helpdesk_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Ticket marked as resolved successfully via OTP confirmation.', 'society-hubx' ),
+			'message' => __( 'Ticket marked as resolved successfully via OTP confirmation.', 'namma-society' ),
 		) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Helpdesk_Controller' ) && ! class_exists( 'SHUBX51_REST_Helpdesk_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Helpdesk_Controller', 'SHUBX51_REST_Helpdesk_Controller' );
 }

@@ -3,29 +3,29 @@
  * Class: Log Manager
  * Handles log governance, purging, and automated maintenance.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Log_Manager {
+class NAMMASOCIETY51_Log_Manager {
 
 	private $db;
 
 	public function __construct($db = null) {
-		$this->db = $db ?: SHUBX51_Plugin::get_instance()->db;
+		$this->db = $db ?: NAMMASOCIETY51_Plugin::get_instance()->db;
         
         // Hook into Action Scheduler for daily cleanup
-		add_action( 'shubx51_daily_log_purge', array( $this, 'purge_old_logs' ) );
+		add_action( 'nammasociety51_daily_log_purge', array( $this, 'purge_old_logs' ) );
 	}
 
 	/**
 	 * Purge logs older than the retention period.
 	 */
 	public function purge_old_logs() {
-		$retention_days = (int) get_option( 'shubx51_log_retention', 30 );
+		$retention_days = (int) get_option( 'nammasociety51_log_retention', 30 );
 		
 		if ( $retention_days <= 0 ) {
 			return; // Unlimited retention
@@ -38,14 +38,14 @@ class SHUBX51_Log_Manager {
         // 1. Purge Audit Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}shubx51_audit_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}nammasociety51_audit_logs WHERE created_at < %s",
             $cutoff_date
         ));
 
         // 2. Purge Notification Logs
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Maintenance cron delete query.
         $wpdb->query( $wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}shubx51_notification_logs WHERE created_at < %s",
+            "DELETE FROM {$wpdb->prefix}nammasociety51_notification_logs WHERE created_at < %s",
             $cutoff_date
         ));
 
@@ -59,4 +59,9 @@ class SHUBX51_Log_Manager {
             'created_at'  => current_time('mysql')
         ]);
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Log_Manager' ) && ! class_exists( 'SHUBX51_Log_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Log_Manager', 'SHUBX51_Log_Manager' );
 }

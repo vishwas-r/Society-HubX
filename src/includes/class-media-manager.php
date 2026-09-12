@@ -3,22 +3,22 @@
  * Class: Media Manager
  * Handles local media uploads for profile pictures.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Media_Manager {
+class NAMMASOCIETY51_Media_Manager {
 
 	private $base_dir;
 	private $base_url;
 
 	public function __construct() {
 		$upload_dir = wp_upload_dir();
-		$this->base_dir = $upload_dir['basedir'] . '/society-hubx/profile-pics/';
-		$this->base_url = $upload_dir['baseurl'] . '/society-hubx/profile-pics/';
+		$this->base_dir = $upload_dir['basedir'] . '/namma-society/profile-pics/';
+		$this->base_url = $upload_dir['baseurl'] . '/namma-society/profile-pics/';
 
 		if ( ! file_exists( $this->base_dir ) ) {
 			wp_mkdir_p( $this->base_dir );
@@ -68,9 +68,9 @@ class SHUBX51_Media_Manager {
 
 		// Move file using WordPress standard wp_handle_upload
 		$upload_dir_filter = function( $uploads ) use ( $subfolder, $filename ) {
-			$uploads['path']   = $uploads['basedir'] . '/society-hubx/profile-pics/' . $subfolder;
-			$uploads['url']    = $uploads['baseurl'] . '/society-hubx/profile-pics/' . $subfolder;
-			$uploads['subdir'] = '/society-hubx/profile-pics/' . $subfolder;
+			$uploads['path']   = $uploads['basedir'] . '/namma-society/profile-pics/' . $subfolder;
+			$uploads['url']    = $uploads['baseurl'] . '/namma-society/profile-pics/' . $subfolder;
+			$uploads['subdir'] = '/namma-society/profile-pics/' . $subfolder;
 			return $uploads;
 		};
 		add_filter( 'upload_dir', $upload_dir_filter );
@@ -95,4 +95,9 @@ class SHUBX51_Media_Manager {
 
 		return $uploaded['url'];
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Media_Manager' ) && ! class_exists( 'SHUBX51_Media_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Media_Manager', 'SHUBX51_Media_Manager' );
 }

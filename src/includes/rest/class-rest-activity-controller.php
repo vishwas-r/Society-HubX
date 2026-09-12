@@ -3,16 +3,16 @@
  * Class: REST Activity Controller
  * Endpoints for society activity logs.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Activity_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 	protected $rest_base = 'activity';
 
 	public function register_routes() {
@@ -26,7 +26,7 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items( $request ) {
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$logs = $db->get( 'activity_logs' );
 
 		if ( empty( $logs ) ) {
@@ -37,9 +37,14 @@ class SHUBX51_REST_Activity_Controller extends WP_REST_Controller {
 	}
 
 	public function get_items_permissions_check( $request ) {
-		if ( ! SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
-			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view activity logs.', 'society-hubx' ), array( 'status' => 403 ) );
+		if ( ! NAMMASOCIETY51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'settings_manage' ) ) {
+			return new WP_Error( 'rest_forbidden', __( 'You do not have permission to view activity logs.', 'namma-society' ), array( 'status' => 403 ) );
 		}
 		return true;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Activity_Controller' ) && ! class_exists( 'SHUBX51_REST_Activity_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Activity_Controller', 'SHUBX51_REST_Activity_Controller' );
 }

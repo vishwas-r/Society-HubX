@@ -3,21 +3,21 @@
  * Class: REST Discovery Controller
  * Public endpoint for mobile apps to discover apartment branding, modules, and configuration.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Discovery_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -52,9 +52,9 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 	public function get_discovery_info( $request ) {
 		$site_icon_id = get_option( 'site_icon' );
 		$site_icon_url = $site_icon_id ? wp_get_attachment_image_url( $site_icon_id, 'full' ) : '';
-		$society_logo = get_option( 'shubx51_society_logo', $site_icon_url );
+		$society_logo = get_option( 'nammasociety51_society_logo', $site_icon_url );
 
-		$society_name = get_option( 'shubx51_society_name', get_bloginfo( 'name' ) );
+		$society_name = get_option( 'nammasociety51_society_name', get_bloginfo( 'name' ) );
 		if ( empty( $society_name ) ) {
 			$society_name = get_bloginfo( 'name' );
 		}
@@ -66,39 +66,39 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 			'ocean'   => '#0284c7',
 			'rose'    => '#e11d48',
 		);
-		$color_palette = get_option( 'shubx51_color_palette', 'orange' );
-		$primary_color = isset( $palette_map[ $color_palette ] ) ? $palette_map[ $color_palette ] : get_option( 'shubx51_primary_color', '#ea580c' );
-		$default_theme = get_option( 'shubx51_default_theme', 'light' );
+		$color_palette = get_option( 'nammasociety51_color_palette', 'orange' );
+		$primary_color = isset( $palette_map[ $color_palette ] ) ? $palette_map[ $color_palette ] : get_option( 'nammasociety51_primary_color', '#ea580c' );
+		$default_theme = get_option( 'nammasociety51_default_theme', 'light' );
 
 		$discovery_data = array(
 			'status'           => 'active',
-			'app_name'         => 'Society HubX',
+			'app_name'         => 'Namma Society',
 			'api_version'      => '1.0.0',
 			'wp_version'       => get_bloginfo( 'version' ),
 			'site_url'         => get_site_url(),
-			'rest_url'         => get_rest_url( null, 'society-hubx/v1/' ),
+			'rest_url'         => get_rest_url( null, 'namma-society/v1/' ),
 			'society'          => array(
 				'name'          => $society_name,
 				'tagline'       => get_bloginfo( 'description' ),
 				'logo_url'      => $society_logo ? $society_logo : null,
-				'address_line1' => get_option( 'shubx51_society_address_line1', '' ),
-				'address_line2' => get_option( 'shubx51_society_address_line2', '' ),
-				'city'          => get_option( 'shubx51_society_city', '' ),
-				'pincode'       => get_option( 'shubx51_society_pincode', '' ),
-				'contact_phone' => get_option( 'shubx51_society_contact', '' ),
-				'emergency_num' => get_option( 'shubx51_society_emergency', get_option( 'shubx51_society_contact', '' ) ),
+				'address_line1' => get_option( 'nammasociety51_society_address_line1', '' ),
+				'address_line2' => get_option( 'nammasociety51_society_address_line2', '' ),
+				'city'          => get_option( 'nammasociety51_society_city', '' ),
+				'pincode'       => get_option( 'nammasociety51_society_pincode', '' ),
+				'contact_phone' => get_option( 'nammasociety51_society_contact', '' ),
+				'emergency_num' => get_option( 'nammasociety51_society_emergency', get_option( 'nammasociety51_society_contact', '' ) ),
 				'color_palette' => $color_palette,
 				'primary_color' => $primary_color,
 				'default_theme' => $default_theme,
-				'currency'      => get_option( 'shubx51_currency_symbol', '₹' ),
-				'currency_code' => get_option( 'shubx51_currency_code', 'INR' ),
+				'currency'      => get_option( 'nammasociety51_currency_symbol', '₹' ),
+				'currency_code' => get_option( 'nammasociety51_currency_code', 'INR' ),
 			),
 			'payment_config'   => array(
-				'upi_id'       => get_option( 'shubx51_bank_upi', '' ),
-				'bank_name'    => get_option( 'shubx51_bank_name', '' ),
-				'qr_code_url'  => get_option( 'shubx51_bank_qr', '' ),
+				'upi_id'       => get_option( 'nammasociety51_bank_upi', '' ),
+				'bank_name'    => get_option( 'nammasociety51_bank_name', '' ),
+				'qr_code_url'  => get_option( 'nammasociety51_bank_qr', '' ),
 			),
-			'features'         => class_exists( 'SHUBX51_Module_Registry' ) ? SHUBX51_Module_Registry::get_features_map() : array(
+			'features'         => class_exists( 'NAMMASOCIETY51_Module_Registry' ) ? NAMMASOCIETY51_Module_Registry::get_features_map() : array(
 				'flats'         => true,
 				'residents'     => true,
 				'visitors'      => true,
@@ -114,11 +114,16 @@ class SHUBX51_REST_Discovery_Controller extends WP_REST_Controller {
 				'helpdesk'      => true,
 			),
 			'auth'             => array(
-				'login_endpoint' => get_rest_url( null, 'society-hubx/v1/auth/login' ),
-				'me_endpoint'    => get_rest_url( null, 'society-hubx/v1/auth/me' ),
+				'login_endpoint' => get_rest_url( null, 'namma-society/v1/auth/login' ),
+				'me_endpoint'    => get_rest_url( null, 'namma-society/v1/auth/me' ),
 			),
 		);
 
 		return rest_ensure_response( $discovery_data );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Discovery_Controller' ) && ! class_exists( 'SHUBX51_REST_Discovery_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Discovery_Controller', 'SHUBX51_REST_Discovery_Controller' );
 }

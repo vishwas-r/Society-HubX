@@ -1,5 +1,5 @@
 ﻿/**
- * SHUBX Documents JS
+ * NAMMASOCIETY Documents JS
  * - AJAX upload via SHUBXApiRequest
  * - Approve/Delete using centralized modal and API wrapper
  * - Optimistic UI updates and toasts
@@ -20,8 +20,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'documents' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -38,8 +38,8 @@
     }
 
     function approveDoc(docId) {
-        SHUBX.ajax({
-            action: 'shubx51_approve_doc',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_approve_doc',
             data: { doc_id: docId, _wpnonce: Config.nonce },
             successMessage: 'Document approved!',
             reload: true
@@ -62,12 +62,12 @@
             const data = { flat: payload.flat, file: payload.name, type: payload.type };
             if (payload.id) data.doc_id = payload.id;
 
-            SHUBX.ajax({
-                action: 'shubx51_delete_doc',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_doc',
                 data: data,
                 successMessage: 'Document deleted',
                 onSuccess: function () {
-                    const el = payload.id ? document.querySelector(`.shubx-doc-card[data-id="${payload.id}"]`) : null;
+                    const el = payload.id ? document.querySelector(`.nammasociety-doc-card[data-id="${payload.id}"]`) : null;
                     if (el) {
                         el.style.opacity = '0.5';
                         setTimeout(() => el.remove(), 400);
@@ -90,13 +90,13 @@
                 uploadForm.addEventListener('submit', function (e) {
                     e.preventDefault();
                     const formData = new FormData(uploadForm);
-                    formData.set('action', 'shubx51_upload_doc');
+                    formData.set('action', 'nammasociety51_upload_doc');
                     if (Config.nonce) {
                         formData.set('_wpnonce', Config.nonce);
                     }
 
-                    SHUBX.ajax({
-                        action: 'shubx51_upload_doc',
+                    NAMMASOCIETY.ajax({
+                        action: 'nammasociety51_upload_doc',
                         data: formData,
                         loadingButton: $(uploadForm).find('button[type="submit"]'),
                         successMessage: 'Document uploaded successfully!',

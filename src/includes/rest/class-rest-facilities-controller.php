@@ -3,21 +3,21 @@
  * Class: REST Facilities Controller
  * Endpoints for managing society facilities and slot bookings.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Facilities_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -115,7 +115,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 	 * List facilities.
 	 */
 	public function get_facilities( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$facilities = $db->get( 'facilities' );
 		return rest_ensure_response( $facilities ? $facilities : array() );
 	}
@@ -125,11 +125,11 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 	 */
 	public function get_facility( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$facilities = $db->get( 'facilities', array( 'id' => $id ) );
 
 		if ( empty( $facilities ) ) {
-			return new WP_Error( 'rest_facility_not_found', __( 'Facility not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_facility_not_found', __( 'Facility not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $facilities[0] );
@@ -146,7 +146,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 
 		$name = isset( $params['name'] ) ? sanitize_text_field( $params['name'] ) : '';
 		if ( empty( $name ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Facility name is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Facility name is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -161,7 +161,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			'created_at'       => current_time( 'mysql' ),
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'facilities', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -180,10 +180,10 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'facilities', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_facility_not_found', __( 'Facility not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_facility_not_found', __( 'Facility not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -207,7 +207,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Facility updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Facility updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -215,25 +215,25 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 	 */
 	public function delete_facility( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'facilities', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Facility deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Facility deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
 	 * Get Bookings.
 	 */
 	public function get_bookings( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$bookings = $db->get( 'bookings' );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'facilities_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -257,11 +257,11 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 	 */
 	public function get_booking( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$bookings = $db->get( 'bookings', array( 'id' => $id ) );
 
 		if ( empty( $bookings ) ) {
-			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $bookings[0] );
@@ -281,10 +281,10 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 		$end_time    = isset( $params['end_time'] ) ? sanitize_text_field( $params['end_time'] ) : '';
 
 		if ( empty( $facility_id ) || empty( $start_time ) || empty( $end_time ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Facility, start time, and end time are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Facility, start time, and end time are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		// Check overlap
 		$all_bookings = $db->get( 'bookings', array( 'where' => array( 'facility_id' => $facility_id ) ) );
@@ -298,7 +298,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			$b_start = strtotime( $b['start_time'] );
 			$b_end   = strtotime( $b['end_time'] );
 			if ( ( $start_ts < $b_end ) && ( $end_ts > $b_start ) ) {
-				return new WP_Error( 'rest_slot_conflict', __( 'This facility slot is already booked for the selected time range.', 'society-hubx' ), array( 'status' => 409 ) );
+				return new WP_Error( 'rest_slot_conflict', __( 'This facility slot is already booked for the selected time range.', 'namma-society' ), array( 'status' => 409 ) );
 			}
 		}
 
@@ -344,10 +344,10 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'bookings', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -360,7 +360,7 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Booking updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Booking updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -368,22 +368,22 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 	 */
 	public function cancel_booking( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'bookings', array( 'id' => $id ) );
 
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_booking_not_found', __( 'Booking not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'facilities_manage' ) || current_user_can( 'manage_options' );
 
 		$resident = $db->get_resident_by_wp_id( $user_id );
 		$resident_id = $resident['id'] ?? '';
 
 		if ( ! $is_admin && ( $existing[0]['resident_id'] ?? '' ) !== $resident_id ) {
-			return new WP_Error( 'rest_forbidden', __( 'Unauthorized to cancel this booking.', 'society-hubx' ), array( 'status' => 403 ) );
+			return new WP_Error( 'rest_forbidden', __( 'Unauthorized to cancel this booking.', 'namma-society' ), array( 'status' => 403 ) );
 		}
 
 		$result = $db->update( 'bookings', array( 'status' => 'cancelled' ), array( 'id' => $id ) );
@@ -391,16 +391,21 @@ class SHUBX51_REST_Facilities_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Booking cancelled successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Booking cancelled successfully.', 'namma-society' ) ) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function manage_facility_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Facilities_Controller' ) && ! class_exists( 'SHUBX51_REST_Facilities_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Facilities_Controller', 'SHUBX51_REST_Facilities_Controller' );
 }

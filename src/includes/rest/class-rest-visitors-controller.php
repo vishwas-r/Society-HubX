@@ -2,16 +2,16 @@
 /**
  * REST API Controller for Visitor Management (VMS) & Gate Passes.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Visitors_Controller extends WP_REST_Controller {
 
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 	protected $rest_base = 'visitors';
 
 	public function register_routes() {
@@ -73,7 +73,7 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 	}
 
 	public function check_auth( $request = null ) {
-		$auth = SHUBX51_REST_Manager::authenticate_request( $request );
+		$auth = NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		if ( is_wp_error( $auth ) ) {
 			return $auth;
 		}
@@ -85,7 +85,7 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 	 */
 	private function get_current_user_flat() {
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 		return $resident ? ( $resident['flat_no'] ?? '' ) : '';
 	}
@@ -94,7 +94,7 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 	 * GET /visitors/passes
 	 */
 	public function get_passes( WP_REST_Request $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$is_admin = current_user_can( 'manage_options' );
 		$user_flat = $this->get_current_user_flat();
 
@@ -133,10 +133,10 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 		$valid_until = sanitize_text_field( $request->get_param( 'valid_until' ) ?? date( 'Y-m-d 23:59:59', strtotime( '+1 day' ) ) );
 
 		if ( empty( $visitor_name ) ) {
-			return new WP_Error( 'missing_params', __( 'Visitor name is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_params', __( 'Visitor name is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$user_id = get_current_user_id();
 		$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 
@@ -169,7 +169,7 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Visitor gate pass generated successfully.', 'society-hubx' ),
+			'message' => __( 'Visitor gate pass generated successfully.', 'namma-society' ),
 			'data'    => $pass_data,
 			'pass'    => $pass_data,
 		) );
@@ -180,18 +180,18 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 	 */
 	public function revoke_pass( WP_REST_Request $request ) {
 		$pass_id = sanitize_key( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$pass = $db->get_row_by_field( 'visitor_passes', 'id', $pass_id );
 		if ( ! $pass ) {
-			return new WP_Error( 'not_found', __( 'Visitor pass not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Visitor pass not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$db->update( 'visitor_passes', array( 'status' => 'revoked' ), array( 'id' => $pass_id ) );
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Pass revoked successfully.', 'society-hubx' ),
+			'message' => __( 'Pass revoked successfully.', 'namma-society' ),
 		) );
 	}
 
@@ -199,7 +199,7 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 	 * GET /visitors/logs
 	 */
 	public function get_visitor_logs( WP_REST_Request $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$is_admin = current_user_can( 'manage_options' );
 		$user_flat = $this->get_current_user_flat();
 
@@ -231,11 +231,11 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 		$visitor_id = sanitize_key( $request->get_param( 'id' ) );
 		$action = sanitize_key( $request->get_param( 'action' ) ?? 'allow' ); // 'allow', 'deny', 'leave_at_gate'
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$visitor = $db->get_row_by_field( 'visitors', 'id', $visitor_id );
 
 		if ( ! $visitor ) {
-			return new WP_Error( 'not_found', __( 'Visitor entry not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'not_found', __( 'Visitor entry not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$status_map = array(
@@ -261,7 +261,12 @@ class SHUBX51_REST_Visitors_Controller extends WP_REST_Controller {
 		return rest_ensure_response( array(
 			'success'    => true,
 			'new_status' => $new_status,
-			'message'    => sprintf( __( 'Visitor entry marked as %s.', 'society-hubx' ), $new_status ),
+			'message'    => sprintf( __( 'Visitor entry marked as %s.', 'namma-society' ), $new_status ),
 		) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Visitors_Controller' ) && ! class_exists( 'SHUBX51_REST_Visitors_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Visitors_Controller', 'SHUBX51_REST_Visitors_Controller' );
 }

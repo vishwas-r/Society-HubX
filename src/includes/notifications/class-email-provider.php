@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Email_Provider implements SHUBX51_Notification_Provider_Interface {
+class NAMMASOCIETY51_Email_Provider implements NAMMASOCIETY51_Notification_Provider_Interface {
     
     public function send($recipient_id, $content, $args = []) {
         $user = get_userdata($recipient_id);
@@ -38,10 +38,15 @@ class SHUBX51_Email_Provider implements SHUBX51_Notification_Provider_Interface 
     }
 
     public function is_ready() {
-        $channels = SHUBX51_Plugin::get_instance()->db->get('notification_channels');
+        $channels = NAMMASOCIETY51_Plugin::get_instance()->db->get('notification_channels');
         foreach ($channels as $c) {
             if ($c['channel_slug'] === 'email') return (bool) $c['is_active'];
         }
         return false;
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Email_Provider' ) && ! class_exists( 'SHUBX51_Email_Provider', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Email_Provider', 'SHUBX51_Email_Provider' );
 }

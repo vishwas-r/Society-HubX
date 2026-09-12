@@ -3,14 +3,14 @@
  * Class: Admin UI Helper
  * Enqueues Bootstrap and custom styles for Admin Backend.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Admin_UI {
+class NAMMASOCIETY51_Admin_UI {
 
     public static function render_status_badge( $status ) {
         $status = strtolower( $status );
@@ -105,7 +105,7 @@ class SHUBX51_Admin_UI {
     }
 
     public static function render_inline_actions( $status, $id, $module = '' ) {
-        $html = '<div class="d-flex justify-content-end gap-1 shubx-inline-actions">';
+        $html = '<div class="d-flex justify-content-end gap-1 nammasociety-inline-actions">';
         
         if ( $status === 'pending' ) {
             $html .= sprintf(
@@ -138,4 +138,9 @@ class SHUBX51_Admin_UI {
             esc_attr( $id ), esc_attr( $module )
         );
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Admin_UI' ) && ! class_exists( 'SHUBX51_Admin_UI', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Admin_UI', 'SHUBX51_Admin_UI' );
 }

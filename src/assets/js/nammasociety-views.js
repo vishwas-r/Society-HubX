@@ -1,5 +1,5 @@
 /**
- * Society HubX – Admin Views JS
+ * Namma Society – Admin Views JS
  *
  * Consolidated JS for all admin views that previously had inline <script> blocks.
  * Handles: Roles, Requests filter, Polls, Activity Hub, Expenses, Documents, Assets.
@@ -12,7 +12,7 @@
    ===================================================================== */
 function shubxHighlightCapCard(cb) {
 	if (!cb) return;
-	const card = cb.closest('.shubx-cap-card');
+	const card = cb.closest('.nammasociety-cap-card');
 	if (!card) return;
 	if (cb.checked) {
 		card.classList.add('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
@@ -147,11 +147,11 @@ function deleteRole(roleId) {
 
 	const form = document.createElement('form');
 	form.method = 'POST';
-	// shubx51ViewsConfig.adminPostUrl is set via wp_add_inline_script in society-hubx.php
+	// shubx51ViewsConfig.adminPostUrl is set via wp_add_inline_script in namma-society.php
 	form.action = (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.adminPostUrl : '';
 
 	const fields = {
-		action: 'shubx51_delete_role',
+		action: 'nammasociety51_delete_role',
 		role_id: roleId,
 		_wpnonce: (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.roleNonce : ''
 	};
@@ -215,11 +215,11 @@ function openPollModal() {
 
 (function () {
 	document.addEventListener('DOMContentLoaded', () => {
-		const search = document.getElementById('shubx-poll-search');
+		const search = document.getElementById('nammasociety-poll-search');
 		if (search) {
 			search.addEventListener('keyup', (e) => {
 				const val = e.target.value.toLowerCase();
-				document.querySelectorAll('.shubx-poll-card').forEach(el => {
+				document.querySelectorAll('.nammasociety-poll-card').forEach(el => {
 					const text = el.dataset.search || '';
 					el.style.display = text.includes(val) ? '' : 'none';
 				});
@@ -270,7 +270,7 @@ function editExpense(btn) {
 	form.querySelector('[name="existing_receipt_url"]').value = data.receipt_url || '';
 	if (form.querySelector('[name="account_type"]')) form.querySelector('[name="account_type"]').value = data.account_type || 'bank';
 
-	form.querySelector('[name="action"]').value = 'shubx51_edit_expense';
+	form.querySelector('[name="action"]').value = 'nammasociety51_edit_expense';
 	form.querySelector('[name="expense_id"]').value = data.id || '';
 	const activeNonceField = document.getElementById('active_nonce_field');
 	const rawEditNonce = document.getElementById('raw_edit_nonce');
@@ -284,7 +284,7 @@ function resetExpenseForm() {
 	const form = document.getElementById('expense-form');
 	if (form) form.reset();
 	const actionField = form.querySelector('[name="action"]');
-	if (actionField) actionField.value = 'shubx51_add_expense';
+	if (actionField) actionField.value = 'nammasociety51_add_expense';
 	const idField = form.querySelector('[name="expense_id"]');
 	if (idField) idField.value = '';
 	const activeNonceField = document.getElementById('active_nonce_field');
@@ -447,7 +447,7 @@ function applyFilters() {
 function openAddAssetModal() {
 	const form = document.getElementById('asset-form');
 	if (form) form.reset();
-	document.getElementById('asset-form-action').value = 'shubx51_add_asset';
+	document.getElementById('asset-form-action').value = 'nammasociety51_add_asset';
 	document.getElementById('asset-id').value = '';
 	document.getElementById('assetModalTitle').textContent = 'Register New Asset';
 	document.getElementById('asset-submit-btn').textContent = 'Register Asset';
@@ -457,7 +457,7 @@ function openAddAssetModal() {
 }
 
 function openEditAssetModal(asset) {
-	document.getElementById('asset-form-action').value = 'shubx51_edit_asset';
+	document.getElementById('asset-form-action').value = 'nammasociety51_edit_asset';
 	document.getElementById('asset-id').value = asset.id;
 	document.getElementById('asset-name').value = asset.name;
 	document.getElementById('asset-purchase-date').value = asset.purchase_date;

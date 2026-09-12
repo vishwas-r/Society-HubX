@@ -3,20 +3,20 @@
  * Class: Request Manager
  * Processes resident requests (Add, Edit, Delete).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Request_Manager {
+class NAMMASOCIETY51_Request_Manager {
 
 	private $db;
     private $modules = array();
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 
         // Self-Heal Schema
         if ( is_admin() ) {
@@ -61,7 +61,7 @@ class SHUBX51_Request_Manager {
      * AJAX: Approve Request
      */
     public function handle_ajax_approve() {
-        check_ajax_referer( 'shubx51_request_action' );
+        check_ajax_referer( 'nammasociety51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -78,7 +78,7 @@ class SHUBX51_Request_Manager {
      * AJAX: Reject Request
      */
     public function handle_ajax_reject() {
-        check_ajax_referer( 'shubx51_request_action' );
+        check_ajax_referer( 'nammasociety51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $request_id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
@@ -97,7 +97,7 @@ class SHUBX51_Request_Manager {
      * AJAX: Bulk Process
      */
     public function handle_bulk_process() {
-        check_ajax_referer( 'shubx51_request_action' );
+        check_ajax_referer( 'nammasociety51_request_action' );
         if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( ['message' => 'Unauthorized'], 403 );
 
         $ids = isset($_POST['ids']) ? array_map('sanitize_text_field', wp_unslash($_POST['ids'])) : [];
@@ -180,7 +180,7 @@ class SHUBX51_Request_Manager {
 	 * Process a request by its ID.
 	 */
 	public function approve_request( $request_id ) {
-		// error_log("SHUBX51 Debug: approve_request called for ID: $request_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+		// error_log("NAMMASOCIETY51 Debug: approve_request called for ID: $request_id"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		$requests = $this->db->get( 'requests' );
 		$target_request = null;
 
@@ -213,13 +213,13 @@ class SHUBX51_Request_Manager {
 		$action      = $target_request['request_type']; 
 		$payload     = is_array($target_request['payload'] ?? null) ? $target_request['payload'] : json_decode( $target_request['payload'], true );
 		
-        $module_instance = apply_filters( 'shubx51_get_module_' . $module_slug, null );
+        $module_instance = apply_filters( 'nammasociety51_get_module_' . $module_slug, null );
 
         if ( ! empty( $target_request['entity_id'] ) ) {
             $payload['id'] = $target_request['entity_id'];
         }
 
-        if ( ! $module_instance || ! ( $module_instance instanceof SHUBX51_Module ) ) {
+        if ( ! $module_instance || ! ( $module_instance instanceof NAMMASOCIETY51_Module ) ) {
              return new WP_Error( 'no_module', "Module handler for '$module_slug' not found." );
         }
 
@@ -309,8 +309,8 @@ class SHUBX51_Request_Manager {
                 $payment_result = $module_instance->perform_record_payment( $payment_data );
             } else {
                 // Fallback direct instantiation if filter failed
-                require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
-                $am = new SHUBX51_Account_Manager();
+                require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+                $am = new NAMMASOCIETY51_Account_Manager();
                 $payment_result = $am->perform_record_payment( $payment_data );
             }
             
@@ -372,9 +372,9 @@ class SHUBX51_Request_Manager {
             $this->log_audit('request_approved', $module_slug, $actual_request_id, "Action: $action, Approved by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('SHUBX51_Plugin') && !empty($target_request['created_by']) ) {
-                $shubx = SHUBX51_Plugin::get_instance();
-                if ( isset($shubx->notifications) ) {
+            if ( class_exists('NAMMASOCIETY51_Plugin') && !empty($target_request['created_by']) ) {
+                $nammasociety = NAMMASOCIETY51_Plugin::get_instance();
+                if ( isset($nammasociety->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
                     foreach($residents as $res_obj) {
@@ -396,7 +396,7 @@ class SHUBX51_Request_Manager {
                         $request_desc = 'General Request';
                     }
 
-                    $shubx->notifications->trigger('request_approved', $target_request['created_by'], [
+                    $nammasociety->notifications->trigger('request_approved', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,
@@ -482,9 +482,9 @@ class SHUBX51_Request_Manager {
 			$this->log_audit('request_rejected', $module_slug, $actual_request_id, "Action: $action, Target: $entity_id, Note: $note, Rejected by: " . $update_data['processed_by']);
 
             // Trigger Resident Notification
-            if ( class_exists('SHUBX51_Plugin') && !empty($target_request['created_by']) ) {
-                $shubx = SHUBX51_Plugin::get_instance();
-                if ( isset($shubx->notifications) ) {
+            if ( class_exists('NAMMASOCIETY51_Plugin') && !empty($target_request['created_by']) ) {
+                $nammasociety = NAMMASOCIETY51_Plugin::get_instance();
+                if ( isset($nammasociety->notifications) ) {
                     $resident_name = 'Resident';
                     $residents = $this->db->get('residents');
                     foreach($residents as $res_obj) {
@@ -506,7 +506,7 @@ class SHUBX51_Request_Manager {
                         $request_desc = 'General Request';
                     }
 
-                    $shubx->notifications->trigger('request_rejected', $target_request['created_by'], [
+                    $nammasociety->notifications->trigger('request_rejected', $target_request['created_by'], [
                         'resident_name' => $resident_name,
                         'request_type'  => $request_desc . " (#" . substr($target_request['id'], -6) . ")",
                         'admin_name'    => $admin_name,
@@ -596,4 +596,9 @@ class SHUBX51_Request_Manager {
             'archived' => $archived
         );
     }
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Request_Manager' ) && ! class_exists( 'SHUBX51_Request_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Request_Manager', 'SHUBX51_Request_Manager' );
 }

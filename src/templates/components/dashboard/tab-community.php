@@ -82,7 +82,7 @@ sort($unique_blocks);
                                      <div class="position-relative">
                                          <!-- Resident Display Picture -->
                                          <?php 
-                                            $default_avatar = SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg';
+                                            $default_avatar = NAMMASOCIETY51_PLUGIN_URL . 'assets/images/default-avatar.svg';
                                             $dp_url = !empty($d['owner_photo']) ? $d['owner_photo'] : $default_avatar;
                                          ?>
                                          <img src="<?php echo esc_url($dp_url); ?>" 

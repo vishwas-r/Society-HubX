@@ -3,45 +3,45 @@
  * Module: Facility Manager
  * Handles Facilities (Clubhouse, etc.) and Bookings.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Facility_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_Facility_Manager implements NAMMASOCIETY51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
         
         // Ensure Schema Update (Run Once)
-        if ( class_exists( 'SHUBX51_DB_Schema' ) && ! get_option( 'shubx51_schema_access_facility_v1' ) ) {
-            SHUBX51_DB_Schema::create_tables();
-            update_option( 'shubx51_schema_access_facility_v1', true );
+        if ( class_exists( 'NAMMASOCIETY51_DB_Schema' ) && ! get_option( 'nammasociety51_schema_access_facility_v1' ) ) {
+            NAMMASOCIETY51_DB_Schema::create_tables();
+            update_option( 'nammasociety51_schema_access_facility_v1', true );
         }
 		
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
-		add_action( 'admin_post_shubx51_add_facility', array( $this, 'handle_add_facility' ) );
-		add_action( 'admin_post_shubx51_edit_facility', array( $this, 'handle_edit_facility' ) );
-		add_action( 'admin_post_shubx51_delete_facility', array( $this, 'handle_delete_facility' ) );
-		add_action( 'admin_post_shubx51_book_facility', array( $this, 'handle_book_facility' ) );
-		add_action( 'admin_post_shubx51_edit_booking', array( $this, 'handle_edit_booking' ) );
-		add_action( 'admin_post_shubx51_delete_booking', array( $this, 'handle_delete_booking' ) );
+		add_action( 'admin_post_nammasociety51_add_facility', array( $this, 'handle_add_facility' ) );
+		add_action( 'admin_post_nammasociety51_edit_facility', array( $this, 'handle_edit_facility' ) );
+		add_action( 'admin_post_nammasociety51_delete_facility', array( $this, 'handle_delete_facility' ) );
+		add_action( 'admin_post_nammasociety51_book_facility', array( $this, 'handle_book_facility' ) );
+		add_action( 'admin_post_nammasociety51_edit_booking', array( $this, 'handle_edit_booking' ) );
+		add_action( 'admin_post_nammasociety51_delete_booking', array( $this, 'handle_delete_booking' ) );
 
         // AJAX
-        add_action( 'wp_ajax_shubx51_add_facility', array( $this, 'handle_add_facility' ) );
-        add_action( 'wp_ajax_shubx51_edit_facility', array( $this, 'handle_edit_facility' ) );
-        add_action( 'wp_ajax_shubx51_delete_facility', array( $this, 'handle_delete_facility' ) );
-        add_action( 'wp_ajax_shubx51_book_facility', array( $this, 'handle_book_facility' ) );
-        add_action( 'wp_ajax_shubx51_edit_booking', array( $this, 'handle_edit_booking' ) );
-        add_action( 'wp_ajax_shubx51_delete_booking', array( $this, 'handle_delete_booking' ) );
-        add_action( 'wp_ajax_shubx51_get_facility_bookings', array( $this, 'handle_get_facility_bookings' ) ); // New Endpoint
+        add_action( 'wp_ajax_nammasociety51_add_facility', array( $this, 'handle_add_facility' ) );
+        add_action( 'wp_ajax_nammasociety51_edit_facility', array( $this, 'handle_edit_facility' ) );
+        add_action( 'wp_ajax_nammasociety51_delete_facility', array( $this, 'handle_delete_facility' ) );
+        add_action( 'wp_ajax_nammasociety51_book_facility', array( $this, 'handle_book_facility' ) );
+        add_action( 'wp_ajax_nammasociety51_edit_booking', array( $this, 'handle_edit_booking' ) );
+        add_action( 'wp_ajax_nammasociety51_delete_booking', array( $this, 'handle_delete_booking' ) );
+        add_action( 'wp_ajax_nammasociety51_get_facility_bookings', array( $this, 'handle_get_facility_bookings' ) ); // New Endpoint
 
         // Module Registration
-        add_filter( 'shubx51_get_module_facilities', array( $this, 'get_instance' ) );
+        add_filter( 'nammasociety51_get_module_facilities', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -63,23 +63,23 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 
 	public function register_menu() {
 		add_submenu_page(
-			'shubx51-settings',
+			'nammasociety51-settings',
 			'Facilities & Bookings',
 			'Facilities',
 			'read', // RBAC checked in render_page
-			'shubx51-facilities',
+			'nammasociety51-facilities',
 			array( $this, 'render_page' )
 		);
 	}
 
 	public function handle_add_facility() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -110,21 +110,21 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
         }
 
 		if ( is_wp_error( $result ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&error=' . urlencode( $result->get_error_message() ) ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&error=' . urlencode( $result->get_error_message() ) ) );
 		} else {
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&success=1' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&success=1' ) );
 		}
 		exit;
 	}
 
 	public function handle_edit_facility() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -158,7 +158,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
                 wp_send_json_success( array( 'message' => 'Facility updated successfully' ) );
                 exit;
             }
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&success=1&msg=Updated' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&success=1&msg=Updated' ) );
 		} else {
             if ( wp_doing_ajax() ) {
                 // Aggressive Clean
@@ -166,19 +166,19 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
                 wp_send_json_error( array( 'message' => 'Facility not found' ) );
                 exit;
             }
-			wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&error=Facility not found' ) );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&error=Facility not found' ) );
 		}
 		exit;
 	}
 
 	public function handle_delete_facility() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_delete_facility_nonce' );
+            check_ajax_referer( 'nammasociety51_delete_facility_nonce' );
         } else {
-            if ( ! check_admin_referer( 'shubx51_delete_facility_nonce' ) ) {
+            if ( ! check_admin_referer( 'nammasociety51_delete_facility_nonce' ) ) {
                 wp_die( 'Security check failed' );
             }
         }
@@ -193,7 +193,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
             exit;
         }
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&deleted=1' ) );
 		exit;
 	}
 
@@ -201,9 +201,9 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 		if ( ! is_user_logged_in() ) wp_die( 'Login Required' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -263,12 +263,12 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
         }
 
         // Create Approval Request
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $request_id = $rm->create_request( 'facilities', 'book', $data, $data['id'] );
 
         // Check for Auto-Approval
-        $approval_mode = get_option( 'shubx51_approval_facility', 'manual' );
+        $approval_mode = get_option( 'nammasociety51_approval_facility', 'manual' );
         $is_admin_booking = current_user_can( 'manage_options' );
 
         if ( $approval_mode === 'auto' || $is_admin_booking ) {
@@ -290,7 +290,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 
 		$referer = wp_get_referer();
 		if ( strpos( $referer, 'wp-admin' ) !== false && current_user_can( 'manage_options' ) ) {
-			$redirect_url = admin_url( 'admin.php?page=shubx51-facilities&success=1&msg=booked' );
+			$redirect_url = admin_url( 'admin.php?page=nammasociety51-facilities&success=1&msg=booked' );
 		} else {
             $msg = ( $approval_mode === 'auto' || $is_admin_booking ) ? 'booking_success' : 'request_submitted';
 			$redirect_url = add_query_arg( $msg, '1', $referer );
@@ -300,13 +300,13 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 	}
 
 	public function handle_edit_booking() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -314,8 +314,8 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 		$id = isset( $_POST['booking_id'] ) ? sanitize_text_field( wp_unslash( $_POST['booking_id'] ) ) : '';
 
         // 1. Synchronize with Request Manager if a pending request exists
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $sync_res = $rm->approve_request( $id );
         
         if ( ! is_wp_error( $sync_res ) ) {
@@ -324,7 +324,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking updated and request synchronized']);
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&success=1&msg=updated' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&success=1&msg=updated' ) );
             }
             exit;
         }
@@ -378,18 +378,18 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&success=1&msg=updated' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&success=1&msg=updated' ) );
 		exit;
 	}
 
 	public function handle_delete_booking() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_manage' ) ) wp_die( 'Unauthorized' );
 
 		if ( wp_doing_ajax() ) {
-			check_ajax_referer( 'shubx51_facility_nonce', '_wpnonce' );
+			check_ajax_referer( 'nammasociety51_facility_nonce', '_wpnonce' );
 		} else {
-			if ( ! check_admin_referer( 'shubx51_facility_nonce' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_facility_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -397,8 +397,8 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 		$id = isset( $_POST['id'] ) ? sanitize_text_field( wp_unslash( $_POST['id'] ) ) : '';
 
         // 1. Synchronize with Request Manager if a pending request exists
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $sync_res = $rm->approve_request( $id );
         
         if ( ! is_wp_error( $sync_res ) ) {
@@ -407,7 +407,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
                 while ( ob_get_level() > 0 ) { ob_end_clean(); }
                 wp_send_json_success(['message' => 'Booking deleted and request synchronized']);
             } else {
-                wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&deleted=1' ) );
+                wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&deleted=1' ) );
             }
             exit;
         }
@@ -421,7 +421,7 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-facilities&deleted=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-facilities&deleted=1' ) );
 		exit;
 	}
 
@@ -492,10 +492,15 @@ class SHUBX51_Facility_Manager implements SHUBX51_Module {
 	}
 
 	public function render_page() {
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'facilities_view' ) ) {
             wp_die( 'You do not have permission to access Facilities & Bookings.' );
         }
-		SHUBX51_Admin_App::render_view('facilities');
+		NAMMASOCIETY51_Admin_App::render_view('facilities');
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Facility_Manager' ) && ! class_exists( 'SHUBX51_Facility_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Facility_Manager', 'SHUBX51_Facility_Manager' );
 }

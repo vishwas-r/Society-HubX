@@ -3,21 +3,21 @@
  * Class: REST Staff Controller
  * Endpoints for managing society staff, daily help, attendance, and concerns.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Staff_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -110,18 +110,18 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	 * Get staff items.
 	 */
 	public function get_items( $request ) {
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$staff = $db->get( 'daily_help' );
 
 		if ( empty( $staff ) ) {
 			return rest_ensure_response( array() );
 		}
 
-		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
+		$privileged = NAMMASOCIETY51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
 		
 		foreach ( $staff as &$s ) {
 			if ( ! $privileged ) {
-				$s['phone'] = SHUBX51_Privacy_Manager::mask_data( $s['phone'] ?? '' );
+				$s['phone'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $s['phone'] ?? '' );
 			}
 		}
 
@@ -133,17 +133,17 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$staff = $db->get( 'daily_help', array( 'id' => $id ) );
 
 		if ( empty( $staff ) ) {
-			return new WP_Error( 'rest_staff_not_found', __( 'Staff member not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_staff_not_found', __( 'Staff member not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$s = $staff[0];
-		$privileged = SHUBX51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
+		$privileged = NAMMASOCIETY51_Plugin::get_instance()->rbac->has_capability( get_current_user_id(), 'staff_manage' );
 		if ( ! $privileged ) {
-			$s['phone'] = SHUBX51_Privacy_Manager::mask_data( $s['phone'] ?? '' );
+			$s['phone'] = NAMMASOCIETY51_Privacy_Manager::mask_data( $s['phone'] ?? '' );
 		}
 
 		return rest_ensure_response( $s );
@@ -160,7 +160,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 
 		$name = isset( $params['name'] ) ? sanitize_text_field( $params['name'] ) : '';
 		if ( empty( $name ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Staff name is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Staff name is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$photo = isset( $params['profile_photo'] ) ? esc_url_raw( $params['profile_photo'] ) : ( isset( $params['photo_url'] ) ? esc_url_raw( $params['photo_url'] ) : '' );
@@ -176,7 +176,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			'created_at'    => current_time( 'mysql' ),
 		);
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$result = $db->insert( 'daily_help', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -195,10 +195,10 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$existing = $db->get( 'daily_help', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_staff_not_found', __( 'Staff member not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_staff_not_found', __( 'Staff member not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -223,7 +223,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Staff member updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Staff member updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -231,14 +231,14 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$result = $db->update( 'daily_help', array( 'status' => 'inactive' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Staff member archived successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Staff member archived successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -250,7 +250,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 		$status   = isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : 'present';
 
 		if ( empty( $staff_id ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Staff ID is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Staff ID is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -262,18 +262,18 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			'created_at' => current_time( 'mysql' ),
 		);
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$result = $db->insert( 'staff_attendance', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Attendance marked successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Attendance marked successfully.', 'namma-society' ) ) );
 	}
 
 	/**
 	 * Permissions check for biometric hardware sync.
-	 * Requires valid X-Device-Token matching shubx51_biometric_api_secret,
+	 * Requires valid X-Device-Token matching nammasociety51_biometric_api_secret,
 	 * or current logged-in user with 'staff_manage' capability.
 	 *
 	 * @param WP_REST_Request $request
@@ -283,14 +283,14 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 		if ( current_user_can( 'manage_options' ) ) {
 			return true;
 		}
-		if ( class_exists( 'SHUBX51_Plugin' ) ) {
-			$rbac = SHUBX51_Plugin::get_instance()->rbac ?? null;
+		if ( class_exists( 'NAMMASOCIETY51_Plugin' ) ) {
+			$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac ?? null;
 			if ( $rbac && $rbac->has_capability( get_current_user_id(), 'staff_manage' ) ) {
 				return true;
 			}
 		}
 
-		$stored_secret = get_option( 'shubx51_biometric_api_secret', '' );
+		$stored_secret = get_option( 'nammasociety51_biometric_api_secret', '' );
 		$provided_token = $request->get_header( 'x-device-token' );
 		if ( empty( $provided_token ) ) {
 			$auth_header = $request->get_header( 'authorization' );
@@ -304,12 +304,12 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			$is_valid = true;
 		}
 
-		$is_valid = apply_filters( 'shubx51_biometric_auth_check', $is_valid, $request );
+		$is_valid = apply_filters( 'nammasociety51_biometric_auth_check', $is_valid, $request );
 
 		if ( ! $is_valid ) {
 			return new WP_Error(
 				'rest_forbidden',
-				__( 'Invalid or missing biometric hardware device token. Set X-Device-Token header.', 'society-hubx' ),
+				__( 'Invalid or missing biometric hardware device token. Set X-Device-Token header.', 'namma-society' ),
 				array( 'status' => 401 )
 			);
 		}
@@ -323,7 +323,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 	public function handle_biometric_sync( $request ) {
 		$params = $request->get_json_params();
 		if ( empty( $params['staff_id'] ) || empty( $params['status'] ) ) {
-			return new WP_Error( 'missing_params', __( 'staff_id and status are required', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'missing_params', __( 'staff_id and status are required', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -335,7 +335,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			'created_at' => current_time( 'mysql' ),
 		);
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$result = $db->insert( 'staff_attendance', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -353,7 +353,7 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 		$notes    = isset( $params['notes'] ) ? sanitize_textarea_field( $params['notes'] ) : '';
 
 		if ( empty( $staff_id ) || empty( $notes ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Staff ID and notes are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Staff ID and notes are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -364,28 +364,33 @@ class SHUBX51_REST_Staff_Controller extends WP_REST_Controller {
 			'created_at'  => current_time( 'mysql' ),
 		);
 
-		$db = SHUBX51_Plugin::get_instance()->db;
+		$db = NAMMASOCIETY51_Plugin::get_instance()->db;
 		$result = $db->insert( 'staff_concerns', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return new WP_REST_Response( array( 'success' => true, 'message' => __( 'Concern reported successfully.', 'society-hubx' ) ), 201 );
+		return new WP_REST_Response( array( 'success' => true, 'message' => __( 'Concern reported successfully.', 'namma-society' ) ), 201 );
 	}
 
 	public function get_items_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'staff_view' ) || current_user_can( 'manage_options' );
 	}
 
 	public function manage_staff_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = SHUBX51_Plugin::get_instance()->rbac;
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = NAMMASOCIETY51_Plugin::get_instance()->rbac;
 		return $rbac->has_capability( get_current_user_id(), 'staff_manage' ) || current_user_can( 'manage_options' );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Staff_Controller' ) && ! class_exists( 'SHUBX51_REST_Staff_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Staff_Controller', 'SHUBX51_REST_Staff_Controller' );
 }

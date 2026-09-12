@@ -7,10 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Payment_Service {
+class NAMMASOCIETY51_Payment_Service {
 	
 	public static function process_payment( $invoice_id, $amount, $method, $reference = '', $date = '', $notes = '' ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$invoice = $db->get_invoice( $invoice_id );
 		
 		if ( ! $invoice ) {
@@ -101,37 +101,37 @@ class SHUBX51_Payment_Service {
 		self::update_state_hash();
 
 		// Fire Action for webhooks/notifications
-		do_action( 'shubx51_payment_processed', $invoice_id, $new_payment['id'], $amount );
+		do_action( 'nammasociety51_payment_processed', $invoice_id, $new_payment['id'], $amount );
 
 		return $new_payment;
 	}
 
 	/**
-	 * Registered gateway instances implementing SHUBX51_Payment_Gateway_Interface.
+	 * Registered gateway instances implementing NAMMASOCIETY51_Payment_Gateway_Interface.
 	 *
-	 * @var array<string, SHUBX51_Payment_Gateway_Interface>
+	 * @var array<string, NAMMASOCIETY51_Payment_Gateway_Interface>
 	 */
 	private static $gateways = array();
 
 	/**
 	 * Register a payment gateway addon.
 	 *
-	 * @param SHUBX51_Payment_Gateway_Interface $gateway
+	 * @param NAMMASOCIETY51_Payment_Gateway_Interface $gateway
 	 */
-	public static function register_gateway( SHUBX51_Payment_Gateway_Interface $gateway ) {
+	public static function register_gateway( NAMMASOCIETY51_Payment_Gateway_Interface $gateway ) {
 		$id = sanitize_key( $gateway->get_id() );
 		self::$gateways[ $id ] = $gateway;
 
 		// Automatically bind webhook verification and handling filters
-		add_filter( "shubx51_webhook_permissions_check_{$id}", array( $gateway, 'verify_webhook_permission' ), 10, 2 );
-		add_action( "shubx51_handle_webhook_{$id}", array( $gateway, 'handle_webhook' ), 10, 1 );
+		add_filter( "nammasociety51_webhook_permissions_check_{$id}", array( $gateway, 'verify_webhook_permission' ), 10, 2 );
+		add_action( "nammasociety51_handle_webhook_{$id}", array( $gateway, 'handle_webhook' ), 10, 1 );
 	}
 
 	/**
 	 * Get registered gateway by ID.
 	 *
 	 * @param string $id
-	 * @return SHUBX51_Payment_Gateway_Interface|null
+	 * @return NAMMASOCIETY51_Payment_Gateway_Interface|null
 	 */
 	public static function get_gateway( string $id ) {
 		$id = sanitize_key( $id );
@@ -141,7 +141,7 @@ class SHUBX51_Payment_Service {
 	/**
 	 * Get all registered gateways.
 	 *
-	 * @return array<string, SHUBX51_Payment_Gateway_Interface>
+	 * @return array<string, NAMMASOCIETY51_Payment_Gateway_Interface>
 	 */
 	public static function get_gateways(): array {
 		return self::$gateways;
@@ -150,10 +150,10 @@ class SHUBX51_Payment_Service {
 	/**
 	 * Get the currently active/preferred payment gateway.
 	 *
-	 * @return SHUBX51_Payment_Gateway_Interface|null
+	 * @return NAMMASOCIETY51_Payment_Gateway_Interface|null
 	 */
 	public static function get_active_gateway() {
-		$configured_id = get_option( 'shubx51_active_payment_gateway', '' );
+		$configured_id = get_option( 'nammasociety51_active_payment_gateway', '' );
 		if ( ! empty( $configured_id ) && isset( self::$gateways[ $configured_id ] ) && self::$gateways[ $configured_id ]->is_available() ) {
 			return self::$gateways[ $configured_id ];
 		}
@@ -180,7 +180,7 @@ class SHUBX51_Payment_Service {
 	public static function create_order( $invoice_id, float $amount, array $customer_details = array(), string $gateway_id = '' ) {
 		$gateway = ! empty( $gateway_id ) ? self::get_gateway( $gateway_id ) : self::get_active_gateway();
 		if ( ! $gateway || ! $gateway->is_available() ) {
-			return new WP_Error( 'gateway_unavailable', __( 'No payment gateway is currently available. Please contact the administrator.', 'society-hubx' ) );
+			return new WP_Error( 'gateway_unavailable', __( 'No payment gateway is currently available. Please contact the administrator.', 'namma-society' ) );
 		}
 
 		return $gateway->create_order( $invoice_id, $amount, $customer_details );
@@ -188,10 +188,10 @@ class SHUBX51_Payment_Service {
 
 	public static function init() {
 		// Allow external addons to register themselves
-		do_action( 'shubx51_register_payment_gateways', __CLASS__ );
+		do_action( 'nammasociety51_register_payment_gateways', __CLASS__ );
         
 		// Register AJAX endpoint for Admin polling
-		add_action( 'wp_ajax_shubx51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ) );
+		add_action( 'wp_ajax_nammasociety51_poll_state_hash', array( __CLASS__, 'ajax_poll_state_hash' ) );
 	}
 
     public static function ajax_poll_state_hash() {
@@ -203,17 +203,22 @@ class SHUBX51_Payment_Service {
 
 	public static function update_state_hash() {
 		// Store a precise microtime hash in a transient
-		set_transient( 'shubx51_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
+		set_transient( 'nammasociety51_payment_state_hash', microtime(true), WEEK_IN_SECONDS );
 	}
 
 	public static function get_state_hash() {
-		$hash = get_transient( 'shubx51_payment_state_hash' );
+		$hash = get_transient( 'nammasociety51_payment_state_hash' );
 		if ( ! $hash ) {
 			$hash = microtime(true);
-			set_transient( 'shubx51_payment_state_hash', $hash, WEEK_IN_SECONDS );
+			set_transient( 'nammasociety51_payment_state_hash', $hash, WEEK_IN_SECONDS );
 		}
 		return $hash;
 	}
 }
 
-SHUBX51_Payment_Service::init();
+NAMMASOCIETY51_Payment_Service::init();
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Payment_Service' ) && ! class_exists( 'SHUBX51_Payment_Service', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Payment_Service', 'SHUBX51_Payment_Service' );
+}

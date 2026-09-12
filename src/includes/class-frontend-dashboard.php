@@ -3,71 +3,71 @@
  * Class: Frontend Dashboard
  * Handles the Resident Dashboard Shortcode.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Frontend_Dashboard {
+class NAMMASOCIETY51_Frontend_Dashboard {
 
 	private $db;
 	private $drive;
 	private $media;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
-		$this->drive = new SHUBX51_Drive_Manager();
-		$this->media = new SHUBX51_Media_Manager();
+		$this->db = new NAMMASOCIETY51_DB_Router();
+		$this->drive = new NAMMASOCIETY51_Drive_Manager();
+		$this->media = new NAMMASOCIETY51_Media_Manager();
 		
-		add_shortcode( 'shubx51_dashboard', array( $this, 'render_dashboard' ) );
-		add_shortcode( 'shubx51_notices', array( $this, 'render_notices' ) );
-		add_shortcode( 'shubx51_directory', array( $this, 'render_directory' ) );
+		add_shortcode( 'nammasociety51_dashboard', array( $this, 'render_dashboard' ) );
+		add_shortcode( 'nammasociety51_notices', array( $this, 'render_notices' ) );
+		add_shortcode( 'nammasociety51_directory', array( $this, 'render_directory' ) );
 
 
 		// Form Handlers
-		add_action( 'admin_post_shubx51_update_profile', array( $this, 'handle_profile_update' ) );
-		add_action( 'admin_post_shubx51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
-		add_action( 'admin_post_shubx51_frontend_delete_doc', array( $this, 'handle_doc_delete' ) );
-		add_action( 'admin_post_shubx51_add_family', array( $this, 'handle_add_family' ) );
-		add_action( 'admin_post_shubx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
-		add_action( 'admin_post_shubx51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
-		add_action( 'admin_post_shubx51_update_utilities', array( $this, 'handle_update_utilities' ) );
-		add_action( 'admin_post_shubx51_request_delete_doc', array( $this, 'handle_request_delete_doc' ) );
+		add_action( 'admin_post_nammasociety51_update_profile', array( $this, 'handle_profile_update' ) );
+		add_action( 'admin_post_nammasociety51_frontend_upload_doc', array( $this, 'handle_doc_upload' ) );
+		add_action( 'admin_post_nammasociety51_frontend_delete_doc', array( $this, 'handle_doc_delete' ) );
+		add_action( 'admin_post_nammasociety51_add_family', array( $this, 'handle_add_family' ) );
+		add_action( 'admin_post_nammasociety51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
+		add_action( 'admin_post_nammasociety51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
+		add_action( 'admin_post_nammasociety51_update_utilities', array( $this, 'handle_update_utilities' ) );
+		add_action( 'admin_post_nammasociety51_request_delete_doc', array( $this, 'handle_request_delete_doc' ) );
 		
-		add_action( 'admin_post_shubx51_edit_family', array( $this, 'handle_edit_family' ) );
-		add_action( 'admin_post_shubx51_edit_daily_help', array( $this, 'handle_edit_daily_help' ) );
-		add_action( 'admin_post_shubx51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) );
-		// Compatibility: accept older action name so frontend posts with `shubx51_edit_vehicle` also work
-		add_action( 'admin_post_shubx51_edit_vehicle', array( $this, 'handle_edit_vehicle' ), 1 );
+		add_action( 'admin_post_nammasociety51_edit_family', array( $this, 'handle_edit_family' ) );
+		add_action( 'admin_post_nammasociety51_edit_daily_help', array( $this, 'handle_edit_daily_help' ) );
+		add_action( 'admin_post_nammasociety51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) );
+		// Compatibility: accept older action name so frontend posts with `nammasociety51_edit_vehicle` also work
+		add_action( 'admin_post_nammasociety51_edit_vehicle', array( $this, 'handle_edit_vehicle' ), 1 );
 
         // Delete Handlers
-        add_action( 'admin_post_shubx51_delete_family', array( $this, 'handle_delete_family' ) );
-        add_action( 'admin_post_shubx51_delete_daily_help', array( $this, 'handle_delete_daily_help' ) );
-		add_action( 'admin_post_shubx51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
+        add_action( 'admin_post_nammasociety51_delete_family', array( $this, 'handle_delete_family' ) );
+        add_action( 'admin_post_nammasociety51_delete_daily_help', array( $this, 'handle_delete_daily_help' ) );
+		add_action( 'admin_post_nammasociety51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
         
         // AJAX Handlers for Resident Dashboard
-        add_action( 'wp_ajax_shubx51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
-        add_action( 'wp_ajax_shubx51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) ); 
-        add_action( 'wp_ajax_shubx51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
+        add_action( 'wp_ajax_nammasociety51_add_vehicle_frontend', array( $this, 'handle_add_vehicle_frontend' ) );
+        add_action( 'wp_ajax_nammasociety51_edit_vehicle_frontend', array( $this, 'handle_edit_vehicle' ) ); 
+        add_action( 'wp_ajax_nammasociety51_delete_vehicle_frontend', array( $this, 'handle_delete_vehicle_frontend' ) );
 
-        add_action( 'wp_ajax_shubx51_add_family_frontend', array( $this, 'handle_add_family' ) );
-        add_action( 'wp_ajax_shubx51_add_family', array( $this, 'handle_add_family' ) ); // Fix: Alias for frontend value
-        add_action( 'wp_ajax_shubx51_edit_family_frontend', array( $this, 'handle_edit_family' ) );
-        add_action( 'wp_ajax_shubx51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
-        add_action( 'wp_ajax_shubx51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
+        add_action( 'wp_ajax_nammasociety51_add_family_frontend', array( $this, 'handle_add_family' ) );
+        add_action( 'wp_ajax_nammasociety51_add_family', array( $this, 'handle_add_family' ) ); // Fix: Alias for frontend value
+        add_action( 'wp_ajax_nammasociety51_edit_family_frontend', array( $this, 'handle_edit_family' ) );
+        add_action( 'wp_ajax_nammasociety51_edit_family', array( $this, 'handle_edit_family' ) ); // Fix: Alias for frontend value
+        add_action( 'wp_ajax_nammasociety51_delete_family_frontend', array( $this, 'handle_delete_family' ) );
 
-        add_action( 'wp_ajax_shubx51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
-        add_action( 'wp_ajax_shubx51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
-        add_action( 'wp_ajax_shubx51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
+        add_action( 'wp_ajax_nammasociety51_add_daily_help', array( $this, 'handle_add_daily_help' ) );
+        add_action( 'wp_ajax_nammasociety51_edit_help_frontend', array( $this, 'handle_edit_daily_help' ) );
+        add_action( 'wp_ajax_nammasociety51_delete_daily_help_frontend', array( $this, 'handle_delete_daily_help' ) );
 
 		// Switch Flat Handler
-		add_action( 'wp_ajax_shubx51_switch_flat', array( $this, 'handle_switch_flat' ) );
+		add_action( 'wp_ajax_nammasociety51_switch_flat', array( $this, 'handle_switch_flat' ) );
 
 		// Login & Access Control
-		add_action( 'wp_ajax_shubx51_resident_login', array( $this, 'handle_resident_login' ) );
-		add_action( 'wp_ajax_nopriv_shubx51_resident_login', array( $this, 'handle_resident_login' ) );
+		add_action( 'wp_ajax_nammasociety51_resident_login', array( $this, 'handle_resident_login' ) );
+		add_action( 'wp_ajax_nopriv_nammasociety51_resident_login', array( $this, 'handle_resident_login' ) );
 		add_filter( 'show_admin_bar', array( $this, 'hide_admin_bar_for_residents' ) );
 	}
 
@@ -75,7 +75,7 @@ class SHUBX51_Frontend_Dashboard {
 	 * Handle Profile Update (Frontend)
 	 */
 	public function handle_profile_update() {
-		if ( ! is_user_logged_in() || ! check_admin_referer( 'shubx51_update_profile_nonce' ) ) {
+		if ( ! is_user_logged_in() || ! check_admin_referer( 'nammasociety51_update_profile_nonce' ) ) {
 			wp_die( 'Security check failed' );
 		}
 
@@ -122,7 +122,7 @@ class SHUBX51_Frontend_Dashboard {
 	 * Handle Payment Confirmation (Frontend)
 	 */
 	public function handle_submit_payment() {
-		check_ajax_referer( 'shubx51_admin_nonce', '_ajax_nonce' );
+		check_ajax_referer( 'nammasociety51_admin_nonce', '_ajax_nonce' );
 		if ( ! is_user_logged_in() ) wp_send_json_error( ['message' => 'Unauthorized'] );
 
 		$user_id = get_current_user_id();
@@ -141,7 +141,7 @@ class SHUBX51_Frontend_Dashboard {
 
 		if ( ! $resident ) wp_send_json_error( ['message' => 'Resident profile not found.'] );
 
-		$req_manager = new SHUBX51_Request_Manager();
+		$req_manager = new NAMMASOCIETY51_Request_Manager();
 		$payload = [
 			'category'   => 'Payment Confirmation',
 			'invoice_id' => $invoice_id,
@@ -165,7 +165,7 @@ class SHUBX51_Frontend_Dashboard {
 	 */
 	public function handle_switch_flat() {
 		// Verify frontend nonce (JS sends as _wpnonce)
-		check_ajax_referer( 'shubx51_frontend_nonce', '_wpnonce' );
+		check_ajax_referer( 'nammasociety51_frontend_nonce', '_wpnonce' );
 
 		if ( ! is_user_logged_in() ) {
 			wp_send_json_error( array( 'message' => 'Unauthorized' ) );
@@ -194,7 +194,7 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( array( 'message' => 'You do not have access to this flat.' ) );
 		}
 
-		update_user_meta( get_current_user_id(), 'shubx51_active_flat_id', $flat_id );
+		update_user_meta( get_current_user_id(), 'nammasociety51_active_flat_id', $flat_id );
 
 		wp_send_json_success( array( 'message' => 'Switched to flat context successfully.' ) );
 	}
@@ -213,18 +213,18 @@ class SHUBX51_Frontend_Dashboard {
 	public function render_dashboard( $atts ) {
 		if ( ! is_user_logged_in() ) {
 			$society_info = array(
-				'name'     => get_option( 'shubx51_society_name', 'Our Society' ),
-				'address1' => get_option( 'shubx51_society_address_line1', '' ),
-				'address2' => get_option( 'shubx51_society_address_line2', '' ),
-				'city'     => get_option( 'shubx51_society_city', '' ),
-				'contact'  => get_option( 'shubx51_society_contact', '' )
+				'name'     => get_option( 'nammasociety51_society_name', 'Our Society' ),
+				'address1' => get_option( 'nammasociety51_society_address_line1', '' ),
+				'address2' => get_option( 'nammasociety51_society_address_line2', '' ),
+				'city'     => get_option( 'nammasociety51_society_city', '' ),
+				'contact'  => get_option( 'nammasociety51_society_contact', '' )
 			);
-			wp_enqueue_style( 'shubx51-login-css', SHUBX51_PLUGIN_URL . 'assets/css/shubx-login.css', array( 'shubx51-bootstrap' ), SHUBX51_VERSION );
-			wp_enqueue_script( 'shubx51-login-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-login.js', array( 'jquery' ), SHUBX51_VERSION, true );
-			wp_add_inline_script( 'shubx51-login-js', 'var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";', 'before' );
+			wp_enqueue_style( 'nammasociety51-login-css', NAMMASOCIETY51_PLUGIN_URL . 'assets/css/nammasociety-login.css', array( 'nammasociety51-bootstrap' ), NAMMASOCIETY51_VERSION );
+			wp_enqueue_script( 'nammasociety51-login-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-login.js', array( 'jquery' ), NAMMASOCIETY51_VERSION, true );
+			wp_add_inline_script( 'nammasociety51-login-js', 'var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";', 'before' );
 			
 			ob_start();
-			include SHUBX51_PLUGIN_DIR . 'templates/resident-login.php';
+			include NAMMASOCIETY51_PLUGIN_DIR . 'templates/resident-login.php';
 			return ob_get_clean();
 		}
 
@@ -234,13 +234,13 @@ class SHUBX51_Frontend_Dashboard {
 		if ( is_wp_error($data) ) {
 			if ( $data->get_error_code() === 'no_resident' ) {
 				if ( current_user_can( 'manage_options' ) ) {
-					return '<div class="shubx51-alert alert alert-info">
+					return '<div class="nammasociety51-alert alert alert-info">
 								<h4>Welcome Admin!</h4>
 								<p>Your account is not linked to a specific Resident Profile (Flat), so you cannot view the Resident Dashboard.</p>
-								<a href="' . esc_url( admin_url( 'admin.php?page=shubx51-settings' ) ) . '" class="btn btn-primary">Go to Admin Settings</a>
+								<a href="' . esc_url( admin_url( 'admin.php?page=nammasociety51-settings' ) ) . '" class="btn btn-primary">Go to Admin Settings</a>
 							</div>';
 				}
-				return '<div class="shubx51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
+				return '<div class="nammasociety51-alert alert alert-danger">No Resident Profile linked to your account. Please contact the Society Admin.</div>';
 			}
 		}
 
@@ -255,24 +255,24 @@ class SHUBX51_Frontend_Dashboard {
 
 		// 4. Render Template.
          
-         wp_enqueue_script( 'shubx51-dashboard-js', SHUBX51_PLUGIN_URL . 'assets/js/shubx-dashboard.js', array('jquery', 'shubx51-chartjs', 'shubx51-html2canvas'), current_time('U'), true );
+         wp_enqueue_script( 'nammasociety51-dashboard-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-dashboard.js', array('jquery', 'nammasociety51-chartjs', 'nammasociety51-html2canvas'), current_time('U'), true );
          
          // Localize Data for Dashboard
-         wp_localize_script( 'shubx51-dashboard-js', 'shubx51DashboardData', array(
+         wp_localize_script( 'nammasociety51-dashboard-js', 'shubx51DashboardData', array(
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
             'my_requests'      => array_values($my_requests), // Pass resident requests
-            'nonce'            => wp_create_nonce('shubx51_frontend_nonce'),
-            'rest_url'         => esc_url_raw( rest_url( 'society-hubx/v1/' ) ),
+            'nonce'            => wp_create_nonce('nammasociety51_frontend_nonce'),
+            'rest_url'         => esc_url_raw( rest_url( 'namma-society/v1/' ) ),
             'rest_nonce'       => wp_create_nonce( 'wp_rest' ),
             'my_flats'         => $data['my_flats'] ?? array(),
             'active_flat_no'   => $data['active_flat_no'] ?? '',
-            'defaultAvatar'    => esc_url_raw( SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg' ),
+            'defaultAvatar'    => esc_url_raw( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/default-avatar.svg' ),
          ));
         
 		ob_start();
-		include SHUBX51_PLUGIN_DIR . 'templates/dashboard.php';
+		include NAMMASOCIETY51_PLUGIN_DIR . 'templates/dashboard.php';
 		return ob_get_clean();
 	}
 
@@ -330,7 +330,7 @@ class SHUBX51_Frontend_Dashboard {
 
         $my_vehicles = $this->get_my_vehicles( $active_flat_no, $active_block );
 
-		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_mgr = new NAMMASOCIETY51_Ledger_Manager();
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page filter read-only query parameter.
         $summary_month = isset($_GET['summary_month']) ? sanitize_text_field( wp_unslash( $_GET['summary_month'] ) ) : gmdate('Y-m');
        
@@ -696,26 +696,26 @@ class SHUBX51_Frontend_Dashboard {
 	public function handle_add_family() {
 
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_add_family_nonce' );
+            check_ajax_referer( 'nammasociety51_add_family_nonce' );
         } else {
             // Robust Nonce Check
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_family'] ) ), 'shubx51_add_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_family'] ) ), 'nammasociety51_add_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_add_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_add_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( check_admin_referer( 'shubx51_add_family_nonce' ) ) {
+            } elseif ( check_admin_referer( 'nammasociety51_add_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
 		    if ( ! $nonce_ok ) {
-                error_log("SHUBX51 Debug: Nonce verification failed for add_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                error_log("NAMMASOCIETY51 Debug: Nonce verification failed for add_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_die( 'Security check failed' );
             }
         }
 		
 		$flat_no = $this->get_my_flat_number();
-        error_log("SHUBX51 Debug: Found Flat No: " . $flat_no); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+        error_log("NAMMASOCIETY51 Debug: Found Flat No: " . $flat_no); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 
 		if(!$flat_no) {
             if(wp_doing_ajax()) wp_send_json_error('Flat not found');
@@ -762,18 +762,18 @@ class SHUBX51_Frontend_Dashboard {
         // Insert into DB as pending
         $this->db->insert('residents', $payload);
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $request_id = $rm->create_request( 'residents', 'add', $payload, $new_id, 'family', $flat_no );
 
          if ( is_wp_error( $request_id ) ) {
-            error_log("SHUBX51 Error: Request creation failed: " . $request_id->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+            error_log("NAMMASOCIETY51 Error: Request creation failed: " . $request_id->get_error_message()); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
             if(wp_doing_ajax()) wp_send_json_error( $request_id->get_error_message() );
             wp_die( esc_html( $request_id->get_error_message() ) );
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_family', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member added successfully']);
             wp_safe_redirect( wp_get_referer() . '?family_added=1' );
@@ -789,13 +789,13 @@ class SHUBX51_Frontend_Dashboard {
         if ( wp_doing_ajax() ) {
             // JS sends _wpnonce from the form
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'shubx51_add_help_nonce' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'nammasociety51_add_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_help'] ) ), 'shubx51_add_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_add_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_help'] ) ), 'nammasociety51_add_help_nonce' ) ) {
                 // Success
-            } else if ( ! check_admin_referer( 'shubx51_add_help_nonce' ) ) {
+            } else if ( ! check_admin_referer( 'nammasociety51_add_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
             }
         }
@@ -843,8 +843,8 @@ class SHUBX51_Frontend_Dashboard {
         // Insert into DB as pending (payload already has status=pending)
         $this->db->insert('daily_help', $payload);
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $request_id = $rm->create_request( 'daily_help', 'add', $payload, $new_id, 'daily_help', $flat_no );
 
          if ( is_wp_error( $request_id ) ) {
@@ -853,7 +853,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_help', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help added successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_added=1' );
@@ -868,13 +868,13 @@ class SHUBX51_Frontend_Dashboard {
 		// Use request nonce or standard nonce
 		if ( wp_doing_ajax() ) {
 			$nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'shubx51_add_vehicle_frontend_nonce' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'nammasociety51_add_vehicle_frontend_nonce' ) ) {
 				wp_send_json_error( 'Security check failed' );
 			}
 		} else {
-			if ( ! empty( $_POST['_wpnonce_add_vehicle_frontend'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_vehicle_frontend'] ) ), 'shubx51_add_vehicle_frontend_nonce' ) ) {
+			if ( ! empty( $_POST['_wpnonce_add_vehicle_frontend'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_add_vehicle_frontend'] ) ), 'nammasociety51_add_vehicle_frontend_nonce' ) ) {
 				// OK
-			} else if ( ! check_admin_referer( 'shubx51_add_vehicle_frontend_nonce' ) ) {
+			} else if ( ! check_admin_referer( 'nammasociety51_add_vehicle_frontend_nonce' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
@@ -907,7 +907,7 @@ class SHUBX51_Frontend_Dashboard {
         // Insert into DB as pending (payload already has status=pending)
         $this->db->insert('vehicles', $payload);
 
-        $rm = new SHUBX51_Request_Manager();
+        $rm = new NAMMASOCIETY51_Request_Manager();
         $request_id = $rm->create_request( 'vehicles', 'add', $payload, $new_id, 'vehicle', $flat_no );
 
         if ( is_wp_error( $request_id ) ) {
@@ -915,7 +915,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Vehicle added successfully', 'auto_approved' => true] );
         } else {
@@ -927,20 +927,20 @@ class SHUBX51_Frontend_Dashboard {
 	public function handle_edit_family() {
         
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_edit_family_nonce' );
+            check_ajax_referer( 'nammasociety51_edit_family_nonce' );
         } else {
              // Verify nonce: accept either `_wpnonce` or `_wpnonce_edit_family`
             $nonce_ok = false;
-            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_edit_family_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_family'] ) ), 'shubx51_edit_family_nonce' ) ) {
+            } elseif ( ! empty( $_POST['_wpnonce_edit_family'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_family'] ) ), 'nammasociety51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
-            } elseif ( check_admin_referer( 'shubx51_edit_family_nonce' ) ) {
+            } elseif ( check_admin_referer( 'nammasociety51_edit_family_nonce' ) ) {
                 $nonce_ok = true;
             }
 
             if ( ! $nonce_ok ) {
-                error_log("SHUBX51 Debug: Nonce verification failed for edit_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+                error_log("NAMMASOCIETY51 Debug: Nonce verification failed for edit_family"); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
                 wp_die( 'Security check failed' );
             }
         }
@@ -985,8 +985,8 @@ class SHUBX51_Frontend_Dashboard {
                 $update_payload['profile_photo'] = $photo_url;
             }
 
-            require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-            $rm = new SHUBX51_Request_Manager();
+            require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+            $rm = new NAMMASOCIETY51_Request_Manager();
             
             // Only update status to pending in main table, don't overwrite data yet!
             $this->db->update('residents', ['status' => 'pending'], ['id' => $id]);
@@ -999,7 +999,7 @@ class SHUBX51_Frontend_Dashboard {
             }
 
             // Check for Auto-Approval
-            if (get_option('shubx51_approval_family', 'manual') === 'auto') {
+            if (get_option('nammasociety51_approval_family', 'manual') === 'auto') {
                 $res = $rm->approve_request($request_id);
                 if ( is_wp_error( $res ) ) {
                      if(wp_doing_ajax()) wp_send_json_error( $res->get_error_message() );
@@ -1022,15 +1022,15 @@ class SHUBX51_Frontend_Dashboard {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'shubx51_edit_help_nonce' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'nammasociety51_edit_help_nonce' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
-            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_help'] ) ), 'shubx51_edit_help_nonce' ) ) {
+            if ( ! empty( $_POST['_wpnonce_edit_help'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce_edit_help'] ) ), 'nammasociety51_edit_help_nonce' ) ) {
                 // Success
-            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_edit_help_nonce' ) ) {
+            } else if ( ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_edit_help_nonce' ) ) {
                 // Success
-            } else if ( ! check_admin_referer( 'shubx51_edit_help_nonce' ) ) {
+            } else if ( ! check_admin_referer( 'nammasociety51_edit_help_nonce' ) ) {
                  wp_die( 'Security check failed' );
             }
         }
@@ -1076,8 +1076,8 @@ class SHUBX51_Frontend_Dashboard {
             'flat_no'        => $flat_no // Important: include flat_no for administrative context
         );
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Only update status to pending in main table
         $this->db->update('daily_help', ['status' => 'pending'], ['id' => $id]);
@@ -1090,7 +1090,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_help', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help updated successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_updated=1' );
@@ -1105,22 +1105,22 @@ class SHUBX51_Frontend_Dashboard {
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce check is performed immediately below.
         if ( wp_doing_ajax() ) {
             $nonce = isset($_POST['_wpnonce']) ? sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'shubx51_edit_vehicle_action' ) ) {
+            if ( ! wp_verify_nonce( $nonce, 'nammasociety51_edit_vehicle_action' ) ) {
                 wp_send_json_error( 'Security check failed' );
             }
         } else {
             // Use explicit nonce verification to avoid conflict with other forms
             $nonce_ok = false;
-            if ( ! empty( $_POST['shubx51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['shubx51_edit_vehicle_token'] ) ), 'shubx51_edit_vehicle_action' ) ) {
+            if ( ! empty( $_POST['nammasociety51_edit_vehicle_token'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['nammasociety51_edit_vehicle_token'] ) ), 'nammasociety51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             // Also accept canonical _wpnonce if JS did not set the custom token
-            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_edit_vehicle_action' ) ) {
+            if ( ! $nonce_ok && ! empty( $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_edit_vehicle_action' ) ) {
                 $nonce_ok = true;
             }
             if ( ! $nonce_ok ) {
                  // Try standard check as fallback
-                 if(check_admin_referer('shubx51_edit_vehicle_action')) {
+                 if(check_admin_referer('nammasociety51_edit_vehicle_action')) {
                      $nonce_ok = true;
                  }
             }
@@ -1149,7 +1149,7 @@ class SHUBX51_Frontend_Dashboard {
             'flat_no' => $flat_no
         );
 
-        $rm = new SHUBX51_Request_Manager();
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Only update status to pending in main table
         $this->db->update('vehicles', ['status' => 'pending'], ['id' => $id]);
@@ -1161,7 +1161,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             wp_send_json_success( ['message' => 'Vehicle updated successfully'] );
         } else {
@@ -1172,9 +1172,9 @@ class SHUBX51_Frontend_Dashboard {
 
     public function handle_delete_family() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_delete_family_nonce' );
+            check_ajax_referer( 'nammasociety51_delete_family_nonce' );
         } else {
-             if ( ! check_admin_referer( 'shubx51_delete_family_nonce' ) ) wp_die( 'Security check failed' );
+             if ( ! check_admin_referer( 'nammasociety51_delete_family_nonce' ) ) wp_die( 'Security check failed' );
         }
 
 		$flat_no = $this->get_my_flat_number();
@@ -1187,8 +1187,8 @@ class SHUBX51_Frontend_Dashboard {
 			wp_die( 'Permission denied' );
 		}
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Double-Write: Mark as deletion_pending
         $this->db->update('residents', ['status' => 'deletion_pending'], ['id' => $id]);
@@ -1201,7 +1201,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_family', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Family member removed successfully']);
             wp_safe_redirect( wp_get_referer() . '?deleted=1' );
@@ -1214,9 +1214,9 @@ class SHUBX51_Frontend_Dashboard {
 
     public function handle_delete_daily_help() {
         if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_delete_help_nonce' );
+            check_ajax_referer( 'nammasociety51_delete_help_nonce' );
         } else {
-            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
+            if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_delete_help_nonce' ) ) wp_die( 'Security check failed' );
         }
 
         $flat_no = $this->get_my_flat_number();
@@ -1236,8 +1236,8 @@ class SHUBX51_Frontend_Dashboard {
 			wp_die( 'Permission denied' );
 		}
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Double-Write: Mark as deletion_pending
         $this->db->update('daily_help', ['status' => 'deletion_pending'], ['id' => $id]);
@@ -1250,7 +1250,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_help', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_help', 'manual') === 'auto') {
             $rm->approve_request($request_id);
             if(wp_doing_ajax()) wp_send_json_success(['message' => 'Help deleted successfully']);
             wp_safe_redirect( wp_get_referer() . '?help_deleted=1' );
@@ -1262,7 +1262,7 @@ class SHUBX51_Frontend_Dashboard {
     }
 
     public function handle_delete_family_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_delete_family_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_delete_family_nonce' ) ) {
              wp_send_json_error( 'Security check failed' ); 
         }
 
@@ -1275,8 +1275,8 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( 'Permission denied' );
 		}
 
-        require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-        $rm = new SHUBX51_Request_Manager();
+        require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Double-Write: Mark as deletion_pending
         // Note: For family, we update the main resident record status
@@ -1289,7 +1289,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_family', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_family', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Family member removed successfully'] );
         } else {
@@ -1299,7 +1299,7 @@ class SHUBX51_Frontend_Dashboard {
     }
 
     public function handle_delete_vehicle_frontend() {
-        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'shubx51_delete_vehicle_frontend_nonce' ) ) {
+        if ( ! isset($_POST['_wpnonce']) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_wpnonce'] ) ), 'nammasociety51_delete_vehicle_frontend_nonce' ) ) {
              // For AJAX calls, sometimes it might come as distinct param or in header? Standard POST param is _wpnonce.
              wp_send_json_error( 'Security check failed' ); 
         }
@@ -1313,7 +1313,7 @@ class SHUBX51_Frontend_Dashboard {
 			wp_send_json_error( 'Permission denied' );
 		}
 
-        $rm = new SHUBX51_Request_Manager();
+        $rm = new NAMMASOCIETY51_Request_Manager();
         
         // Double-Write: Mark as deletion_pending
         $this->db->update('vehicles', ['status' => 'deletion_pending'], ['id' => $id]);
@@ -1325,7 +1325,7 @@ class SHUBX51_Frontend_Dashboard {
         }
 
         // Check for Auto-Approval
-        if (get_option('shubx51_approval_vehicle', 'manual') === 'auto') {
+        if (get_option('nammasociety51_approval_vehicle', 'manual') === 'auto') {
             $rm->approve_request($request_id);
              wp_send_json_success( ['message' => 'Vehicle deleted successfully'] );
         } else {
@@ -1335,7 +1335,7 @@ class SHUBX51_Frontend_Dashboard {
     }
 
 	public function handle_request_delete_doc() {
-		if ( ! check_admin_referer( 'shubx51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
+		if ( ! check_admin_referer( 'nammasociety51_delete_doc_nonce' ) ) wp_die( 'Security check failed' );
 		
 		$doc_id = isset( $_GET['doc_id'] ) ? sanitize_text_field( wp_unslash( $_GET['doc_id'] ) ) : '';
 		$flat_no = $this->get_my_flat_number();
@@ -1384,14 +1384,14 @@ class SHUBX51_Frontend_Dashboard {
 		$flat_ids = $this->db->get_resident_flats( $target_resident['id'] );
 
 		// Determine which flat is active
-		$active_flat_id = get_user_meta( get_current_user_id(), 'shubx51_active_flat_id', true );
+		$active_flat_id = get_user_meta( get_current_user_id(), 'nammasociety51_active_flat_id', true );
 
 		// Validate active flat belongs to the user
 		if ( empty( $active_flat_id ) || ! in_array( $active_flat_id, $flat_ids, true ) ) {
 			$active_flat_id = ! empty( $flat_ids ) ? $flat_ids[0] : $target_resident['flat_no'];
 		}
 
-		update_user_meta( get_current_user_id(), 'shubx51_active_flat_id', $active_flat_id );
+		update_user_meta( get_current_user_id(), 'nammasociety51_active_flat_id', $active_flat_id );
 
 		// Fetch flat details
 		$flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $active_flat_id ) ) );
@@ -1432,7 +1432,7 @@ class SHUBX51_Frontend_Dashboard {
 		
 		// Debug: Log expenses
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
-			error_log( 'SHUBX51 Frontend Expenses: Total=' . count($expenses) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log( 'NAMMASOCIETY51 Frontend Expenses: Total=' . count($expenses) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 		}
 		
 		if ( empty( $expenses ) ) return [];
@@ -1473,11 +1473,11 @@ class SHUBX51_Frontend_Dashboard {
 	 * Called by frontend template footer.
 	 */
 	public static function render_payment_modal() {
-		$bank_name = get_option('shubx51_bank_name', 'HDFC Bank');
-		$acct_no   = get_option('shubx51_bank_account', '501000123456');
-		$ifsc      = get_option('shubx51_bank_ifsc', 'HDFC0001234');
-		$upi       = get_option('shubx51_bank_upi', 'society@bank');
-		$qr_url    = get_option('shubx51_bank_qr');
+		$bank_name = get_option('nammasociety51_bank_name', 'HDFC Bank');
+		$acct_no   = get_option('nammasociety51_bank_account', '501000123456');
+		$ifsc      = get_option('nammasociety51_bank_ifsc', 'HDFC0001234');
+		$upi       = get_option('nammasociety51_bank_upi', 'society@bank');
+		$qr_url    = get_option('nammasociety51_bank_qr');
 		?>
 		<div class="modal fade" id="SHUBX51PaymentModal" tabindex="-1">
 			<div class="modal-dialog">
@@ -1563,7 +1563,7 @@ class SHUBX51_Frontend_Dashboard {
 		
 		ob_start();
 		?>
-		<div class="shubx51-notices-app">
+		<div class="nammasociety51-notices-app">
 			<form method="get" class="mb-4 d-flex gap-3">
 				<input type="text" name="q" class="form-control rounded-3 shadow-none border-light" placeholder="Search Notices..." value="<?php echo esc_attr($search); ?>">
 				<button class="btn btn-primary px-4 rounded-3 fw-bold">Search</button>
@@ -1662,7 +1662,7 @@ class SHUBX51_Frontend_Dashboard {
 
 		ob_start();
 		?>
-		<div class="shubx51-directory-app">
+		<div class="nammasociety51-directory-app">
 			<form method="get" class="mb-4 bg-white p-4 rounded-3 shadow-sm border border-light">
                 <div class="row g-3">
     				<div class="col-md-6">
@@ -1696,7 +1696,7 @@ class SHUBX51_Frontend_Dashboard {
                                             <!-- Floating DP / Avatar -->
                                             <div class="position-relative">
                                                 <?php 
-                                                    $default_avatar = SHUBX51_PLUGIN_URL . 'assets/images/default-avatar.svg';
+                                                    $default_avatar = NAMMASOCIETY51_PLUGIN_URL . 'assets/images/default-avatar.svg';
                                                     $dp_url = !empty($r['owner_photo']) ? $r['owner_photo'] : $default_avatar;
                                                 ?>
                                                 <img src="<?php echo esc_url($dp_url); ?>" 
@@ -2124,7 +2124,7 @@ class SHUBX51_Frontend_Dashboard {
 	 * Handle Resident Login AJAX.
 	 */
 	public function handle_resident_login() {
-		check_ajax_referer( 'shubx51_login_nonce', 'login_nonce' );
+		check_ajax_referer( 'nammasociety51_login_nonce', 'login_nonce' );
 
 		$creds = array(
 			'user_login' => isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : '',
@@ -2142,7 +2142,7 @@ class SHUBX51_Frontend_Dashboard {
 		// Determine redirect URL
 		$redirect_url = home_url( '/resident-dashboard/' ); // Default
 		if ( user_can( $user, 'manage_options' ) ) {
-			$redirect_url = admin_url( 'admin.php?page=shubx51-settings' );
+			$redirect_url = admin_url( 'admin.php?page=nammasociety51-settings' );
 		}
 
 		wp_send_json_success( array( 
@@ -2150,4 +2150,9 @@ class SHUBX51_Frontend_Dashboard {
 			'redirect_url' => $redirect_url
 		) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Frontend_Dashboard' ) && ! class_exists( 'SHUBX51_Frontend_Dashboard', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Frontend_Dashboard', 'SHUBX51_Frontend_Dashboard' );
 }

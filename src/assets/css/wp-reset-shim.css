@@ -1,24 +1,24 @@
 ﻿/**
- * Society HubX: Surgical WP Style Buster
+ * Namma Society: Surgical WP Style Buster
  * 
  * This shim uses high-specificity selectors to "bust" the properties 
  * WordPress forces on standard input tags. It unsets ONLY the 
  * layout-breaking values, allowing Bootstrap's classes to apply naturally.
  * 
- * Scope: #shubx51-app-root
+ * Scope: #nammasociety51-app-root
  */
 
 /* Target the specific attribute selectors WordPress uses */
-#shubx51-app-root input[type="text"],
-#shubx51-app-root input[type="search"],
-#shubx51-app-root input[type="number"],
-#shubx51-app-root input[type="email"],
-#shubx51-app-root input[type="password"],
-#shubx51-app-root input[type="tel"],
-#shubx51-app-root input[type="url"],
-#shubx51-app-root input[type="date"],
-#shubx51-app-root select,
-#shubx51-app-root textarea {
+#nammasociety51-app-root input[type="text"],
+#nammasociety51-app-root input[type="search"],
+#nammasociety51-app-root input[type="number"],
+#nammasociety51-app-root input[type="email"],
+#nammasociety51-app-root input[type="password"],
+#nammasociety51-app-root input[type="tel"],
+#nammasociety51-app-root input[type="url"],
+#nammasociety51-app-root input[type="date"],
+#nammasociety51-app-root select,
+#nammasociety51-app-root textarea {
     /* Nullify WP's forced metrics */
     height: auto;
     min-height: 0;
@@ -36,24 +36,24 @@
 }
 
 /* Specific Select Fix: WP adds a Dashicon arrow background image */
-#shubx51-app-root select {
+#nammasociety51-app-root select {
     background-image: none;
     padding-right: 0;
 }
 
 /* Clear WP Typography leaks */
-#shubx51-app-root h1,
-#shubx51-app-root h2,
-#shubx51-app-root h3,
-#shubx51-app-root h4,
-#shubx51-app-root h5,
-#shubx51-app-root h6,
-#shubx51-app-root p {
+#nammasociety51-app-root h1,
+#nammasociety51-app-root h2,
+#nammasociety51-app-root h3,
+#nammasociety51-app-root h4,
+#nammasociety51-app-root h5,
+#nammasociety51-app-root h6,
+#nammasociety51-app-root p {
     margin: 0;
 }
 
 /* Clear WP Card constraints */
-#shubx51-app-root .card {
+#nammasociety51-app-root .card {
     max-width: none !important;
     margin: 0;
 }

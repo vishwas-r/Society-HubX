@@ -1,5 +1,5 @@
 /* 
- * Society HubX - Premium Admin Theme 
+ * Namma Society - Premium Admin Theme 
  * Design System: "Slate & Glass"
  */
 
@@ -7,22 +7,22 @@
 @import url('lib/inter-fonts.css');
 
 :root {
-    --shubx-bg: #f8fafc;
-    --shubx-card-bg: #ffffff;
-    --shubx-primary: var(--custom-primary-color, #ea580c);
-    --shubx-primary-dark: var(--custom-primary-hover, #c2410c);
-    --shubx-text-main: #0f172a;
-    --shubx-text-muted: #64748b;
-    --shubx-border: #e2e8f0;
-    --shubx-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shubx-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shubx-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shubx-radius: 16px;
-    --shubx-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --nammasociety-bg: #f8fafc;
+    --nammasociety-card-bg: #ffffff;
+    --nammasociety-primary: var(--custom-primary-color, #ea580c);
+    --nammasociety-primary-dark: var(--custom-primary-hover, #c2410c);
+    --nammasociety-text-main: #0f172a;
+    --nammasociety-text-muted: #64748b;
+    --nammasociety-border: #e2e8f0;
+    --nammasociety-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --nammasociety-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --nammasociety-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --nammasociety-radius: 16px;
+    --nammasociety-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .transition-all {
-    transition: var(--shubx-transition) !important;
+    transition: var(--nammasociety-transition) !important;
 }
 
 .rounded-xl {
@@ -37,15 +37,15 @@
     background-color: #f1f5f9;
 }
 
-body.settings_page_shubx51-settings,
-body.society-hubx-settings_page_shubx51-documents,
-body.toplevel_page_shubx51-residents {
-    background-color: var(--shubx-bg);
+body.settings_page_nammasociety51-settings,
+body.namma-society-settings_page_nammasociety51-documents,
+body.toplevel_page_nammasociety51-residents {
+    background-color: var(--nammasociety-bg);
 }
 
-.shubx51-admin-wrap {
+.nammasociety51-admin-wrap {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--shubx-text-main);
+    color: var(--nammasociety-text-main);
     padding: 32px;
     margin-left: -20px;
     min-height: 100vh;
@@ -80,11 +80,11 @@ body.toplevel_page_shubx51-residents {
 
 /* 2. Premium Cards */
 /* 2. Premium Layers (Replaces Cards) */
-.shubx-layer {
+.nammasociety-layer {
     background: #ffffff;
-    border: 1px solid var(--shubx-border);
-    border-radius: var(--shubx-radius);
-    box-shadow: var(--shubx-shadow-sm);
+    border: 1px solid var(--nammasociety-border);
+    border-radius: var(--nammasociety-radius);
+    box-shadow: var(--nammasociety-shadow-sm);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
     margin-bottom: 24px;
@@ -95,95 +95,95 @@ body.toplevel_page_shubx51-residents {
     /* Explicitly set border-box for our components */
 }
 
-.shubx-layer:hover {
-    box-shadow: var(--shubx-shadow-md);
+.nammasociety-layer:hover {
+    box-shadow: var(--nammasociety-shadow-md);
     border-color: #cbd5e1;
 }
 
-.shubx-layer .layer-header {
+.nammasociety-layer .layer-header {
     background: #fff;
-    border-bottom: 1px solid var(--shubx-border);
+    border-bottom: 1px solid var(--nammasociety-border);
     padding: 20px 24px;
     font-weight: 600;
     font-size: 1.05rem;
-    color: var(--shubx-text-main);
+    color: var(--nammasociety-text-main);
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.shubx-layer .layer-body {
+.nammasociety-layer .layer-body {
     padding: 24px;
     width: 100%;
 }
 
 /* Force override global .card in case it creeps in */
-.shubx51-admin-wrap .card {
+.nammasociety51-admin-wrap .card {
     max-width: 100% !important;
     width: 100% !important;
 }
 
-.shubx51-card .card-body {
+.nammasociety51-card .card-body {
     padding: 24px;
 }
 
 /* 3. Inputs & Forms */
-.shubx51-admin-wrap .form-control,
-.shubx51-admin-wrap .form-select {
+.nammasociety51-admin-wrap .form-control,
+.nammasociety51-admin-wrap .form-select {
     border-radius: 10px;
-    border: 1px solid var(--shubx-border);
+    border: 1px solid var(--nammasociety-border);
     padding: 12px 16px;
     font-size: 0.95rem;
-    color: var(--shubx-text-main);
-    box-shadow: var(--shubx-shadow-sm);
+    color: var(--nammasociety-text-main);
+    box-shadow: var(--nammasociety-shadow-sm);
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.shubx51-admin-wrap .form-control:focus,
-.shubx51-admin-wrap .form-select:focus {
-    border-color: var(--shubx-primary);
+.nammasociety51-admin-wrap .form-control:focus,
+.nammasociety51-admin-wrap .form-select:focus {
+    border-color: var(--nammasociety-primary);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     outline: 0;
 }
 
-.shubx51-admin-wrap label {
+.nammasociety51-admin-wrap label {
     font-weight: 600;
     margin-bottom: 6px;
-    color: var(--shubx-text-muted);
+    color: var(--nammasociety-text-muted);
     font-size: 0.85rem;
     display: block;
 }
 
 /* 4. Buttons */
 .btn-primary,
-.btn-shubx51-primary {
-    background-color: var(--shubx-primary) !important;
-    border-color: var(--shubx-primary) !important;
+.btn-nammasociety51-primary {
+    background-color: var(--nammasociety-primary) !important;
+    border-color: var(--nammasociety-primary) !important;
     border-radius: 8px;
     padding: 10px 24px;
     font-weight: 500;
     letter-spacing: 0.01em;
-    box-shadow: var(--shubx-shadow-sm);
+    box-shadow: var(--nammasociety-shadow-sm);
     transition: all 0.2s;
 }
 
 .btn-primary:hover,
-.btn-shubx51-primary:hover {
-    background-color: var(--shubx-primary-dark) !important;
-    border-color: var(--shubx-primary-dark) !important;
-    box-shadow: var(--shubx-shadow-md);
+.btn-nammasociety51-primary:hover {
+    background-color: var(--nammasociety-primary-dark) !important;
+    border-color: var(--nammasociety-primary-dark) !important;
+    box-shadow: var(--nammasociety-shadow-md);
     transform: translateY(-1px);
 }
 
 .btn-outline-secondary {
-    border-color: var(--shubx-border);
-    color: var(--shubx-text-muted);
+    border-color: var(--nammasociety-border);
+    color: var(--nammasociety-text-muted);
     border-radius: 8px;
 }
 
 .btn-outline-secondary:hover {
     background-color: #f1f5f9;
-    color: var(--shubx-text-main);
+    color: var(--nammasociety-text-main);
     border-color: #cbd5e1;
 }
 
@@ -191,7 +191,7 @@ body.toplevel_page_shubx51-residents {
 .alert {
     border-radius: 12px;
     border: none;
-    box-shadow: var(--shubx-shadow-sm);
+    box-shadow: var(--nammasociety-shadow-sm);
     font-size: 0.95rem;
 }
 
@@ -213,7 +213,7 @@ body.toplevel_page_shubx51-residents {
 /* 6. Page Header */
 .wp-heading-inline {
     font-weight: 700;
-    color: var(--shubx-text-main);
+    color: var(--nammasociety-text-main);
     font-size: 1.75rem;
     margin-bottom: 0px;
 }
@@ -227,7 +227,7 @@ body.toplevel_page_shubx51-residents {
 /* 7. Document Vault Custom */
 .list-group-item {
     border: none;
-    border-bottom: 1px solid var(--shubx-border);
+    border-bottom: 1px solid var(--nammasociety-border);
     padding: 16px 20px;
 }
 
@@ -236,7 +236,7 @@ body.toplevel_page_shubx51-residents {
 }
 
 .list-group-item.active {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.1));
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.1));
     color: var(--custom-primary-color);
     font-weight: 600;
     border-color: transparent;
@@ -248,7 +248,7 @@ body.toplevel_page_shubx51-residents {
 
 /* 8. Soft Utilities */
 .bg-primary-soft {
-    background-color: var(--shubx-subtle-bg, rgba(var(--bs-primary-rgb), 0.1)) !important;
+    background-color: var(--nammasociety-subtle-bg, rgba(var(--bs-primary-rgb), 0.1)) !important;
 }
 
 .bg-info-soft {
@@ -276,44 +276,44 @@ body.toplevel_page_shubx51-residents {
 }
 
 .text-muted {
-    color: var(--shubx-text-muted) !important;
+    color: var(--nammasociety-text-muted) !important;
 }
 
 /* 9. Premium Tables */
 /* 9. Premium Tables */
-.shubx51-admin-wrap .table thead th {
+.nammasociety51-admin-wrap .table thead th {
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--shubx-text-muted);
-    border-bottom: 1px solid var(--shubx-border);
+    color: var(--nammasociety-text-muted);
+    border-bottom: 1px solid var(--nammasociety-border);
     background-color: #f8fafc;
 }
 
-.shubx51-admin-wrap .table tbody td {
+.nammasociety51-admin-wrap .table tbody td {
     vertical-align: middle;
     padding: 16px 24px;
     border-bottom: 1px solid #f1f5f9;
-    color: var(--shubx-text-main);
+    color: var(--nammasociety-text-main);
     font-size: 0.95rem;
 }
 
-.shubx51-admin-wrap .table tbody tr:last-child td {
+.nammasociety51-admin-wrap .table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.shubx51-admin-wrap .table tbody tr:hover td {
+.nammasociety51-admin-wrap .table tbody tr:hover td {
     background-color: #f8fafc;
 }
 
 /* 10. File Explorer & Layout Fixes */
-.shubx51-admin-wrap {
+.nammasociety51-admin-wrap {
     width: 100%;
     max-width: 100% !important;
     box-sizing: border-box;
 }
 
-.shubx-sticky-sidebar {
+.nammasociety-sticky-sidebar {
     position: sticky;
     top: 20px;
     height: calc(100vh - 40px);
@@ -323,37 +323,37 @@ body.toplevel_page_shubx51-residents {
     flex-direction: column;
 }
 
-.shubx-scrollable-list {
+.nammasociety-scrollable-list {
     overflow-y: auto;
     flex-grow: 1;
 }
 
 .file-card {
     transition: all 0.2s ease;
-    border: 1px solid var(--shubx-border) !important;
+    border: 1px solid var(--nammasociety-border) !important;
     background: #fff;
 }
 
 .file-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shubx-shadow-md) !important;
-    border-color: var(--shubx-primary) !important;
+    box-shadow: var(--nammasociety-shadow-md) !important;
+    border-color: var(--nammasociety-primary) !important;
 }
 
 .file-card .dashicons {
-    color: var(--shubx-text-muted);
+    color: var(--nammasociety-text-muted);
     transition: color 0.2s;
 }
 
 .file-card:hover .dashicons {
-    color: var(--shubx-primary);
+    color: var(--nammasociety-primary);
 }
 
 /* 11. Responsive Overrides */
 
 /* Mobile & Tablet Sidebar Overlay */
 @media (max-width: 991.98px) {
-    #shubx-sidebar {
+    #nammasociety-sidebar {
         position: fixed !important;
         left: -280px;
         top: 0;
@@ -368,12 +368,12 @@ body.toplevel_page_shubx51-residents {
         /* Ensure it's flex but off-screen */
     }
 
-    #shubx-sidebar.show {
+    #nammasociety-sidebar.show {
         left: 0;
-        box-shadow: var(--shubx-shadow-lg);
+        box-shadow: var(--nammasociety-shadow-lg);
     }
 
-    #shubx-sidebar-backdrop {
+    #nammasociety-sidebar-backdrop {
         position: fixed !important;
         top: 0;
         left: 0;
@@ -387,59 +387,59 @@ body.toplevel_page_shubx51-residents {
         transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    #shubx-sidebar-backdrop.show {
+    #nammasociety-sidebar-backdrop.show {
         opacity: 1;
         visibility: visible;
         display: block !important;
     }
 
     /* Important: When sidebar is fixed, main content should take full width */
-    .shubx-main {
+    .nammasociety-main {
         width: 100% !important;
         margin-left: 0 !important;
         flex: 1 1 100% !important;
     }
 
-    .shubx-sidebar.collapsed {
+    .nammasociety-sidebar.collapsed {
         width: 280px !important;
         min-width: 280px !important;
     }
 
-    .shubx-top-header {
+    .nammasociety-top-header {
         padding-left: 1rem !important;
         padding-right: 1rem !important;
         height: 64px !important;
     }
 
-    .shubx-content-scroll {
+    .nammasociety-content-scroll {
         padding: 1.25rem 1rem !important;
     }
 
     /* Stack Toolbar Utility */
-    .shubx-staff-v2 .p-4.px-md-5,
-    .shubx-residents-v2 .p-4.px-md-5,
-    .shubx-flats-v2 .p-4.px-md-5 {
+    .nammasociety-staff-v2 .p-4.px-md-5,
+    .nammasociety-residents-v2 .p-4.px-md-5,
+    .nammasociety-flats-v2 .p-4.px-md-5 {
         padding: 1rem !important;
     }
 }
 
 /* Table Responsiveness Hack */
 .table-responsive {
-    border-radius: var(--shubx-radius);
+    border-radius: var(--nammasociety-radius);
     overflow-x: auto !important;
-    border: 1px solid var(--shubx-border);
+    border: 1px solid var(--nammasociety-border);
 }
 
 /* Card Adjustments for Small Screens */
 @media (max-width: 575.98px) {
-    .shubx-layer .layer-header {
+    .nammasociety-layer .layer-header {
         padding: 16px;
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
 
-    .shubx-layer .layer-body {
+    .nammasociety-layer .layer-body {
         padding: 16px;
     }
 
@@ -460,40 +460,40 @@ body.toplevel_page_shubx51-residents {
     }
 
     /* Global Padding Overrides for Mobile */
-    .shubx51-admin-wrap .p-4,
-    .shubx51-admin-wrap .p-5,
-    .shubx51-admin-wrap .px-5,
-    .shubx51-admin-wrap .px-md-5,
-    .shubx51-admin-wrap .py-4,
-    .shubx51-admin-wrap .py-5 {
+    .nammasociety51-admin-wrap .p-4,
+    .nammasociety51-admin-wrap .p-5,
+    .nammasociety51-admin-wrap .px-5,
+    .nammasociety51-admin-wrap .px-md-5,
+    .nammasociety51-admin-wrap .py-4,
+    .nammasociety51-admin-wrap .py-5 {
         padding: 1rem !important;
     }
 
-    .shubx51-admin-wrap .ps-5 {
+    .nammasociety51-admin-wrap .ps-5 {
         padding-left: 1rem !important;
     }
 
-    .shubx51-admin-wrap .pe-5 {
+    .nammasociety51-admin-wrap .pe-5 {
         padding-right: 1rem !important;
     }
 
-    .shubx51-admin-wrap .gap-5 {
+    .nammasociety51-admin-wrap .gap-5 {
         gap: 1rem !important;
     }
 
     /* Table adjustments */
-    .shubx51-admin-wrap .table tbody td,
-    .shubx51-admin-wrap .table thead th {
+    .nammasociety51-admin-wrap .table tbody td,
+    .nammasociety51-admin-wrap .table thead th {
         padding: 12px 16px !important;
         white-space: nowrap;
     }
 
     /* Header adjustments */
-    .shubx51-admin-wrap .mb-5 {
+    .nammasociety51-admin-wrap .mb-5 {
         margin-bottom: 1.5rem !important;
     }
 
-    .shubx51-admin-wrap h1.h3 {
+    .nammasociety51-admin-wrap h1.h3 {
         font-size: 1.25rem;
     }
 }

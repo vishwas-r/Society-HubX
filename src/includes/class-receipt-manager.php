@@ -2,25 +2,25 @@
 /**
  * Class: Receipt Manager
  * Handles receipt generation and numbering for payments.
- * Receipt format: shubx-YYYYMMXXX (Year, Month, Auto-incremented number)
+ * Receipt format: nammasociety-YYYYMMXXX (Year, Month, Auto-incremented number)
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Receipt_Manager {
+class NAMMASOCIETY51_Receipt_Manager {
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
 	}
 
 	/**
 	 * Generate Receipt Number for given invoice
-	 * Format: shubx-YYYYMMXXX
+	 * Format: nammasociety-YYYYMMXXX
 	 * YYYY = Year, MM = Month, XXX = Auto-incremented (001-999)
 	 *
 	 * @param string $invoice_id Invoice ID
@@ -46,7 +46,7 @@ class SHUBX51_Receipt_Manager {
 		$highest = 0;
 		foreach ( $receipts as $receipt ) {
 			$num = $receipt['receipt_number'];
-			if ( strpos( $num, 'shubx-' . $year . $month_str ) === 0 ) {
+			if ( strpos( $num, 'nammasociety-' . $year . $month_str ) === 0 ) {
 				$seq = intval( substr( $num, -3 ) );
 				if ( $seq > $highest ) {
 					$highest = $seq;
@@ -56,7 +56,7 @@ class SHUBX51_Receipt_Manager {
 
 		// Increment sequence
 		$next_seq = str_pad( $highest + 1, 3, '0', STR_PAD_LEFT );
-		$receipt_number = 'shubx-' . $year . $month_str . $next_seq;
+		$receipt_number = 'nammasociety-' . $year . $month_str . $next_seq;
 
 		// Store in receipts table
 		$receipt_data = array(
@@ -147,7 +147,7 @@ class SHUBX51_Receipt_Manager {
 			'balance_due'      => $balance_due,
 			'status'           => $this->get_payment_status( $invoice_amount, $total_paid ),
 			'payments'         => $payments,
-			'society_name'     => get_option( 'shubx51_society_name', 'Society' ),
+			'society_name'     => get_option( 'nammasociety51_society_name', 'Society' ),
 		);
 	}
 
@@ -166,4 +166,9 @@ class SHUBX51_Receipt_Manager {
 		}
 		return 'unpaid';
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Receipt_Manager' ) && ! class_exists( 'SHUBX51_Receipt_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Receipt_Manager', 'SHUBX51_Receipt_Manager' );
 }

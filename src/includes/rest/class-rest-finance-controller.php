@@ -3,21 +3,21 @@
  * Class: REST Finance Controller
  * Endpoints for managing Invoices, Payments, and Expenses.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Finance_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Register routes.
@@ -235,11 +235,11 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 * List invoices.
 	 */
 	public function get_invoices( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'finance_view' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -262,11 +262,11 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function get_invoice( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$invoices = $db->get( 'invoices', array( 'id' => $id ) );
 
 		if ( empty( $invoices ) ) {
-			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $invoices[0] );
@@ -286,10 +286,10 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$month   = isset( $params['month'] ) ? sanitize_text_field( $params['month'] ) : gmdate( 'F Y' );
 
 		if ( empty( $flat_no ) || $amount <= 0 ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Flat number and valid amount are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Flat number and valid amount are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$data = array(
 			'id'            => uniqid( 'inv_' ),
 			'block'         => isset( $params['block'] ) ? sanitize_text_field( $params['block'] ) : '',
@@ -325,10 +325,10 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'invoices', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -371,7 +371,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -379,14 +379,14 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function delete_invoice( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'invoices', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Invoice deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -398,21 +398,21 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$amount = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
 		$due_date = isset( $params['due_date'] ) ? sanitize_text_field( $params['due_date'] ) : gmdate( 'Y-m-d', strtotime( '+15 days' ) );
 
-		$account_mgr = new SHUBX51_Account_Manager();
+		$account_mgr = new NAMMASOCIETY51_Account_Manager();
 		$count = $account_mgr->generate_monthly_invoices( $month, $amount, $due_date );
 
-		return rest_ensure_response( array( 'success' => true, 'message' => sprintf( __( '%d invoices generated successfully.', 'society-hubx' ), $count ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => sprintf( __( '%d invoices generated successfully.', 'namma-society' ), $count ) ) );
 	}
 
 	/**
 	 * Get Payments.
 	 */
 	public function get_payments( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$payments = $db->get( 'payments' );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'finance_view' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -443,17 +443,17 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$amount     = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
 
 		if ( empty( $invoice_id ) || $amount <= 0 ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Valid invoice ID and amount are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Valid invoice ID and amount are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'finance_manage' ) || current_user_can( 'manage_options' );
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$invoices = $db->get( 'invoices', array( 'id' => $invoice_id ) );
 		if ( empty( $invoices ) ) {
-			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_invoice_not_found', __( 'Invoice not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$invoice = $invoices[0];
@@ -482,8 +482,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$new_status = ( $new_paid >= floatval( $invoice['amount'] ?? 0 ) ) ? 'Paid' : 'Partially Paid';
 			$db->update( 'invoices', array( 'paid_amount' => $new_paid, 'status' => $new_status ), array( 'id' => $invoice_id ) );
 		} else {
-			require_once SHUBX51_PLUGIN_DIR . 'includes/class-request-manager.php';
-			$rm = new SHUBX51_Request_Manager();
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'includes/class-request-manager.php';
+			$rm = new NAMMASOCIETY51_Request_Manager();
 			$rm->create_request( 'finance', 'submit_payment_request', $payment_data, $payment_data['id'] );
 		}
 
@@ -495,21 +495,21 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function delete_payment( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'payments', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Payment deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Payment deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
 	 * Get Expenses.
 	 */
 	public function get_expenses( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$expenses = $db->get( 'expenses' );
 		return rest_ensure_response( $expenses ? $expenses : array() );
 	}
@@ -519,11 +519,11 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function get_expense( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$expenses = $db->get( 'expenses', array( 'id' => $id ) );
 
 		if ( empty( $expenses ) ) {
-			return new WP_Error( 'rest_expense_not_found', __( 'Expense not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_expense_not_found', __( 'Expense not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $expenses[0] );
@@ -542,7 +542,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$amount   = isset( $params['amount'] ) ? floatval( $params['amount'] ) : 0.00;
 
 		if ( empty( $category ) || $amount <= 0 ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Category and amount are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Category and amount are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -558,7 +558,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			'account_type' => isset( $params['account_type'] ) ? sanitize_text_field( $params['account_type'] ) : 'Society General Account',
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'expenses', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -577,10 +577,10 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'expenses', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_expense_not_found', __( 'Expense not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_expense_not_found', __( 'Expense not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -602,7 +602,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -610,14 +610,14 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function delete_expense( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'expenses', array( 'status' => 'archived' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense deleted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense deleted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -625,22 +625,22 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 */
 	public function approve_expense( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'expenses', array( 'status' => 'approved' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense approved successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Expense approved successfully.', 'namma-society' ) ) );
 	}
 
 	/**
 	 * Get aggregated Finance Overview KPIs & Charts.
 	 */
 	public function get_finance_overview( $request ) {
-		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
 		}
 
 		$selected_year = sanitize_text_field( $request->get_param( 'year' ) );
@@ -648,15 +648,15 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$selected_year = wp_date( 'Y' );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
-		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_mgr = new NAMMASOCIETY51_Ledger_Manager();
 		$ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
 		$total_credit = 0;
 		$total_debit = 0;
-		$opening_bank = floatval( get_option( 'shubx51_opening_bank_' . $selected_year, 0 ) );
-		$opening_cash = floatval( get_option( 'shubx51_opening_cash_' . $selected_year, 0 ) );
+		$opening_bank = floatval( get_option( 'nammasociety51_opening_bank_' . $selected_year, 0 ) );
+		$opening_cash = floatval( get_option( 'nammasociety51_opening_cash_' . $selected_year, 0 ) );
 
 		foreach ( $ledger_entries as $e ) {
 			if ( ( $e['type'] ?? '' ) === 'Credit' ) {
@@ -669,8 +669,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$last_entry = ! empty( $ledger_entries ) ? end( $ledger_entries ) : null;
 		$net_balance = ( floatval( $last_entry['bank_balance'] ?? 0 ) ) + ( floatval( $last_entry['cash_balance'] ?? 0 ) );
 
-		$actual_bank = floatval( get_option( 'shubx51_actual_bank_' . $selected_year, 0 ) );
-		$actual_cash = floatval( get_option( 'shubx51_actual_cash_' . $selected_year, 0 ) );
+		$actual_bank = floatval( get_option( 'nammasociety51_actual_bank_' . $selected_year, 0 ) );
+		$actual_cash = floatval( get_option( 'nammasociety51_actual_cash_' . $selected_year, 0 ) );
 		$actual_total = $actual_bank + $actual_cash;
 		$variance = $actual_total - $net_balance;
 
@@ -773,8 +773,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 * Get double-entry Money Flow Ledger.
 	 */
 	public function get_finance_ledger( $request ) {
-		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
 		}
 
 		$selected_year = sanitize_text_field( $request->get_param( 'year' ) );
@@ -782,7 +782,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$selected_year = wp_date( 'Y' );
 		}
 
-		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_mgr = new NAMMASOCIETY51_Ledger_Manager();
 		$entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
 		return rest_ensure_response( $entries ? $entries : array() );
@@ -797,11 +797,11 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 			$month = gmdate( 'Y-m' );
 		}
 
-		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
 		}
 
-		$ledger = new SHUBX51_Ledger_Manager();
+		$ledger = new NAMMASOCIETY51_Ledger_Manager();
 		$summary = $ledger->get_monthly_summary( $month );
 		return rest_ensure_response( $summary ? $summary : array() );
 	}
@@ -810,8 +810,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 * Reconcile physical funds with system balances.
 	 */
 	public function reconcile_funds( $request ) {
-		if ( ! class_exists( 'SHUBX51_Ledger_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-ledger-manager.php';
 		}
 
 		$params = $request->get_json_params();
@@ -825,16 +825,16 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$opening_bank = isset( $params['opening_bank'] ) ? floatval( $params['opening_bank'] ) : null;
 		$opening_cash = isset( $params['opening_cash'] ) ? floatval( $params['opening_cash'] ) : null;
 
-		update_option( 'shubx51_actual_bank_' . $year, $bank );
-		update_option( 'shubx51_actual_cash_' . $year, $cash );
+		update_option( 'nammasociety51_actual_bank_' . $year, $bank );
+		update_option( 'nammasociety51_actual_cash_' . $year, $cash );
 		if ( $opening_bank !== null ) {
-			update_option( 'shubx51_opening_bank_' . $year, $opening_bank );
+			update_option( 'nammasociety51_opening_bank_' . $year, $opening_bank );
 		}
 		if ( $opening_cash !== null ) {
-			update_option( 'shubx51_opening_cash_' . $year, $opening_cash );
+			update_option( 'nammasociety51_opening_cash_' . $year, $opening_cash );
 		}
 
-		$ledger_mgr = new SHUBX51_Ledger_Manager();
+		$ledger_mgr = new NAMMASOCIETY51_Ledger_Manager();
 		$ledger_entries = $ledger_mgr->get_ledger_entries( $year );
 		$last_entry = ! empty( $ledger_entries ) ? end( $ledger_entries ) : null;
 		$net_balance = ( floatval( $last_entry['bank_balance'] ?? 0 ) ) + ( floatval( $last_entry['cash_balance'] ?? 0 ) );
@@ -843,7 +843,7 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success'      => true,
-			'message'      => __( 'Funds reconciled successfully.', 'society-hubx' ),
+			'message'      => __( 'Funds reconciled successfully.', 'namma-society' ),
 			'actual_bank'  => $bank,
 			'actual_cash'  => $cash,
 			'actual_total' => $actual_total,
@@ -856,8 +856,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 * Generate Ad-hoc collection invoices across all active flats.
 	 */
 	public function generate_adhoc_invoices( $request ) {
-		if ( ! class_exists( 'SHUBX51_Account_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Account_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
 		}
 
 		$params = $request->get_json_params();
@@ -871,16 +871,16 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$due_date = isset( $params['due_date'] ) ? sanitize_text_field( $params['due_date'] ) : wp_date( 'Y-m-d', strtotime( '+7 days' ) );
 
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'rest_invalid_amount', __( 'Valid ad-hoc amount is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_amount', __( 'Valid ad-hoc amount is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$account_mgr = new SHUBX51_Account_Manager();
+		$account_mgr = new NAMMASOCIETY51_Account_Manager();
 		$count = $account_mgr->perform_bulk_invoice_generation( $month, $amount, 'adhoc', $due_date, $description );
 
 		return rest_ensure_response( array(
 			'success' => true,
 			'count'   => $count,
-			'message' => sprintf( __( '%d ad-hoc invoices created successfully.', 'society-hubx' ), $count ),
+			'message' => sprintf( __( '%d ad-hoc invoices created successfully.', 'namma-society' ), $count ),
 		) );
 	}
 
@@ -888,8 +888,8 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 	 * Record an offline payment on an invoice.
 	 */
 	public function record_invoice_payment( $request ) {
-		if ( ! class_exists( 'SHUBX51_Account_Manager' ) ) {
-			require_once SHUBX51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
+		if ( ! class_exists( 'NAMMASOCIETY51_Account_Manager' ) ) {
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-account-manager.php';
 		}
 
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
@@ -904,10 +904,10 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 		$reference = isset( $params['reference'] ) ? sanitize_text_field( $params['reference'] ) : '-';
 
 		if ( $amount <= 0 ) {
-			return new WP_Error( 'rest_invalid_amount', __( 'Payment amount must be greater than zero.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_amount', __( 'Payment amount must be greater than zero.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$account_mgr = new SHUBX51_Account_Manager();
+		$account_mgr = new NAMMASOCIETY51_Account_Manager();
 		$res = $account_mgr->perform_record_payment( array(
 			'invoice_id' => $id,
 			'amount'     => $amount,
@@ -922,23 +922,28 @@ class SHUBX51_REST_Finance_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Payment recorded successfully.', 'society-hubx' ),
+			'message' => __( 'Payment recorded successfully.', 'namma-society' ),
 		) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function finance_view_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'finance_view' ) || current_user_can( 'manage_options' );
 	}
 
 	public function finance_manage_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'finance_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Finance_Controller' ) && ! class_exists( 'SHUBX51_REST_Finance_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Finance_Controller', 'SHUBX51_REST_Finance_Controller' );
 }

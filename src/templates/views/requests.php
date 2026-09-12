@@ -74,7 +74,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
         <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
                 <h5 class="m-0 fw-bold">Active Requests</h5>
-                <div class="dropdown shubx-bulk-actions d-none">
+                <div class="dropdown nammasociety-bulk-actions d-none">
                     <button class="btn btn-outline-secondary dropdown-toggle btn-sm px-3 rounded-pill" type="button" data-bs-toggle="dropdown">
                         Bulk Actions (<span id="selected-count">0</span>)
                     </button>
@@ -131,7 +131,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                     ?>
                         <tr class="request-row border-bottom border-light" data-module="<?php echo esc_attr($module); ?>">
                             <td class="ps-5 py-4">
-                                <input type="checkbox" value="<?php echo esc_attr($req['id']); ?>" class="form-check-input shubx-bulk-checkbox bg-light border-slate-200 shadow-none">
+                                <input type="checkbox" value="<?php echo esc_attr($req['id']); ?>" class="form-check-input nammasociety-bulk-checkbox bg-light border-slate-200 shadow-none">
                             </td>
                             <td class="ps-2 py-4">
                                 <span class="badge bg-light text-dark text-capitalize px-3 py-1.5 rounded-pill border" style="font-size: 10px;">
@@ -186,7 +186,7 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                                             data-date="<?php echo esc_attr(wp_date('d M Y, h:i A', strtotime($req['created_at']))); ?>">
                                         <i class="bi bi-eye me-1"></i> VIEW
                                     </button>
-                                    <?php echo SHUBX51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
+                                    <?php echo NAMMASOCIETY51_Admin_UI::render_approval_buttons( $req['id'], $module ); ?>
                                 </div>
                             </td>
                         </tr>

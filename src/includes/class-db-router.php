@@ -7,14 +7,14 @@
  * - Writes go to Google Sheets (if connected) then Update Local.
  * - If Offline, Writes go directly to Local JSON.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_DB_Router {
+class NAMMASOCIETY51_DB_Router {
 	/**
 	 * List of all database table slugs for hybrid storage and data portability.
 	 */
@@ -76,42 +76,51 @@ class SHUBX51_DB_Router {
 	public function get_table_name( $slug ) {
 		global $wpdb;
 		$tables = array(
-            'residents'               => $wpdb->prefix . 'shubx51_residents',
-            'flats'                   => $wpdb->prefix . 'shubx51_flats',
-            'daily_help'              => $wpdb->prefix . 'shubx51_daily_help',
-            'invoices'                => $wpdb->prefix . 'shubx51_invoices',
-            'transactions'            => $wpdb->prefix . 'shubx51_transactions',
-            'notices'                 => $wpdb->prefix . 'shubx51_notices',
-            'amenities'               => $wpdb->prefix . 'shubx51_amenities',
-            'bookings'                => $wpdb->prefix . 'shubx51_bookings',
-            'vehicles'                => $wpdb->prefix . 'shubx51_vehicles',
-            'visitors'                => $wpdb->prefix . 'shubx51_visitors',
-            'visitor_passes'          => $wpdb->prefix . 'shubx51_visitor_passes',
-            'guard_logs'              => $wpdb->prefix . 'shubx51_guard_logs',
-            'helpdesk_tickets'        => $wpdb->prefix . 'shubx51_helpdesk_tickets',
-            'ticket_replies'          => $wpdb->prefix . 'shubx51_ticket_replies',
-            'complaints'              => $wpdb->prefix . 'shubx51_complaints',
-            'suggestions'             => $wpdb->prefix . 'shubx51_suggestions',
-            'polls'                   => $wpdb->prefix . 'shubx51_polls',
-            'poll_options'            => $wpdb->prefix . 'shubx51_poll_options',
-            'poll_votes'              => $wpdb->prefix . 'shubx51_poll_votes',
-            'documents'               => $wpdb->prefix . 'shubx51_documents',
-            'events'                  => $wpdb->prefix . 'shubx51_events',
-            'vendors'                 => $wpdb->prefix . 'shubx51_vendors',
-            'staff'                   => $wpdb->prefix . 'shubx51_staff',
-            'settings'                => $wpdb->prefix . 'shubx51_settings',
-            'requests'                => $wpdb->prefix . 'shubx51_requests',
-            'audit_logs'              => $wpdb->prefix . 'shubx51_audit_logs',
-            'roles'                   => $wpdb->prefix . 'shubx51_roles',
-            'staff_flats'             => $wpdb->prefix . 'shubx51_staff_flats',
-            'resident_role_map'       => $wpdb->prefix . 'shubx51_resident_role_map',
-            'resident_flat_map'       => $wpdb->prefix . 'shubx51_resident_flat_map',
-            'payments'                => $wpdb->prefix . 'shubx51_payments',
-            'device_tokens'           => $wpdb->prefix . 'shubx51_device_tokens',
-            'inapp_notifications'     => $wpdb->prefix . 'shubx51_inapp_notifications',
-            'emergency_alerts'        => $wpdb->prefix . 'shubx51_emergency_alerts',
+            'residents'               => $wpdb->prefix . 'nammasociety51_residents',
+            'flats'                   => $wpdb->prefix . 'nammasociety51_flats',
+            'daily_help'              => $wpdb->prefix . 'nammasociety51_daily_help',
+            'invoices'                => $wpdb->prefix . 'nammasociety51_invoices',
+            'transactions'            => $wpdb->prefix . 'nammasociety51_transactions',
+            'notices'                 => $wpdb->prefix . 'nammasociety51_notices',
+            'amenities'               => $wpdb->prefix . 'nammasociety51_amenities',
+            'bookings'                => $wpdb->prefix . 'nammasociety51_bookings',
+            'vehicles'                => $wpdb->prefix . 'nammasociety51_vehicles',
+            'visitors'                => $wpdb->prefix . 'nammasociety51_visitors',
+            'visitor_passes'          => $wpdb->prefix . 'nammasociety51_visitor_passes',
+            'guard_logs'              => $wpdb->prefix . 'nammasociety51_guard_logs',
+            'helpdesk_tickets'        => $wpdb->prefix . 'nammasociety51_helpdesk_tickets',
+            'ticket_replies'          => $wpdb->prefix . 'nammasociety51_ticket_replies',
+            'complaints'              => $wpdb->prefix . 'nammasociety51_complaints',
+            'suggestions'             => $wpdb->prefix . 'nammasociety51_suggestions',
+            'polls'                   => $wpdb->prefix . 'nammasociety51_polls',
+            'poll_options'            => $wpdb->prefix . 'nammasociety51_poll_options',
+            'poll_votes'              => $wpdb->prefix . 'nammasociety51_poll_votes',
+            'documents'               => $wpdb->prefix . 'nammasociety51_documents',
+            'events'                  => $wpdb->prefix . 'nammasociety51_events',
+            'vendors'                 => $wpdb->prefix . 'nammasociety51_vendors',
+            'staff'                   => $wpdb->prefix . 'nammasociety51_staff',
+            'settings'                => $wpdb->prefix . 'nammasociety51_settings',
+            'requests'                => $wpdb->prefix . 'nammasociety51_requests',
+            'audit_logs'              => $wpdb->prefix . 'nammasociety51_audit_logs',
+            'roles'                   => $wpdb->prefix . 'nammasociety51_roles',
+            'staff_flats'             => $wpdb->prefix . 'nammasociety51_staff_flats',
+            'resident_role_map'       => $wpdb->prefix . 'nammasociety51_resident_role_map',
+            'resident_flat_map'       => $wpdb->prefix . 'nammasociety51_resident_flat_map',
+            'payments'                => $wpdb->prefix . 'nammasociety51_payments',
+            'device_tokens'           => $wpdb->prefix . 'nammasociety51_device_tokens',
+            'inapp_notifications'     => $wpdb->prefix . 'nammasociety51_inapp_notifications',
+            'emergency_alerts'        => $wpdb->prefix . 'nammasociety51_emergency_alerts',
         );
-		return $tables[ $slug ] ?? $wpdb->prefix . 'shubx51_' . $slug;
+		$target_table = $tables[ $slug ] ?? $wpdb->prefix . 'nammasociety51_' . $slug;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $target_table ) ) !== $target_table ) {
+			$legacy = $wpdb->prefix . 'shubx51_' . $slug;
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $legacy ) ) === $legacy ) {
+				return $legacy;
+			}
+		}
+		return $target_table;
 	}
 
 	/**
@@ -286,7 +295,7 @@ class SHUBX51_DB_Router {
 		$results = $this->wpdb->get_results( $query, ARRAY_A );
 		
 		if ( $this->wpdb->last_error ) {
-			error_log( 'SHUBX51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
+			error_log( 'NAMMASOCIETY51 DB Error (get_mysql ' . $table . '): ' . $this->wpdb->last_error ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Operational/debug logging.
 			return array();
 		}
 		
@@ -604,4 +613,9 @@ class SHUBX51_DB_Router {
 		
 		return $flat_id;
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_DB_Router' ) && ! class_exists( 'SHUBX51_DB_Router', false ) ) {
+	class_alias( 'NAMMASOCIETY51_DB_Router', 'SHUBX51_DB_Router' );
 }

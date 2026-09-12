@@ -17,15 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Default view if not set
 if ( ! isset( $current_view ) ) {
-    $current_view = isset( $_GET['page'] ) ? str_replace( 'shubx51-', '', $_GET['page'] ) : 'dashboard';
+    $current_view = isset( $_GET['page'] ) ? str_replace( 'nammasociety51-', '', $_GET['page'] ) : 'dashboard';
 }
 
 // TEMP: Force Table Creation for new Schema
-if(class_exists('SHUBX51_DB_Schema')) {
-    SHUBX51_DB_Schema::create_tables();
+if(class_exists('NAMMASOCIETY51_DB_Schema')) {
+    NAMMASOCIETY51_DB_Schema::create_tables();
 }
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 if ( ! isset( $requests ) || empty( $requests ) ) {
     $requests = $db->get( 'requests' );
 }
@@ -39,34 +39,34 @@ foreach ( $requests as $req ) {
 }
 
 // RBAC Integration
-$shubx = SHUBX51_Plugin::get_instance();
+$nammasociety = NAMMASOCIETY51_Plugin::get_instance();
 $user_id = get_current_user_id();
 
 // Navigation Menu Config
 // Maps: View Name => [ Label, URL, Icon Class, Required Capability ]
 $nav_items_raw = [
-    'dashboard'    => ['Dashboard', admin_url('admin.php?page=shubx51-settings'), 'bi-speedometer2', 'dashboard_view'],
-    'flats'        => ['Flats & Units', admin_url('admin.php?page=shubx51-flats'), 'bi-building', 'flats_manage'],
-    'residents'    => ['Residents', admin_url('admin.php?page=shubx51-residents'), 'bi-people', 'residents_view'],
-    'rules'        => ['Rules & Regulations', admin_url('admin.php?page=shubx51-rules'), 'bi-book', 'rules_manage'],
-    'vehicles'     => ['Vehicles', admin_url('admin.php?page=shubx51-vehicles'), 'bi-car-front', 'residents_view'],
-    'staff'        => ['Staff & Help', admin_url('admin.php?page=shubx51-staff'), 'bi-shield-shaded', 'staff_manage'],
-    'documents'    => ['Documents', admin_url('admin.php?page=shubx51-documents'), 'bi-file-earmark-text', 'residents_view'],
-    'accounts'     => ['Accounts', admin_url('admin.php?page=shubx51-accounts'), 'bi-wallet2', 'finance_view'],
-    'expenses'     => ['Expenses', admin_url('admin.php?page=shubx51-expenses'), 'bi-cart-dash', 'finance_manage'],
-    'assets'       => ['Assets', admin_url('admin.php?page=shubx51-assets'), 'bi-box-seam', 'finance_view'],
-    'facilities'   => ['Facilities', admin_url('admin.php?page=shubx51-facilities'), 'bi-calendar-event', 'residents_view'],
-    'notices'      => ['Notices', admin_url('admin.php?page=shubx51-notices'), 'bi-megaphone', 'notices_manage'],
-    'polls'        => ['Democracy', admin_url('admin.php?page=shubx51-polls'), 'bi-journal-check', 'residents_view'],
-    'requests'     => ['Pending Requests', admin_url('admin.php?page=shubx51-requests'), 'bi-patch-exclamation', 'settings_manage'],
-    'activity-hub' => ['Activity Hub', admin_url('admin.php?page=shubx51-activity-hub'), 'bi-clock-history', 'settings_manage'],
-    'roles'        => ['User Roles', admin_url('admin.php?page=shubx51-roles'), 'bi-shield-lock', 'settings_manage'],
-    'settings'     => ['Settings', admin_url('admin.php?page=shubx51-global-settings'), 'bi-gear', 'settings_manage'],
+    'dashboard'    => ['Dashboard', admin_url('admin.php?page=nammasociety51-settings'), 'bi-speedometer2', 'dashboard_view'],
+    'flats'        => ['Flats & Units', admin_url('admin.php?page=nammasociety51-flats'), 'bi-building', 'flats_manage'],
+    'residents'    => ['Residents', admin_url('admin.php?page=nammasociety51-residents'), 'bi-people', 'residents_view'],
+    'rules'        => ['Rules & Regulations', admin_url('admin.php?page=nammasociety51-rules'), 'bi-book', 'rules_manage'],
+    'vehicles'     => ['Vehicles', admin_url('admin.php?page=nammasociety51-vehicles'), 'bi-car-front', 'residents_view'],
+    'staff'        => ['Staff & Help', admin_url('admin.php?page=nammasociety51-staff'), 'bi-shield-shaded', 'staff_manage'],
+    'documents'    => ['Documents', admin_url('admin.php?page=nammasociety51-documents'), 'bi-file-earmark-text', 'residents_view'],
+    'accounts'     => ['Accounts', admin_url('admin.php?page=nammasociety51-accounts'), 'bi-wallet2', 'finance_view'],
+    'expenses'     => ['Expenses', admin_url('admin.php?page=nammasociety51-expenses'), 'bi-cart-dash', 'finance_manage'],
+    'assets'       => ['Assets', admin_url('admin.php?page=nammasociety51-assets'), 'bi-box-seam', 'finance_view'],
+    'facilities'   => ['Facilities', admin_url('admin.php?page=nammasociety51-facilities'), 'bi-calendar-event', 'residents_view'],
+    'notices'      => ['Notices', admin_url('admin.php?page=nammasociety51-notices'), 'bi-megaphone', 'notices_manage'],
+    'polls'        => ['Democracy', admin_url('admin.php?page=nammasociety51-polls'), 'bi-journal-check', 'residents_view'],
+    'requests'     => ['Pending Requests', admin_url('admin.php?page=nammasociety51-requests'), 'bi-patch-exclamation', 'settings_manage'],
+    'activity-hub' => ['Activity Hub', admin_url('admin.php?page=nammasociety51-activity-hub'), 'bi-clock-history', 'settings_manage'],
+    'roles'        => ['User Roles', admin_url('admin.php?page=nammasociety51-roles'), 'bi-shield-lock', 'settings_manage'],
+    'settings'     => ['Settings', admin_url('admin.php?page=nammasociety51-global-settings'), 'bi-gear', 'settings_manage'],
 ];
 
 $nav_items = [];
 foreach ($nav_items_raw as $key => $nav) {
-    if ($shubx->rbac->has_capability($user_id, $nav[3])) {
+    if ($nammasociety->rbac->has_capability($user_id, $nav[3])) {
         $nav_items[$key] = $nav;
     }
 }
@@ -82,11 +82,11 @@ if (!isset($nav_items[$current_view]) && $current_view !== 'dashboard') {
 
 // Server-Side Cookie & Option Resolution (Zero-Flash SSR)
 // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$cookie_theme = isset( $_COOKIE['shubx_theme'] ) ? sanitize_key( wp_unslash( $_COOKIE['shubx_theme'] ) ) : '';
-$current_theme = in_array( $cookie_theme, [ 'light', 'dark' ], true ) ? $cookie_theme : get_option( 'shubx51_default_theme', 'light' );
+$cookie_theme = isset( $_COOKIE['nammasociety_theme'] ) ? sanitize_key( wp_unslash( $_COOKIE['nammasociety_theme'] ) ) : '';
+$current_theme = in_array( $cookie_theme, [ 'light', 'dark' ], true ) ? $cookie_theme : get_option( 'nammasociety51_default_theme', 'light' );
 
 $valid_palettes = [ 'orange', 'indigo', 'emerald', 'ocean', 'rose' ];
-$current_palette = get_option( 'shubx51_color_palette', 'orange' );
+$current_palette = get_option( 'nammasociety51_color_palette', 'orange' );
 if ( ! in_array( $current_palette, $valid_palettes, true ) ) {
     $current_palette = 'orange';
 }
@@ -95,23 +95,23 @@ if ( ! in_array( $current_palette, $valid_palettes, true ) ) {
 <!-- Admin App Wrapper Output -->
 <script>
 document.documentElement.setAttribute('data-bs-theme', '<?php echo esc_js( $current_theme ); ?>');
-document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( $current_palette ); ?>');
+document.documentElement.setAttribute('data-nammasociety-palette', '<?php echo esc_js( $current_palette ); ?>');
 </script>
 
-<div id="shubx51-app-root" data-bs-theme="<?php echo esc_attr( $current_theme ); ?>" data-shubx-palette="<?php echo esc_attr( $current_palette ); ?>" class="d-flex w-100 overflow-hidden">
+<div id="nammasociety51-app-root" data-bs-theme="<?php echo esc_attr( $current_theme ); ?>" data-nammasociety-palette="<?php echo esc_attr( $current_palette ); ?>" class="d-flex w-100 overflow-hidden">
     <!-- Styles: See assets/css/admin-layout.css -->
 
     <!-- Sidebar Backdrop for Mobile -->
-    <div id="shubx-sidebar-backdrop" class="position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50 d-lg-none d-none" style="z-index: 1040;"></div>
+    <div id="nammasociety-sidebar-backdrop" class="position-fixed top-0 start-0 w-100 h-100 bg-dark opacity-50 d-lg-none d-none" style="z-index: 1040;"></div>
 
     <!-- Sidebar -->
-    <aside id="shubx-sidebar" class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end shubx-sidebar overflow-x-hidden transition-all" style="z-index: 1050;">
+    <aside id="nammasociety-sidebar" class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end nammasociety-sidebar overflow-x-hidden transition-all" style="z-index: 1050;">
         <div class="d-flex align-items-center justify-content-between px-3 mb-2">
-            <a href="<?php echo admin_url('admin.php?page=shubx51-settings'); ?>" class="d-flex align-items-center text-custom-primary text-decoration-none gap-2 gap-sm-3">
-                <img src="<?php echo esc_url( SHUBX51_PLUGIN_URL . 'assets/images/hubx-logo-sm.png' ); ?>" alt="Society HubX" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
-                <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Society HubX</span>
+            <a href="<?php echo admin_url('admin.php?page=nammasociety51-settings'); ?>" class="d-flex align-items-center text-custom-primary text-decoration-none gap-2 gap-sm-3">
+                <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/hubx-logo-sm.png' ); ?>" alt="Namma Society" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
+                <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Namma Society</span>
             </a>
-            <button id="shubx-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">
+            <button id="nammasociety-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">
                 <i class="bi bi-x-lg fs-5"></i>
             </button>
         </div>
@@ -134,24 +134,24 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
         <div class="mb-2 px-1">
             <a href="<?php echo esc_url( admin_url() ); ?>" class="d-flex align-items-center text-slate-400 text-decoration-none hover-indigo transition-all small fw-bold px-3">
                 <i class="bi bi-arrow-left-short fs-4 me-1"></i>
-                <span class="shubx-sidebar-footer-text">Exit to WordPress</span>
+                <span class="nammasociety-sidebar-footer-text">Exit to WordPress</span>
             </a>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="shubx-main flex-grow-1 d-flex flex-column">
+    <main class="nammasociety-main flex-grow-1 d-flex flex-column">
         <!-- Top Header -->
-        <header class="shubx-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom" style="height: 72px;">
+        <header class="nammasociety-top-header d-flex align-items-center justify-content-between px-3 px-lg-5 bg-white border-bottom" style="height: 72px;">
             <div class="d-flex align-items-center gap-3">
-                <button id="shubx-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50" style="width: 40px; height: 40px;">
+                <button id="nammasociety-sidebar-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50" style="width: 40px; height: 40px;">
                     <i class="bi bi-list fs-3"></i>
                 </button>
                 <h1 class="h6 fw-bold text-slate-900 m-0 d-none d-sm-block"><?php echo esc_html( ucfirst( isset($nav_items[$current_view]) ? $nav_items[$current_view][0] : $current_view ) ); ?></h1>
             </div>
             <div class="d-flex align-items-center gap-4">
                 <?php if ($pending_count > 0): ?>
-                    <a href="<?php echo admin_url('admin.php?page=shubx51-requests'); ?>" class="position-relative text-decoration-none bg-warning bg-opacity-10 p-2 rounded-circle border border-warning border-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Pending Requests">
+                    <a href="<?php echo admin_url('admin.php?page=nammasociety51-requests'); ?>" class="position-relative text-decoration-none bg-warning bg-opacity-10 p-2 rounded-circle border border-warning border-opacity-10 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Pending Requests">
                         <i class="bi bi-patch-exclamation-fill text-warning"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 10px; padding: 0.35em 0.5em;">
                             <?php echo esc_html( $pending_count ); ?>
@@ -164,8 +164,8 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
                 <?php endif; ?>
 
                 <!-- Theme Toggle Button -->
-                <button id="shubx-theme-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 shubx-theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
-                    <i id="shubx-theme-icon" class="bi bi-moon-stars-fill fs-5 text-secondary"></i>
+                <button id="nammasociety-theme-toggle" class="btn btn-outline-secondary border-0 p-1 d-flex align-items-center justify-content-center hover-bg-slate-50 nammasociety-theme-toggle-btn" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle theme">
+                    <i id="nammasociety-theme-icon" class="bi bi-moon-stars-fill fs-5 text-secondary"></i>
                 </button>
 
                 <div class="dropdown">
@@ -174,7 +174,7 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
                             <div class="small fw-bold text-dark text-nowrap">Welcome, <?php $user = wp_get_current_user(); echo esc_html($user->display_name); ?></div>
                             <div class="small text-secondary" style="font-size: 10px;">Administrator</div>
                         </div>
-                        <div class="shubx-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
+                        <div class="nammasociety-user-avatar border shadow-sm rounded-circle overflow-hidden" style="width: 36px; height: 36px;">
                             <?php echo get_avatar( get_current_user_id(), 36, '', '', ['class' => 'w-100 h-100 object-fit-cover'] ); ?>
                         </div>
                     </button>
@@ -198,10 +198,10 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
         </header>
 
         <!-- View Content Scroll -->
-        <div class="shubx-content-scroll flex-grow-1 overflow-y-auto p-3 p-lg-5 bg-slate-50">
+        <div class="nammasociety-content-scroll flex-grow-1 overflow-y-auto p-3 p-lg-5 bg-slate-50">
             <div class="container p-0">
                 <?php 
-                    $view_path = SHUBX51_PLUGIN_DIR . 'templates/views/' . $current_view . '.php';
+                    $view_path = NAMMASOCIETY51_PLUGIN_DIR . 'templates/views/' . $current_view . '.php';
                     if ( file_exists( $view_path ) ) {
                         include $view_path; 
                     } else {
@@ -215,11 +215,11 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
 
 <!-- Global Toasts Container -->
 <div class="toast-container position-fixed bottom-0 end-0 p-4" style="z-index: 100070;">
-    <div id="shubx-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="nammasociety-global-toast" class="toast align-items-center border-0 rounded-2xl shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body d-flex align-items-center gap-3 py-3 px-4">
-                <i id="shubx-toast-icon" class="bi fs-4"></i>
-                <div id="shubx-toast-message" class="fw-bold"></div>
+                <i id="nammasociety-toast-icon" class="bi fs-4"></i>
+                <div id="nammasociety-toast-message" class="fw-bold"></div>
             </div>
             <button type="button" class="btn-close btn-close-white me-3 m-auto opacity-50" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -227,12 +227,12 @@ document.documentElement.setAttribute('data-shubx-palette', '<?php echo esc_js( 
 </div>
 
 <!-- Global Modals Container (Outside Root for z-index) -->
-<div id="shubx51-modals-root">
+<div id="nammasociety51-modals-root">
     <?php 
     if ( file_exists( dirname( __FILE__ ) . '/components/directory-modals.php' ) ) {
         include_once dirname( __FILE__ ) . '/components/directory-modals.php';
     }
-    do_action('shubx51_admin_modals'); 
+    do_action('nammasociety51_admin_modals'); 
     ?>
 </div>
 
@@ -261,15 +261,15 @@ do_action( 'admin_print_footer_scripts' );
 
     function shubxApplyTheme(theme) {
         document.documentElement.setAttribute('data-bs-theme', theme);
-        var appRoots = document.querySelectorAll('#shubx51-app-root');
+        var appRoots = document.querySelectorAll('#nammasociety51-app-root');
         if (appRoots && appRoots.length) {
             appRoots.forEach(function(el) {
                 el.setAttribute('data-bs-theme', theme);
             });
         }
-        shubxSetCookie('shubx_theme', theme);
+        shubxSetCookie('nammasociety_theme', theme);
         
-        var icon = document.getElementById('shubx-theme-icon');
+        var icon = document.getElementById('nammasociety-theme-icon');
         if (icon) {
             if (theme === 'dark') {
                 icon.className = 'bi bi-sun-fill fs-5 text-warning';
@@ -288,21 +288,21 @@ do_action( 'admin_print_footer_scripts' );
     };
 
     window.shubxSetPalette = function(palette) {
-        document.documentElement.setAttribute('data-shubx-palette', palette);
-        var appRoots = document.querySelectorAll('#shubx51-app-root');
+        document.documentElement.setAttribute('data-nammasociety-palette', palette);
+        var appRoots = document.querySelectorAll('#nammasociety51-app-root');
         if (appRoots && appRoots.length) {
             appRoots.forEach(function(el) {
-                el.setAttribute('data-shubx-palette', palette);
+                el.setAttribute('data-nammasociety-palette', palette);
             });
         }
-        shubxSetCookie('shubx_palette', palette);
+        shubxSetCookie('nammasociety_palette', palette);
     };
 
     document.addEventListener('DOMContentLoaded', function() {
         var currentTheme = document.documentElement.getAttribute('data-bs-theme') || '<?php echo esc_js( $current_theme ); ?>';
         shubxApplyTheme(currentTheme);
         
-        var btn = document.getElementById('shubx-theme-toggle');
+        var btn = document.getElementById('nammasociety-theme-toggle');
         if (btn) {
             btn.addEventListener('click', window.shubxToggleTheme);
         }

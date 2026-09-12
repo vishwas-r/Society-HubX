@@ -1,5 +1,5 @@
 /**
- * Society HubX - Resident Form JS
+ * Namma Society - Resident Form JS
  *
  * Handles interactive logic for the shared resident-form.php component:
  *  1. Profile image live preview

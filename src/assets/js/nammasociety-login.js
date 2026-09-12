@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (spinner) spinner.classList.remove('d-none');
 
         const formData = new FormData(loginForm);
-        formData.append('action', 'shubx51_resident_login');
+        formData.append('action', 'nammasociety51_resident_login');
 
         const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
         fetch(activeAjaxurl, {

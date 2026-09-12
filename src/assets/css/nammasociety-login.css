@@ -1,14 +1,14 @@
 /* Dashboard Font (Inter is preferred) */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.shubx-login-wrapper {
+.nammasociety-login-wrapper {
     font-family: 'Inter', sans-serif;
     position: relative;
     background-color: #f8fafc;
     overflow: hidden;
 }
 
-.shubx-login-bg {
+.nammasociety-login-bg {
     position: absolute;
     top: -50%;
     left: -50%;
@@ -24,7 +24,7 @@
     100% { transform: scale(1.1) translate(2%, 2%); }
 }
 
-.shubx-login-card {
+.nammasociety-login-card {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -36,12 +36,12 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.shubx-login-card.fade-out {
+.nammasociety-login-card.fade-out {
     opacity: 0;
     transform: scale(0.95) translateY(10px);
 }
 
-.shubx-brand-icon {
+.nammasociety-brand-icon {
     width: 64px;
     height: 64px;
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);

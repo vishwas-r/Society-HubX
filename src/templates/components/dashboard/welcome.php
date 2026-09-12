@@ -16,14 +16,14 @@ $r = $data['resident'] ?? [];
 <!-- Welcome Section (Simple) -->
 <div class="bg-white rounded-3 shadow-sm border border-light p-4 mb-4 d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center gap-3">
-        <?php echo SHUBX51_Admin_UI::render_avatar( $r['name'] ?? 'Resident', $r['email'] ?? '', $r['profile_photo'] ?? '', 60 ); ?>
+        <?php echo NAMMASOCIETY51_Admin_UI::render_avatar( $r['name'] ?? 'Resident', $r['email'] ?? '', $r['profile_photo'] ?? '', 60 ); ?>
         <div>
             <h1 class="h4 fw-bold text-dark mb-1">Hello, <?php echo esc_html( $r['name'] ?? 'Resident' ); ?> 👋</h1>
             <div class="text-secondary d-flex align-items-center gap-2 small">
                 <?php if ( ! empty( $data['my_flats'] ) && count( $data['my_flats'] ) > 1 ) : ?>
                     <div class="dropdown d-inline-block">
                         <button class="btn btn-sm btn-outline-primary dropdown-toggle px-2.5 py-1 rounded fw-bold text-uppercase tracking-wide shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.75rem;">
-                            Flat <?php echo esc_html( SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? '' ) ); ?>
+                            Flat <?php echo esc_html( NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? '' ) ); ?>
                         </button>
                         <ul class="dropdown-menu border-0 shadow-lg rounded-3 mt-1" style="font-size: 0.85rem;">
                             <li><h6 class="dropdown-header text-uppercase small text-muted">Switch Flat</h6></li>
@@ -47,7 +47,7 @@ $r = $data['resident'] ?? [];
                         </ul>
                     </div>
                 <?php else: ?>
-                    <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( SHUBX51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? $r['flat_no'] ?? '' ) ); ?></span>
+                    <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded fw-semibold text-uppercase tracking-wide">Flat <?php echo esc_html( NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $data['active_flat_no'] ?? $r['flat_no'] ?? '' ) ); ?></span>
                 <?php endif; ?>
                 <span class="text-muted">•</span>
                 <span><?php echo esc_html( ucfirst( $r['type'] ?? 'Resident' ) ); ?></span>

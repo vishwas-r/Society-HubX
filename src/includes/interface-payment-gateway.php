@@ -5,14 +5,14 @@
  * All external payment gateway plugins (e.g., Razorpay, Cashfree, Stripe) must implement this interface.
  * Core plugin contains ZERO gateway SDKs or hardcoded credentials.
  *
- * @package SocietyHubX
+ * @package NammaSociety
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-interface SHUBX51_Payment_Gateway_Interface {
+interface NAMMASOCIETY51_Payment_Gateway_Interface {
 
 	/**
 	 * Unique gateway slug (e.g. 'razorpay', 'cashfree', 'stripe').

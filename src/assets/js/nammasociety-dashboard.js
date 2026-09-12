@@ -12,7 +12,7 @@
     // --- Chart Logic ---
     function initCharts() {
         if (!window.Chart || !window.shubx51DashboardData) {
-            console.warn('SHUBX Dashboard: Chart.js or shubx51DashboardData missing. Some features may not work.');
+            console.warn('NAMMASOCIETY Dashboard: Chart.js or shubx51DashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -23,7 +23,7 @@
             const btnId = 'btn-tab-' + tabName;
             const btn = document.getElementById(btnId);
             if (!btn) {
-                console.error('SHUBX Dashboard: Tab button not found:', btnId);
+                console.error('NAMMASOCIETY Dashboard: Tab button not found:', btnId);
                 return;
             }
 
@@ -278,7 +278,7 @@
 
     // --- Event Listeners ---
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('SHUBX Dashboard: DOMContentLoaded fired. Initializing...');
+        console.log('NAMMASOCIETY Dashboard: DOMContentLoaded fired. Initializing...');
         // Init Charts
         initCharts();
         
@@ -510,9 +510,9 @@
             familyForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(familyForm);
-                if (!formData.get('action')) formData.append('action', 'shubx51_add_family');
+                if (!formData.get('action')) formData.append('action', 'nammasociety51_add_family');
 
-                SHUBX.ajax({
+                NAMMASOCIETY.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(familyForm).find('button[type="submit"]'),
@@ -529,7 +529,7 @@
                 e.preventDefault();
                 const formData = new FormData(helpForm);
 
-                SHUBX.ajax({
+                NAMMASOCIETY.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(helpForm).find('button[type="submit"]'),
@@ -546,7 +546,7 @@
                 e.preventDefault();
                 const formData = new FormData(vehicleForm);
 
-                SHUBX.ajax({
+                NAMMASOCIETY.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(vehicleForm).find('button[type="submit"]'),
@@ -562,7 +562,7 @@
             resAttForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(resAttForm);
-                SHUBX.ajax({
+                NAMMASOCIETY.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(resAttForm).find('button[type="submit"]'),
@@ -577,7 +577,7 @@
             resConForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const formData = new FormData(resConForm);
-                SHUBX.ajax({
+                NAMMASOCIETY.ajax({
                     action: formData.get('action'),
                     data: formData,
                     loadingButton: $(resConForm).find('button[type="submit"]'),
@@ -616,8 +616,8 @@
                     const form = e.target;
                     const formData = new FormData(form);
 
-                    SHUBX.ajax({
-                        action: 'shubx51_cast_vote',
+                    NAMMASOCIETY.ajax({
+                        action: 'nammasociety51_cast_vote',
                         data: formData,
                         loadingButton: $(form).find('button[type="submit"]'),
                         successMessage: 'Vote cast successfully!',
@@ -665,7 +665,7 @@
 
             // Reset action to add
             const actionInput = form.querySelector('input[name="action"]');
-            if (actionInput) actionInput.value = 'shubx51_add_family';
+            if (actionInput) actionInput.value = 'nammasociety51_add_family';
 
             // Reset Relation Wrapper
             const relWrapper = document.getElementById('relation-wrapper-frontend_family');
@@ -714,7 +714,7 @@
             }
 
             // Set action and IDs for edit
-            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'shubx51_edit_family';
+            if (form.querySelector('[name="action"]')) form.querySelector('[name="action"]').value = 'nammasociety51_edit_family';
             if (form.querySelector('[name="member_id"]')) form.querySelector('[name="member_id"]').value = d.id || d.memberId || '';
             if (form.querySelector('[name="resident_id"]')) form.querySelector('[name="resident_id"]').value = d.id || '';
 
@@ -775,7 +775,7 @@
                 }
 
                 // Set Action
-                form.querySelector('[name="action"]').value = 'shubx51_edit_help_frontend';
+                form.querySelector('[name="action"]').value = 'nammasociety51_edit_help_frontend';
 
                 // Set ID
                 let idInput = form.querySelector('[name="help_id"]');
@@ -845,7 +845,7 @@
         window.resetHelpModal = function () {
             const form = document.querySelector('#helpModal form');
             form.reset();
-            form.querySelector('[name="action"]').value = 'shubx51_add_daily_help';
+            form.querySelector('[name="action"]').value = 'nammasociety51_add_daily_help';
             const idInput = form.querySelector('[name="help_id"]');
             if (idInput) idInput.value = '';
             const docUrlInput = form.querySelector('[name="document_url"]');
@@ -881,13 +881,13 @@
             setVal('model', payload.model);
 
             const actionField = form.querySelector('[name="action"]');
-            if (actionField) actionField.value = 'shubx51_edit_vehicle_frontend';
+            if (actionField) actionField.value = 'nammasociety51_edit_vehicle_frontend';
 
             const idField = form.querySelector('[name="vehicle_id"]');
             if (idField) idField.value = payload.id;
 
             // Swap Nonce
-            const editNonce = form.querySelector('[name="shubx51_edit_vehicle_token"]');
+            const editNonce = form.querySelector('[name="nammasociety51_edit_vehicle_token"]');
             const mainNonce = form.querySelector('[name="_wpnonce"]');
             if (editNonce && mainNonce) mainNonce.value = editNonce.value;
 
@@ -944,10 +944,10 @@
             if (btn) { e.preventDefault(); handleDeleteFamily(btn); return; }
 
             btn = e.target.closest('.js-delete-help-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'shubx51_delete_daily_help_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'nammasociety51_delete_daily_help_frontend'); return; }
 
             btn = e.target.closest('.js-delete-vehicle-frontend');
-            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'shubx51_delete_vehicle_frontend'); return; }
+            if (btn) { e.preventDefault(); handleDeleteGeneric(btn, 'nammasociety51_delete_vehicle_frontend'); return; }
         });
 
         // --- Generic Delete Handler ---
@@ -957,7 +957,7 @@
             const id = btn.dataset.id;
             const nonce = btn.dataset.nonce;
 
-            SHUBX.ajax({
+            NAMMASOCIETY.ajax({
                 action: action,
                 data: { id: id, _wpnonce: nonce },
                 loadingButton: btn,
@@ -968,7 +968,7 @@
 
         // --- Specific Delete Handlers (can wrap generic if needed) ---
         function handleDeleteFamily(btn) {
-            handleDeleteGeneric(btn, 'shubx51_delete_family_frontend');
+            handleDeleteGeneric(btn, 'nammasociety51_delete_family_frontend');
         }
 
         // Optional: Hook into global window.switchTab if it exists (legacy support)
@@ -1257,7 +1257,7 @@
         window.downloadReceipt = function () {
             const receiptElement = document.getElementById('receipt-content');
             if (!receiptElement) {
-                SHUBX.toast.error('Receipt not found!');
+                NAMMASOCIETY.toast.error('Receipt not found!');
                 return;
             }
 
@@ -1267,7 +1267,7 @@
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
 
             if (typeof html2canvas === 'undefined') {
-                SHUBX.toast.error('Library not loaded. Please try again.');
+                NAMMASOCIETY.toast.error('Library not loaded. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
                 return;
@@ -1289,7 +1289,7 @@
                 btn.innerHTML = originalText;
             }).catch(error => {
                 console.error('Download error:', error);
-                SHUBX.toast.error('Error generating receipt image. Please try again.');
+                NAMMASOCIETY.toast.error('Error generating receipt image. Please try again.');
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             });
@@ -1310,15 +1310,15 @@
                 return;
             }
 
-            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : (typeof shubx51_nonce !== 'undefined' ? shubx51_nonce : '');
+            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : (typeof nammasociety51_nonce !== 'undefined' ? nammasociety51_nonce : '');
 
-            SHUBX.ajax({
-                action: 'shubx51_get_receipt',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_receipt',
                 data: { invoice_id: invoiceId, nonce: nonce },
                 onSuccess: function (data) {
                     populateReceiptModal(data);
                     let modalEl = document.getElementById('receiptModal');
-                    if (!modalEl) modalEl = document.getElementById('shubx-resident-receipt-modal');
+                    if (!modalEl) modalEl = document.getElementById('nammasociety-resident-receipt-modal');
 
                     if (modalEl) {
                         const modal = new bootstrap.Modal(modalEl);
@@ -1422,7 +1422,7 @@
                 <!-- Footer -->
                 <div class="receipt-footer-standard">
                     <p class="mb-1">This is a computer-generated document. It does not require a physical signature.</p>
-                    <p class="mb-0">Society HubX - Empowering Communities</p>
+                    <p class="mb-0">Namma Society - Empowering Communities</p>
                 </div>
             `;
         }
@@ -1453,7 +1453,7 @@
             const amount = form.querySelector('[name="amount"]').value;
             const ref = form.querySelector('[name="reference"]').value;
             if (!amount || !ref) {
-                SHUBX.toast.warning('Please fill in the Amount and Reference Number.');
+                NAMMASOCIETY.toast.warning('Please fill in the Amount and Reference Number.');
                 return;
             }
 
@@ -1461,8 +1461,8 @@
             const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
-            SHUBX.ajax({
-                action: 'shubx51_submit_payment_request',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_submit_payment_request',
                 data: formData,
                 loadingButton: btn,
                 successMessage: 'Payment confirmation sent successfully!',
@@ -1496,16 +1496,16 @@
 
         // Fix: Auto-populate Resident Profile Modal
         var profileModal = document.getElementById('editProfileModal');
-        // console.log("SHUBX Debug: Profile Modal Reset Script Loaded", profileModal); 
+        // console.log("NAMMASOCIETY Debug: Profile Modal Reset Script Loaded", profileModal); 
 
         if (profileModal && typeof shubx51DashboardData !== 'undefined' && shubx51DashboardData.resident) {
             profileModal.addEventListener('show.bs.modal', function () {
                 var r = shubx51DashboardData.resident;
-                // console.log("SHUBX Debug: Populating Profile Modal", r);
+                // console.log("NAMMASOCIETY Debug: Populating Profile Modal", r);
 
                 var form = profileModal.querySelector('form');
                 if (!form) {
-                    // console.error("SHUBX Debug: Profile Form not found in modal");
+                    // console.error("NAMMASOCIETY Debug: Profile Form not found in modal");
                     return;
                 }
 
@@ -1514,9 +1514,9 @@
                     var el = form.querySelector('[name="' + name + '"]');
                     if (el) {
                         el.value = val || '';
-                        // console.log("SHUBX Debug: Set " + name + " to " + val);
+                        // console.log("NAMMASOCIETY Debug: Set " + name + " to " + val);
                     } else {
-                        // console.warn("SHUBX Debug: Input not found for " + name);
+                        // console.warn("NAMMASOCIETY Debug: Input not found for " + name);
                     }
                 };
 
@@ -1540,7 +1540,7 @@
             });
         } else {
             /*
-            console.warn("SHUBX Debug: Missing Data or Modal", {
+            console.warn("NAMMASOCIETY Debug: Missing Data or Modal", {
                modal: !!profileModal,
                data: typeof shubx51DashboardData,
                resident: (shubx51DashboardData || {}).resident
@@ -1772,14 +1772,14 @@
                         if (currentHash === null) {
                             currentHash = data.hash; // Initial load
                         } else if (currentHash !== data.hash) {
-                            console.log('SHUBX: State Hash change detected. Refreshing data...');
+                            console.log('NAMMASOCIETY: State Hash change detected. Refreshing data...');
                             currentHash = data.hash;
                             await refreshDashboard();
                         }
                     }
                 }
             } catch (err) {
-                console.error('SHUBX Sync Error:', err);
+                console.error('NAMMASOCIETY Sync Error:', err);
             } finally {
                 isPolling = false;
                 setTimeout(pollStateHash, POLL_INTERVAL);
@@ -1885,13 +1885,13 @@
                         }
                     }
                     
-                    if (window.SHUBX && window.SHUBX.toast) {
-                        window.SHUBX.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
+                    if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+                        window.NAMMASOCIETY.toast.success('Dashboard payment data updated in real-time.', { icon: 'check-circle' });
                     }
                 }
 
             } catch (err) {
-                console.error('SHUBX Dashboard Refresh Error:', err);
+                console.error('NAMMASOCIETY Dashboard Refresh Error:', err);
             }
         }
 
@@ -1914,13 +1914,13 @@
         switchFlatBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Switching...';
         switchFlatBtn.style.pointerEvents = 'none';
 
-        var nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+        var nonce = (typeof nammasociety51_nonce !== 'undefined') ? nammasociety51_nonce : '';
 
         window.jQuery.ajax({
             url: (typeof ajaxurl !== 'undefined') ? ajaxurl : '',
             type: 'POST',
             data: {
-                action: 'shubx51_switch_flat',
+                action: 'nammasociety51_switch_flat',
                 flat_id: flatId,
                 _wpnonce: nonce
             },
@@ -1955,12 +1955,12 @@
                 btn.innerText = 'Submitting...';
 
                 const formData = new FormData(this);
-                formData.append('action', 'shubx51_submit_general_request');
-                const nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+                formData.append('action', 'nammasociety51_submit_general_request');
+                const nonce = (typeof nammasociety51_nonce !== 'undefined') ? nammasociety51_nonce : '';
                 formData.append('_wpnonce', nonce);
 
-                SHUBX.ajax({
-                    action: 'shubx51_submit_general_request',
+                NAMMASOCIETY.ajax({
+                    action: 'nammasociety51_submit_general_request',
                     data: formData,
                     loadingButton: btn,
                     reload: true
@@ -1975,14 +1975,14 @@
         if (!form) return;
 
         const formData = new FormData(form);
-        formData.append('action', 'shubx51_edit_resident');
+        formData.append('action', 'nammasociety51_edit_resident');
         const residentId = form.dataset.residentId || '';
         formData.append('resident_id', residentId);
-        const nonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+        const nonce = (typeof nammasociety51_nonce !== 'undefined') ? nammasociety51_nonce : '';
         formData.append('_wpnonce', nonce);
 
-        SHUBX.ajax({
-            action: 'shubx51_edit_resident',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_edit_resident',
             data: formData,
             loadingButton: jQuery(btn),
             successMessage: 'Profile updated successfully!',
@@ -2082,13 +2082,13 @@
         e.preventDefault();
         const formData = new FormData(e.target);
         const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
-        const activeNonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+        const activeNonce = (typeof nammasociety51_nonce !== 'undefined') ? nammasociety51_nonce : '';
 
         jQuery.ajax({
             url: activeAjaxurl,
             type: 'POST',
             data: {
-                action: 'shubx51_acknowledge_rule',
+                action: 'nammasociety51_acknowledge_rule',
                 rule_id: formData.get('rule_id'),
                 _wpnonce: activeNonce
             },
@@ -2097,8 +2097,8 @@
                     if (acknowledgeModal) acknowledgeModal.hide();
                     if (window.SHUBXShowToast) {
                         SHUBXShowToast('Rule acknowledged successfully!', 'success');
-                    } else if (window.SHUBX && window.SHUBX.toast) {
-                        SHUBX.toast.success('Rule acknowledged successfully!');
+                    } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+                        NAMMASOCIETY.toast.success('Rule acknowledged successfully!');
                     } else {
                         alert('Rule acknowledged successfully!');
                     }
@@ -2107,8 +2107,8 @@
                     const errMsg = response.data?.message || 'Error acknowledging rule';
                     if (window.SHUBXShowToast) {
                         SHUBXShowToast(errMsg, 'error');
-                    } else if (window.SHUBX && window.SHUBX.toast) {
-                        SHUBX.toast.error(errMsg);
+                    } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+                        NAMMASOCIETY.toast.error(errMsg);
                     } else {
                         alert(errMsg);
                     }
@@ -2151,13 +2151,13 @@
         e.preventDefault();
         const formData = new FormData(e.target);
         const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
-        const activeNonce = (typeof shubx51_nonce !== 'undefined') ? shubx51_nonce : '';
+        const activeNonce = (typeof nammasociety51_nonce !== 'undefined') ? nammasociety51_nonce : '';
 
         jQuery.ajax({
             url: activeAjaxurl,
             type: 'POST',
             data: {
-                action: 'shubx51_appeal_violation',
+                action: 'nammasociety51_appeal_violation',
                 violation_id: formData.get('violation_id'),
                 appeal_reason: formData.get('appeal_reason'),
                 _wpnonce: activeNonce
@@ -2167,8 +2167,8 @@
                     if (appealModal) appealModal.hide();
                     if (window.SHUBXShowToast) {
                         SHUBXShowToast('Appeal submitted successfully!', 'success');
-                    } else if (window.SHUBX && window.SHUBX.toast) {
-                        SHUBX.toast.success('Appeal submitted successfully!');
+                    } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+                        NAMMASOCIETY.toast.success('Appeal submitted successfully!');
                     } else {
                         alert('Appeal submitted successfully!');
                     }
@@ -2280,7 +2280,7 @@
         if (!list) return;
         const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
         try {
-            const response = await fetch(`${activeAjaxurl}?action=shubx51_get_facility_bookings&facility_id=${facId}`);
+            const response = await fetch(`${activeAjaxurl}?action=nammasociety51_get_facility_bookings&facility_id=${facId}`);
             const res = await response.json();
             
             if(res.success) {
@@ -2336,7 +2336,7 @@
         const fd = new FormData(e.target);
         
         try {
-            const res = await window.SHUBXApiRequest('shubx51_book_facility', fd);
+            const res = await window.SHUBXApiRequest('nammasociety51_book_facility', fd);
             btn.textContent = 'Success!';
             setTimeout(() => {
                 if (facilityModal) facilityModal.hide();

@@ -3,21 +3,21 @@
  * Class: REST Notifications Controller
  * Endpoints for In-App resident & admin notifications.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Notifications_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -124,7 +124,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	 */
 	public function get_inapp_notifications( $request ) {
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$notifs = $db->get( 'inapp_notifications', array( 'where' => array( 'user_id' => $user_id ) ) );
 
 		if ( empty( $notifs ) ) {
@@ -159,7 +159,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	public function mark_as_read( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 
 		$result = $db->update(
 			'inapp_notifications',
@@ -176,7 +176,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notification marked as read.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Notification marked as read.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -185,7 +185,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	public function mark_all_read( $request ) {
 		global $wpdb;
 		$user_id = get_current_user_id();
-		$table = "{$wpdb->prefix}shubx51_inapp_notifications";
+		$table = "{$wpdb->prefix}nammasociety51_inapp_notifications";
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$wpdb->query(
@@ -195,7 +195,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			)
 		);
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'All notifications marked as read.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'All notifications marked as read.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -204,7 +204,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	public function get_linked_devices( $request ) {
 		global $wpdb;
 		$user_id = get_current_user_id();
-		$table = "{$wpdb->prefix}shubx51_device_tokens";
+		$table = "{$wpdb->prefix}nammasociety51_device_tokens";
 
 		if ( current_user_can( 'manage_options' ) ) {
 			// Admins can see all registered devices in the society
@@ -213,7 +213,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 				"SELECT dt.*, u.display_name, u.user_login 
 				 FROM {$table} dt 
 				 LEFT JOIN {$wpdb->users} u ON dt.user_id = u.ID 
-				 ORDER BY dt.updated_at DESC LIMIT 50",
+				 ORDER BY dt.updated_at DESC LIMIT 100",
 				ARRAY_A
 			);
 		} else {
@@ -221,7 +221,10 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$devices = $wpdb->get_results(
 				$wpdb->prepare(
-					"SELECT * FROM {$table} WHERE user_id = %d ORDER BY updated_at DESC",
+					"SELECT dt.*, u.display_name, u.user_login 
+					 FROM {$table} dt 
+					 LEFT JOIN {$wpdb->users} u ON dt.user_id = u.ID 
+					 WHERE dt.user_id = %d ORDER BY dt.updated_at DESC",
 					$user_id
 				),
 				ARRAY_A
@@ -232,21 +235,27 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 		$clean_devices = array_map( function( $d ) {
 			$tok = $d['device_token'] ?? '';
 			return array(
-				'id'           => $d['id'] ?? '',
-				'user_id'      => $d['user_id'] ?? 0,
-				'display_name' => $d['display_name'] ?? '',
-				'user_login'   => $d['user_login'] ?? '',
-				'device_name'  => $d['device_name'] ?? 'Mobile Device',
-				'device_model' => $d['device_model'] ?? '',
-				'platform'     => $d['platform'] ?? 'android',
-				'app_version'  => $d['app_version'] ?? '1.0.0',
-				'ip_address'   => $d['ip_address'] ?? '',
-				'block'        => $d['block'] ?? '',
-				'flat_no'      => $d['flat_no'] ?? '',
-				'is_active'    => (int) ( $d['is_active'] ?? 1 ),
-				'created_at'   => $d['created_at'] ?? '',
-				'updated_at'   => $d['updated_at'] ?? '',
-				'token_preview'=> ! empty( $tok ) ? ( substr( $tok, 0, 10 ) . '...' . substr( $tok, -6 ) ) : '',
+				'id'                 => $d['id'] ?? '',
+				'user_id'            => $d['user_id'] ?? 0,
+				'display_name'       => $d['display_name'] ?? '',
+				'user_login'         => $d['user_login'] ?? '',
+				'society_id'         => $d['society_id'] ?? '1',
+				'society_name'       => $d['society_name'] ?? '',
+				'device_name'        => $d['device_name'] ?? 'Mobile Device',
+				'device_model'       => $d['device_model'] ?? '',
+				'platform'           => $d['platform'] ?? 'android',
+				'app_version'        => $d['app_version'] ?? '1.0.0',
+				'ip_address'         => $d['ip_address'] ?? '',
+				'block'              => $d['block'] ?? '',
+				'flat_no'            => $d['flat_no'] ?? '',
+				'is_active'          => (int) ( $d['is_active'] ?? 1 ),
+				'total_pushes_sent'  => (int) ( $d['total_pushes_sent'] ?? 0 ),
+				'last_dispatched_at' => $d['last_dispatched_at'] ?? '',
+				'last_push_status'   => $d['last_push_status'] ?? 'active',
+				'last_push_title'    => $d['last_push_title'] ?? '',
+				'created_at'         => $d['created_at'] ?? '',
+				'updated_at'         => $d['updated_at'] ?? '',
+				'token_preview'      => ! empty( $tok ) ? ( substr( $tok, 0, 10 ) . '...' . substr( $tok, -6 ) ) : '',
 			);
 		}, $devices ?: array() );
 
@@ -254,7 +263,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	/**
@@ -262,7 +271,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	 * Public endpoint returning society FCM sender ID & project ID.
 	 */
 	public function get_notification_config() {
-		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
+		if ( ! class_exists( 'NAMMASOCIETY51_FCM_Service' ) ) {
 			return rest_ensure_response( array(
 				'success'     => true,
 				'fcm_enabled' => false,
@@ -271,7 +280,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			) );
 		}
 
-		$config = SHUBX51_FCM_Service::get_public_config();
+		$config = NAMMASOCIETY51_FCM_Service::get_public_config();
 		return rest_ensure_response( array(
 			'success'     => true,
 			'fcm_enabled' => (bool) $config['fcm_enabled'],
@@ -292,16 +301,18 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 
 		$token = sanitize_text_field( $params['device_token'] ?? '' );
 		if ( empty( $token ) ) {
-			return new WP_Error( 'rest_invalid_token', __( 'Device token is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_token', __( 'Device token is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$user_id = get_current_user_id();
-		$flat_no = sanitize_text_field( $params['flat_no'] ?? '' );
-		$block   = sanitize_text_field( $params['block'] ?? '' );
+		$user_id      = get_current_user_id();
+		$flat_no      = sanitize_text_field( $params['flat_no'] ?? '' );
+		$block        = sanitize_text_field( $params['block'] ?? '' );
+		$society_id   = sanitize_text_field( $params['society_id'] ?? '' );
+		$society_name = sanitize_text_field( $params['society_name'] ?? '' );
 
 		// If user is logged in, attempt to resolve unit info from resident profile if not provided
 		if ( ( empty( $flat_no ) || empty( $block ) ) && $user_id > 0 ) {
-			$db = new SHUBX51_DB_Router();
+			$db = new NAMMASOCIETY51_DB_Router();
 			$resident = $db->get_row_by_field( 'residents', 'wp_user_id', $user_id );
 			if ( $resident ) {
 				if ( empty( $flat_no ) && ! empty( $resident['flat_no'] ) ) {
@@ -319,12 +330,14 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			$client_ip = trim( $parts[0] );
 		}
 
-		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
-			return new WP_Error( 'fcm_service_unavailable', __( 'FCM Service not available.', 'society-hubx' ), array( 'status' => 500 ) );
+		if ( ! class_exists( 'NAMMASOCIETY51_FCM_Service' ) ) {
+			return new WP_Error( 'fcm_service_unavailable', __( 'FCM Service not available.', 'namma-society' ), array( 'status' => 500 ) );
 		}
 
-		$registered = SHUBX51_FCM_Service::register_token( array(
+		$registered = NAMMASOCIETY51_FCM_Service::register_token( array(
 			'user_id'      => $user_id,
+			'society_id'   => $society_id,
+			'society_name' => $society_name,
 			'flat_no'      => $flat_no,
 			'block'        => $block,
 			'device_token' => $token,
@@ -336,12 +349,12 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 		) );
 
 		if ( ! $registered ) {
-			return new WP_Error( 'token_registration_failed', __( 'Could not register device token.', 'society-hubx' ), array( 'status' => 500 ) );
+			return new WP_Error( 'token_registration_failed', __( 'Could not register device token.', 'namma-society' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response( array(
 			'success' => true,
-			'message' => __( 'Device token registered successfully.', 'society-hubx' ),
+			'message' => __( 'Device token registered successfully.', 'namma-society' ),
 			'flat_no' => $flat_no,
 			'block'   => $block,
 		) );
@@ -352,20 +365,20 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 	 * Dispatches a test notification to verify credentials.
 	 */
 	public function send_test_push( $request ) {
-		if ( ! class_exists( 'SHUBX51_FCM_Service' ) ) {
-			return new WP_Error( 'fcm_not_loaded', __( 'FCM service not loaded.', 'society-hubx' ), array( 'status' => 500 ) );
+		if ( ! class_exists( 'NAMMASOCIETY51_FCM_Service' ) ) {
+			return new WP_Error( 'fcm_not_loaded', __( 'FCM service not loaded.', 'namma-society' ), array( 'status' => 500 ) );
 		}
 
-		if ( ! SHUBX51_FCM_Service::is_enabled() ) {
-			return new WP_Error( 'fcm_disabled', __( 'FCM is not enabled or credentials are missing.', 'society-hubx' ), array( 'status' => 400 ) );
+		if ( ! NAMMASOCIETY51_FCM_Service::is_enabled() ) {
+			return new WP_Error( 'fcm_disabled', __( 'FCM is not enabled or credentials are missing.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$params = $request->get_json_params();
 		$target_flat = sanitize_text_field( $params['flat_no'] ?? '' );
 		$target_token = sanitize_text_field( $params['device_token'] ?? '' );
 
-		$title = __( '🧪 Society HubX Test Alert', 'society-hubx' );
-		$body  = sprintf( __( 'Test notification from %s. Push notifications are working!', 'society-hubx' ), get_bloginfo( 'name' ) );
+		$title = __( '🧪 Namma Society Test Alert', 'namma-society' );
+		$body  = sprintf( __( 'Test notification from %s. Push notifications are working!', 'namma-society' ), get_bloginfo( 'name' ) );
 		$data  = array(
 			'type'      => 'test_ping',
 			'timestamp' => time(),
@@ -378,7 +391,7 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 			$target_uids[] = $user_id;
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		if ( ! empty( $target_flat ) ) {
 			$residents = $db->get( 'residents', array( 'where' => array( 'flat_no' => $target_flat ) ) );
 			if ( ! empty( $residents ) ) {
@@ -406,25 +419,25 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 
 		// 2. Dispatch push notification
 		if ( ! empty( $target_token ) ) {
-			$res = SHUBX51_FCM_Service::send_notification( $target_token, $title, $body, $data, 'high' );
+			$res = NAMMASOCIETY51_FCM_Service::send_notification( $target_token, $title, $body, $data, 'high' );
 			$sent = ( ! is_wp_error( $res ) && ! empty( $res['success'] ) ) ? 1 : 0;
 		} elseif ( ! empty( $target_flat ) ) {
-			$sent = SHUBX51_FCM_Service::send_to_flat( $target_flat, $title, $body, $data, 'high' );
+			$sent = NAMMASOCIETY51_FCM_Service::send_to_flat( $target_flat, $title, $body, $data, 'high' );
 		} else {
-			$sent = SHUBX51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
+			$sent = NAMMASOCIETY51_FCM_Service::send_to_all( $title, $body, $data, 'high' );
 		}
 
 		if ( $sent > 0 ) {
 			return rest_ensure_response( array(
 				'success'    => true,
-				'message'    => sprintf( __( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.', 'society-hubx' ), $sent ),
+				'message'    => sprintf( __( 'Test push dispatched successfully to %d device(s)! Also logged to In-App Notifications.', 'namma-society' ), $sent ),
 				'dispatched' => $sent,
 			) );
 		}
 
 		return rest_ensure_response( array(
 			'success'    => true,
-			'message'    => sprintf( __( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices registered for "%s" - open the mobile app to register device token).', 'society-hubx' ), ! empty( $target_flat ) ? $target_flat : __( 'all', 'society-hubx' ) ),
+			'message'    => sprintf( __( 'Test alert recorded to In-App Notifications! (Note: 0 active push devices registered for "%s" - open the mobile app to register device token).', 'namma-society' ), ! empty( $target_flat ) ? $target_flat : __( 'all', 'namma-society' ) ),
 			'dispatched' => 0,
 			'warning'    => true,
 		) );
@@ -432,12 +445,17 @@ class SHUBX51_REST_Notifications_Controller extends WP_REST_Controller {
 
 	public function token_registration_check( $request ) {
 		// Token registration is allowed for authenticated users, or clients presenting flat info
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		return true;
 	}
 
 	public function admin_permissions_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 		return current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Notifications_Controller' ) && ! class_exists( 'SHUBX51_REST_Notifications_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Notifications_Controller', 'SHUBX51_REST_Notifications_Controller' );
 }

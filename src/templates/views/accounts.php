@@ -9,11 +9,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$db = new SHUBX51_DB_Router();
+$db = new NAMMASOCIETY51_DB_Router();
 $invoices = $db->get( 'invoices', array( 'load_relations' => true ) );
 $residents = $db->get( 'residents', array( 'load_relations' => true ) );
 
-$ledger_mgr = new SHUBX51_Ledger_Manager();
+$ledger_mgr = new NAMMASOCIETY51_Ledger_Manager();
 $selected_year = isset( $_GET['year'] ) ? sanitize_text_field( wp_unslash( $_GET['year'] ) ) : wp_date('Y');
 $ledger_entries = $ledger_mgr->get_ledger_entries( $selected_year );
 
@@ -60,7 +60,7 @@ foreach($relevant_reqs as $pr) {
 }
 
 // Helper for Indian Numbering Format
-function SHUBX_in_fmt($num, $decimals = 2) {
+function NAMMASOCIETY_in_fmt($num, $decimals = 2) {
     $num = (float)$num;
     if (class_exists('NumberFormatter')) {
         $fmt = new NumberFormatter('en_IN', NumberFormatter::DECIMAL);
@@ -88,8 +88,8 @@ function SHUBX_in_fmt($num, $decimals = 2) {
 
 // New Consolidated Stats
 $total_credit = 0; $total_debit = 0;
-$opening_bank = floatval(get_option('shubx51_opening_bank_' . $selected_year, 0));
-$opening_cash = floatval(get_option('shubx51_opening_cash_' . $selected_year, 0));
+$opening_bank = floatval(get_option('nammasociety51_opening_bank_' . $selected_year, 0));
+$opening_cash = floatval(get_option('nammasociety51_opening_cash_' . $selected_year, 0));
 
 foreach($ledger_entries as $e) {
     if(($e['type'] ?? '') === 'Credit') $total_credit += $e['amount'];
@@ -99,8 +99,8 @@ foreach($ledger_entries as $e) {
 $last_entry = end($ledger_entries);
 $net_balance = ($last_entry['bank_balance'] ?? 0) + ($last_entry['cash_balance'] ?? 0);
 
-$actual_bank = floatval(get_option('shubx51_actual_bank_' . $selected_year, 0));
-$actual_cash = floatval(get_option('shubx51_actual_cash_' . $selected_year, 0));
+$actual_bank = floatval(get_option('nammasociety51_actual_bank_' . $selected_year, 0));
+$actual_cash = floatval(get_option('nammasociety51_actual_cash_' . $selected_year, 0));
 $actual_total = $actual_bank + $actual_cash;
 $variance = $actual_total - $net_balance;
 
@@ -191,9 +191,9 @@ if ( isset( $_GET['success'] ) ) {
 ?>
 
 <?php
-wp_add_inline_script( 'shubx51-accounts-js', '
-    var SHUBX51AdminNonce = "' . esc_js( wp_create_nonce( 'shubx51_nonce' ) ) . '";
-    var shubx51RequestNonce = "' . esc_js( wp_create_nonce( 'shubx51_request_action' ) ) . '";
+wp_add_inline_script( 'nammasociety51-accounts-js', '
+    var SHUBX51AdminNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_nonce' ) ) . '";
+    var shubx51RequestNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_request_action' ) ) . '";
     var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";
     var SHUBXAccountsChartData = {
         monthlyData: ' . wp_json_encode($monthly_data) . ',
@@ -234,7 +234,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                 <div class="bg-white px-3 py-2 rounded-3 d-flex align-items-center gap-3 border border-light shadow-sm">
                     <span class="small fw-bold text-secondary text-uppercase" style="font-size: 10px; letter-spacing: 0.05em;">Fiscal Period</span>
                     <form method="get" class="m-0">
-                        <input type="hidden" name="page" value="shubx51-accounts">
+                        <input type="hidden" name="page" value="nammasociety51-accounts">
                         <select name="year" onchange="this.form.submit()" class="form-select form-select-sm bg-light border-0 shadow-none fw-bold text-dark" style="min-width: 100px;">
                              <?php for($y = (int)wp_date('Y'); $y >= (int)wp_date('Y')-2; $y--) {
                                 $sel = ($y == (int)sanitize_text_field($selected_year)) ? 'selected' : '';
@@ -260,7 +260,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
     $all_options = wp_load_alloptions();
     $running_jobs = array();
     foreach ( $all_options as $key => $val ) {
-        if ( strpos( $key, 'shubx51_job_bulk_invoice_' ) === 0 ) {
+        if ( strpos( $key, 'nammasociety51_job_bulk_invoice_' ) === 0 ) {
             $job = maybe_unserialize( $val );
             if ( $job && $job['status'] === 'running' ) {
                 $running_jobs[] = $job;
@@ -295,12 +295,12 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Revenue (Inflow)</p>
                     <i class="bi bi-graph-up-arrow text-success fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( SHUBX_in_fmt($total_credit, 0) ); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($total_credit, 0) ); ?></h3>
                 <div class="progress mt-3" style="height: 4px;">
                     <div class="progress-bar bg-success" style="width: <?php echo esc_html( $collection_pct ); ?>%"></div>
                 </div>
                 <div class="small text-muted mt-2" style="font-size: 10px;">
-                    COLLECTED: ₹<?php echo esc_html( SHUBX_in_fmt($total_collected) ); ?> / DEMAND: ₹<?php echo esc_html( SHUBX_in_fmt($total_demand) ); ?> (<?php echo esc_html( $collection_pct ); ?>%)
+                    COLLECTED: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($total_collected) ); ?> / DEMAND: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($total_demand) ); ?> (<?php echo esc_html( $collection_pct ); ?>%)
                 </div>
             </div>
         </div>
@@ -310,7 +310,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-secondary text-uppercase tracking-wider m-0">Expenses (Outflow)</p>
                     <i class="bi bi-graph-down-arrow text-danger fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( SHUBX_in_fmt($total_debit, 0) ); ?></h3>
+                <h3 class="h2 fw-bold text-dark m-0">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($total_debit, 0) ); ?></h3>
                 <div class="small text-danger fw-bold mt-2" style="font-size: 10px;">TOTAL APPROVED COSTS</div>
             </div>
         </div>
@@ -321,7 +321,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <i class="bi bi-calculator fs-5"></i>
                 </div>
                 <!-- Yearly Balance -->
-                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( SHUBX_in_fmt($net_balance, 0) ); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($net_balance, 0) ); ?></h3>
                 <div class="small text-white-50 fw-bold mt-2" style="font-size: 10px;">YEAR END POSITION</div>
                 
                 <!-- Overall Live Balance (Added) -->
@@ -333,7 +333,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <div class="mt-3 pt-3 border-top border-white-50">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="small fw-bold text-white-50" style="font-size: 10px;">LIVE BALANCE</span>
-                            <span class="fw-bold text-white">₹<?php echo SHUBX_in_fmt($live_bal['total'] ?? 0, 0); ?></span>
+                            <span class="fw-bold text-white">₹<?php echo NAMMASOCIETY_in_fmt($live_bal['total'] ?? 0, 0); ?></span>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -345,14 +345,14 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                     <p class="small fw-bold text-uppercase tracking-wider m-0">Physical Funds</p>
                     <i class="bi bi-safe2 fs-5"></i>
                 </div>
-                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( SHUBX_in_fmt($actual_total, 0) ); ?></h3>
+                <h3 class="h2 fw-bold m-0">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($actual_total, 0) ); ?></h3>
                 <div class="d-flex gap-2 mt-2">
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo esc_html( SHUBX_in_fmt($actual_bank) ); ?></span>
-                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo esc_html( SHUBX_in_fmt($actual_cash) ); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">BANK: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($actual_bank) ); ?></span>
+                    <span class="badge bg-white text-dark fw-bold" style="font-size: 9px; opacity: 0.9;">CASH: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($actual_cash) ); ?></span>
                 </div>
                 <?php if(abs($variance) > 1): ?>
                     <div class="mt-2 small fw-bold text-white" style="font-size: 10px;">
-                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo esc_html( SHUBX_in_fmt($variance) ); ?>
+                        <i class="bi bi-exclamation-triangle-fill"></i> VARIANCE: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($variance) ); ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -420,10 +420,10 @@ wp_add_inline_script( 'shubx51-accounts-js', '
         <div class="px-5 bg-white border-bottom border-light">
             <ul class="nav nav-tabs border-0 gap-5" id="accountTabs">
                 <li class="nav-item">
-                    <a href="?page=shubx51-accounts&tab=invoices" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices & Maintenance</a>
+                    <a href="?page=nammasociety51-accounts&tab=invoices" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices & Maintenance</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?page=shubx51-accounts&tab=ledger" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
+                    <a href="?page=nammasociety51-accounts&tab=ledger" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
                 </li>
             </ul>
         </div>
@@ -493,9 +493,9 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                             <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
-                                            <div class="fw-bold text-dark">₹<?php echo esc_html( SHUBX_in_fmt($inv['amount']) ); ?></div>
+                                            <div class="fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($inv['amount']) ); ?></div>
                                             <?php if($paid > 0 && $paid < $inv['amount']): ?>
-                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo esc_html( SHUBX_in_fmt($paid) ); ?></div>
+                                                <div class="text-success fw-bold" style="font-size: 9px;">Paid: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($paid) ); ?></div>
                                             <?php endif; ?>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -505,7 +505,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                                 $p_payload = is_array($pending_request['payload'] ?? null) ? $pending_request['payload'] : json_decode($pending_request['payload'], true);
                                             ?>
                                                 <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold mb-1" style="font-size: 9px;">VERIFICATION PENDING</span>
-                                                <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo SHUBX_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
+                                                <div class="text-info fw-bold" style="font-size: 9px;">₹<?php echo NAMMASOCIETY_in_fmt($p_payload['amount'] ?? 0); ?> (<?php echo $p_payload['method'] ?? 'UPI'; ?>)</div>
                                             <?php elseif ( ($inv['status'] ?? '') === 'partial' ) : ?>
                                                 <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill text-uppercase fw-bold" style="font-size: 9px;">PARTIAL</span>
                                             <?php else : ?>
@@ -616,12 +616,12 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-success <?php echo ($ln['type'] ?? '') === 'Credit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? SHUBX_in_fmt($ln['amount']) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Credit' ? NAMMASOCIETY_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <span class="fw-bold text-danger <?php echo ($ln['type'] ?? '') === 'Debit' ? '' : 'opacity-10'; ?>">
-                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? SHUBX_in_fmt($ln['amount']) : '0.00'; ?>
+                                                ₹<?php echo ($ln['type'] ?? '') === 'Debit' ? NAMMASOCIETY_in_fmt($ln['amount']) : '0.00'; ?>
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-center">
@@ -631,8 +631,8 @@ wp_add_inline_script( 'shubx51-accounts-js', '
                                         </td>
                                         <td class="pe-5 py-4 text-end">
                                             <div class="d-flex flex-column align-items-end">
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo esc_html( SHUBX_in_fmt($ln['bank_balance']) ); ?></span></span>
-                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo esc_html( SHUBX_in_fmt($ln['cash_balance']) ); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">BANK: <span class="text-primary font-monospace">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($ln['bank_balance']) ); ?></span></span>
+                                                <span class="small text-muted fw-bold" style="font-size: 10px;">CASH: <span class="text-warning font-monospace">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($ln['cash_balance']) ); ?></span></span>
                                             </div>
                                         </td>
                                     </tr>
@@ -649,7 +649,7 @@ wp_add_inline_script( 'shubx51-accounts-js', '
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
+add_action('nammasociety51_admin_modals', function() use ($selected_year, $actual_bank, $actual_cash, $opening_bank, $opening_cash) {
 ?>
 <!-- Reconcile Modal -->
 <div class="modal fade" id="reconcileModal" tabindex="-1" aria-hidden="true">
@@ -661,9 +661,9 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
             </div>
             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="shubx51_reconcile_balance">
+                    <input type="hidden" name="action" value="nammasociety51_reconcile_balance">
                     <input type="hidden" name="year" value="<?php echo esc_html( $selected_year ); ?>">
-                    <?php wp_nonce_field('shubx51_reconcile_nonce'); ?>
+                    <?php wp_nonce_field('nammasociety51_reconcile_nonce'); ?>
                     
                     <h6 class="fw-bold text-primary small text-uppercase mb-3">Actual Physical Funds (Now)</h6>
                     <div class="mb-3">
@@ -706,9 +706,9 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="shubx51_generate_invoices">
+                    <input type="hidden" name="action" value="nammasociety51_generate_invoices">
                     <input type="hidden" name="type" value="maintenance">
-                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'nammasociety51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Billing Month</label>
@@ -723,7 +723,7 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
                     <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Amount (₹)</label>
-                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('shubx51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('nammasociety51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
@@ -754,9 +754,9 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="shubx51_generate_invoices">
+                    <input type="hidden" name="action" value="nammasociety51_generate_invoices">
                     <input type="hidden" name="type" value="adhoc">
-                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'nammasociety51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Title / Reason</label>
@@ -798,9 +798,9 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="edit-invoice-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="shubx51_edit_invoice">
+                    <input type="hidden" name="action" value="nammasociety51_edit_invoice">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'nammasociety51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Description</label>
@@ -854,9 +854,9 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
             </div>
             <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" id="payment-form">
                 <div class="modal-body p-4">
-                    <input type="hidden" name="action" value="shubx51_record_payment">
+                    <input type="hidden" name="action" value="nammasociety51_record_payment">
                     <input type="hidden" name="invoice_id" value="">
-                    <?php wp_nonce_field( 'shubx51_account_action' ); ?>
+                    <?php wp_nonce_field( 'nammasociety51_account_action' ); ?>
                     
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Amount Received (₹)</label>
@@ -921,8 +921,8 @@ add_action('shubx51_admin_modals', function() use ($selected_year, $actual_bank,
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-3">
             <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>">
-                <?php wp_nonce_field( 'shubx51_account_action' ); ?>
-                <input type="hidden" name="action" value="shubx51_export_tally_xml">
+                <?php wp_nonce_field( 'nammasociety51_account_action' ); ?>
+                <input type="hidden" name="action" value="nammasociety51_export_tally_xml">
                 <div class="modal-header border-bottom p-4">
                     <div class="d-flex align-items-center gap-3">
                         <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">

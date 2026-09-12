@@ -3,21 +3,21 @@
  * Class: REST Rules Controller
  * Endpoints for Society Rules, Version Control, Acknowledgments, and Violations.
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
+class NAMMASOCIETY51_REST_Rules_Controller extends WP_REST_Controller {
 
 	/**
 	 * Namespace for the API.
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'society-hubx/v1';
+	protected $namespace = 'namma-society/v1';
 
 	/**
 	 * Route base.
@@ -152,11 +152,11 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 * Get published rules.
 	 */
 	public function get_items( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$rules = $db->get( 'rules' );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'rules_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -177,11 +177,11 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 */
 	public function get_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$rules = $db->get( 'rules', array( 'id' => $id ) );
 
 		if ( empty( $rules ) ) {
-			return new WP_Error( 'rest_rule_not_found', __( 'Rule not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_rule_not_found', __( 'Rule not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		return rest_ensure_response( $rules[0] );
@@ -200,7 +200,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		$content = isset( $params['content'] ) ? wp_kses_post( $params['content'] ) : '';
 
 		if ( empty( $title ) || empty( $content ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Title and content are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Title and content are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -218,7 +218,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			'created_by'              => get_current_user_id(),
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'rules', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -237,10 +237,10 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			$params = $request->get_params();
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$existing = $db->get( 'rules', array( 'id' => $id ) );
 		if ( empty( $existing ) ) {
-			return new WP_Error( 'rest_rule_not_found', __( 'Rule not found.', 'society-hubx' ), array( 'status' => 404 ) );
+			return new WP_Error( 'rest_rule_not_found', __( 'Rule not found.', 'namma-society' ), array( 'status' => 404 ) );
 		}
 
 		$data = array();
@@ -265,7 +265,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule updated successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule updated successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -273,14 +273,14 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 */
 	public function delete_item( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update( 'rules', array( 'status' => 'archived' ), array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule archived successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule archived successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -291,7 +291,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		$params = $request->get_json_params();
 
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$resident = $db->get_resident_by_wp_id( $user_id );
 		$flat_no = $resident['flat_no'] ?? '';
 
@@ -311,7 +311,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule acknowledged successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Rule acknowledged successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -319,7 +319,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 */
 	public function get_pending_acknowledgments( $request ) {
 		$user_id = get_current_user_id();
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$rules = $db->get( 'rules', array( 'where' => array( 'requires_acknowledgment' => 1, 'status' => 'published' ) ) );
 		$acks = $db->get( 'rule_acknowledgments', array( 'where' => array( 'user_id' => $user_id ) ) );
 
@@ -339,11 +339,11 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 * List violations.
 	 */
 	public function get_violations( $request ) {
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$violations = $db->get( 'rule_violations' );
 
 		$user_id = get_current_user_id();
-		$rbac = new SHUBX51_RBAC_Manager();
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		$is_admin = $rbac->has_capability( $user_id, 'rules_manage' ) || current_user_can( 'manage_options' );
 
 		if ( ! $is_admin ) {
@@ -374,7 +374,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		$flat_no = isset( $params['flat_no'] ) ? sanitize_text_field( $params['flat_no'] ) : '';
 
 		if ( empty( $rule_id ) || empty( $flat_no ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Rule ID and flat number are required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Rule ID and flat number are required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
 		$data = array(
@@ -389,7 +389,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			'created_at'   => current_time( 'mysql' ),
 		);
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->insert( 'rule_violations', $data );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -407,10 +407,10 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		$reason = isset( $params['appeal_reason'] ) ? sanitize_textarea_field( $params['appeal_reason'] ) : '';
 
 		if ( empty( $reason ) ) {
-			return new WP_Error( 'rest_invalid_params', __( 'Appeal reason is required.', 'society-hubx' ), array( 'status' => 400 ) );
+			return new WP_Error( 'rest_invalid_params', __( 'Appeal reason is required.', 'namma-society' ), array( 'status' => 400 ) );
 		}
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update(
 			'rule_violations',
 			array(
@@ -425,7 +425,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Appeal submitted successfully.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Appeal submitted successfully.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -436,7 +436,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 		$params = $request->get_json_params();
 		$status = isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : 'resolved';
 
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->update(
 			'rule_violations',
 			array(
@@ -451,7 +451,7 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation status updated.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation status updated.', 'namma-society' ) ) );
 	}
 
 	/**
@@ -459,23 +459,28 @@ class SHUBX51_REST_Rules_Controller extends WP_REST_Controller {
 	 */
 	public function delete_violation( $request ) {
 		$id = sanitize_text_field( $request->get_param( 'id' ) );
-		$db = new SHUBX51_DB_Router();
+		$db = new NAMMASOCIETY51_DB_Router();
 		$result = $db->delete( 'rule_violations', array( 'id' => $id ) );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
 
-		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation record deleted.', 'society-hubx' ) ) );
+		return rest_ensure_response( array( 'success' => true, 'message' => __( 'Violation record deleted.', 'namma-society' ) ) );
 	}
 
 	public function user_logged_in_check( $request ) {
-		return SHUBX51_REST_Manager::authenticate_request( $request );
+		return NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
 	}
 
 	public function rules_manage_check( $request ) {
-		SHUBX51_REST_Manager::authenticate_request( $request );
-		$rbac = new SHUBX51_RBAC_Manager();
+		NAMMASOCIETY51_REST_Manager::authenticate_request( $request );
+		$rbac = new NAMMASOCIETY51_RBAC_Manager();
 		return $rbac->has_capability( get_current_user_id(), 'rules_manage' ) || current_user_can( 'manage_options' );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_REST_Rules_Controller' ) && ! class_exists( 'SHUBX51_REST_Rules_Controller', false ) ) {
+	class_alias( 'NAMMASOCIETY51_REST_Rules_Controller', 'SHUBX51_REST_Rules_Controller' );
 }

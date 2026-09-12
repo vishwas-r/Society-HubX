@@ -17,7 +17,7 @@ if ( isset( $_GET['status'] ) ) {
     }
 }
 
-// Data passed from SHUBX51_Staff_Manager::render_page via context
+// Data passed from NAMMASOCIETY51_Staff_Manager::render_page via context
 // $staff, $pending, $history, $flats are available.
 
 if (!isset($staff)) $staff = array();
@@ -28,7 +28,7 @@ if (!isset($flats)) $flats = array();
 $all_flats = $flats;
 ?>
 
-<div class="shubx-staff-v2">
+<div class="nammasociety-staff-v2">
 
     <!-- Global Messages -->
     <?php if ( $toast ) : ?>
@@ -69,7 +69,7 @@ $all_flats = $flats;
                 
                 <!-- Action Group -->
                 <div class="d-flex gap-2">
-                    <div class="dropdown shubx-bulk-actions d-none">
+                    <div class="dropdown nammasociety-bulk-actions d-none">
                         <button class="btn btn-outline-secondary dropdown-toggle px-3 rounded-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="height: 48px;">
                             Bulk Actions (<span id="selected-count">0</span>)
                         </button>
@@ -227,7 +227,7 @@ $all_flats = $flats;
                                 data-category="<?php echo esc_attr($category); ?>"
                                 data-search="<?php echo esc_attr(strtolower(($s['name']??'') . ' ' . ($s['role']??'') . ' ' . ($s['phone']??''))); ?>">
                                 <td class="ps-5 py-4">
-                                    <input type="checkbox" value="<?php echo esc_attr(!empty($s['request_id']) ? $s['request_id'] : $s['id']); ?>" class="form-check-input shubx-bulk-checkbox shadow-none">
+                                    <input type="checkbox" value="<?php echo esc_attr(!empty($s['request_id']) ? $s['request_id'] : $s['id']); ?>" class="form-check-input nammasociety-bulk-checkbox shadow-none">
                                 </td>
                                 <td class="ps-3 ps-md-5 py-4">
                                     <div class="d-flex align-items-center gap-3">
@@ -269,12 +269,12 @@ $all_flats = $flats;
                                     if ($status === 'deletion_pending') {
                                         echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
                                     } else {
-                                        echo SHUBX51_Admin_UI::render_status_badge( $status ); 
+                                        echo NAMMASOCIETY51_Admin_UI::render_status_badge( $status ); 
                                     }
                                     ?>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
-                                    <div class="text-dark fw-bold small"><?php echo esc_html( SHUBX51_Privacy_Manager::mask_data( $s['phone'] ) ); ?></div>
+                                    <div class="text-dark fw-bold small"><?php echo esc_html( NAMMASOCIETY51_Privacy_Manager::mask_data( $s['phone'] ) ); ?></div>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
                                     <?php 
@@ -294,7 +294,7 @@ $all_flats = $flats;
                                 <td class="pe-3 pe-md-5 py-4 text-end">
                                     <div class="d-flex justify-content-end gap-2 text-nowrap">
                                         <?php if ($is_request && !empty($s['request_id'])): ?>
-                                            <?php echo SHUBX51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
+                                            <?php echo NAMMASOCIETY51_Admin_UI::render_inline_actions( 'pending', $s['request_id'], 'daily_help' ); ?>
                                         <?php elseif ($status === 'rejected'): ?>
                                             <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-staff" data-staff="<?php echo esc_attr(wp_json_encode($s)); ?>" title="Edit">
                                                 <i class="bi bi-pencil-square fs-6"></i>
@@ -370,7 +370,7 @@ $all_flats = $flats;
 
 <?php
 // Collect Modals to be printed outside the main root
-add_action('shubx51_admin_modals', function() use ($all_flats) {
+add_action('nammasociety51_admin_modals', function() use ($all_flats) {
 ?>
 <!-- Staff Modal -->
 <div class="modal fade" id="staffModal" tabindex="-1" aria-hidden="true">
@@ -381,10 +381,10 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="add-staff-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="shubx51_add_staff">
+                <input type="hidden" name="action" value="nammasociety51_add_staff">
                 <input type="hidden" name="staff_id" value="">
                 <input type="hidden" name="profile_photo" value="">
-                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
 
                 <div class="modal-body p-4">
                     <!-- Profile Photo Selection -->
@@ -516,9 +516,9 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="attendance-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
-                <input type="hidden" name="action" value="shubx51_mark_attendance">
+                <input type="hidden" name="action" value="nammasociety51_mark_attendance">
                 <input type="hidden" name="staff_id" id="attendance-staff-id" value="">
-                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Status <span class="text-danger">*</span></label>
@@ -547,9 +547,9 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
                 <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="concern-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
-                <input type="hidden" name="action" value="shubx51_raise_concern">
+                <input type="hidden" name="action" value="nammasociety51_raise_concern">
                 <input type="hidden" name="staff_id" id="concern-staff-id" value="">
-                <?php wp_nonce_field( 'shubx51_staff_nonce' ); ?>
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Describe the concern/issue <span class="text-danger">*</span></label>
@@ -570,5 +570,5 @@ add_action('shubx51_admin_modals', function() use ($all_flats) {
 </div>
 <?php }); ?>
 <?php 
-/* Redundant inline script removed in favor of shubx-staff.js */
+/* Redundant inline script removed in favor of nammasociety-staff.js */
 ?>

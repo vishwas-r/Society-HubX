@@ -1,5 +1,5 @@
 /**
- * SHUBX Staff Management JS
+ * NAMMASOCIETY Staff Management JS
  */
 (function ($) {
     'use strict';
@@ -19,8 +19,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'staff' },
                 showOverlay: false,
                 suppressErrorToast: true // Silent fetch for config
@@ -85,7 +85,7 @@
 
         // View Toggling
         if (currentTab === 'report') {
-            $('#staff-directory-view, #staff-filter-section, .shubx-bulk-actions, .js-toggle-staff-filters, #addStaff, .staff-search-wrapper').hide();
+            $('#staff-directory-view, #staff-filter-section, .nammasociety-bulk-actions, .js-toggle-staff-filters, #addStaff, .staff-search-wrapper').hide();
             $('#staff-report-view').removeClass('d-none').show();
             // Automatically fetch if not fetched yet (optional)
             return;
@@ -191,7 +191,7 @@
 
         $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
-        $form.find('[name="action"]').val('shubx51_edit_staff');
+        $form.find('[name="action"]').val('nammasociety51_edit_staff');
 
         $('#staffModalTitle').text('Edit Staff: ' + staff.name);
         staffModal.show();
@@ -200,7 +200,7 @@
     function resetStaffForm() {
         const $form = $('#add-staff-form');
         $form[0].reset();
-        $form.find('[name="action"]').val('shubx51_add_staff');
+        $form.find('[name="action"]').val('nammasociety51_add_staff');
         $form.find('[name="flats_served[]"]').val([]); // Clear multi-select
         $form.find('[name="staff_id"]').val('');
 
@@ -226,8 +226,8 @@
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
         newConfirmBtn.addEventListener('click', async function () {
-            SHUBX.ajax({
-                action: 'shubx51_delete_staff',
+            NAMMASOCIETY.ajax({
+                action: 'nammasociety51_delete_staff',
                 data: {
                     id: id,
                     _wpnonce: Config.deleteNonce
@@ -252,8 +252,8 @@
     };
 
     window.restoreStaff = async function (id) {
-        SHUBX.ajax({
-            action: 'shubx51_restore_staff',
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_restore_staff',
             data: {
                 id: id,
                 _wpnonce: Config.nonce
@@ -333,7 +333,7 @@
                     const action = $form.find('[name="action"]').val();
                     const formData = new FormData($form[0]);
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $form.find('button[type="submit"]'),
@@ -353,7 +353,7 @@
                     const action = $attendanceForm.find('[name="action"]').val();
                     const formData = new FormData($attendanceForm[0]);
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $attendanceForm.find('button[type="submit"]'),
@@ -370,7 +370,7 @@
                     const action = $concernForm.find('[name="action"]').val();
                     const formData = new FormData($concernForm[0]);
 
-                    SHUBX.ajax({
+                    NAMMASOCIETY.ajax({
                         action: action,
                         data: formData,
                         loadingButton: $concernForm.find('button[type="submit"]'),
@@ -396,8 +396,8 @@
         btn.disabled = true;
 
         const data = new FormData();
-        data.append('action', 'shubx51_get_attendance_report');
-        data.append('_wpnonce', document.getElementById('shubx51_staff_nonce') ? document.getElementById('shubx51_staff_nonce').value : shubxAdminData.nonce);
+        data.append('action', 'nammasociety51_get_attendance_report');
+        data.append('_wpnonce', document.getElementById('nammasociety51_staff_nonce') ? document.getElementById('nammasociety51_staff_nonce').value : shubxAdminData.nonce);
         data.append('month', month);
 
         fetch(shubxAdminData.ajaxUrl, {

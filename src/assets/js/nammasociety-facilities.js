@@ -1,5 +1,5 @@
 /**
- * SHUBX Facilities & Bookings Management JS
+ * NAMMASOCIETY Facilities & Bookings Management JS
  */
 (function ($) {
     'use strict';
@@ -23,8 +23,8 @@
         if (Config.initialized) return;
 
         try {
-            const result = await SHUBX.ajax({
-                action: 'shubx51_get_module_config',
+            const result = await NAMMASOCIETY.ajax({
+                action: 'nammasociety51_get_module_config',
                 data: { module: 'facilities' },
                 showOverlay: false,
                 suppressErrorToast: true
@@ -57,7 +57,7 @@
         const form = document.getElementById('facility-form');
         if (!form) return;
         form.reset();
-        form.querySelector('[name="action"]').value = 'shubx51_add_facility';
+        form.querySelector('[name="action"]').value = 'nammasociety51_add_facility';
         form.querySelector('[name="facility_id"]').value = '';
         form.querySelector('[name="booking_required"]').checked = true;
         
@@ -78,7 +78,7 @@
         const form = document.getElementById('booking-form');
         if (!form) return;
         form.reset();
-        form.querySelector('[name="action"]').value = 'shubx51_book_facility';
+        form.querySelector('[name="action"]').value = 'nammasociety51_book_facility';
         form.querySelector('[name="booking_id"]').value = '';
         
         const modalTitle = form.closest('.modal-content')?.querySelector('h5');
@@ -112,7 +112,7 @@
                     const form = document.getElementById('facility-form');
                     if (!form) return;
 
-                    form.querySelector('[name="action"]').value = 'shubx51_edit_facility';
+                    form.querySelector('[name="action"]').value = 'nammasociety51_edit_facility';
                     form.querySelector('[name="facility_id"]').value = data.id || '';
                     form.querySelector('[name="name"]').value = data.name || '';
 
@@ -160,8 +160,8 @@
             $('#confirm-delete-btn').on('click', function () {
                 if (!State.facilityToDelete) return;
 
-                SHUBX.ajax({
-                    action: 'shubx51_delete_facility',
+                NAMMASOCIETY.ajax({
+                    action: 'nammasociety51_delete_facility',
                     data: {
                         id: State.facilityToDelete,
                         _wpnonce: Config.deleteNonce
@@ -182,7 +182,7 @@
                     const form = document.getElementById('booking-form');
                     if (!form) return;
 
-                    form.querySelector('[name="action"]').value = 'shubx51_edit_booking';
+                    form.querySelector('[name="action"]').value = 'nammasociety51_edit_booking';
                     form.querySelector('[name="booking_id"]').value = data.id || '';
                     form.querySelector('[name="facility_id"]').value = data.facility_id || '';
                     form.querySelector('[name="resident_id"]').value = data.resident_id || '';
@@ -228,7 +228,7 @@
                 const actionInput = document.createElement('input');
                 actionInput.type = 'hidden';
                 actionInput.name = 'action';
-                actionInput.value = 'shubx51_delete_booking';
+                actionInput.value = 'nammasociety51_delete_booking';
 
                 const idInput = document.createElement('input');
                 idInput.type = 'hidden';

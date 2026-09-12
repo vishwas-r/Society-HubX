@@ -3,36 +3,36 @@
  * Class: Poll Manager
  * Handles Digital Democracy (Polling & Voting).
  *
- * @package SHUBX51_Plugin
+ * @package NAMMASOCIETY51_Plugin
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class SHUBX51_Poll_Manager implements SHUBX51_Module {
+class NAMMASOCIETY51_Poll_Manager implements NAMMASOCIETY51_Module {
 
 	private $db;
 
 	public function __construct() {
-		$this->db = new SHUBX51_DB_Router();
+		$this->db = new NAMMASOCIETY51_DB_Router();
         
         // Admin Actions (POST + AJAX)
-		add_action( 'admin_post_shubx51_create_poll', array( $this, 'handle_create_poll' ) );
-        add_action( 'admin_post_shubx51_delete_poll', array( $this, 'handle_delete_poll' ) );
-        add_action( 'admin_post_shubx51_close_poll', array( $this, 'handle_close_poll' ) );
+		add_action( 'admin_post_nammasociety51_create_poll', array( $this, 'handle_create_poll' ) );
+        add_action( 'admin_post_nammasociety51_delete_poll', array( $this, 'handle_delete_poll' ) );
+        add_action( 'admin_post_nammasociety51_close_poll', array( $this, 'handle_close_poll' ) );
 
-        add_action( 'wp_ajax_shubx51_create_poll', array( $this, 'handle_create_poll' ) );
-        add_action( 'wp_ajax_shubx51_delete_poll', array( $this, 'handle_delete_poll' ) );
-        add_action( 'wp_ajax_shubx51_close_poll', array( $this, 'handle_close_poll' ) );
-        add_action( 'wp_ajax_shubx51_get_poll_results', array( $this, 'handle_get_poll_results' ) );
+        add_action( 'wp_ajax_nammasociety51_create_poll', array( $this, 'handle_create_poll' ) );
+        add_action( 'wp_ajax_nammasociety51_delete_poll', array( $this, 'handle_delete_poll' ) );
+        add_action( 'wp_ajax_nammasociety51_close_poll', array( $this, 'handle_close_poll' ) );
+        add_action( 'wp_ajax_nammasociety51_get_poll_results', array( $this, 'handle_get_poll_results' ) );
 
         // Frontend Actions
-        add_action( 'admin_post_shubx51_cast_vote', array( $this, 'handle_cast_vote' ) );
-        add_action( 'wp_ajax_shubx51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'admin_post_nammasociety51_cast_vote', array( $this, 'handle_cast_vote' ) );
+        add_action( 'wp_ajax_nammasociety51_cast_vote', array( $this, 'handle_cast_vote' ) );
 
         // Register Module
-        add_filter( 'shubx51_get_module_polls', array( $this, 'get_instance' ) );
+        add_filter( 'nammasociety51_get_module_polls', array( $this, 'get_instance' ) );
 	}
 
     public function get_instance() {
@@ -68,16 +68,16 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 	public function handle_create_poll() {
 		if ( wp_doing_ajax() ) {
 			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'nammasociety51_poll_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 			}
 		} else {
-			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_poll_action' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
 		if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -118,7 +118,7 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 			exit;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&created=1' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-polls&created=1' ) );
 		exit;
 	}
 
@@ -128,16 +128,16 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
     public function handle_delete_poll() {
 		if ( wp_doing_ajax() ) {
 			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'nammasociety51_poll_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 			}
 		} else {
-			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_poll_action' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -163,7 +163,7 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 			exit;
 		}
 
-        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&deleted=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-polls&deleted=1' ) );
         exit;
     }
 
@@ -173,16 +173,16 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
     public function handle_close_poll() {
 		if ( wp_doing_ajax() ) {
 			$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-			if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) ) {
+			if ( ! wp_verify_nonce( $nonce, 'nammasociety51_poll_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) ) {
 				wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 			}
 		} else {
-			if ( ! check_admin_referer( 'shubx51_poll_action' ) ) {
+			if ( ! check_admin_referer( 'nammasociety51_poll_action' ) ) {
 				wp_die( 'Security check failed' );
 			}
 		}
 
-        $rbac = new SHUBX51_RBAC_Manager();
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
         if ( ! $rbac->has_capability( get_current_user_id(), 'polls_manage' ) && ! current_user_can( 'manage_options' ) ) {
 			if ( wp_doing_ajax() ) {
 				wp_send_json_error( array( 'message' => 'Unauthorized' ), 403 );
@@ -201,13 +201,13 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 			exit;
 		}
 
-        wp_safe_redirect( admin_url( 'admin.php?page=shubx51-polls&closed=1' ) );
+        wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-polls&closed=1' ) );
         exit;
     }
 
 	public function handle_get_poll_results() {
 		$nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
-		if ( ! wp_verify_nonce( $nonce, 'shubx51_poll_action' ) && ! wp_verify_nonce( $nonce, 'shubx51_vote_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'shubx51_frontend_nonce' ) ) {
+		if ( ! wp_verify_nonce( $nonce, 'nammasociety51_poll_action' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_vote_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_admin_nonce' ) && ! wp_verify_nonce( $nonce, 'nammasociety51_frontend_nonce' ) ) {
 			wp_send_json_error( array( 'message' => 'Nonce verification failed' ), 403 );
 		}
 
@@ -248,9 +248,9 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
 	 */
 	public function handle_cast_vote() {
 		if ( wp_doing_ajax() ) {
-            check_ajax_referer( 'shubx51_vote_nonce' );
+            check_ajax_referer( 'nammasociety51_vote_nonce' );
         } else {
-            if ( ! is_user_logged_in() || ! check_admin_referer( 'shubx51_vote_nonce' ) ) {
+            if ( ! is_user_logged_in() || ! check_admin_referer( 'nammasociety51_vote_nonce' ) ) {
                 wp_die( 'Unauthorized' );
             }
         }
@@ -375,4 +375,9 @@ class SHUBX51_Poll_Manager implements SHUBX51_Module {
     private function save_votes( $data ) {
 		file_put_contents( $this->db->get_data_dir() . 'votes.json', json_encode( $data, JSON_PRETTY_PRINT ) );
 	}
+}
+
+// Backward Compatibility Aliases
+if ( class_exists( 'NAMMASOCIETY51_Poll_Manager' ) && ! class_exists( 'SHUBX51_Poll_Manager', false ) ) {
+	class_alias( 'NAMMASOCIETY51_Poll_Manager', 'SHUBX51_Poll_Manager' );
 }
