@@ -208,6 +208,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'run_install') {
                                 global $wp_rewrite;
                                 $wp_rewrite->set_permalink_structure('/%postname%/');
                                 $wp_rewrite->flush_rules(true);
+                                update_option('blogdescription', 'Society Management Made Simpler');
                                 
                                 $install_success = true;
                                 

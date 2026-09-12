@@ -79,7 +79,7 @@ class NAMMASOCIETY51_REST_Discovery_Controller extends WP_REST_Controller {
 			'rest_url'         => get_rest_url( null, 'namma-society/v1/' ),
 			'society'          => array(
 				'name'          => $society_name,
-				'tagline'       => get_bloginfo( 'description' ),
+				'tagline'       => get_bloginfo( 'description' ) ? get_bloginfo( 'description' ) : 'Society Management Made Simpler',
 				'logo_url'      => $society_logo ? $society_logo : null,
 				'address_line1' => get_option( 'nammasociety51_society_address_line1', '' ),
 				'address_line2' => get_option( 'nammasociety51_society_address_line2', '' ),
