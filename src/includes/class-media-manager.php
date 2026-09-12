@@ -97,7 +97,3 @@ class NAMMASOCIETY51_Media_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Media_Manager' ) && ! class_exists( 'SHUBX51_Media_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Media_Manager', 'SHUBX51_Media_Manager' );
-}

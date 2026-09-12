@@ -911,7 +911,3 @@ class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Resident_Manager' ) && ! class_exists( 'SHUBX51_Resident_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Resident_Manager', 'SHUBX51_Resident_Manager' );
-}

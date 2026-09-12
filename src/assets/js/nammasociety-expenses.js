@@ -1,8 +1,8 @@
 ﻿/**
  * NAMMASOCIETY Expenses JS
  * - Intercepts expense form submission (handles file upload via fetch)
- * - Handles approve and delete actions via centralized confirmation modal and SHUBXApiRequest
- * - Shows spinners and uses SHUBXShowToast for feedback
+ * - Handles approve and delete actions via centralized confirmation modal and NAMMASOCIETYApiRequest
+ * - Shows spinners and uses NAMMASOCIETYShowToast for feedback
  */
 (function ($) {
     'use strict';

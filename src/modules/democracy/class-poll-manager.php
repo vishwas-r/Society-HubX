@@ -377,7 +377,3 @@ class NAMMASOCIETY51_Poll_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Poll_Manager' ) && ! class_exists( 'SHUBX51_Poll_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Poll_Manager', 'SHUBX51_Poll_Manager' );
-}

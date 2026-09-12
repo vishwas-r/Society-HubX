@@ -188,7 +188,3 @@ class NAMMASOCIETY51_Notice_Board {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Notice_Board' ) && ! class_exists( 'SHUBX51_Notice_Board', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Notice_Board', 'SHUBX51_Notice_Board' );
-}

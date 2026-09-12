@@ -598,7 +598,3 @@ class NAMMASOCIETY51_Request_Manager {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Request_Manager' ) && ! class_exists( 'SHUBX51_Request_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Request_Manager', 'SHUBX51_Request_Manager' );
-}

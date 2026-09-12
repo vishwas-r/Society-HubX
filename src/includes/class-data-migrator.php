@@ -109,7 +109,3 @@ class NAMMASOCIETY51_Data_Migrator {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Data_Migrator' ) && ! class_exists( 'SHUBX51_Data_Migrator', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Data_Migrator', 'SHUBX51_Data_Migrator' );
-}

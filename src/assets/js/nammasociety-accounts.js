@@ -57,7 +57,7 @@
                 action: isApprove ? 'nammasociety51_approve_request' : 'nammasociety51_reject_request',
                 data: {
                     id: requestId,
-                    _ajax_nonce: window.shubx51RequestNonce
+                    _ajax_nonce: (window.nammasociety51RequestNonce || '')
                 },
                 loadingButton: btn,
                 successMessage: 'Payment ' + actionLabel + 'd successfully',
@@ -227,7 +227,7 @@
             action: 'nammasociety51_delete_invoice',
             data: {
                 id: id,
-                _wpnonce: (window.SHUBXAccountsData && window.SHUBXAccountsData.deleteInvoiceNonce) ? window.SHUBXAccountsData.deleteInvoiceNonce : undefined
+                _wpnonce: (window.NAMMASOCIETYAccountsData && window.NAMMASOCIETYAccountsData.deleteInvoiceNonce) ? window.NAMMASOCIETYAccountsData.deleteInvoiceNonce : undefined
             },
             successMessage: 'Invoice deleted',
             onSuccess: function () {
@@ -247,7 +247,7 @@
             data: {
                 invoice_id: invoiceId,
                 txn_id: txnId,
-                _wpnonce: (window.SHUBXAccountsData && window.SHUBXAccountsData.nonce) ? window.SHUBXAccountsData.nonce : undefined
+                _wpnonce: (window.NAMMASOCIETYAccountsData && window.NAMMASOCIETYAccountsData.nonce) ? window.NAMMASOCIETYAccountsData.nonce : undefined
             },
             successMessage: 'Payment deleted',
             onSuccess: function () {
@@ -390,7 +390,7 @@ window.openAdminReceipt = function (btn) {
     }
 
     // Make AJAX request to fetch receipt data
-    const activeNonce = (typeof SHUBX51AdminNonce !== 'undefined') ? SHUBX51AdminNonce : '';
+    const activeNonce = (typeof NAMMASOCIETY51AdminNonce !== 'undefined') ? NAMMASOCIETY51AdminNonce : '';
     const activeAjaxurl = (typeof ajaxurl !== 'undefined') ? ajaxurl : '';
     fetch(activeAjaxurl, {
         method: 'POST',
@@ -584,11 +584,11 @@ function applyAccountSearch() {
     
     if (isInvoicesTab) {
         // Search invoices
-        if (!invoiceFuse && window.SHUBXCreateFuse) {
-            invoiceFuse = window.SHUBXCreateFuse('.invoice-row');
+        if (!invoiceFuse && window.NAMMASOCIETYCreateFuse) {
+            invoiceFuse = window.NAMMASOCIETYCreateFuse('.invoice-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(invoiceFuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(invoiceFuse, searchVal) : null;
 
         document.querySelectorAll('.invoice-row').forEach(row => {
             const matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
@@ -606,11 +606,11 @@ function applyAccountSearch() {
         }
     } else {
         // Search ledger
-        if (!ledgerFuse && window.SHUBXCreateFuse) {
-            ledgerFuse = window.SHUBXCreateFuse('.ledger-row');
+        if (!ledgerFuse && window.NAMMASOCIETYCreateFuse) {
+            ledgerFuse = window.NAMMASOCIETYCreateFuse('.ledger-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(ledgerFuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(ledgerFuse, searchVal) : null;
 
         document.querySelectorAll('.ledger-row').forEach(row => {
             const matchSearch = !searchVal || (fuzzyMatches && fuzzyMatches.has(row));
@@ -639,11 +639,11 @@ function applyAccountSearch() {
                 const invoiceTab = document.querySelector('[href="?page=nammasociety51-accounts&tab=invoices"]');
                 const isInvoicesTab = invoiceTab && invoiceTab.classList.contains('active');
                 
-                if (window.SHUBXCreateFuse) {
+                if (window.NAMMASOCIETYCreateFuse) {
                     if (isInvoicesTab) {
-                        invoiceFuse = window.SHUBXCreateFuse('.invoice-row');
+                        invoiceFuse = window.NAMMASOCIETYCreateFuse('.invoice-row');
                     } else {
-                        ledgerFuse = window.SHUBXCreateFuse('.ledger-row');
+                        ledgerFuse = window.NAMMASOCIETYCreateFuse('.ledger-row');
                     }
                 }
             });
@@ -661,7 +661,7 @@ let collectionChart = null;
 let currentChartView = 'monthly';
 
 function initCharts() {
-    if (!window.Chart || !window.SHUBXAccountsChartData) {
+    if (!window.Chart || !window.NAMMASOCIETYAccountsChartData) {
         console.log('Chart.js or chart data not available');
         return;
     }
@@ -675,7 +675,7 @@ function renderCashFlowChart() {
     const container = document.getElementById("cashFlowChart");
     if (!container) return;
 
-    const chartData = window.SHUBXAccountsChartData.monthlyData;
+    const chartData = window.NAMMASOCIETYAccountsChartData.monthlyData;
     if (!chartData) return;
 
     const labels = [];
@@ -747,7 +747,7 @@ function renderCollectionChart() {
     const container = document.getElementById("collectionChart");
     if (!container) return;
 
-    const data = window.SHUBXAccountsChartData.collectionData;
+    const data = window.NAMMASOCIETYAccountsChartData.collectionData;
     if (!data) return;
 
     const total = data.paid + data.unpaid + data.partial;
@@ -796,7 +796,7 @@ function renderCategoryChart() {
     const container = document.getElementById("expenseCategoryChart");
     if (!container) return;
 
-    const data = window.SHUBXAccountsChartData.categoryData;
+    const data = window.NAMMASOCIETYAccountsChartData.categoryData;
     if (!data || Object.keys(data).length === 0) return;
 
     const labels = [];
@@ -936,7 +936,7 @@ function initAdminPaymentSync() {
                 // Update chart data from the new script block
                 const scripts = doc.querySelectorAll('script');
                 scripts.forEach(s => {
-                    if (s.textContent.includes('SHUBXAccountsChartData')) {
+                    if (s.textContent.includes('NAMMASOCIETYAccountsChartData')) {
                         try {
                             eval(s.textContent); 
                             initCharts(); 

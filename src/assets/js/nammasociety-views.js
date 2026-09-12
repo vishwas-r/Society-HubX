@@ -10,7 +10,7 @@
 /* =====================================================================
    ROLES VIEW
    ===================================================================== */
-function shubxHighlightCapCard(cb) {
+window.nammasocietyHighlightCapCard = function(cb) {
 	if (!cb) return;
 	const card = cb.closest('.nammasociety-cap-card');
 	if (!card) return;
@@ -21,9 +21,9 @@ function shubxHighlightCapCard(cb) {
 		card.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
 		card.classList.add('border-light', 'bg-white');
 	}
-}
+};
 
-function shubxUpdateCapCount() {
+window.nammasocietyUpdateCapCount = function() {
 	const all = document.querySelectorAll('.cap-checkbox');
 	const checked = document.querySelectorAll('.cap-checkbox:checked');
 	const counter = document.getElementById('cap-selected-counter');
@@ -37,42 +37,42 @@ function shubxUpdateCapCount() {
 			counter.className = 'badge bg-secondary bg-opacity-10 text-secondary fw-bold px-3 py-1.5 rounded-pill font-monospace';
 		}
 	}
-}
+};
 
-function shubxOnCapChange(cb) {
-	shubxHighlightCapCard(cb);
-	shubxUpdateCapCount();
-}
+window.nammasocietyOnCapChange = function(cb) {
+	window.nammasocietyHighlightCapCard(cb);
+	window.nammasocietyUpdateCapCount();
+};
 
-function shubxCardClick(event, inputId) {
+window.nammasocietyCardClick = function(event, inputId) {
 	if (event && event.target && event.target.tagName && event.target.tagName.toLowerCase() === 'input') return;
 	const cb = document.getElementById(inputId);
 	if (cb) {
 		cb.checked = !cb.checked;
-		shubxOnCapChange(cb);
+		window.nammasocietyOnCapChange(cb);
 	}
-}
+};
 
-function shubxToggleAllCaps(checked) {
+window.nammasocietyToggleAllCaps = function(checked) {
 	document.querySelectorAll('.cap-checkbox').forEach(cb => {
 		cb.checked = !!checked;
-		shubxHighlightCapCard(cb);
+		window.nammasocietyHighlightCapCard(cb);
 	});
-	shubxUpdateCapCount();
-}
+	window.nammasocietyUpdateCapCount();
+};
 
-function shubxToggleGroupCaps(groupKey) {
+window.nammasocietyToggleGroupCaps = function(groupKey) {
 	const groupCbs = document.querySelectorAll('.cap-group-' + groupKey);
 	const anyUnchecked = Array.from(groupCbs).some(cb => !cb.checked);
 	groupCbs.forEach(cb => {
 		cb.checked = anyUnchecked;
-		shubxHighlightCapCard(cb);
+		window.nammasocietyHighlightCapCard(cb);
 	});
-	shubxUpdateCapCount();
-}
+	window.nammasocietyUpdateCapCount();
+};
 
-function shubxApplyPreset(preset) {
-	shubxToggleAllCaps(false);
+window.nammasocietyApplyPreset = function(preset) {
+	window.nammasocietyToggleAllCaps(false);
 	const presetMaps = {
 		admin: ['dashboard_view', 'residents_view', 'residents_manage', 'flats_view', 'flats_manage', 'facilities_view', 'facilities_manage', 'finance_view', 'finance_manage', 'documents_view', 'documents_manage', 'assets_view', 'assets_manage', 'notices_view', 'notices_manage', 'rules_view', 'rules_manage', 'staff_view', 'staff_manage', 'vehicles_view', 'vehicles_manage', 'polls_view', 'polls_manage', 'requests_view', 'requests_manage', 'settings_manage'],
 		manager: ['dashboard_view', 'residents_view', 'residents_manage', 'flats_view', 'facilities_view', 'facilities_manage', 'documents_view', 'documents_manage', 'notices_view', 'notices_manage', 'rules_view', 'staff_view', 'staff_manage', 'vehicles_view', 'polls_view', 'polls_manage', 'requests_view', 'requests_manage'],
@@ -84,11 +84,11 @@ function shubxApplyPreset(preset) {
 		const cb = document.getElementById('cap_' + cap);
 		if (cb) {
 			cb.checked = true;
-			shubxHighlightCapCard(cb);
+			window.nammasocietyHighlightCapCard(cb);
 		}
 	});
-	shubxUpdateCapCount();
-}
+	window.nammasocietyUpdateCapCount();
+};
 
 function openRoleModal() {
 	const form = document.getElementById('role-form');
@@ -99,7 +99,7 @@ function openRoleModal() {
 	if (titleEl) titleEl.innerText = 'Create Custom Role';
 	
 	// Default: select all capabilities by default for new roles
-	shubxToggleAllCaps(true);
+	nammasocietyToggleAllCaps(true);
 	
 	const modalEl = document.getElementById('roleModal');
 	if (modalEl) new bootstrap.Modal(modalEl).show();
@@ -134,10 +134,10 @@ function editRole(role) {
 		} else {
 			cb.checked = caps.includes(cb.value);
 		}
-		shubxHighlightCapCard(cb);
+		nammasocietyHighlightCapCard(cb);
 	});
 
-	shubxUpdateCapCount();
+	nammasocietyUpdateCapCount();
 	const modalEl = document.getElementById('roleModal');
 	if (modalEl) new bootstrap.Modal(modalEl).show();
 }
@@ -147,13 +147,13 @@ function deleteRole(roleId) {
 
 	const form = document.createElement('form');
 	form.method = 'POST';
-	// shubx51ViewsConfig.adminPostUrl is set via wp_add_inline_script in namma-society.php
-	form.action = (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.adminPostUrl : '';
+	const cfg = (typeof nammasociety51ViewsConfig !== 'undefined') ? nammasociety51ViewsConfig : {};
+	form.action = cfg.adminPostUrl || '';
 
 	const fields = {
 		action: 'nammasociety51_delete_role',
 		role_id: roleId,
-		_wpnonce: (typeof shubx51ViewsConfig !== 'undefined') ? shubx51ViewsConfig.roleNonce : ''
+		_wpnonce: cfg.roleNonce || ''
 	};
 
 	for (const key in fields) {
@@ -298,11 +298,14 @@ window.applyExpenseSearch = function () {
 	const input = document.getElementById('expenseSearch');
 	const query = input ? input.value.trim() : '';
 
-	if (!expenseFuse && window.SHUBXCreateFuse) {
-		expenseFuse = window.SHUBXCreateFuse('.expense-row');
+	const createFuse = window.NAMMASOCIETYCreateFuse;
+	const getFuzzyMatches = window.NAMMASOCIETYGetFuzzyMatches;
+
+	if (!expenseFuse && createFuse) {
+		expenseFuse = createFuse('.expense-row');
 	}
 
-	const matches = query && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(expenseFuse, query) : null;
+	const matches = query && getFuzzyMatches ? getFuzzyMatches(expenseFuse, query) : null;
 
 	document.querySelectorAll('.expense-row').forEach(row => {
 		const isPending = row.closest('#view-pending') !== null;
@@ -344,7 +347,8 @@ function switchExpenseTab(tab) {
 		if (searchInput) {
 			searchInput.addEventListener('input', window.applyExpenseSearch);
 			searchInput.addEventListener('focus', function () {
-				if (window.SHUBXCreateFuse) expenseFuse = window.SHUBXCreateFuse('.expense-row');
+				const createFuse = window.NAMMASOCIETYCreateFuse;
+				if (createFuse) expenseFuse = createFuse('.expense-row');
 			});
 		}
 	});
@@ -402,11 +406,14 @@ function applyFilters() {
 	const searchInput = document.getElementById('assetSearch');
 	const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-	if (!assetFuse && window.SHUBXCreateFuse) {
-		assetFuse = window.SHUBXCreateFuse('.asset-row');
+	const createFuse = window.NAMMASOCIETYCreateFuse;
+	const getFuzzyMatches = window.NAMMASOCIETYGetFuzzyMatches;
+
+	if (!assetFuse && createFuse) {
+		assetFuse = createFuse('.asset-row');
 	}
 
-	const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(assetFuse, searchVal) : null;
+	const fuzzyMatches = searchVal && getFuzzyMatches ? getFuzzyMatches(assetFuse, searchVal) : null;
 
 	document.querySelectorAll('.asset-row').forEach(row => {
 		const status = row.dataset.status;
@@ -438,7 +445,8 @@ function applyFilters() {
 		if (assetSearch) {
 			assetSearch.addEventListener('input', applyFilters);
 			assetSearch.addEventListener('focus', function () {
-				if (window.SHUBXCreateFuse) assetFuse = window.SHUBXCreateFuse('.asset-row');
+				const createFuse = window.NAMMASOCIETYCreateFuse;
+				if (createFuse) assetFuse = createFuse('.asset-row');
 			});
 		}
 	});

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAMMASOCIETY Toast Notification System
  * Lightweight toast notification library for Namma Society
  * 
@@ -110,9 +110,11 @@
         }
     };
 
-    // Maintain backward compatibility with old API
-    window.SHUBXShowToast = function (msg, type = 'success') {
-        NAMMASOCIETY.toast.show(msg, type);
+    // Maintain backward and forward compatibility with both APIs
+    window.NAMMASOCIETYShowToast = function (msg, type = 'success') {
+        if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
+            NAMMASOCIETY.toast.show(msg, type);
+        }
     };
 
 })();

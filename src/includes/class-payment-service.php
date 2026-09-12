@@ -218,7 +218,3 @@ class NAMMASOCIETY51_Payment_Service {
 
 NAMMASOCIETY51_Payment_Service::init();
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Payment_Service' ) && ! class_exists( 'SHUBX51_Payment_Service', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Payment_Service', 'SHUBX51_Payment_Service' );
-}

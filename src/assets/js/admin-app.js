@@ -1,8 +1,4 @@
-// Backward Compatibility Aliases for Namma Society
-window.SHUBXCharts = window.NAMMASOCIETYCharts = window.NAMMASOCIETYCharts || [];
-window.SHUBXApiRequest = function(...args) { return window.NAMMASOCIETYApiRequest ? window.NAMMASOCIETYApiRequest(...args) : null; };
-window.SHUBXShowToast = function(...args) { return window.NAMMASOCIETYShowToast ? window.NAMMASOCIETYShowToast(...args) : null; };
-window.SHUBXBulkProcess = function(...args) { return window.NAMMASOCIETYBulkProcess ? window.NAMMASOCIETYBulkProcess(...args) : null; };
+window.NAMMASOCIETYCharts = window.NAMMASOCIETYCharts || [];
 
 
 /**
@@ -400,7 +396,7 @@ window.SHUBXBulkProcess = function(...args) { return window.NAMMASOCIETYBulkProc
                 action: 'nammasociety51_approve_request',
                 data: {
                     id: id,
-                    _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
+                    _wpnonce: typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : ''
                 },
                 loadingButton: approveBtn,
                 successMessage: 'Request approved successfully!',
@@ -419,7 +415,7 @@ window.SHUBXBulkProcess = function(...args) { return window.NAMMASOCIETYBulkProc
                 data: {
                     id: id,
                     admin_note: reason,
-                    _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
+                    _wpnonce: typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : ''
                 },
                 loadingButton: rejectBtn,
                 successMessage: 'Request rejected.',
@@ -453,7 +449,7 @@ window.SHUBXBulkProcess = function(...args) { return window.NAMMASOCIETYBulkProc
                 ids: ids,
                 bulk_action: action,
                 note: note,
-                _wpnonce: typeof (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) !== 'undefined' ? (typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : (typeof shubx51RequestNonce !== 'undefined' ? shubx51RequestNonce : '')) : ''
+                _wpnonce: typeof nammasociety51RequestNonce !== 'undefined' ? nammasociety51RequestNonce : ''
             },
             successMessage: `Bulk ${action} processed successfully!`,
             reload: true

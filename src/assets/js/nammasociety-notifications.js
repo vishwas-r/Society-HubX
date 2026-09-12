@@ -21,7 +21,7 @@ jQuery(document).ready(function ($) {
             action: 'nammasociety51_get_channel_config',
             data: {
                 channel: channel,
-                _ajax_nonce: shubx51RequestNonce
+                _ajax_nonce: nammasociety51RequestNonce
             },
             onSuccess: function (data) {
                 if (channelModal) {
@@ -68,7 +68,7 @@ jQuery(document).ready(function ($) {
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-slate-700">Authorized Redirect URI</label>
-                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${(typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : ajaxurl)}?action=nammasociety51_gmail_oauth_callback" readonly>
+                        <input type="text" class="form-control rounded-3 bg-light text-muted" value="${(typeof nammasociety51NotificationsVars !== 'undefined' ? nammasociety51NotificationsVars.ajaxUrl : ajaxurl)}?action=nammasociety51_gmail_oauth_callback" readonly>
                     </div>
                 </div>
 
@@ -187,12 +187,12 @@ jQuery(document).ready(function ($) {
                 $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Dispatching...');
                 $('#nammasociety-modal-test-status').html('<span class="text-muted"><i class="bi bi-arrow-repeat spin me-1"></i>Dispatching test alert via Central Relay...</span>');
 
-                const nonceVal = (typeof shubxAdmin !== 'undefined' && shubxAdmin.fcm_nonce) ? shubxAdmin.fcm_nonce :
-                                 ((typeof shubxAdmin !== 'undefined' && shubxAdmin.nonce) ? shubxAdmin.nonce :
-                                 ((typeof shubx51RequestNonce !== 'undefined') ? shubx51RequestNonce : ''));
+                const nonceVal = (typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.fcm_nonce) ? nammasocietyAdmin.fcm_nonce :
+                                 ((typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.nonce) ? nammasocietyAdmin.nonce :
+                                 ((typeof nammasociety51RequestNonce !== 'undefined') ? nammasociety51RequestNonce : ''));
 
                 $.ajax({
-                    url: (typeof shubx51NotificationsVars !== 'undefined' ? shubx51NotificationsVars.ajaxUrl : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php')),
+                    url: (typeof nammasociety51NotificationsVars !== 'undefined' ? nammasociety51NotificationsVars.ajaxUrl : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php')),
                     type: 'POST',
                     data: {
                         action: 'nammasociety51_send_test_push',
@@ -246,7 +246,7 @@ jQuery(document).ready(function ($) {
             data: {
                 channel: channel,
                 active: active,
-                _ajax_nonce: shubx51RequestNonce
+                _ajax_nonce: nammasociety51RequestNonce
             }
         });
     });
@@ -262,7 +262,7 @@ jQuery(document).ready(function ($) {
                 event: event,
                 channel: channel,
                 enabled: $(this).is(':checked') ? 1 : 0,
-                _ajax_nonce: shubx51RequestNonce
+                _ajax_nonce: nammasociety51RequestNonce
             }
         });
     });
@@ -275,7 +275,7 @@ jQuery(document).ready(function ($) {
             action: 'nammasociety51_get_template',
             data: {
                 id: id,
-                _ajax_nonce: shubx51RequestNonce
+                _ajax_nonce: nammasociety51RequestNonce
             },
             onSuccess: function (tpl) {
                 if (templateModal) {
@@ -316,8 +316,8 @@ jQuery(document).ready(function ($) {
     let registeredDevicesCache = [];
 
     function getAjaxUrl() {
-        if (typeof shubx51NotificationsVars !== 'undefined' && shubx51NotificationsVars.ajaxUrl) {
-            return shubx51NotificationsVars.ajaxUrl;
+        if (typeof nammasociety51NotificationsVars !== 'undefined' && nammasociety51NotificationsVars.ajaxUrl) {
+            return nammasociety51NotificationsVars.ajaxUrl;
         }
         if (typeof ajaxurl !== 'undefined') {
             return ajaxurl;
@@ -326,11 +326,11 @@ jQuery(document).ready(function ($) {
     }
 
     function getRequestNonce() {
-        if (typeof shubx51NotificationsVars !== 'undefined' && shubx51NotificationsVars.nonce) {
-            return shubx51NotificationsVars.nonce;
+        if (typeof nammasociety51NotificationsVars !== 'undefined' && nammasociety51NotificationsVars.nonce) {
+            return nammasociety51NotificationsVars.nonce;
         }
-        if (typeof shubx51RequestNonce !== 'undefined') {
-            return shubx51RequestNonce;
+        if (typeof nammasociety51RequestNonce !== 'undefined') {
+            return nammasociety51RequestNonce;
         }
         return '';
     }

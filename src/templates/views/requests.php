@@ -79,8 +79,8 @@ usort($history, function($a, $b) { return strtotime($b['created_at']) - strtotim
                         Bulk Actions (<span id="selected-count">0</span>)
                     </button>
                     <ul class="dropdown-menu shadow-sm border-0">
-                        <li><a class="dropdown-item fw-bold text-success" href="#" onclick="SHUBXBulkProcess('approve')">Approve Selected</a></li>
-                        <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SHUBXBulkProcess('reject')">Reject Selected</a></li>
+                        <li><a class="dropdown-item fw-bold text-success" href="#" onclick="NAMMASOCIETYBulkProcess('approve')">Approve Selected</a></li>
+                        <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="NAMMASOCIETYBulkProcess('reject')">Reject Selected</a></li>
                     </ul>
                 </div>
             </div>

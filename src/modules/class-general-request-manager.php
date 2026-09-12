@@ -77,7 +77,3 @@ class NAMMASOCIETY51_General_Request_Manager implements NAMMASOCIETY51_Module {
 
 new NAMMASOCIETY51_General_Request_Manager();
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_General_Request_Manager' ) && ! class_exists( 'SHUBX51_General_Request_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_General_Request_Manager', 'SHUBX51_General_Request_Manager' );
-}

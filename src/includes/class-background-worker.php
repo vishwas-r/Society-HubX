@@ -224,7 +224,3 @@ class NAMMASOCIETY51_Background_Worker {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Background_Worker' ) && ! class_exists( 'SHUBX51_Background_Worker', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Background_Worker', 'SHUBX51_Background_Worker' );
-}

@@ -61,7 +61,3 @@ class NAMMASOCIETY51_Log_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Log_Manager' ) && ! class_exists( 'SHUBX51_Log_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Log_Manager', 'SHUBX51_Log_Manager' );
-}

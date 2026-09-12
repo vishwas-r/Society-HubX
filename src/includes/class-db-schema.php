@@ -19,52 +19,7 @@ class NAMMASOCIETY51_DB_Schema {
 	 * Create or update all plugin tables.
 	 */
 	
-	/**
-	 * Automatically migrate existing data from legacy shubx51_* tables and options to nammasociety51_*.
-	 */
-	public static function maybe_migrate_legacy_tables() {
-		global $wpdb;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$legacy_tables = $wpdb->get_col( $wpdb->prepare( "SHOW TABLES LIKE %s", $wpdb->esc_like( $wpdb->prefix . 'shubx51_' ) . '%' ) );
-		if ( ! empty( $legacy_tables ) ) {
-			foreach ( $legacy_tables as $old_table ) {
-				$new_table = str_replace( $wpdb->prefix . 'shubx51_', $wpdb->prefix . 'nammasociety51_', $old_table );
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$new_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $new_table ) );
-
-				if ( ! $new_exists ) {
-					// Safely rename old table to new table
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-					$wpdb->query( "RENAME TABLE `{$old_table}` TO `{$new_table}`" );
-				} else {
-					// Copy rows if new table is empty but old table has data
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-					$new_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$new_table}`" );
-					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-					$old_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$old_table}`" );
-					if ( $new_count === 0 && $old_count > 0 ) {
-						// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-						$wpdb->query( "INSERT INTO `{$new_table}` SELECT * FROM `{$old_table}`" );
-					}
-				}
-			}
-		}
-
-		// Also migrate legacy WordPress options: shubx51_* -> nammasociety51_*
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$legacy_options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name, option_value, autoload FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'shubx51_' ) . '%' ), ARRAY_A );
-		if ( ! empty( $legacy_options ) ) {
-			foreach ( $legacy_options as $opt ) {
-				$new_opt_name = str_replace( 'shubx51_', 'nammasociety51_', $opt['option_name'] );
-				if ( get_option( $new_opt_name ) === false ) {
-					update_option( $new_opt_name, maybe_unserialize( $opt['option_value'] ), $opt['autoload'] );
-				}
-			}
-		}
-	}
-
 	public static function create_tables() {
-		self::maybe_migrate_legacy_tables();
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
@@ -1119,7 +1074,3 @@ class NAMMASOCIETY51_DB_Schema {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_DB_Schema' ) && ! class_exists( 'SHUBX51_DB_Schema', false ) ) {
-	class_alias( 'NAMMASOCIETY51_DB_Schema', 'SHUBX51_DB_Schema' );
-}

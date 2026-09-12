@@ -168,7 +168,3 @@ class NAMMASOCIETY51_Receipt_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Receipt_Manager' ) && ! class_exists( 'SHUBX51_Receipt_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Receipt_Manager', 'SHUBX51_Receipt_Manager' );
-}

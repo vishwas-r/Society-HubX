@@ -242,7 +242,3 @@ class NAMMASOCIETY51_Data_Portability {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Data_Portability' ) && ! class_exists( 'SHUBX51_Data_Portability', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Data_Portability', 'SHUBX51_Data_Portability' );
-}

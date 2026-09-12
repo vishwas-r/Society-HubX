@@ -399,7 +399,7 @@ $qr_url    = get_option('nammasociety51_bank_qr');
 </div>
 
 <!-- 7. Quick Pay Modal -->
-<div class="modal fade" id="SHUBX51PaymentModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="NAMMASOCIETY51PaymentModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
       <div class="modal-header bg-primary text-white border-0">
@@ -594,7 +594,7 @@ $qr_url    = get_option('nammasociety51_bank_qr');
 
 
 <!-- General Request Modal -->
-<div class="modal fade" id="SHUBX51GeneralRequestModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="NAMMASOCIETY51GeneralRequestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4">
             <div class="modal-header border-0 pb-0">
@@ -602,7 +602,7 @@ $qr_url    = get_option('nammasociety51_bank_qr');
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="SHUBX51GeneralRequestForm">
+                <form id="NAMMASOCIETY51GeneralRequestForm">
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary">Category</label>
                         <select name="category" class="form-select border-light shadow-none rounded-3" required>

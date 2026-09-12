@@ -90,11 +90,14 @@
         const searchVal = searchInput ? searchInput.value.trim().toLowerCase() : '';
         const typeVal = typeFilter ? typeFilter.value : 'all';
 
-        if (!fuse && window.SHUBXCreateFuse) {
-            fuse = window.SHUBXCreateFuse('.vehicle-row');
+        const createFuse = window.NAMMASOCIETYCreateFuse;
+        const getFuzzyMatches = window.NAMMASOCIETYGetFuzzyMatches;
+
+        if (!fuse && createFuse) {
+            fuse = createFuse('.vehicle-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && getFuzzyMatches ? getFuzzyMatches(fuse, searchVal) : null;
 
         $('.vehicle-row').each(function () {
             const $row = $(this);
@@ -258,7 +261,7 @@
             $('#filter-search').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.SHUBXCreateFuse) fuse = window.SHUBXCreateFuse('.vehicle-row');
+                if (window.NAMMASOCIETYCreateFuse) fuse = window.NAMMASOCIETYCreateFuse('.vehicle-row');
             });
         });
     });

@@ -138,7 +138,3 @@ class NAMMASOCIETY51_Privacy_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Privacy_Manager' ) && ! class_exists( 'SHUBX51_Privacy_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Privacy_Manager', 'SHUBX51_Privacy_Manager' );
-}

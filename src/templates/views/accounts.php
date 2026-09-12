@@ -192,10 +192,10 @@ if ( isset( $_GET['success'] ) ) {
 
 <?php
 wp_add_inline_script( 'nammasociety51-accounts-js', '
-    var SHUBX51AdminNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_nonce' ) ) . '";
-    var shubx51RequestNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_request_action' ) ) . '";
+    var NAMMASOCIETY51AdminNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_nonce' ) ) . '";
+    var nammasociety51RequestNonce = "' . esc_js( wp_create_nonce( 'nammasociety51_request_action' ) ) . '";
     var ajaxurl = "' . esc_js( admin_url( 'admin-ajax.php' ) ) . '";
-    var SHUBXAccountsChartData = {
+    var NAMMASOCIETYAccountsChartData = {
         monthlyData: ' . wp_json_encode($monthly_data) . ',
         collectionData: {
             paid: ' . intval($paid_count) . ',

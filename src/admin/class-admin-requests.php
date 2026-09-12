@@ -121,7 +121,3 @@ class NAMMASOCIETY51_Admin_Requests {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Admin_Requests' ) && ! class_exists( 'SHUBX51_Admin_Requests', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Admin_Requests', 'SHUBX51_Admin_Requests' );
-}

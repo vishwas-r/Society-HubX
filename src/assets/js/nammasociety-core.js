@@ -10,7 +10,7 @@
      * @param {string} msg 
      * @param {string} type 'success' | 'error'
      */
-    window.SHUBXShowToast = function (msg, type = 'success') {
+    window.NAMMASOCIETYShowToast = function (msg, type = 'success') {
         const toastEl = document.getElementById('nammasociety-global-toast');
         const iconEl = document.getElementById('nammasociety-toast-icon');
         const msgEl = document.getElementById('nammasociety-toast-message');
@@ -50,7 +50,7 @@
      * @param {object} data   Payload data
      * @returns {Promise}
      */
-    window.SHUBXApiRequest = function (action, data = {}) {
+    window.NAMMASOCIETYApiRequest = function (action, data = {}) {
         return NAMMASOCIETY.ajax({
             action: action,
             data: data
@@ -60,7 +60,7 @@
     /**
      * Debounce helper
      */
-    window.SHUBXDebounce = function (func, wait) {
+    window.NAMMASOCIETYDebounce = function (func, wait) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {

@@ -100,11 +100,11 @@
         const typeVal = typeFilter ? typeFilter.value : 'all';
         const parkingVal = parkingFilter ? parkingFilter.value : 'all';
 
-        if (!fuse && window.SHUBXCreateFuse) {
-            fuse = window.SHUBXCreateFuse('.flat-row');
+        if (!fuse && window.NAMMASOCIETYCreateFuse) {
+            fuse = window.NAMMASOCIETYCreateFuse('.flat-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(fuse, searchVal) : null;
 
         $('.flat-row').each(function () {
             const $row = $(this);
@@ -298,7 +298,7 @@
             $('#filter-search').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.SHUBXCreateFuse) fuse = window.SHUBXCreateFuse('.flat-row');
+                if (window.NAMMASOCIETYCreateFuse) fuse = window.NAMMASOCIETYCreateFuse('.flat-row');
             });
             const $form = $('#add-flat-form');
             if ($form.length) {

@@ -66,7 +66,3 @@ class NAMMASOCIETY51_WhatsApp_Provider implements NAMMASOCIETY51_Notification_Pr
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_WhatsApp_Provider' ) && ! class_exists( 'SHUBX51_WhatsApp_Provider', false ) ) {
-	class_alias( 'NAMMASOCIETY51_WhatsApp_Provider', 'SHUBX51_WhatsApp_Provider' );
-}

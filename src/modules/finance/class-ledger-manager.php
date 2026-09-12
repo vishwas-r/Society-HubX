@@ -341,7 +341,3 @@ class NAMMASOCIETY51_Ledger_Manager {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Ledger_Manager' ) && ! class_exists( 'SHUBX51_Ledger_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Ledger_Manager', 'SHUBX51_Ledger_Manager' );
-}

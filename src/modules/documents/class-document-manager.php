@@ -431,7 +431,3 @@ class NAMMASOCIETY51_Document_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Document_Manager' ) && ! class_exists( 'SHUBX51_Document_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Document_Manager', 'SHUBX51_Document_Manager' );
-}

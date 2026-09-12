@@ -947,7 +947,3 @@ class NAMMASOCIETY51_Rule_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Rule_Manager' ) && ! class_exists( 'SHUBX51_Rule_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Rule_Manager', 'SHUBX51_Rule_Manager' );
-}

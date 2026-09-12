@@ -62,10 +62,10 @@
 
         // Refresh Fuse if needed
         if (!State.fuse) {
-            State.fuse = window.SHUBXCreateFuse('.resident-row');
+            State.fuse = window.NAMMASOCIETYCreateFuse('.resident-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(State.fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(State.fuse, searchVal) : null;
 
         rows.forEach(row => {
             const type = row.dataset.type;
@@ -440,7 +440,7 @@
                     applyFilters();
                 });
                 searchInput.addEventListener('focus', function () {
-                    State.fuse = window.SHUBXCreateFuse('.resident-row');
+                    State.fuse = window.NAMMASOCIETYCreateFuse('.resident-row');
                 });
             }
 

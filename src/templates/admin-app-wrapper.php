@@ -108,7 +108,7 @@ document.documentElement.setAttribute('data-nammasociety-palette', '<?php echo e
     <aside id="nammasociety-sidebar" class="d-flex flex-column flex-shrink-0 pt-4 bg-white border-end nammasociety-sidebar overflow-x-hidden transition-all" style="z-index: 1050;">
         <div class="d-flex align-items-center justify-content-between px-3 mb-2">
             <a href="<?php echo admin_url('admin.php?page=nammasociety51-settings'); ?>" class="d-flex align-items-center text-custom-primary text-decoration-none gap-2 gap-sm-3">
-                <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/hubx-logo-sm.png' ); ?>" alt="Namma Society" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
+                <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/nammasociety-logo-sm.png' ); ?>" alt="Namma Society" class="shadow-sm" style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover;">
                 <span class="fs-5 fw-bold tracking-tight d-inline-block" style="letter-spacing: -0.02em;">Namma Society</span>
             </a>
             <button id="nammasociety-sidebar-close" class="btn btn-link text-dark d-lg-none p-2 rounded-circle hover-bg-slate-100">
@@ -199,7 +199,7 @@ document.documentElement.setAttribute('data-nammasociety-palette', '<?php echo e
 
         <!-- View Content Scroll -->
         <div class="nammasociety-content-scroll flex-grow-1 overflow-y-auto p-3 p-lg-5 bg-slate-50">
-            <div class="container p-0">
+            <div class="container-fluid p-0">
                 <?php 
                     $view_path = NAMMASOCIETY51_PLUGIN_DIR . 'templates/views/' . $current_view . '.php';
                     if ( file_exists( $view_path ) ) {
@@ -255,11 +255,11 @@ do_action( 'admin_print_footer_scripts' );
 
 <script>
 (function() {
-    function shubxSetCookie(name, value) {
+    function nammasocietySetCookie(name, value) {
         document.cookie = name + "=" + encodeURIComponent(value) + "; path=/; max-age=31536000; SameSite=Lax";
     }
 
-    function shubxApplyTheme(theme) {
+    function nammasocietyApplyTheme(theme) {
         document.documentElement.setAttribute('data-bs-theme', theme);
         var appRoots = document.querySelectorAll('#nammasociety51-app-root');
         if (appRoots && appRoots.length) {
@@ -267,7 +267,7 @@ do_action( 'admin_print_footer_scripts' );
                 el.setAttribute('data-bs-theme', theme);
             });
         }
-        shubxSetCookie('nammasociety_theme', theme);
+        nammasocietySetCookie('nammasociety_theme', theme);
         
         var icon = document.getElementById('nammasociety-theme-icon');
         if (icon) {
@@ -279,15 +279,15 @@ do_action( 'admin_print_footer_scripts' );
         }
     }
 
-    window.shubxApplyTheme = shubxApplyTheme;
+    window.nammasocietyApplyTheme = nammasocietyApplyTheme;
 
-    window.shubxToggleTheme = function() {
+    window.nammasocietyToggleTheme = function() {
         var currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
         var newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        shubxApplyTheme(newTheme);
+        nammasocietyApplyTheme(newTheme);
     };
 
-    window.shubxSetPalette = function(palette) {
+    window.nammasocietySetPalette = function(palette) {
         document.documentElement.setAttribute('data-nammasociety-palette', palette);
         var appRoots = document.querySelectorAll('#nammasociety51-app-root');
         if (appRoots && appRoots.length) {
@@ -295,16 +295,16 @@ do_action( 'admin_print_footer_scripts' );
                 el.setAttribute('data-nammasociety-palette', palette);
             });
         }
-        shubxSetCookie('nammasociety_palette', palette);
+        nammasocietySetCookie('nammasociety_palette', palette);
     };
 
     document.addEventListener('DOMContentLoaded', function() {
         var currentTheme = document.documentElement.getAttribute('data-bs-theme') || '<?php echo esc_js( $current_theme ); ?>';
-        shubxApplyTheme(currentTheme);
+        nammasocietyApplyTheme(currentTheme);
         
         var btn = document.getElementById('nammasociety-theme-toggle');
         if (btn) {
-            btn.addEventListener('click', window.shubxToggleTheme);
+            btn.addEventListener('click', window.nammasocietyToggleTheme);
         }
     });
 })();

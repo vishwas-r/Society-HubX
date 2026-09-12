@@ -183,9 +183,28 @@
     box-shadow: 0 0 0 0.25rem var(--custom-primary-shadow) !important;
 }
 
-/* Fix WordPress Card Conflict */
-#nammasociety51-app-root .card {
+/* Fix WordPress Core Card Conflict (Busting #wpbody-content .card 520px limitation) */
+html body.wp-admin #wpbody-content #nammasociety51-app-root .card,
+html body.wp-admin #nammasociety51-app-root .card,
+#wpbody-content #nammasociety51-app-root .card,
+#nammasociety51-app-root .card,
+.nammasociety-settings-card {
     max-width: none !important;
+    width: 100% !important;
+}
+
+/* Ensure grid child cards inside .row fill their columns cleanly without shrinking */
+html body.wp-admin #wpbody-content #nammasociety51-app-root .row .card,
+#nammasociety51-app-root .row .card {
+    max-width: none !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* Delivery Channel Card styling */
+.nammasociety-channel-card {
+    min-width: 220px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* App Root Overlay */

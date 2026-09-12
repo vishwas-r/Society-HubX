@@ -367,7 +367,7 @@ foreach ( $all_residents as $r ) {
 </div>
 
 <script>
-window.shubxDirectoryData = {
+window.nammasocietyDirectoryData = {
 	flats: <?php echo wp_json_encode( $all_flats ); ?>,
 	vehicles: <?php echo wp_json_encode( $all_vehicles ); ?>,
 	residents: <?php echo wp_json_encode( $all_residents ); ?>,
@@ -406,8 +406,8 @@ window.shubxDirectoryData = {
 	}
 
 	// 1. Open Unit Details Modal
-	window.shubxOpenUnitModal = function(query) {
-		const data = window.shubxDirectoryData;
+	window.nammasocietyOpenUnitModal = function(query) {
+		const data = window.nammasocietyDirectoryData;
 		const queryStr = String(query);
 		const flat = data.flats.find(f => 
 			String(f.id) === queryStr || 
@@ -513,7 +513,7 @@ window.shubxDirectoryData = {
 			btn.addEventListener('click', function() {
 				const rid = this.getAttribute('data-resident-id');
 				switchModal('unitDetailsModal', 'residentDetailsModal');
-				setTimeout(() => window.shubxOpenResidentModal(rid), 190);
+				setTimeout(() => window.nammasocietyOpenResidentModal(rid), 190);
 			});
 		});
 
@@ -521,7 +521,7 @@ window.shubxDirectoryData = {
 			btn.addEventListener('click', function() {
 				const vid = this.getAttribute('data-vehicle-id');
 				switchModal('unitDetailsModal', 'vehicleDetailsModal');
-				setTimeout(() => window.shubxOpenVehicleModal(vid), 190);
+				setTimeout(() => window.nammasocietyOpenVehicleModal(vid), 190);
 			});
 		});
 
@@ -534,8 +534,8 @@ window.shubxDirectoryData = {
 	};
 
 	// 2. Open Vehicle Details Modal
-	window.shubxOpenVehicleModal = function(query) {
-		const data = window.shubxDirectoryData;
+	window.nammasocietyOpenVehicleModal = function(query) {
+		const data = window.nammasocietyDirectoryData;
 		const queryStr = String(query).toLowerCase();
 		const vehicle = data.vehicles.find(v => 
 			String(v.id).toLowerCase() === queryStr || 
@@ -568,7 +568,7 @@ window.shubxDirectoryData = {
 		const viewUnitBtn = document.getElementById('vehicleModalViewUnitBtn');
 		viewUnitBtn.onclick = function() {
 			switchModal('vehicleDetailsModal', 'unitDetailsModal');
-			setTimeout(() => window.shubxOpenUnitModal(vehicle.flat_no), 190);
+			setTimeout(() => window.nammasocietyOpenUnitModal(vehicle.flat_no), 190);
 		};
 
 		// Registered Owner
@@ -594,7 +594,7 @@ window.shubxDirectoryData = {
 			viewOwnerBtn.style.display = '';
 			viewOwnerBtn.onclick = function() {
 				switchModal('vehicleDetailsModal', 'residentDetailsModal');
-				setTimeout(() => window.shubxOpenResidentModal(owner.id || owner.name), 190);
+				setTimeout(() => window.nammasocietyOpenResidentModal(owner.id || owner.name), 190);
 			};
 
 			if (owner.phone) {
@@ -621,8 +621,8 @@ window.shubxDirectoryData = {
 	};
 
 	// 3. Open Resident Details Modal
-	window.shubxOpenResidentModal = function(query) {
-		const data = window.shubxDirectoryData;
+	window.nammasocietyOpenResidentModal = function(query) {
+		const data = window.nammasocietyDirectoryData;
 		const queryStr = String(query).toLowerCase();
 		const resident = data.residents.find(r => 
 			String(r.id).toLowerCase() === queryStr || 
@@ -655,7 +655,7 @@ window.shubxDirectoryData = {
 		const viewUnitBtn = document.getElementById('residentModalViewUnitBtn');
 		viewUnitBtn.onclick = function() {
 			switchModal('residentDetailsModal', 'unitDetailsModal');
-			setTimeout(() => window.shubxOpenUnitModal(resident.flat_no), 190);
+			setTimeout(() => window.nammasocietyOpenUnitModal(resident.flat_no), 190);
 		};
 
 		// Family Members
@@ -732,7 +732,7 @@ window.shubxDirectoryData = {
 			btn.addEventListener('click', function() {
 				const vid = this.getAttribute('data-vehicle-id');
 				switchModal('residentDetailsModal', 'vehicleDetailsModal');
-				setTimeout(() => window.shubxOpenVehicleModal(vid), 190);
+				setTimeout(() => window.nammasocietyOpenVehicleModal(vid), 190);
 			});
 		});
 
@@ -769,7 +769,7 @@ window.shubxDirectoryData = {
 		if (unitTrigger) {
 			e.preventDefault();
 			const flatId = unitTrigger.getAttribute('data-unit-id') || unitTrigger.getAttribute('data-flat-id') || unitTrigger.getAttribute('data-id') || unitTrigger.textContent.trim();
-			window.shubxOpenUnitModal(flatId);
+			window.nammasocietyOpenUnitModal(flatId);
 			return;
 		}
 
@@ -777,7 +777,7 @@ window.shubxDirectoryData = {
 		if (vehTrigger) {
 			e.preventDefault();
 			const vid = vehTrigger.getAttribute('data-vehicle-id') || vehTrigger.getAttribute('data-id') || vehTrigger.textContent.trim();
-			window.shubxOpenVehicleModal(vid);
+			window.nammasocietyOpenVehicleModal(vid);
 			return;
 		}
 
@@ -785,7 +785,7 @@ window.shubxDirectoryData = {
 		if (resTrigger) {
 			e.preventDefault();
 			const rid = resTrigger.getAttribute('data-resident-id') || resTrigger.getAttribute('data-id') || resTrigger.textContent.trim();
-			window.shubxOpenResidentModal(rid);
+			window.nammasocietyOpenResidentModal(rid);
 			return;
 		}
 	});

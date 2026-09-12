@@ -131,7 +131,6 @@ class NAMMASOCIETY51_Admin_Settings {
 				NAMMASOCIETY51_VERSION, 
 				false // Load in header so switchSettingsTab is defined early
 			);
-			wp_add_inline_script( 'nammasociety51-admin-settings', 'var shubxAdmin = typeof nammasocietyAdmin !== "undefined" ? nammasocietyAdmin : {};', 'after' );
 		wp_localize_script( 'nammasociety51-admin-settings', 'nammasocietyAdmin', array(
 				'ajax_url'  => admin_url( 'admin-ajax.php' ),
 				'fcm_nonce' => wp_create_nonce( 'nammasociety51_fcm_nonce' ),
@@ -616,7 +615,3 @@ class NAMMASOCIETY51_Admin_Settings {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Admin_Settings' ) && ! class_exists( 'SHUBX51_Admin_Settings', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Admin_Settings', 'SHUBX51_Admin_Settings' );
-}

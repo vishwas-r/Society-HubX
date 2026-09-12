@@ -282,7 +282,3 @@ class NAMMASOCIETY51_REST_Polls_Controller extends WP_REST_Controller {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_REST_Polls_Controller' ) && ! class_exists( 'SHUBX51_REST_Polls_Controller', false ) ) {
-	class_alias( 'NAMMASOCIETY51_REST_Polls_Controller', 'SHUBX51_REST_Polls_Controller' );
-}

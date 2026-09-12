@@ -168,7 +168,3 @@ class NAMMASOCIETY51_RBAC_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_RBAC_Manager' ) && ! class_exists( 'SHUBX51_RBAC_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_RBAC_Manager', 'SHUBX51_RBAC_Manager' );
-}

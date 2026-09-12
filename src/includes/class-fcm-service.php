@@ -241,7 +241,7 @@ class NAMMASOCIETY51_FCM_Service {
 				'notification' => array(
 					'sound'        => $is_emergency ? 'alarm_sound' : 'default',
 					'channel_id'   => $is_emergency ? 'emergency_channel' : 'general_alerts',
-					'click_action' => 'OPEN_SOCIETY_HUBX',
+					'click_action' => 'OPEN_NAMMA_SOCIETY',
 				),
 			),
 			'apns'         => array(
@@ -1007,7 +1007,3 @@ class NAMMASOCIETY51_FCM_Service {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_FCM_Service' ) && ! class_exists( 'SHUBX51_FCM_Service', false ) ) {
-	class_alias( 'NAMMASOCIETY51_FCM_Service', 'SHUBX51_FCM_Service' );
-}

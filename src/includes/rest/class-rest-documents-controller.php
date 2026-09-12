@@ -321,7 +321,3 @@ class NAMMASOCIETY51_REST_Documents_Controller extends WP_REST_Controller {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_REST_Documents_Controller' ) && ! class_exists( 'SHUBX51_REST_Documents_Controller', false ) ) {
-	class_alias( 'NAMMASOCIETY51_REST_Documents_Controller', 'SHUBX51_REST_Documents_Controller' );
-}

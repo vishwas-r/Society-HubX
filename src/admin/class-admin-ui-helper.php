@@ -140,7 +140,3 @@ class NAMMASOCIETY51_Admin_UI {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Admin_UI' ) && ! class_exists( 'SHUBX51_Admin_UI', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Admin_UI', 'SHUBX51_Admin_UI' );
-}

@@ -11,8 +11,8 @@
 
     // --- Chart Logic ---
     function initCharts() {
-        if (!window.Chart || !window.shubx51DashboardData) {
-            console.warn('NAMMASOCIETY Dashboard: Chart.js or shubx51DashboardData missing. Some features may not work.');
+        if (!window.Chart || !window.nammasociety51DashboardData) {
+            console.warn('NAMMASOCIETY Dashboard: Chart.js or nammasociety51DashboardData missing. Some features may not work.');
             // return; // Don't return strictly, we have other logic to run
         }
 
@@ -125,8 +125,8 @@
 
         // 1. Society Expense Trend
         const expenseContainer = document.getElementById('expensesChart');
-        if (expenseContainer && window.shubx51DashboardData && window.shubx51DashboardData.expenseChartData) {
-            const expenseData = window.shubx51DashboardData.expenseChartData;
+        if (expenseContainer && window.nammasociety51DashboardData && window.nammasociety51DashboardData.expenseChartData) {
+            const expenseData = window.nammasociety51DashboardData.expenseChartData;
             const labels = [];
             const dataValues = [];
 
@@ -186,8 +186,8 @@
 
         // 2. Resident Payment History
         const paymentContainer = document.getElementById('paymentHistoryChart');
-        if (paymentContainer && window.shubx51DashboardData && window.shubx51DashboardData.paymentHistory) {
-            const paymentData = window.shubx51DashboardData.paymentHistory;
+        if (paymentContainer && window.nammasociety51DashboardData && window.nammasociety51DashboardData.paymentHistory) {
+            const paymentData = window.nammasociety51DashboardData.paymentHistory;
             const labels = [];
             const dataValues = [];
 
@@ -401,7 +401,7 @@
                 if (window.filterDirectory) window.filterDirectory();
             });
             dirSearch.addEventListener('focus', function () {
-                if (window.SHUBXCreateFuse) dirFuse = window.SHUBXCreateFuse('.dir-card');
+                if (window.NAMMASOCIETYCreateFuse) dirFuse = window.NAMMASOCIETYCreateFuse('.dir-card');
             });
         }
 
@@ -410,11 +410,11 @@
         if (facilitySearch) {
             facilitySearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!facFuse && window.SHUBXCreateFuse) {
-                    facFuse = window.SHUBXCreateFuse('.facility-card');
+                if (!facFuse && window.NAMMASOCIETYCreateFuse) {
+                    facFuse = window.NAMMASOCIETYCreateFuse('.facility-card');
                 }
 
-                const matches = val && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(facFuse, val) : null;
+                const matches = val && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(facFuse, val) : null;
 
                 document.querySelectorAll('.facility-card').forEach(card => {
                     const isMatch = !val || (matches && matches.has(card));
@@ -428,7 +428,7 @@
                 });
             });
             facilitySearch.addEventListener('focus', function () {
-                if (window.SHUBXCreateFuse) facFuse = window.SHUBXCreateFuse('.facility-card');
+                if (window.NAMMASOCIETYCreateFuse) facFuse = window.NAMMASOCIETYCreateFuse('.facility-card');
             });
         }
 
@@ -437,11 +437,11 @@
         if (bookingSearch) {
             bookingSearch.addEventListener('input', function () {
                 const val = this.value.trim().toLowerCase();
-                if (!bookingFuse && window.SHUBXCreateFuse) {
-                    bookingFuse = window.SHUBXCreateFuse('.booking-dash-row');
+                if (!bookingFuse && window.NAMMASOCIETYCreateFuse) {
+                    bookingFuse = window.NAMMASOCIETYCreateFuse('.booking-dash-row');
                 }
 
-                const matches = val && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(bookingFuse, val) : null;
+                const matches = val && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(bookingFuse, val) : null;
 
                 document.querySelectorAll('.booking-dash-row').forEach(row => {
                     const isMatch = !val || (matches && matches.has(row));
@@ -453,7 +453,7 @@
                 });
             });
             bookingSearch.addEventListener('focus', function () {
-                if (window.SHUBXCreateFuse) bookingFuse = window.SHUBXCreateFuse('.booking-dash-row');
+                if (window.NAMMASOCIETYCreateFuse) bookingFuse = window.NAMMASOCIETYCreateFuse('.booking-dash-row');
             });
         }
 
@@ -1016,8 +1016,8 @@
                 
                 const ownerPhotoEl = document.getElementById('cdm-owner-photo');
                 if (ownerPhotoEl) {
-                    const defaultAvatar = (window.shubx51DashboardData && window.shubx51DashboardData.defaultAvatar)
-                        ? window.shubx51DashboardData.defaultAvatar
+                    const defaultAvatar = (window.nammasociety51DashboardData && window.nammasociety51DashboardData.defaultAvatar)
+                        ? window.nammasociety51DashboardData.defaultAvatar
                         : '';
                     if (data.owner_photo && data.owner_photo !== '') {
                         ownerPhotoEl.src = data.owner_photo;
@@ -1139,19 +1139,19 @@
             
             const dirCards = document.querySelectorAll('.dir-card');
 
-            if (!dirFuse && window.SHUBXCreateFuse) {
+            if (!dirFuse && window.NAMMASOCIETYCreateFuse) {
                 if (typeof Fuse === 'undefined') {
                     console.error('Fuse.js is not loaded! Search will fail.');
                     return;
                 }
                 // Use stricter threshold (0.2) and only search metadata to avoid noise from labels
-                dirFuse = window.SHUBXCreateFuse('.dir-card', {
+                dirFuse = window.NAMMASOCIETYCreateFuse('.dir-card', {
                     threshold: 0.3,
                     searchOnlyMeta: true
                 });
             }
 
-            const fuzzyMatches = searchTerm && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(dirFuse, searchTerm) : null;
+            const fuzzyMatches = searchTerm && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(dirFuse, searchTerm) : null;
 
             dirCards.forEach(function (card) {
                 // 1. Check Search Match
@@ -1310,7 +1310,7 @@
                 return;
             }
 
-            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : (typeof nammasociety51_nonce !== 'undefined' ? nammasociety51_nonce : '');
+            const nonce = (window.nammasociety51DashboardData && window.nammasociety51DashboardData.nonce) ? window.nammasociety51DashboardData.nonce : (typeof nammasociety51_nonce !== 'undefined' ? nammasociety51_nonce : '');
 
             NAMMASOCIETY.ajax({
                 action: 'nammasociety51_get_receipt',
@@ -1458,7 +1458,7 @@
             }
 
             const formData = new FormData(form);
-            const nonce = (window.shubx51DashboardData && window.shubx51DashboardData.nonce) ? window.shubx51DashboardData.nonce : '';
+            const nonce = (window.nammasociety51DashboardData && window.nammasociety51DashboardData.nonce) ? window.nammasociety51DashboardData.nonce : '';
             formData.append('_ajax_nonce', nonce);
 
             NAMMASOCIETY.ajax({
@@ -1468,7 +1468,7 @@
                 successMessage: 'Payment confirmation sent successfully!',
                 reload: true,
                 onSuccess: function () {
-                    const modalEl = document.getElementById('SHUBX51PaymentModal');
+                    const modalEl = document.getElementById('NAMMASOCIETY51PaymentModal');
                     if (modalEl) {
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
@@ -1498,9 +1498,9 @@
         var profileModal = document.getElementById('editProfileModal');
         // console.log("NAMMASOCIETY Debug: Profile Modal Reset Script Loaded", profileModal); 
 
-        if (profileModal && typeof shubx51DashboardData !== 'undefined' && shubx51DashboardData.resident) {
+        if (profileModal && typeof nammasociety51DashboardData !== 'undefined' && nammasociety51DashboardData.resident) {
             profileModal.addEventListener('show.bs.modal', function () {
-                var r = shubx51DashboardData.resident;
+                var r = nammasociety51DashboardData.resident;
                 // console.log("NAMMASOCIETY Debug: Populating Profile Modal", r);
 
                 var form = profileModal.querySelector('form');
@@ -1542,8 +1542,8 @@
             /*
             console.warn("NAMMASOCIETY Debug: Missing Data or Modal", {
                modal: !!profileModal,
-               data: typeof shubx51DashboardData,
-               resident: (shubx51DashboardData || {}).resident
+               data: typeof nammasociety51DashboardData,
+               resident: (nammasociety51DashboardData || {}).resident
             });
             */
         }
@@ -1682,9 +1682,9 @@
 
     // --- Resident Request View Detail ---
     window.viewResidentRequestDetail = function(requestId) {
-        if (!window.shubx51DashboardData || !window.shubx51DashboardData.my_requests) return;
+        if (!window.nammasociety51DashboardData || !window.nammasociety51DashboardData.my_requests) return;
         
-        const req = window.shubx51DashboardData.my_requests.find(r => r.id === requestId);
+        const req = window.nammasociety51DashboardData.my_requests.find(r => r.id === requestId);
         if (!req) return;
 
         const modalEl = document.getElementById('residentRequestDetailModal');
@@ -1746,15 +1746,15 @@
 
     // --- Real-time Payment Sync (Optimistic UI) ---
     function initPaymentSync() {
-        if (!window.shubx51DashboardData || !window.shubx51DashboardData.rest_url || !window.shubx51DashboardData.rest_nonce) {
+        if (!window.nammasociety51DashboardData || !window.nammasociety51DashboardData.rest_url || !window.nammasociety51DashboardData.rest_nonce) {
             return;
         }
 
         let currentHash = null;
         let isPolling = false;
         const POLL_INTERVAL = 4000; // 4 seconds
-        const API_BASE = window.shubx51DashboardData.rest_url;
-        const NONCE = window.shubx51DashboardData.rest_nonce;
+        const API_BASE = window.nammasociety51DashboardData.rest_url;
+        const NONCE = window.nammasociety51DashboardData.rest_nonce;
 
         async function pollStateHash() {
             if (isPolling) return;
@@ -1797,8 +1797,8 @@
                 if (resJson.ok) {
                     const data = await resJson.json();
                     if (data.success && data.data) {
-                        window.shubx51DashboardData.paymentHistory = data.data.paymentHistory;
-                        window.shubx51DashboardData.expenseChartData = data.data.expenseChartData;
+                        window.nammasociety51DashboardData.paymentHistory = data.data.paymentHistory;
+                        window.nammasociety51DashboardData.expenseChartData = data.data.expenseChartData;
 
                         // Update Charts seamlessly
                         if (paymentChart && data.data.paymentHistory) {
@@ -1944,7 +1944,7 @@
 
     // Handle Raise a General Request Form Submission
     document.addEventListener('DOMContentLoaded', function() {
-        const requestForm = document.getElementById('SHUBX51GeneralRequestForm');
+        const requestForm = document.getElementById('NAMMASOCIETY51GeneralRequestForm');
         if (requestForm) {
             requestForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2095,8 +2095,8 @@
             success: function(response) {
                 if(response.success) {
                     if (acknowledgeModal) acknowledgeModal.hide();
-                    if (window.SHUBXShowToast) {
-                        SHUBXShowToast('Rule acknowledged successfully!', 'success');
+                    if (window.NAMMASOCIETYShowToast) {
+                        NAMMASOCIETYShowToast('Rule acknowledged successfully!', 'success');
                     } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
                         NAMMASOCIETY.toast.success('Rule acknowledged successfully!');
                     } else {
@@ -2105,8 +2105,8 @@
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     const errMsg = response.data?.message || 'Error acknowledging rule';
-                    if (window.SHUBXShowToast) {
-                        SHUBXShowToast(errMsg, 'error');
+                    if (window.NAMMASOCIETYShowToast) {
+                        NAMMASOCIETYShowToast(errMsg, 'error');
                     } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
                         NAMMASOCIETY.toast.error(errMsg);
                     } else {
@@ -2115,8 +2115,8 @@
                 }
             },
             error: function() {
-                if (window.SHUBXShowToast) {
-                    SHUBXShowToast('Error communicating with server', 'error');
+                if (window.NAMMASOCIETYShowToast) {
+                    NAMMASOCIETYShowToast('Error communicating with server', 'error');
                 } else {
                     alert('Error communicating with server');
                 }
@@ -2165,8 +2165,8 @@
             success: function(response) {
                 if(response.success) {
                     if (appealModal) appealModal.hide();
-                    if (window.SHUBXShowToast) {
-                        SHUBXShowToast('Appeal submitted successfully!', 'success');
+                    if (window.NAMMASOCIETYShowToast) {
+                        NAMMASOCIETYShowToast('Appeal submitted successfully!', 'success');
                     } else if (window.NAMMASOCIETY && window.NAMMASOCIETY.toast) {
                         NAMMASOCIETY.toast.success('Appeal submitted successfully!');
                     } else {
@@ -2336,7 +2336,7 @@
         const fd = new FormData(e.target);
         
         try {
-            const res = await window.SHUBXApiRequest('nammasociety51_book_facility', fd);
+            const res = await window.NAMMASOCIETYApiRequest('nammasociety51_book_facility', fd);
             btn.textContent = 'Success!';
             setTimeout(() => {
                 if (facilityModal) facilityModal.hide();

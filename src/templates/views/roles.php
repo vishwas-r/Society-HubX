@@ -189,10 +189,10 @@ add_action('nammasociety51_admin_modals', function() use ($capability_groups) {
                         
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <div class="btn-group btn-group-sm rounded-3 shadow-none" role="group">
-                                <button type="button" class="btn btn-outline-primary fw-bold px-3" onclick="shubxToggleAllCaps(true)">
+                                <button type="button" class="btn btn-outline-primary fw-bold px-3" onclick="nammasocietyToggleAllCaps(true)">
                                     <i class="bi bi-check-all me-1"></i> Select All
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary px-3" onclick="shubxToggleAllCaps(false)">
+                                <button type="button" class="btn btn-outline-secondary px-3" onclick="nammasocietyToggleAllCaps(false)">
                                     <i class="bi bi-x-lg me-1"></i> Clear All
                                 </button>
                             </div>
@@ -202,10 +202,10 @@ add_action('nammasociety51_admin_modals', function() use ($capability_groups) {
                                     <i class="bi bi-magic me-1"></i> Quick Presets
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow border-light rounded-3 py-1">
-                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="shubxApplyPreset('admin')"><i class="bi bi-shield-fill-check text-primary me-2"></i>Full Admin (All 26)</a></li>
-                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="shubxApplyPreset('manager')"><i class="bi bi-briefcase-fill text-info me-2"></i>Manager / Secretary</a></li>
-                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="shubxApplyPreset('treasurer')"><i class="bi bi-wallet2 text-success me-2"></i>Treasurer / Finance</a></li>
-                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="shubxApplyPreset('viewer')"><i class="bi bi-eye-fill text-secondary me-2"></i>Read-Only Viewer</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="nammasocietyApplyPreset('admin')"><i class="bi bi-shield-fill-check text-primary me-2"></i>Full Admin (All 26)</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="nammasocietyApplyPreset('manager')"><i class="bi bi-briefcase-fill text-info me-2"></i>Manager / Secretary</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="nammasocietyApplyPreset('treasurer')"><i class="bi bi-wallet2 text-success me-2"></i>Treasurer / Finance</a></li>
+                                    <li><a class="dropdown-item py-2 fw-semibold" href="javascript:void(0)" onclick="nammasocietyApplyPreset('viewer')"><i class="bi bi-eye-fill text-secondary me-2"></i>Read-Only Viewer</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -224,7 +224,7 @@ add_action('nammasociety51_admin_modals', function() use ($capability_groups) {
                                                 <span class="text-muted" style="font-size: 11px;"><?php echo esc_html($group['desc']); ?></span>
                                             </div>
                                         </div>
-                                        <button type="button" class="btn btn-sm btn-light border border-light text-secondary rounded-2 py-1 px-2.5 fw-semibold" style="font-size: 11px;" onclick="shubxToggleGroupCaps('<?php echo esc_js($group_key); ?>')">
+                                        <button type="button" class="btn btn-sm btn-light border border-light text-secondary rounded-2 py-1 px-2.5 fw-semibold" style="font-size: 11px;" onclick="nammasocietyToggleGroupCaps('<?php echo esc_js($group_key); ?>')">
                                             <i class="bi bi-check2-square me-1"></i> Toggle Group
                                         </button>
                                     </div>
@@ -234,9 +234,9 @@ add_action('nammasociety51_admin_modals', function() use ($capability_groups) {
                                                 $is_manage = ($cap_data['type'] === 'manage');
                                             ?>
                                                 <div class="col-12 col-sm-6">
-                                                    <div class="nammasociety-cap-card p-2.5 px-3 rounded-3 border border-light bg-white h-100 transition-all hover-translate-y d-flex align-items-center justify-content-between cursor-pointer" onclick="shubxCardClick(event, 'cap_<?php echo esc_attr($key); ?>')">
+                                                    <div class="nammasociety-cap-card p-2.5 px-3 rounded-3 border border-light bg-white h-100 transition-all hover-translate-y d-flex align-items-center justify-content-between cursor-pointer" onclick="nammasocietyCardClick(event, 'cap_<?php echo esc_attr($key); ?>')">
                                                         <div class="form-check m-0 d-flex align-items-center gap-2">
-                                                            <input class="form-check-input cap-checkbox cap-group-<?php echo esc_attr($group_key); ?> shadow-none m-0 cursor-pointer" type="checkbox" name="capabilities[]" value="<?php echo esc_attr($key); ?>" id="cap_<?php echo esc_attr($key); ?>" onchange="shubxOnCapChange(this)">
+                                                            <input class="form-check-input cap-checkbox cap-group-<?php echo esc_attr($group_key); ?> shadow-none m-0 cursor-pointer" type="checkbox" name="capabilities[]" value="<?php echo esc_attr($key); ?>" id="cap_<?php echo esc_attr($key); ?>" onchange="nammasocietyOnCapChange(this)">
                                                             <label class="form-check-label cursor-pointer text-dark fw-bold small mb-0 ms-1" for="cap_<?php echo esc_attr($key); ?>">
                                                                 <?php echo esc_html($cap_data['label']); ?>
                                                             </label>

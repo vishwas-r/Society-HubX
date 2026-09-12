@@ -429,7 +429,3 @@ class NAMMASOCIETY51_Vehicle_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Vehicle_Manager' ) && ! class_exists( 'SHUBX51_Vehicle_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Vehicle_Manager', 'SHUBX51_Vehicle_Manager' );
-}

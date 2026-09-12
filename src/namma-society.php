@@ -19,24 +19,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define Constants.
-define( 'NAMMASOCIETY51_VERSION', '1.0.6' );
+define( 'NAMMASOCIETY51_VERSION', '1.0.7' );
 define( 'NAMMASOCIETY51_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NAMMASOCIETY51_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'NAMMASOCIETY51_PREFIX', 'NAMMASOCIETY51' );
-
-// Legacy Backward Compatibility Constants
-if ( ! defined( 'SHUBX51_VERSION' ) ) {
-	define( 'SHUBX51_VERSION', NAMMASOCIETY51_VERSION );
-}
-if ( ! defined( 'SHUBX51_PLUGIN_DIR' ) ) {
-	define( 'SHUBX51_PLUGIN_DIR', NAMMASOCIETY51_PLUGIN_DIR );
-}
-if ( ! defined( 'SHUBX51_PLUGIN_URL' ) ) {
-	define( 'SHUBX51_PLUGIN_URL', NAMMASOCIETY51_PLUGIN_URL );
-}
-if ( ! defined( 'SHUBX51_PREFIX' ) ) {
-	define( 'SHUBX51_PREFIX', NAMMASOCIETY51_PREFIX );
-}
 
 /**
  * Main Plugin Class.
@@ -102,9 +88,6 @@ final class NAMMASOCIETY51_Plugin {
 	private function __construct() {
 		self::$instance = $this;
 		$this->includes();
-		if ( class_exists( 'NAMMASOCIETY51_DB_Schema' ) ) {
-			NAMMASOCIETY51_DB_Schema::maybe_migrate_legacy_tables();
-		}
 		$this->init_hooks();
 	}
 
@@ -443,7 +426,7 @@ final class NAMMASOCIETY51_Plugin {
             'request_nonce' => wp_create_nonce( 'nammasociety51_request_action' )
         ));
         // Add global JS variable for convenience
-        wp_add_inline_script( 'nammasociety51-admin-app', 'var shubx51RequestNonce = "' . wp_create_nonce( 'nammasociety51_request_action' ) . '";', 'before' );
+        wp_add_inline_script( 'nammasociety51-admin-app', 'var nammasociety51RequestNonce = "' . wp_create_nonce( 'nammasociety51_request_action' ) . '";', 'before' );
 
         // Residents View Specific JS
         if ( $page === 'nammasociety51-residents' ) {
@@ -519,7 +502,6 @@ final class NAMMASOCIETY51_Plugin {
 		// Notifications View Specific JS (Now also on Settings for Communication tab)
 		if ( in_array($page, ['nammasociety51-activity-hub', 'nammasociety51-global-settings']) ) {
 			wp_enqueue_script( 'nammasociety51-notifications-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-notifications.js', array('jquery', 'nammasociety51-admin-app'), time(), true );
-			wp_add_inline_script( 'nammasociety51-notifications-js', 'var shubx51NotificationsVars = typeof nammasociety51NotificationsVars !== "undefined" ? nammasociety51NotificationsVars : {};', 'after' );
 		wp_localize_script( 'nammasociety51-notifications-js', 'nammasociety51NotificationsVars', array(
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'nammasociety51_request_action' ),
@@ -687,7 +669,3 @@ function nammasociety51_init() {
 }
 add_action( 'plugins_loaded', 'nammasociety51_init' );
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Plugin' ) && ! class_exists( 'SHUBX51_Plugin', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Plugin', 'SHUBX51_Plugin' );
-}

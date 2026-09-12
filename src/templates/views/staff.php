@@ -74,8 +74,8 @@ $all_flats = $flats;
                             Bulk Actions (<span id="selected-count">0</span>)
                         </button>
                         <ul class="dropdown-menu shadow-sm border-0 mt-1">
-                            <li><a class="dropdown-item fw-bold text-success" href="#" onclick="SHUBXBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
-                            <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="SHUBXBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
+                                <li><a class="dropdown-item fw-bold text-success" href="#" onclick="NAMMASOCIETYBulkProcess('approve')"><i class="bi bi-check-circle me-2"></i>Approve Selected</a></li>
+                                <li><a class="dropdown-item fw-bold text-danger" href="#" onclick="NAMMASOCIETYBulkProcess('reject')"><i class="bi bi-x-circle me-2"></i>Reject Selected</a></li>
                         </ul>
                     </div>
                     <button class="js-toggle-staff-filters btn btn-light px-3 px-sm-4 fw-semibold border-0 bg-light text-secondary rounded-3 d-flex align-items-center justify-content-center gap-2" style="height: 48px;">

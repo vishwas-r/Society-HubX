@@ -17,7 +17,6 @@ class NAMMASOCIETY51_REST_Manager {
 	 */
 	const NAMESPACE = 'nammasociety/v1';
 	const NAMESPACE_51 = 'nammasociety51/v1';
-	const LEGACY_NAMESPACE = 'society-hubx/v1';
 
 	/**
 	 * Register hooks.
@@ -307,7 +306,3 @@ class NAMMASOCIETY51_REST_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_REST_Manager' ) && ! class_exists( 'SHUBX51_REST_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_REST_Manager', 'SHUBX51_REST_Manager' );
-}

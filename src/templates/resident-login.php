@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <div id="login-card" class="nammasociety-login-card p-4 p-md-5 d-none">
                     <!-- Logo / Brand -->
                     <div class="text-center mb-4">
-                        <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/hubx-logo.png' ); ?>" alt="Namma Society" class="mb-3 mx-auto shadow-sm" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover;">
+                        <img src="<?php echo esc_url( NAMMASOCIETY51_PLUGIN_URL . 'assets/images/nammasociety-logo.png' ); ?>" alt="Namma Society" class="mb-3 mx-auto shadow-sm" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover;">
                         <h2 class="h4 fw-bold text-dark m-0">Member Login</h2>
                         <p class="text-secondary small">Sign in to your society account</p>
                     </div>

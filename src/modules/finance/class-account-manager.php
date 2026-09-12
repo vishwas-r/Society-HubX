@@ -716,7 +716,3 @@ class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Account_Manager' ) && ! class_exists( 'SHUBX51_Account_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Account_Manager', 'SHUBX51_Account_Manager' );
-}

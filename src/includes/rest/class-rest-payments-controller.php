@@ -196,7 +196,3 @@ class NAMMASOCIETY51_REST_Payments_Controller {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_REST_Payments_Controller' ) && ! class_exists( 'SHUBX51_REST_Payments_Controller', false ) ) {
-	class_alias( 'NAMMASOCIETY51_REST_Payments_Controller', 'SHUBX51_REST_Payments_Controller' );
-}

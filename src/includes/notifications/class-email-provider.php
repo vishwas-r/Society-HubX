@@ -46,7 +46,3 @@ class NAMMASOCIETY51_Email_Provider implements NAMMASOCIETY51_Notification_Provi
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Email_Provider' ) && ! class_exists( 'SHUBX51_Email_Provider', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Email_Provider', 'SHUBX51_Email_Provider' );
-}

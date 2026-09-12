@@ -82,7 +82,7 @@ $display_dues = max(0, $total_dues - $pending_payment_total);
                          <span>Verifying: ₹<?php echo esc_html( NAMMASOCIETY_in_fmt($pending_payment_total, 0) ); ?></span>
                      </div>
                   <?php elseif ( $display_dues > 0 ) : ?>
-                  <button data-bs-toggle="modal" data-bs-target="#SHUBX51PaymentModal" 
+                  <button data-bs-toggle="modal" data-bs-target="#NAMMASOCIETY51PaymentModal" 
                           data-amount="<?php echo esc_attr($display_dues); ?>"
                           data-invoice-id="Total Outstanding"
                           class="js-btn-pay btn btn-<?php echo esc_html( $status_class ); ?> w-100 mt-3 py-2 rounded-3 fw-bold shadow-sm transition-all hover-translate-y">

@@ -47,7 +47,3 @@ class NAMMASOCIETY51_InApp_Provider implements NAMMASOCIETY51_Notification_Provi
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_InApp_Provider' ) && ! class_exists( 'SHUBX51_InApp_Provider', false ) ) {
-	class_alias( 'NAMMASOCIETY51_InApp_Provider', 'SHUBX51_InApp_Provider' );
-}

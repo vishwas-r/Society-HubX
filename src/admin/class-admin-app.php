@@ -35,7 +35,3 @@ class NAMMASOCIETY51_Admin_App {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Admin_App' ) && ! class_exists( 'SHUBX51_Admin_App', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Admin_App', 'SHUBX51_Admin_App' );
-}

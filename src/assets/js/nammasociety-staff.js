@@ -97,11 +97,11 @@
             }
         }
 
-        if (!fuse && window.SHUBXCreateFuse) {
-            fuse = window.SHUBXCreateFuse('.staff-row');
+        if (!fuse && window.NAMMASOCIETYCreateFuse) {
+            fuse = window.NAMMASOCIETYCreateFuse('.staff-row');
         }
 
-        const fuzzyMatches = searchVal && window.SHUBXGetFuzzyMatches ? window.SHUBXGetFuzzyMatches(fuse, searchVal) : null;
+        const fuzzyMatches = searchVal && window.NAMMASOCIETYGetFuzzyMatches ? window.NAMMASOCIETYGetFuzzyMatches(fuse, searchVal) : null;
 
         $('.staff-row').each(function () {
             const $row = $(this);
@@ -312,7 +312,7 @@
             $('#staff-search-input').on('input', function () {
                 applyFilters();
             }).on('focus', function () {
-                if (window.SHUBXCreateFuse) fuse = window.SHUBXCreateFuse('.staff-row');
+                if (window.NAMMASOCIETYCreateFuse) fuse = window.NAMMASOCIETYCreateFuse('.staff-row');
             });
 
             // Filter Buttons
@@ -397,10 +397,10 @@
 
         const data = new FormData();
         data.append('action', 'nammasociety51_get_attendance_report');
-        data.append('_wpnonce', document.getElementById('nammasociety51_staff_nonce') ? document.getElementById('nammasociety51_staff_nonce').value : shubxAdminData.nonce);
+        data.append('_wpnonce', document.getElementById('nammasociety51_staff_nonce') ? document.getElementById('nammasociety51_staff_nonce').value : (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin.nonce : ''));
         data.append('month', month);
 
-        fetch(shubxAdminData.ajaxUrl, {
+        fetch(ajaxurl, {
             method: 'POST',
             body: data
         })

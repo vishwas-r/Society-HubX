@@ -194,7 +194,3 @@ class NAMMASOCIETY51_Notification_Dispatcher {
     }
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Notification_Dispatcher' ) && ! class_exists( 'SHUBX51_Notification_Dispatcher', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Notification_Dispatcher', 'SHUBX51_Notification_Dispatcher' );
-}

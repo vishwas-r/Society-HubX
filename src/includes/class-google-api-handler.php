@@ -192,7 +192,3 @@ class NAMMASOCIETY51_Google_API_Handler {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Google_API_Handler' ) && ! class_exists( 'SHUBX51_Google_API_Handler', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Google_API_Handler', 'SHUBX51_Google_API_Handler' );
-}

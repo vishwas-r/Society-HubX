@@ -111,16 +111,7 @@ class NAMMASOCIETY51_DB_Router {
             'inapp_notifications'     => $wpdb->prefix . 'nammasociety51_inapp_notifications',
             'emergency_alerts'        => $wpdb->prefix . 'nammasociety51_emergency_alerts',
         );
-		$target_table = $tables[ $slug ] ?? $wpdb->prefix . 'nammasociety51_' . $slug;
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $target_table ) ) !== $target_table ) {
-			$legacy = $wpdb->prefix . 'shubx51_' . $slug;
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-			if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $legacy ) ) === $legacy ) {
-				return $legacy;
-			}
-		}
-		return $target_table;
+		return $tables[ $slug ] ?? $wpdb->prefix . 'nammasociety51_' . $slug;
 	}
 
 	/**
@@ -615,7 +606,3 @@ class NAMMASOCIETY51_DB_Router {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_DB_Router' ) && ! class_exists( 'SHUBX51_DB_Router', false ) ) {
-	class_alias( 'NAMMASOCIETY51_DB_Router', 'SHUBX51_DB_Router' );
-}

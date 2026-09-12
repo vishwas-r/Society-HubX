@@ -235,7 +235,3 @@ class NAMMASOCIETY51_Module_Registry {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Module_Registry' ) && ! class_exists( 'SHUBX51_Module_Registry', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Module_Registry', 'SHUBX51_Module_Registry' );
-}

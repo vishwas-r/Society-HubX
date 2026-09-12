@@ -266,7 +266,3 @@ class NAMMASOCIETY51_Setup_Wizard {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Setup_Wizard' ) && ! class_exists( 'SHUBX51_Setup_Wizard', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Setup_Wizard', 'SHUBX51_Setup_Wizard' );
-}

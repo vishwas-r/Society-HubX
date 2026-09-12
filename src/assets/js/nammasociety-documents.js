@@ -1,6 +1,6 @@
 ﻿/**
  * NAMMASOCIETY Documents JS
- * - AJAX upload via SHUBXApiRequest
+ * - AJAX upload via NAMMASOCIETYApiRequest
  * - Approve/Delete using centralized modal and API wrapper
  * - Optimistic UI updates and toasts
  */

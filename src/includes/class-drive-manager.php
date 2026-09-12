@@ -278,7 +278,3 @@ class NAMMASOCIETY51_Drive_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Drive_Manager' ) && ! class_exists( 'SHUBX51_Drive_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Drive_Manager', 'SHUBX51_Drive_Manager' );
-}

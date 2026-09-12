@@ -198,7 +198,3 @@ class NAMMASOCIETY51_Tally_Exporter {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Tally_Exporter' ) && ! class_exists( 'SHUBX51_Tally_Exporter', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Tally_Exporter', 'SHUBX51_Tally_Exporter' );
-}

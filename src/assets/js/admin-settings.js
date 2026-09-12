@@ -160,10 +160,10 @@
 
                     const formData = new FormData();
                     formData.append('action', 'nammasociety51_upload_fcm_json');
-                    formData.append('nonce', typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).fcm_nonce || '' : '');
+                    formData.append('nonce', (typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.fcm_nonce) ? nammasocietyAdmin.fcm_nonce : '');
                     formData.append('fcm_json_raw', event.target.result);
 
-                    const ajaxUrl = typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+                    const ajaxUrl = (typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.ajax_url) ? nammasocietyAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
 
                     $.ajax({
                         url: ajaxUrl,
@@ -197,14 +197,14 @@
             const originalText = $btn.html();
             $btn.prop('disabled', true).html('<i class="bi bi-arrow-repeat spin me-1"></i>Sending...');
 
-            const ajaxUrl = typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
+            const ajaxUrl = (typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.ajax_url) ? nammasocietyAdmin.ajax_url : (typeof ajaxurl !== 'undefined' ? ajaxurl : '/wp-admin/admin-ajax.php');
 
             $.ajax({
                 url: ajaxUrl,
                 type: 'POST',
                 data: {
                     action: 'nammasociety51_send_test_push',
-                    nonce: typeof (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})) !== 'undefined' ? (typeof nammasocietyAdmin !== 'undefined' ? nammasocietyAdmin : (typeof shubxAdmin !== 'undefined' ? shubxAdmin : {})).fcm_nonce || '' : '',
+                    nonce: (typeof nammasocietyAdmin !== 'undefined' && nammasocietyAdmin.fcm_nonce) ? nammasocietyAdmin.fcm_nonce : '',
                     target_flat: flatNo
                 },
                 success: function (res) {
@@ -225,7 +225,7 @@
     });
 
     // --- 3. Color Palette & Theme Selection Helpers ---
-    window.shubxSelectPalette = function (key) {
+    window.nammasocietySelectPalette = function (key) {
         $('.nammasociety-palette-radio').each(function () {
             this.checked = (this.value === key);
         });
@@ -250,9 +250,9 @@
         document.cookie = "nammasociety_palette=" + encodeURIComponent(key) + "; path=/; max-age=31536000; SameSite=Lax";
     };
 
-    window.shubxSelectDefaultTheme = function (mode) {
-        if (typeof window.shubxApplyTheme === 'function') {
-            window.shubxApplyTheme(mode);
+    window.nammasocietySelectDefaultTheme = function (mode) {
+        if (typeof window.nammasocietyApplyTheme === 'function') {
+            window.nammasocietyApplyTheme(mode);
         } else {
             document.documentElement.setAttribute('data-bs-theme', mode);
             var roots = document.querySelectorAll('#nammasociety51-app-root');

@@ -258,7 +258,7 @@ class NAMMASOCIETY51_Frontend_Dashboard {
          wp_enqueue_script( 'nammasociety51-dashboard-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-dashboard.js', array('jquery', 'nammasociety51-chartjs', 'nammasociety51-html2canvas'), current_time('U'), true );
          
          // Localize Data for Dashboard
-         wp_localize_script( 'nammasociety51-dashboard-js', 'shubx51DashboardData', array(
+         wp_localize_script( 'nammasociety51-dashboard-js', 'nammasociety51DashboardData', array(
             'expenseChartData' => $expense_chart_data,
             'paymentHistory'   => $payment_history,
             'resident'         => $resident, // Pass resident data
@@ -1479,7 +1479,7 @@ class NAMMASOCIETY51_Frontend_Dashboard {
 		$upi       = get_option('nammasociety51_bank_upi', 'society@bank');
 		$qr_url    = get_option('nammasociety51_bank_qr');
 		?>
-		<div class="modal fade" id="SHUBX51PaymentModal" tabindex="-1">
+		<div class="modal fade" id="NAMMASOCIETY51PaymentModal" tabindex="-1">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -2152,7 +2152,3 @@ class NAMMASOCIETY51_Frontend_Dashboard {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Frontend_Dashboard' ) && ! class_exists( 'SHUBX51_Frontend_Dashboard', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Frontend_Dashboard', 'SHUBX51_Frontend_Dashboard' );
-}

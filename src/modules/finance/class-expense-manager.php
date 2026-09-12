@@ -393,7 +393,3 @@ class NAMMASOCIETY51_Expense_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Expense_Manager' ) && ! class_exists( 'SHUBX51_Expense_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Expense_Manager', 'SHUBX51_Expense_Manager' );
-}

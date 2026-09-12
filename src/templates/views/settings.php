@@ -74,7 +74,7 @@ $templates = $db->get('notification_templates');
     </div>
 
     <!-- Main Content Card -->
-    <div class="card border-0 shadow-sm rounded-3 overflow-hidden nammasociety-settings-card">
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden nammasociety-settings-card w-100">
         
         <!-- Navigation Tabs (Integrated) -->
         <div class="px-2 border-bottom border-light overflow-x-auto no-scrollbar nammasociety-settings-tab-bar">
@@ -180,7 +180,7 @@ $templates = $db->get('notification_templates');
                             <div class="row g-3 mb-4">
                                 <?php foreach ( $palettes as $key => $p ): ?>
                                     <div class="col-6 col-md-4 col-xl-2.4">
-                                        <label class="nammasociety-palette-card card h-100 p-3 rounded-3 border <?php echo $current_palette === $key ? 'border-2 border-primary shadow-sm' : 'border-light'; ?> cursor-pointer transition-all hover-translate-y" style="cursor: pointer;" onclick="shubxSelectPalette('<?php echo esc_js($key); ?>')">
+                                        <label class="nammasociety-palette-card card h-100 p-3 rounded-3 border <?php echo $current_palette === $key ? 'border-2 border-primary shadow-sm' : 'border-light'; ?> cursor-pointer transition-all hover-translate-y" style="cursor: pointer;" onclick="nammasocietySelectPalette('<?php echo esc_js($key); ?>')">
                                             <input type="radio" name="nammasociety51_color_palette" value="<?php echo esc_attr($key); ?>" <?php checked($current_palette, $key); ?> class="d-none nammasociety-palette-radio" id="palette-radio-<?php echo esc_attr($key); ?>">
                                             <div class="d-flex align-items-center justify-content-between mb-2">
                                                 <div class="d-flex gap-1">
@@ -199,7 +199,7 @@ $templates = $db->get('notification_templates');
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold text-secondary">Default Theme Mode</label>
-                                    <select name="nammasociety51_default_theme" class="form-select shadow-none rounded-3 border-light" onchange="shubxSelectDefaultTheme(this.value)">
+                                    <select name="nammasociety51_default_theme" class="form-select shadow-none rounded-3 border-light" onchange="nammasocietySelectDefaultTheme(this.value)">
                                         <option value="light" <?php selected($default_theme, 'light'); ?>>☀️ Light Mode (Default)</option>
                                         <option value="dark" <?php selected($default_theme, 'dark'); ?>>🌙 Dark Mode</option>
                                     </select>
@@ -392,8 +392,8 @@ $templates = $db->get('notification_templates');
                                             if($slug === 'inapp') { $icon = 'bi-app-indicator'; $color = 'info'; $channel_title = 'In-App'; }
                                             if($slug === 'push') { $icon = 'bi-bell-fill'; $color = 'danger'; $channel_title = 'Push Notifications (Central Relay)'; }
                                         ?>
-                                        <div class="col-md-6 col-lg-3">
-                                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                                        <div class="col-12 col-sm-6 col-xl-3">
+                                            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden nammasociety-channel-card">
                                                 <div class="card-body p-4 d-flex flex-column">
                                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                                         <div class="p-3 bg-<?php echo esc_html( $color ); ?> bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">

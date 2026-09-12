@@ -331,7 +331,3 @@ class NAMMASOCIETY51_Flat_Manager {
 	}
 }
 
-// Backward Compatibility Aliases
-if ( class_exists( 'NAMMASOCIETY51_Flat_Manager' ) && ! class_exists( 'SHUBX51_Flat_Manager', false ) ) {
-	class_alias( 'NAMMASOCIETY51_Flat_Manager', 'SHUBX51_Flat_Manager' );
-}
