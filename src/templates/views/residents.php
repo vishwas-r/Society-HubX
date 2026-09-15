@@ -407,20 +407,28 @@ sort($unique_blocks);
 // Collect Modals to be printed outside the main root
 add_action('nammasociety51_admin_modals', function() use ($flats) {
 ?>
-<!-- Modal Refactor to Bootstrap structure -->
+<!-- Modal Refactor to Bootstrap structure: Spacious Enterprise modal-lg -->
 <div class="modal fade" id="residentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-3">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 820px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
             <form id="add-resident-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="nammasociety51_add_resident">
                 <input type="hidden" name="resident_id" value="">
                 <?php wp_nonce_field( 'nammasociety51_resident_nonce' ); ?>
                 
-                <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
-                    <h5 class="fw-bold m-0" id="modal-title">Add New Resident</h5>
+                <div class="modal-header border-bottom bg-light bg-opacity-50 px-4 py-3 align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-gear fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-dark m-0" id="modal-title">Add New Resident</h5>
+                            <div class="text-muted smaller" id="modal-subtitle">Manage ownership profile, allocated units, and access permissions</div>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 px-lg-4" style="max-height: calc(85vh - 120px); overflow-y: auto;">
                     <?php 
                     $args = [
                         'context' => 'admin',
@@ -430,9 +438,14 @@ add_action('nammasociety51_admin_modals', function() use ($flats) {
                     include NAMMASOCIETY51_PLUGIN_DIR . 'templates/components/resident-form.php'; 
                     ?>
                 </div>
-                <div class="modal-footer border-top-0 bg-light px-4 py-3">
-                    <button type="button" class="btn btn-light fw-semibold text-secondary px-4 rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold rounded-3 shadow-sm">Save Resident</button>
+                <div class="modal-footer border-top bg-light bg-opacity-75 px-4 py-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-light text-secondary px-4 py-2 rounded-3 border fw-semibold" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold rounded-3 shadow-sm d-flex align-items-center gap-2">
+                        <i class="bi bi-check2-circle fs-6"></i>
+                        <span id="submit-btn-text">Save Resident Profile</span>
+                    </button>
                 </div>
             </form>
         </div>

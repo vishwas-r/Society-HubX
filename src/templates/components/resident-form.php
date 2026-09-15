@@ -67,91 +67,192 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <div class="text-muted small mt-2">Tap to upload photo</div>
     </div>
 
-    <!-- Full Name -->
-    <div class="col-md-<?php echo ($is_admin || $is_profile) ? '6' : '12'; ?>">
+    <!-- Row 1: Full Name & Resident Type -->
+    <div class="col-md-6">
         <label class="form-label small fw-bold text-secondary text-uppercase">Full Name <span class="text-danger">*</span></label>
-        <input type="text" name="name" value="<?php echo esc_attr($name); ?>" class="form-control rounded-3 border-light shadow-none" required placeholder="Enter full name">
+        <div class="input-group">
+            <span class="input-group-text bg-light border-light text-muted"><i class="bi bi-person"></i></span>
+            <input type="text" name="name" value="<?php echo esc_attr($name); ?>" class="form-control rounded-end-3 border-light shadow-none" required placeholder="Enter full name">
+        </div>
     </div>
 
-    <!-- Admin: Flat & Type -->
     <?php if($is_admin): ?>
-        <div class="col-12 text-start">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Flat / Unit(s) Owned <span class="text-danger">*</span></label>
-             <?php
-             $selected_flat_ids = isset($r['flat_ids']) ? $r['flat_ids'] : ( !empty($flat_no) ? array($flat_no) : array() );
-             $sorted_flats = !empty($args['flats']) ? $args['flats'] : array();
-             if (!empty($sorted_flats)) {
-                 usort($sorted_flats, function($a, $b) {
-                     $b1 = trim(preg_replace('/^(block[\s_-]*)+/i', '', $a['block'] ?? ''));
-                     $b2 = trim(preg_replace('/^(block[\s_-]*)+/i', '', $b['block'] ?? ''));
-                     $cmp = strcasecmp($b1, $b2);
-                     if ($cmp !== 0) return $cmp;
-                     return strnatcasecmp($a['flat_number'] ?? $a['id'], $b['flat_number'] ?? $b['id']);
-                 });
-             }
-             ?>
-             <div class="row g-2 px-1 mb-2">
-                 <?php if(!empty($sorted_flats)): ?>
-                     <?php foreach($sorted_flats as $f): 
-                         $val = $f['id']; 
-                         $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                         $clean_block = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($f['block'] ?? '')));
-                         $full_display = NAMMASOCIETY51_DB_Router::format_flat_display($clean_block, $f_num);
-                         
-                         $is_sel = false;
-                         foreach ($selected_flat_ids as $sf) {
-                             $sf_clean = trim((string)$sf);
-                             if ($sf_clean === $val || $sf_clean === $f_num || $sf_clean === $full_display) {
-                                 $is_sel = true; break;
-                             }
-                             $norm_sf = strtolower(preg_replace('/[^a-z0-9]/i', '', $sf_clean));
-                             $norm_val = strtolower(preg_replace('/[^a-z0-9]/i', '', $val));
-                             if ($norm_sf && $norm_sf === $norm_val) {
-                                 $is_sel = true; break;
-                             }
-                         }
-                     ?>
-                         <div class="col-md-4 col-6">
-                             <div class="form-check">
-                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" 
-                                        type="checkbox" 
-                                        name="flat_ids[]" 
-                                        value="<?php echo esc_attr($val); ?>" 
-                                        id="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" 
-                                        data-number="<?php echo esc_attr($f_num); ?>" 
-                                        data-block="<?php echo esc_attr($clean_block); ?>" 
-                                        data-display="<?php echo esc_attr($full_display); ?>" 
-                                        <?php checked($is_sel); ?>>
-                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" title="<?php echo esc_attr($full_display); ?>">
-                                     <?php if (!empty($clean_block)): ?>
-                                         <span class="badge bg-light text-primary border me-1 fw-bold" style="font-size: 10px;"><?php echo esc_html($clean_block); ?></span>
-                                     <?php endif; ?>
-                                     <span class="fw-semibold text-dark"><?php echo esc_html($f_num); ?></span>
-                                 </label>
-                             </div>
-                         </div>
-                     <?php endforeach; ?>
-                 <?php endif; ?>
-             </div>
-             <!-- Hidden input to stay in sync with canonical flat_no and block for form post fallbacks -->
-             <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($flat_no); ?>">
-             <input type="hidden" name="block" id="block-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($r['block'] ?? ''); ?>">
-             
-             <!-- Primary Flat Selection (Shown only when multiple selected) -->
-             <div class="mb-3" id="primary-flat-wrapper-<?php echo esc_html( $context ); ?>" style="display: none;">
-                 <label class="form-label small fw-bold text-secondary text-uppercase">Primary Flat <span class="text-danger">*</span></label>
-                 <select name="primary_flat_id" id="primary-flat-select-<?php echo esc_html( $context ); ?>" class="form-select rounded-3 border-light shadow-none">
-                     <!-- Options populated dynamically by JS -->
-                 </select>
-             </div>
-        </div>
         <div class="col-md-6 text-start">
-             <label class="form-label small fw-bold text-secondary text-uppercase">Type <span class="text-danger">*</span></label>
+             <label class="form-label small fw-bold text-secondary text-uppercase">Resident Role / Type <span class="text-danger">*</span></label>
              <select name="type" id="resident-type-select-<?php echo esc_html( $context ); ?>" class="form-select rounded-3 border-light shadow-none js-resident-type-toggle" data-context="<?php echo esc_html( $context ); ?>" required>
-                 <option value="owner" <?php selected($type, 'owner'); ?>>Owner</option>
-                 <option value="tenant" <?php selected($type, 'tenant'); ?>>Tenant</option>
+                 <option value="owner" <?php selected($type, 'owner'); ?>>Homeowner</option>
+                 <option value="tenant" <?php selected($type, 'tenant'); ?>>Tenant / Resident</option>
                  <option value="family" <?php selected($type, 'family'); ?>>Family Member</option>
              </select>
+        </div>
+    <?php elseif($is_profile): ?>
+        <div class="col-md-6">
+            <label class="form-label small fw-bold text-secondary text-uppercase">Resident Type</label>
+            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr(ucfirst($type)); ?>" disabled>
+            <input type="hidden" name="type" value="<?php echo esc_attr($type); ?>">
+        </div>
+    <?php else: ?>
+        <input type="hidden" name="type" value="family">
+    <?php endif; ?>
+
+    <!-- Admin: Enterprise Unit Portfolio Engine (Handles 1000s of Flats across 10 Towers) -->
+    <?php if($is_admin): 
+        $selected_flat_ids = isset($r['flat_ids']) ? $r['flat_ids'] : ( !empty($flat_no) ? array($flat_no) : array() );
+        $sorted_flats = !empty($args['flats']) ? $args['flats'] : array();
+        
+        // Extract Unique Towers / Blocks for Filter
+        $all_blocks = array();
+        if ( ! empty( $sorted_flats ) ) {
+            foreach ( $sorted_flats as $fl_item ) {
+                $blk = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $fl_item['block'] ?? '' ) ) );
+                if ( ! empty( $blk ) && ! in_array( $blk, $all_blocks, true ) ) {
+                    $all_blocks[] = $blk;
+                }
+            }
+            sort( $all_blocks, SORT_NATURAL | SORT_FLAG_CASE );
+        }
+    ?>
+        <div class="col-12 text-start">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label small fw-bold text-secondary text-uppercase m-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-buildings-fill text-primary"></i>
+                    <span>Allocated Property Holdings</span>
+                    <span class="text-danger">*</span>
+                </label>
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-2 py-1 rounded-pill small" id="unit-count-badge-<?php echo esc_html( $context ); ?>">
+                    0 Units Allocated
+                </span>
+            </div>
+
+            <!-- 1. Allocated Units Deck (Cards Tray) -->
+            <div id="unit-portfolio-tray-<?php echo esc_html( $context ); ?>" 
+                 class="d-flex flex-wrap gap-2 mb-2 p-2 rounded-3 border bg-light bg-opacity-50" 
+                 style="min-height: 54px; transition: all 0.2s ease;">
+                <!-- Empty State Prompt -->
+                <div class="text-muted small py-1 px-2 d-flex align-items-center gap-2 w-100" id="unit-tray-empty-<?php echo esc_html( $context ); ?>">
+                    <i class="bi bi-info-circle text-primary"></i>
+                    <span>No units assigned yet. Use the smart search bar below or open the matrix to allocate flats.</span>
+                </div>
+            </div>
+
+            <!-- Hidden Inputs for Standard Form POST Sync -->
+            <div id="unit-hidden-inputs-<?php echo esc_html( $context ); ?>"></div>
+            <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($flat_no); ?>">
+            <input type="hidden" name="block" id="block-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($r['block'] ?? ''); ?>">
+
+            <!-- 2. Smart Unit Omnibox (Fast Fuzzy Autocomplete for 1,000+ units) -->
+            <div class="position-relative mb-2">
+                <div class="input-group shadow-sm rounded-3 overflow-hidden border">
+                    <!-- Tower Filter Pill Dropdown -->
+                    <button class="btn btn-light bg-white border-0 border-end px-3 py-2 text-secondary fw-semibold dropdown-toggle d-flex align-items-center gap-2 shadow-none" 
+                            type="button" 
+                            id="tower-filter-btn-<?php echo esc_html( $context ); ?>" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false" 
+                            style="font-size: 0.85rem;">
+                        <i class="bi bi-funnel-fill text-primary small"></i>
+                        <span id="selected-tower-label-<?php echo esc_html( $context ); ?>">All Towers</span>
+                    </button>
+                    <ul class="dropdown-menu shadow border-0 mt-1 py-1" id="tower-filter-menu-<?php echo esc_html( $context ); ?>" style="max-height: 280px; overflow-y: auto; font-size: 0.85rem;">
+                        <li><a class="dropdown-item active fw-bold js-tower-filter" href="#" data-tower="all"><i class="bi bi-grid-fill me-2 text-primary"></i>All Towers (All Flats)</a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <?php foreach($all_blocks as $block_name): ?>
+                            <li>
+                                <a class="dropdown-item js-tower-filter d-flex align-items-center justify-content-between" href="#" data-tower="<?php echo esc_attr($block_name); ?>">
+                                    <span><i class="bi bi-building me-2 text-secondary"></i>Tower <?php echo esc_html($block_name); ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+
+                    <!-- Instant Search Input -->
+                    <input type="text" 
+                           id="unit-omnibox-input-<?php echo esc_html( $context ); ?>" 
+                           class="form-control border-0 py-2 ps-3 shadow-none fw-medium" 
+                           placeholder="Type unit number or floor (e.g. 101, 1402, B-4, Penthouse)..." 
+                           autocomplete="off" 
+                           style="font-size: 0.9rem;">
+
+                    <!-- Toggle Matrix Drawer Button -->
+                    <button class="btn btn-white bg-white border-0 text-primary px-3 fw-semibold d-flex align-items-center gap-2 shadow-none hover-bg-light" 
+                            type="button" 
+                            id="toggle-tower-matrix-btn-<?php echo esc_html( $context ); ?>" 
+                            title="Browse Tower & Unit Matrix">
+                        <i class="bi bi-grid-3x3-gap-fill text-primary"></i>
+                        <span class="d-none d-sm-inline small">Browse Matrix</span>
+                    </button>
+                </div>
+
+                <!-- Live Floating Autocomplete Suggestions Dropdown -->
+                <div id="unit-omnibox-dropdown-<?php echo esc_html( $context ); ?>" 
+                     class="position-absolute w-100 bg-white rounded-3 shadow-lg border mt-1 p-2 d-none" 
+                     style="z-index: 1060; max-height: 320px; overflow-y: auto;">
+                     <!-- Suggestions rendered dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- 3. Interactive Tower Matrix Explorer (Collapsible Visual Drawer) -->
+            <div id="tower-matrix-explorer-<?php echo esc_html( $context ); ?>" class="card border rounded-3 p-3 bg-white shadow-sm mb-3 d-none">
+                <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle p-1"><i class="bi bi-building"></i></span>
+                        <span class="fw-bold small text-dark">Tower Matrix & Floor Grid</span>
+                        <span class="text-muted smaller">Click a tile to toggle allocation</span>
+                    </div>
+                    <button type="button" class="btn-close small shadow-none" id="close-matrix-btn-<?php echo esc_html( $context ); ?>" aria-label="Close"></button>
+                </div>
+                
+                <!-- Tower Tabs -->
+                <ul class="nav nav-pills gap-1 p-1 bg-light rounded-3 mb-2 flex-wrap" id="matrix-tower-pills-<?php echo esc_html( $context ); ?>" role="tablist">
+                    <!-- Dynamic Tower Pills: Tower A, Tower B, etc. -->
+                </ul>
+
+                <!-- Matrix Grid of Unit Tiles -->
+                <div id="matrix-units-grid-<?php echo esc_html( $context ); ?>" class="d-flex flex-wrap gap-2 p-1" style="max-height: 180px; overflow-y: auto;">
+                    <!-- Unit tiles rendered dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- Client-Side In-Memory Search Index & State Data -->
+            <script type="application/json" id="flats-data-<?php echo esc_html( $context ); ?>">
+            <?php
+            $client_flats = array();
+            if ( ! empty( $sorted_flats ) ) {
+                foreach ( $sorted_flats as $fl_item ) {
+                    $val         = (string) $fl_item['id'];
+                    $f_num       = ! empty( $fl_item['flat_number'] ) ? (string) $fl_item['flat_number'] : $val;
+                    $clean_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $fl_item['block'] ?? '' ) ) );
+                    $floor_val   = isset( $fl_item['floor'] ) ? (string) $fl_item['floor'] : '';
+                    $full_display = NAMMASOCIETY51_DB_Router::format_flat_display( $clean_block, $f_num );
+
+                    $client_flats[] = array(
+                        'id'      => $val,
+                        'number'  => $f_num,
+                        'block'   => $clean_block,
+                        'floor'   => $floor_val,
+                        'display' => $full_display,
+                        'type'    => (string)( $fl_item['type'] ?? '' ),
+                    );
+                }
+            }
+            echo wp_json_encode( $client_flats );
+            ?>
+            </script>
+            <script type="application/json" id="initial-flats-<?php echo esc_html( $context ); ?>">
+            <?php
+            $init_flats = array();
+            if ( ! empty( $selected_flat_ids ) ) {
+                $init_flats = array_values( array_map( 'strval', (array) $selected_flat_ids ) );
+            } elseif ( ! empty( $flat_no ) ) {
+                $init_flats = array( (string) $flat_no );
+            }
+            echo wp_json_encode( array(
+                'flats'   => $init_flats,
+                'primary' => (string) $flat_no,
+                'block'   => (string)( $r['block'] ?? '' )
+            ) );
+            ?>
+            </script>
         </div>
     <?php elseif($is_profile): ?>
         <div class="col-md-6">
@@ -163,14 +264,6 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
             <input type="hidden" name="block" value="<?php echo esc_attr($r['block'] ?? ''); ?>">
         </div>
-        <div class="col-md-6">
-            <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>
-            <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr(ucfirst($type)); ?>" disabled>
-            <input type="hidden" name="type" value="<?php echo esc_attr($type); ?>">
-        </div>
-    <?php else: ?>
-        <!-- Hidden Type for Frontend Family -->
-        <input type="hidden" name="type" value="family">
     <?php endif; ?>
 
     <!-- Relation (Frontend Family OR Admin) -->
@@ -187,28 +280,36 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
          </select>
     </div>
 
-    <!-- Personal Details (DOB, Blood Group) -->
-    <div class="col-md-6">
-         <label class="form-label small fw-bold text-secondary text-uppercase">Date of Birth </label>
-         <input type="date" name="dob" value="<?php echo esc_attr($dob); ?>" class="form-control rounded-3 border-light shadow-none">
-    </div>
-
-    <!-- Contact Info -->
+    <!-- Contact Details: Phone & Email in clean 2-column row -->
     <div class="col-md-6">
         <label class="form-label small fw-bold text-secondary text-uppercase">Phone Number</label>
-        <input type="tel" name="phone" value="<?php echo esc_attr($phone); ?>" class="form-control rounded-3 border-light shadow-none" placeholder="10-digit mobile">
+        <div class="input-group">
+            <span class="input-group-text bg-light border-light text-muted"><i class="bi bi-telephone"></i></span>
+            <input type="tel" name="phone" value="<?php echo esc_attr($phone); ?>" class="form-control rounded-end-3 border-light shadow-none" placeholder="10-digit mobile">
+        </div>
     </div>
 
-    <!-- Email (Optional for all) -->
     <div class="col-md-6">
         <label class="form-label small fw-bold text-secondary text-uppercase">Email Address</label>
-        <input type="email" name="email" value="<?php echo esc_attr($email); ?>" class="form-control rounded-3 border-light shadow-none" placeholder="official@email.com">
+        <div class="input-group">
+            <span class="input-group-text bg-light border-light text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="email" value="<?php echo esc_attr($email); ?>" class="form-control rounded-end-3 border-light shadow-none" placeholder="official@email.com">
+        </div>
+    </div>
+
+    <!-- Personal Info: Date of Birth & Blood Group -->
+    <div class="col-md-6">
+         <label class="form-label small fw-bold text-secondary text-uppercase">Date of Birth</label>
+         <div class="input-group">
+             <span class="input-group-text bg-light border-light text-muted"><i class="bi bi-calendar3"></i></span>
+             <input type="date" name="dob" value="<?php echo esc_attr($dob); ?>" class="form-control rounded-end-3 border-light shadow-none">
+         </div>
     </div>
 
     <div class="col-md-6 text-start">
          <label class="form-label small fw-bold text-secondary text-uppercase">Blood Group</label>
          <select name="blood_group" class="form-select rounded-3 border-light shadow-none">
-             <option value="">Select</option>
+             <option value="">Select Blood Group</option>
              <?php 
              $bgs = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
              foreach($bgs as $bg): 
@@ -218,29 +319,31 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
          </select>
     </div>
 
-     <!-- Society Role (Admin Only) -->
-     <?php if($is_admin): 
-        $all_rbac_roles = NAMMASOCIETY51_Plugin::get_instance()->rbac->get_all_roles();
-        $selected_roles = is_array($role) ? $role : array_filter(explode(',', (string)$role));
-     ?>
-        <div class="col-12 text-start" id="society-role-wrapper-<?php echo esc_html( $context ); ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
-            <label class="form-label small fw-bold text-secondary text-uppercase">Society Role(s)</label>
-            <div class="row g-2 px-1">
-                <?php foreach($all_rbac_roles as $rbac_role): 
-                    $is_checked = in_array($rbac_role['id'], $selected_roles);
-                ?>
-                    <div class="col-md-4 col-6">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="role[]" value="<?php echo esc_attr($rbac_role['id']); ?>" id="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>" <?php checked($is_checked); ?>>
-                            <label class="form-check-label small" for="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>">
-                                <?php echo esc_html($rbac_role['name']); ?>
-                            </label>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <div class="text-muted smaller mt-1"><i class="bi bi-info-circle me-1"></i>Assign multiple roles (e.g. Resident + Treasurer)</div>
-        </div>
+    <!-- Society Role (Admin Only) with Pixel-Perfect Checkbox Alignment -->
+    <?php if($is_admin): 
+       $all_rbac_roles = NAMMASOCIETY51_Plugin::get_instance()->rbac->get_all_roles();
+       $selected_roles = is_array($role) ? $role : array_filter(explode(',', (string)$role));
+    ?>
+       <div class="col-12 text-start" id="society-role-wrapper-<?php echo esc_html( $context ); ?>" style="<?php echo ($type === 'family') ? 'display:none;' : ''; ?>">
+           <label class="form-label small fw-bold text-secondary text-uppercase d-flex align-items-center gap-1">
+               <i class="bi bi-shield-check text-primary"></i> Society Role Assignment
+           </label>
+           <div class="row g-2 px-1">
+               <?php foreach($all_rbac_roles as $rbac_role): 
+                   $is_checked = in_array($rbac_role['id'], $selected_roles);
+               ?>
+                   <div class="col-md-4 col-6">
+                       <div class="form-check d-flex align-items-center gap-2 p-2 rounded-3 border bg-light bg-opacity-50 hover-bg-light cursor-pointer">
+                           <input class="form-check-input m-0 flex-shrink-0" type="checkbox" name="role[]" value="<?php echo esc_attr($rbac_role['id']); ?>" id="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>" <?php checked($is_checked); ?>>
+                           <label class="form-check-label small m-0 fw-semibold text-dark cursor-pointer flex-grow-1" for="role-<?php echo esc_html( $rbac_role['id'] ); ?>-<?php echo esc_html( $context ); ?>">
+                               <?php echo esc_html($rbac_role['name']); ?>
+                           </label>
+                       </div>
+                   </div>
+               <?php endforeach; ?>
+           </div>
+           <div class="text-muted smaller mt-2"><i class="bi bi-info-circle me-1"></i>Assign multiple committee or operational roles (e.g. Resident + Treasurer)</div>
+       </div>
     <?php endif; ?>
 </div>
 

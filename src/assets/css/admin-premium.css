@@ -497,3 +497,56 @@ body.toplevel_page_nammasociety51-residents {
         font-size: 1.25rem;
     }
 }
+
+/* ==========================================================================
+   Enterprise Unit Portfolio & Smart Omnibox Styles
+   ========================================================================== */
+.js-unit-card {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.js-unit-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.hover-warning:hover {
+    color: #d97706 !important;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+.hover-bg-light:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.js-dropdown-item {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.js-dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+.js-matrix-tile {
+    min-width: 44px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.js-matrix-tile:hover {
+    transform: scale(1.04);
+}
+
+/* Ensure pixel-perfect checkbox vertical alignment across all forms */
+.form-check.d-flex {
+    align-items: center;
+}
+
+.form-check.d-flex .form-check-input {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}

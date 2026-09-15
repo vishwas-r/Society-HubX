@@ -180,6 +180,15 @@
 
         const title = document.getElementById('modal-title');
         if (title) title.textContent = 'Add New Resident';
+        const subtitle = document.getElementById('modal-subtitle');
+        if (subtitle) subtitle.textContent = 'Manage ownership profile, allocated units, and access permissions';
+        const submitBtnText = document.getElementById('submit-btn-text');
+        if (submitBtnText) submitBtnText.textContent = 'Save Resident Profile';
+
+        // Clear Enterprise Unit Portfolio
+        if (window.NAMMASOCIETY51_UnitPortfolio && window.NAMMASOCIETY51_UnitPortfolio.admin) {
+            window.NAMMASOCIETY51_UnitPortfolio.admin.clearSelection();
+        }
 
         // Reset Photo Preview
         const preview = document.getElementById('preview-admin');
@@ -206,66 +215,10 @@
             setVal('name', r.name);
             setVal('block', r.block || '');
 
-            // Checkbox flat matching
-            const flatChecks = form.querySelectorAll('input[name="flat_ids[]"]');
-            if (flatChecks.length) {
-                // Clear existing
-                flatChecks.forEach(cb => cb.checked = false);
-                
-                const targetFlats = Array.isArray(r.flat_ids) && r.flat_ids.length ? r.flat_ids : (r.flat_no ? [r.flat_no] : []);
-
-                const normalizeKey = (val, blk) => {
-                    if (!val) return '';
-                    let str = String(val).trim().toLowerCase().replace(/^(flat_|res_|veh_)/i, '');
-                    let b = String(blk || '').trim().toLowerCase().replace(/^block\s*/i, '');
-                    const m = str.match(/^([a-z]+)[-_\s]*(.*)$/i);
-                    if (m && m[2]) {
-                        b = m[1];
-                        str = m[2];
-                    }
-                    const cleanB = b.replace(/[^a-z0-9]/gi, '');
-                    const cleanN = str.replace(/[^a-z0-9]/gi, '');
-                    return cleanB ? cleanB + '_' + cleanN : cleanN;
-                };
-
-                targetFlats.forEach(fid => {
-                    const targetNorm = normalizeKey(fid, r.block);
-                    let matched = false;
-                    flatChecks.forEach(cb => {
-                        if (matched) return;
-                        if (cb.value === String(fid) || cb.dataset.number === String(fid) || cb.dataset.display === String(fid)) {
-                            cb.checked = true;
-                            matched = true;
-                            return;
-                        }
-                        const cbNorm = normalizeKey(cb.value, cb.dataset.block);
-                        if (cbNorm && targetNorm && cbNorm === targetNorm) {
-                            cb.checked = true;
-                            matched = true;
-                            return;
-                        }
-                        if (r.block && cb.dataset.block && cb.dataset.block.toLowerCase().replace(/^block\s*/i, '') === String(r.block).toLowerCase().replace(/^block\s*/i, '') && cb.dataset.number === String(fid)) {
-                            cb.checked = true;
-                            matched = true;
-                        }
-                    });
-                });
-
-                // Update primary dropdown and hidden input by triggering change event on first checkbox
-                const event = new Event('change', { bubbles: true });
-                flatChecks[0].dispatchEvent(event);
-
-                // Set primary flat dropdown selection
-                const primarySelect = form.querySelector('[name="primary_flat_id"]');
-                if (primarySelect && r.flat_no) {
-                    let matchedOpt = Array.from(primarySelect.options).find(opt => opt.value === r.flat_no || opt.textContent.includes(r.flat_no));
-                    if (matchedOpt) {
-                        primarySelect.value = matchedOpt.value;
-                    } else if (primarySelect.options.length) {
-                        primarySelect.selectedIndex = 0;
-                    }
-                    primarySelect.dispatchEvent(event);
-                }
+            // Enterprise Unit Portfolio hydration (handles 1000s of units across 10 towers)
+            const targetFlats = Array.isArray(r.flat_ids) && r.flat_ids.length ? r.flat_ids : (r.flat_no ? [r.flat_no] : []);
+            if (window.NAMMASOCIETY51_UnitPortfolio && window.NAMMASOCIETY51_UnitPortfolio.admin) {
+                window.NAMMASOCIETY51_UnitPortfolio.admin.setSelection(targetFlats, r.flat_no, r.block);
             }
 
             setVal('type', r.type);
@@ -294,7 +247,11 @@
             setVal('resident_id', r.id);
 
             const title = document.getElementById('modal-title');
-            if (title) title.textContent = 'Edit Resident ' + r.name;
+            if (title) title.textContent = 'Edit Resident ' + (r.name || '');
+            const subtitle = document.getElementById('modal-subtitle');
+            if (subtitle) subtitle.textContent = 'Update unit allocations, roles, and resident credentials';
+            const submitBtnText = document.getElementById('submit-btn-text');
+            if (submitBtnText) submitBtnText.textContent = 'Update Resident Profile';
 
             // Set Photo Preview
             const preview = document.getElementById('preview-admin');
