@@ -197,11 +197,12 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                             $status = strtolower($v['status'] ?? 'approved');
                             $is_request = $v['is_request'] ?? false;
                             $v_type = strtolower($v['type'] ?? 'car');
+                            $v_disp_search = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $v['flat_no'], $v['block'] ?? '' );
                         ?>
                         <tr class="vehicle-row border-bottom border-light" 
                             data-status="<?php echo esc_attr($status); ?>" 
                             data-type="<?php echo esc_attr($v_type); ?>"
-                            data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??''))); ?>">
+                            data-search="<?php echo esc_attr(strtolower(($v['number']??'') . ' ' . ($v['owner_name']??'') . ' ' . ($v['flat_no']??'') . ' ' . ($v['block']??'') . ' ' . $v_disp_search)); ?>">
                             <td class="ps-5 py-4">
                                 <input type="checkbox" value="<?php echo esc_attr(!empty($v['request_id']) ? $v['request_id'] : $v['id']); ?>" class="form-check-input nammasociety-bulk-checkbox bg-light border-slate-200 shadow-none">
                             </td>
@@ -235,8 +236,11 @@ $success_msg = isset($_GET['success']) ? 'Vehicle database updated successfully.
                                     </a>
                                 </div>
                                 <div class="text-secondary small" style="font-size: 11px;">
-                                    <a href="#" class="text-secondary text-decoration-none js-view-unit" data-unit-id="<?php echo esc_attr( $v['flat_no'] ); ?>" title="View Unit Details">
-                                        Flat <?php echo esc_html( $v['flat_no'] ); ?>
+                                    <?php 
+                                        $v_disp = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $v['flat_no'], $v['block'] ?? '' );
+                                    ?>
+                                    <a href="#" class="text-secondary text-decoration-none js-view-unit" data-unit-id="<?php echo esc_attr( $v['flat_no'] ); ?>" data-block="<?php echo esc_attr( $v['block'] ?? '' ); ?>" title="View Unit Details">
+                                        <?php echo esc_html( $v_disp ); ?>
                                     </a>
                                 </div>
                             </td>
@@ -307,10 +311,16 @@ add_action('nammasociety51_admin_modals', function() use ($flats) {
                             <label class="form-label small fw-bold text-secondary">Assigned Flat/Unit <span class="text-danger">*</span></label>
                             <select name="flat_no" id="v-flat" class="form-select shadow-none rounded-3 border-light" required>
                                 <option value="">Select Unit...</option>
-                                <?php foreach($flats as $f): ?>
-                                    <option value="<?php echo esc_attr($f['flat_number']); ?>"><?php echo esc_html($f['flat_number']); ?></option>
+                                <?php foreach($flats as $f): 
+                                    $f_id = $f['id'];
+                                    $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                                    $clean_b = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($f['block'] ?? '')));
+                                    $f_label = NAMMASOCIETY51_DB_Router::format_flat_display($clean_b, $f_num);
+                                ?>
+                                    <option value="<?php echo esc_attr($f_id); ?>" data-block="<?php echo esc_attr($clean_b); ?>" data-number="<?php echo esc_attr($f_num); ?>"><?php echo esc_html($f_label); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <input type="hidden" name="block" id="v-block" value="">
                         </div>
                         <div class="col-md-5">
                             <label class="form-label small fw-bold text-secondary">Vehicle Type <span class="text-danger">*</span></label>

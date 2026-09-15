@@ -36,6 +36,7 @@ class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
 		add_action( 'wp_ajax_nammasociety51_edit_invoice', array( $this, 'handle_edit_invoice' ) );
 		add_action( 'wp_ajax_nammasociety51_delete_invoice', array( $this, 'handle_delete_invoice' ) );
 		add_action( 'wp_ajax_nammasociety51_delete_payment', array( $this, 'handle_delete_payment' ) );
+		add_action( 'wp_ajax_nammasociety51_get_tax_invoice', array( $this, 'handle_get_tax_invoice' ) );
 
 		// Register Module
 		add_filter( 'nammasociety51_get_module_accounts', array( $this, 'get_instance' ) );
@@ -269,23 +270,68 @@ class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
                 }
 
                 $new_id = $prefix . str_pad( $next_seq, 3, '0', STR_PAD_LEFT );
+                $base_amount = floatval( $charge['base_maintenance'] ?? $final_amount );
+                $gst_total = floatval( $charge['gst_amount'] ?? 0 );
+                $cgst_amount = $gst_total > 0 ? round( $gst_total / 2, 2 ) : 0.00;
+                $sgst_amount = $gst_total > 0 ? round( $gst_total / 2, 2 ) : 0.00;
+                $utility_amount = floatval( $charge['utility_charge'] ?? 0 );
+
                 $data = array(
-                    'id'            => $new_id,
-                    'block'         => $r['block'] ?? '',
-                    'flat_no'       => $r['flat_no'],
-                    'resident_name' => $r['name'] ?? '',
-                    'month'         => $month,
-                    'amount'        => $final_amount,
-                    'total_paid'    => 0,
-                    'status'        => 'unpaid',
-                    'type'          => $type,
-                    'due_date'      => $due_date,
-                    'description'   => $desc,
-                    'created_at'    => current_time( 'mysql' ),
-                    'payments'      => '[]'
+                    'id'                => $new_id,
+                    'block'             => $r['block'] ?? '',
+                    'flat_no'           => $r['flat_no'],
+                    'resident_name'     => $r['name'] ?? '',
+                    'month'             => $month,
+                    'amount'            => $final_amount,
+                    'base_amount'       => $base_amount,
+                    'cgst_amount'       => $cgst_amount,
+                    'sgst_amount'       => $sgst_amount,
+                    'utility_amount'    => $utility_amount,
+                    'late_fee_amount'   => 0.00,
+                    'formula_breakdown' => wp_json_encode( $charge ),
+                    'total_paid'        => 0,
+                    'status'            => 'unpaid',
+                    'type'              => $type,
+                    'due_date'          => $due_date,
+                    'description'       => $desc,
+                    'created_at'        => current_time( 'mysql' ),
+                    'payments'          => '[]'
                 );
                 
                 $this->db->insert( 'invoices', $data );
+
+                // Automatic Double-Entry Journal Posting (Sales Voucher)
+                $je_items = array(
+                    array(
+                        'account_code' => '1040',
+                        'account_name' => 'Sundry Debtors (Residents)',
+                        'debit'        => $final_amount,
+                        'credit'       => 0.00,
+                    ),
+                    array(
+                        'account_code' => '4010',
+                        'account_name' => 'Maintenance Charges Income',
+                        'debit'        => 0.00,
+                        'credit'       => $base_amount,
+                    ),
+                );
+                if ( $gst_total > 0 ) {
+                    $je_items[] = array(
+                        'account_code' => '2050',
+                        'account_name' => 'GST Output Liability (18%)',
+                        'debit'        => 0.00,
+                        'credit'       => $gst_total,
+                    );
+                }
+                self::record_journal_entry(
+                    'JE-INV-' . $new_id,
+                    current_time( 'Y-m-d' ),
+                    $je_items,
+                    'invoice',
+                    $new_id,
+                    sprintf( 'Maintenance Invoice #%s for Flat %s - %s', $new_id, NAMMASOCIETY51_DB_Router::format_flat_display( $r['block'] ?? '', $r['flat_no'] ), $month )
+                );
+
                 $generated_count++;
                 $next_seq++;
             }
@@ -498,6 +544,34 @@ class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
         } else {
             $invoice['status'] = 'unpaid';
         }
+
+        // Automatic Double-Entry Journal Posting (Receipt Voucher)
+        $is_cash = ( strtolower( $method ) === 'cash' );
+        $debit_acc_code = $is_cash ? '1010' : '1020';
+        $debit_acc_name = $is_cash ? 'Cash in Hand' : 'Bank Operating Account';
+
+        $je_items = array(
+            array(
+                'account_code' => $debit_acc_code,
+                'account_name' => $debit_acc_name,
+                'debit'        => $amount,
+                'credit'       => 0.00,
+            ),
+            array(
+                'account_code' => '1040',
+                'account_name' => 'Sundry Debtors (Residents)',
+                'debit'        => 0.00,
+                'credit'       => $amount,
+            ),
+        );
+        self::record_journal_entry(
+            'JE-PAY-' . $txn_id,
+            $date,
+            $je_items,
+            'payment',
+            $txn_id,
+            sprintf( 'Payment received for Invoice #%s (Flat %s) via %s ref %s', $invoice['id'], NAMMASOCIETY51_DB_Router::format_flat_display( $invoice['block'] ?? '', $invoice['flat_no'] ?? '' ), strtoupper( $method ), $ref )
+        );
     }
 
 	/**
@@ -714,5 +788,147 @@ class NAMMASOCIETY51_Account_Manager implements NAMMASOCIETY51_Module {
 		require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/finance/class-tally-exporter.php';
 		NAMMASOCIETY51_Tally_Exporter::export_xml( $month, $export_type );
 	}
+
+    /**
+     * Record a Double-Entry Journal Voucher ensuring Debit == Credit.
+     *
+     * @param string $entry_number
+     * @param string $date
+     * @param array  $items Array of ['account_code', 'account_name', 'debit', 'credit']
+     * @param string $reference_type
+     * @param string $reference_id
+     * @param string $narration
+     * @return bool|WP_Error
+     */
+    public static function record_journal_entry( $entry_number, $date, $items, $reference_type, $reference_id, $narration ) {
+        global $wpdb;
+        $table = "{$wpdb->prefix}nammasociety51_journal_entries";
+
+        $total_debit = 0;
+        $total_credit = 0;
+        foreach ( $items as $it ) {
+            $total_debit += floatval( $it['debit'] ?? 0 );
+            $total_credit += floatval( $it['credit'] ?? 0 );
+        }
+
+        // Validate double entry equality (allow 0.02 rounding margin)
+        if ( abs( $total_debit - $total_credit ) > 0.02 ) {
+            return new WP_Error( 'unbalanced_entry', sprintf( 'Journal entry %s is not balanced. Debit: %s, Credit: %s', $entry_number, $total_debit, $total_credit ) );
+        }
+
+        foreach ( $items as $it ) {
+            $wpdb->insert(
+                $table,
+                array(
+                    'entry_number'   => $entry_number,
+                    'date'           => $date,
+                    'account_code'   => sanitize_text_field( $it['account_code'] ),
+                    'account_name'   => sanitize_text_field( $it['account_name'] ),
+                    'debit'          => floatval( $it['debit'] ?? 0 ),
+                    'credit'         => floatval( $it['credit'] ?? 0 ),
+                    'reference_type' => sanitize_text_field( $reference_type ),
+                    'reference_id'   => sanitize_text_field( $reference_id ),
+                    'narration'      => sanitize_textarea_field( $narration ),
+                    'created_at'     => current_time( 'mysql' ),
+                )
+            );
+        }
+
+        return true;
+    }
+
+    /**
+     * Generate dynamic UPI payment payload & URI string.
+     *
+     * @param string $invoice_id
+     * @param float  $amount
+     * @param string $flat_no
+     * @return array
+     */
+    public static function generate_upi_payload( $invoice_id, $amount, $flat_no = '' ) {
+        $upi_id = get_option( 'nammasociety51_upi_id', 'treasurer@okaxis' );
+        $payee_name = get_option( 'nammasociety51_upi_name', get_bloginfo( 'name' ) );
+        if ( empty( $upi_id ) ) {
+            $upi_id = 'treasurer@okaxis';
+        }
+        if ( empty( $payee_name ) ) {
+            $payee_name = 'Namma Society';
+        }
+
+        $clean_amount = number_format( floatval( $amount ), 2, '.', '' );
+        $note = sprintf( 'Maint Inv %s Flat %s', $invoice_id, $flat_no );
+        
+        $upi_uri = sprintf(
+            'upi://pay?pa=%s&pn=%s&am=%s&cu=INR&tn=%s',
+            rawurlencode( $upi_id ),
+            rawurlencode( $payee_name ),
+            $clean_amount,
+            rawurlencode( $note )
+        );
+
+        $qr_url = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . rawurlencode( $upi_uri );
+
+        return array(
+            'upi_id'     => $upi_id,
+            'payee_name' => $payee_name,
+            'amount'     => $clean_amount,
+            'note'       => $note,
+            'upi_uri'    => $upi_uri,
+            'qr_url'     => $qr_url,
+        );
+    }
+
+    /**
+     * AJAX handler to fetch full Tax Invoice details including SAC code and UPI payload.
+     */
+    public function handle_get_tax_invoice() {
+        if ( ! check_ajax_referer( 'nammasociety51_account_action', '_wpnonce', false ) && ! check_ajax_referer( 'nammasociety51_nonce', '_wpnonce', false ) ) {
+            wp_send_json_error( array( 'message' => 'Security check failed' ), 403 );
+        }
+
+        $invoice_id = isset( $_GET['invoice_id'] ) ? sanitize_text_field( wp_unslash( $_GET['invoice_id'] ) ) : '';
+        if ( empty( $invoice_id ) ) {
+            wp_send_json_error( array( 'message' => 'Invoice ID required' ), 400 );
+        }
+
+        $invoices = $this->db->get( 'invoices', array( 'where' => array( 'id' => $invoice_id ), 'load_relations' => true ) );
+        if ( empty( $invoices ) ) {
+            wp_send_json_error( array( 'message' => 'Invoice not found' ), 404 );
+        }
+
+        $inv = $invoices[0];
+        $flat_no = $inv['flat_no'] ?? '';
+        $block = $inv['block'] ?? '';
+        $resident_name = $inv['resident_name'] ?? '';
+
+        $base_amount = floatval( $inv['base_amount'] ?? $inv['amount'] );
+        $cgst = floatval( $inv['cgst_amount'] ?? 0 );
+        $sgst = floatval( $inv['sgst_amount'] ?? 0 );
+        $total = floatval( $inv['amount'] );
+        $utility = floatval( $inv['utility_amount'] ?? 0 );
+
+        $upi = self::generate_upi_payload( $inv['id'], $total, NAMMASOCIETY51_DB_Router::format_flat_display( $block, $flat_no ) );
+
+        $society_gstin = get_option( 'nammasociety51_gstin', '29AAAAA0000A1Z5' );
+        $society_pan = get_option( 'nammasociety51_pan', 'AAAAA0000A' );
+        $society_name = get_option( 'nammasociety51_society_name', get_bloginfo( 'name' ) );
+        $society_address = get_option( 'nammasociety51_society_address', 'Bangalore, Karnataka' );
+
+        wp_send_json_success( array(
+            'invoice'         => $inv,
+            'sac_code'        => '999598',
+            'sac_description' => 'Services furnished by other membership organizations (Resident Welfare Association)',
+            'base_amount'     => $base_amount,
+            'cgst'            => $cgst,
+            'sgst'            => $sgst,
+            'utility'         => $utility,
+            'total'           => $total,
+            'society_gstin'   => $society_gstin,
+            'society_pan'     => $society_pan,
+            'society_name'    => $society_name,
+            'society_address' => $society_address,
+            'upi'             => $upi,
+        ) );
+    }
 }
 

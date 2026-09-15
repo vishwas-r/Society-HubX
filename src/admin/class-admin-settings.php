@@ -35,6 +35,13 @@ class NAMMASOCIETY51_Admin_Settings {
 		if ( ! current_user_can( 'manage_options' ) ) return;
 
 		$is_setup = get_option( 'nammasociety51_is_setup_complete' );
+
+		// Auto-complete setup for provisioned Multisite subsites
+		if ( ! $is_setup && is_multisite() && ! is_main_site() ) {
+			update_option( 'nammasociety51_is_setup_complete', 1 );
+			$is_setup = 1;
+		}
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Page query parameter read-only check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
@@ -591,12 +598,18 @@ class NAMMASOCIETY51_Admin_Settings {
 	}
 
 	public function render_setup_page() {
+		if ( is_multisite() && ! is_main_site() ) {
+			update_option( 'nammasociety51_is_setup_complete', 1 );
+			wp_safe_redirect( admin_url( 'admin.php?page=nammasociety51-dashboard' ) );
+			exit;
+		}
 		require_once NAMMASOCIETY51_PLUGIN_DIR . 'admin/class-admin-app.php';
         NAMMASOCIETY51_Admin_App::render_view( 'setup' );
 	}
 
 	public function render_setup_notice() {
 		if ( ! current_user_can( 'manage_options' ) ) return;
+		if ( is_multisite() && is_main_site() ) return;
 		if ( get_option( 'nammasociety51_is_setup_complete' ) ) return;
 
 		// Don't show notice on the setup page itself

@@ -418,12 +418,18 @@ wp_add_inline_script( 'nammasociety51-accounts-js', '
 
         <!-- Navigation Tabs (Integrated) -->
         <div class="px-5 bg-white border-bottom border-light">
-            <ul class="nav nav-tabs border-0 gap-5" id="accountTabs">
+            <ul class="nav nav-tabs border-0 gap-4 gap-md-5" id="accountTabs">
                 <li class="nav-item">
-                    <a href="?page=nammasociety51-accounts&tab=invoices" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices & Maintenance</a>
+                    <a href="?page=nammasociety51-accounts&tab=invoices<?php echo esc_attr( $selected_year ? '&year=' . $selected_year : '' ); ?>" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'invoices' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Invoices &amp; Maintenance</a>
                 </li>
                 <li class="nav-item">
-                    <a href="?page=nammasociety51-accounts&tab=ledger" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
+                    <a href="?page=nammasociety51-accounts&tab=ledger<?php echo esc_attr( $selected_year ? '&year=' . $selected_year : '' ); ?>" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'ledger' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Money Flow Ledger</a>
+                </li>
+                <li class="nav-item">
+                    <a href="?page=nammasociety51-accounts&tab=statements<?php echo esc_attr( $selected_year ? '&year=' . $selected_year : '' ); ?>" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'statements' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Balance Sheet &amp; P&amp;L</a>
+                </li>
+                <li class="nav-item">
+                    <a href="?page=nammasociety51-accounts&tab=coa<?php echo esc_attr( $selected_year ? '&year=' . $selected_year : '' ); ?>" class="nav-link py-3 px-0 border-0 border-bottom border-2 <?php echo $active_tab === 'coa' ? 'active fw-bold text-primary border-primary' : 'text-muted fw-semibold border-transparent hover-text-dark'; ?>" style="background:none;">Chart of Accounts</a>
                 </li>
             </ul>
         </div>
@@ -489,8 +495,13 @@ wp_add_inline_script( 'nammasociety51-accounts-js', '
                                             <div class="small text-secondary fw-bold" style="font-size: 11px;"><?php echo esc_html($inv['resident_name'] ?? 'Unknown'); ?></div>
                                         </td>
                                         <td class="px-4 py-4">
-                                            <div class="text-dark fw-medium"><?php echo esc_html(wp_date('M Y', strtotime($inv['month']))); ?> Maintenance</div>
-                                            <div class="small text-muted text-truncate" style="max-width: 150px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
+                                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                <span class="text-dark fw-medium"><?php echo esc_html(wp_date('M Y', strtotime($inv['month']))); ?> Maintenance</span>
+                                                <?php if ( ! empty($inv['cgst_amount']) && floatval($inv['cgst_amount']) > 0 ) : ?>
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10 px-2 py-0.5 rounded-pill fw-semibold" style="font-size: 8px;">GST 18% (SAC 999598)</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="small text-muted text-truncate" style="max-width: 170px; font-size: 10px;"><?php echo esc_html($inv['description']); ?></div>
                                         </td>
                                         <td class="px-4 py-4 text-end">
                                             <div class="fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt($inv['amount']) ); ?></div>
@@ -528,6 +539,11 @@ wp_add_inline_script( 'nammasociety51-accounts-js', '
                                                  <?php endif; ?>
                                                  
                                                  <div class="d-flex gap-1">
+                                                     <?php if( ($inv['status'] ?? '') !== 'pending_total' ): ?>
+                                                         <button type="button" class="btn btn-sm btn-light border border-light p-2 js-view-tax-invoice rounded-3 shadow-none text-primary" data-id="<?php echo esc_attr($inv['id']); ?>" title="Tax Invoice &amp; Dynamic UPI QR">
+                                                             <i class="bi bi-receipt fs-6"></i>
+                                                         </button>
+                                                     <?php endif; ?>
                                                      <?php if ( $paid == 0 && ($inv['status'] ?? '') !== 'pending_total' ) : ?>
                                                          <button type="button" class="btn btn-sm btn-light border border-light p-2 js-edit-invoice rounded-3 shadow-none" data-invoice="<?php echo esc_attr(wp_json_encode($inv)); ?>" title="Edit">
                                                              <i class="bi bi-pencil-square fs-6 text-muted"></i>
@@ -641,6 +657,277 @@ wp_add_inline_script( 'nammasociety51-accounts-js', '
                         </tbody>
                     </table>
                 </div>
+            <?php elseif ($active_tab === 'statements'): 
+                $pl = $ledger_mgr->get_profit_and_loss( $selected_year );
+                $bs = $ledger_mgr->get_balance_sheet( $selected_year );
+            ?>
+                <!-- FINANCIAL STATEMENTS TAB (BALANCE SHEET & PROFIT & LOSS) -->
+                <div class="p-4 p-md-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h4 class="fw-bold text-dark m-0">Financial Statements &amp; Audit Reports</h4>
+                            <p class="text-secondary small m-0">Statutory Balance Sheet and Income &amp; Expenditure Statement for FY <?php echo esc_html( $selected_year ); ?>.</p>
+                        </div>
+                        <button type="button" onclick="window.print()" class="btn btn-outline-secondary d-flex align-items-center gap-2 fw-semibold rounded-3 shadow-sm">
+                            <i class="bi bi-printer"></i>
+                            <span>Print Statements</span>
+                        </button>
+                    </div>
+
+                    <!-- P&L KPI Cards -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm rounded-3 p-4 bg-white border-start border-5 border-success">
+                                <span class="small fw-bold text-secondary text-uppercase" style="font-size: 11px;">Total Operating Revenue</span>
+                                <h3 class="h2 fw-bold text-dark mt-2 mb-1">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $pl['total_income'] ) ); ?></h3>
+                                <div class="small text-muted">Maintenance Collections &amp; Facilities</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm rounded-3 p-4 bg-white border-start border-5 border-danger">
+                                <span class="small fw-bold text-secondary text-uppercase" style="font-size: 11px;">Total Operating Expenses</span>
+                                <h3 class="h2 fw-bold text-dark mt-2 mb-1">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $pl['total_expense'] ) ); ?></h3>
+                                <div class="small text-muted">Electricity, Water, Staff &amp; AMCs</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm rounded-3 p-4 bg-white border-start border-5 <?php echo $pl['is_surplus'] ? 'border-primary' : 'border-warning'; ?>">
+                                <span class="small fw-bold text-secondary text-uppercase" style="font-size: 11px;">Net Fiscal Position</span>
+                                <h3 class="h2 fw-bold <?php echo $pl['is_surplus'] ? 'text-primary' : 'text-warning'; ?> mt-2 mb-1">
+                                    ₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $pl['net_surplus'] ) ); ?>
+                                </h3>
+                                <div class="small <?php echo $pl['is_surplus'] ? 'text-success' : 'text-danger'; ?> fw-semibold">
+                                    <?php echo $pl['is_surplus'] ? 'Net Operating Surplus' : 'Operating Deficit'; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statement 1: Profit & Loss Statement -->
+                    <div class="card border border-light shadow-sm rounded-3 overflow-hidden mb-5">
+                        <div class="p-4 bg-light bg-opacity-50 border-bottom border-light d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-spreadsheet text-primary fs-5"></i>
+                                <h5 class="fw-bold text-dark m-0">Income &amp; Expenditure Statement (P&amp;L)</h5>
+                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-bold" style="font-size: 10px;">FY <?php echo esc_html( $selected_year ); ?></span>
+                        </div>
+                        <div class="row g-0">
+                            <!-- Incomes Column -->
+                            <div class="col-md-6 border-end border-light">
+                                <div class="p-3 bg-light border-bottom border-light fw-bold text-dark small text-uppercase">Revenue / Inflows</div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <tbody>
+                                            <?php foreach ( $pl['incomes'] as $inc ) : ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <span class="badge bg-light text-secondary font-monospace me-2"><?php echo esc_html( $inc['account_code'] ); ?></span>
+                                                        <span class="fw-medium text-dark"><?php echo esc_html( $inc['account_name'] ); ?></span>
+                                                    </td>
+                                                    <td class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $inc['amount'] ) ); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot class="bg-light bg-opacity-75">
+                                            <tr>
+                                                <th class="ps-4 py-3 fw-bold text-dark">Total Revenue (A)</th>
+                                                <th class="pe-4 py-3 text-end fw-bold text-success">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $pl['total_income'] ) ); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Expenses Column -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light border-bottom border-light fw-bold text-dark small text-uppercase">Operating Expenditure (Outflows)</div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <tbody>
+                                            <?php foreach ( $pl['expenses'] as $exp ) : ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <span class="badge bg-light text-secondary font-monospace me-2"><?php echo esc_html( $exp['account_code'] ); ?></span>
+                                                        <span class="fw-medium text-dark"><?php echo esc_html( $exp['account_name'] ); ?></span>
+                                                    </td>
+                                                    <td class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $exp['amount'] ) ); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot class="bg-light bg-opacity-75">
+                                            <tr>
+                                                <th class="ps-4 py-3 fw-bold text-dark">Total Expenditure (B)</th>
+                                                <th class="pe-4 py-3 text-end fw-bold text-danger">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $pl['total_expense'] ) ); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statement 2: Balance Sheet -->
+                    <div class="card border border-light shadow-sm rounded-3 overflow-hidden">
+                        <div class="p-4 bg-light bg-opacity-50 border-bottom border-light d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-bank text-success fs-5"></i>
+                                <h5 class="fw-bold text-dark m-0">Balance Sheet (Statement of Financial Affairs)</h5>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-1.5 rounded-pill fw-bold" style="font-size: 10px;">
+                                <?php echo $bs['is_balanced'] ? '✓ Balanced (A = L + E)' : 'Unbalanced'; ?>
+                            </span>
+                        </div>
+                        <div class="row g-0">
+                            <!-- Liabilities & Equity -->
+                            <div class="col-md-6 border-end border-light">
+                                <div class="p-3 bg-light border-bottom border-light fw-bold text-dark small text-uppercase">Liabilities &amp; Capital Fund</div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <tbody>
+                                            <tr class="table-light"><td colspan="2" class="ps-4 py-2 fw-bold text-secondary small">Reserves &amp; Capital</td></tr>
+                                            <?php foreach ( $bs['equity'] as $eq ) : ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <span class="badge bg-light text-secondary font-monospace me-2"><?php echo esc_html( $eq['code'] ); ?></span>
+                                                        <span class="fw-medium text-dark"><?php echo esc_html( $eq['name'] ); ?></span>
+                                                    </td>
+                                                    <td class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $eq['amount'] ) ); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                            <tr class="table-light"><td colspan="2" class="ps-4 py-2 fw-bold text-secondary small">Current Liabilities &amp; Provisions</td></tr>
+                                            <?php foreach ( $bs['liabilities'] as $liab ) : ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <span class="badge bg-light text-secondary font-monospace me-2"><?php echo esc_html( $liab['code'] ); ?></span>
+                                                        <span class="fw-medium text-dark"><?php echo esc_html( $liab['name'] ); ?></span>
+                                                    </td>
+                                                    <td class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $liab['amount'] ) ); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot class="bg-light bg-opacity-75">
+                                            <tr>
+                                                <th class="ps-4 py-3 fw-bold text-dark">Total Liabilities &amp; Equity</th>
+                                                <th class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $bs['total_liab_and_equity'] ) ); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- Assets -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light border-bottom border-light fw-bold text-dark small text-uppercase">Assets &amp; Receivables</div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <tbody>
+                                            <tr class="table-light"><td colspan="2" class="ps-4 py-2 fw-bold text-secondary small">Liquid &amp; Fixed Assets</td></tr>
+                                            <?php foreach ( $bs['assets'] as $asset ) : ?>
+                                                <tr>
+                                                    <td class="ps-4 py-3">
+                                                        <span class="badge bg-light text-secondary font-monospace me-2"><?php echo esc_html( $asset['code'] ); ?></span>
+                                                        <span class="fw-medium text-dark"><?php echo esc_html( $asset['name'] ); ?></span>
+                                                    </td>
+                                                    <td class="pe-4 py-3 text-end fw-bold text-dark">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $asset['amount'] ) ); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot class="bg-light bg-opacity-75">
+                                            <tr>
+                                                <th class="ps-4 py-3 fw-bold text-dark">Total Society Assets</th>
+                                                <th class="pe-4 py-3 text-end fw-bold text-success">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $bs['total_assets'] ) ); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <?php elseif ($active_tab === 'coa'): 
+                $coa_list = $ledger_mgr->get_chart_of_accounts();
+                $tb_data = $ledger_mgr->get_trial_balance( $selected_year );
+            ?>
+                <!-- CHART OF ACCOUNTS & TRIAL BALANCE -->
+                <div class="p-4 p-md-5">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                        <div>
+                            <h4 class="fw-bold text-dark m-0">Chart of Accounts &amp; Trial Balance</h4>
+                            <p class="text-secondary small m-0">Double-entry General Ledger structure compliant with ICAI guidelines for Housing Societies.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge <?php echo $tb_data['is_balanced'] ? 'bg-success' : 'bg-danger'; ?> px-3 py-2 rounded-pill fw-bold" style="font-size: 11px;">
+                                <i class="bi <?php echo $tb_data['is_balanced'] ? 'bi-check-circle-fill' : 'bi-exclamation-octagon-fill'; ?> me-1"></i>
+                                <?php echo $tb_data['is_balanced'] ? 'Trial Balance Balanced' : 'Trial Balance Out of Balance'; ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card border border-light shadow-sm rounded-3 overflow-hidden mb-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light border-bottom border-light">
+                                    <tr>
+                                        <th class="ps-5 py-4 text-uppercase small text-secondary fw-bold border-0">Code</th>
+                                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0">Account Head</th>
+                                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0">Type</th>
+                                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0 text-end">Debit (₹)</th>
+                                        <th class="px-4 py-4 text-uppercase small text-secondary fw-bold border-0 text-end">Credit (₹)</th>
+                                        <th class="pe-5 py-4 text-uppercase small text-secondary fw-bold border-0 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if ( empty( $tb_data['accounts'] ) ) : ?>
+                                        <tr><td colspan="6" class="p-5 text-center text-muted">No accounts registered in Chart of Accounts.</td></tr>
+                                    <?php else : ?>
+                                        <?php foreach ( $tb_data['accounts'] as $acc ) : ?>
+                                            <tr>
+                                                <td class="ps-5 py-3">
+                                                    <span class="font-monospace fw-bold text-primary"><?php echo esc_html( $acc['account_code'] ); ?></span>
+                                                </td>
+                                                <td class="px-4 py-3 fw-semibold text-dark">
+                                                    <?php echo esc_html( $acc['account_name'] ); ?>
+                                                </td>
+                                                <td class="px-4 py-3">
+                                                    <?php 
+                                                        $badge_class = 'bg-primary';
+                                                        if ( $acc['account_type'] === 'Income' ) $badge_class = 'bg-success';
+                                                        elseif ( $acc['account_type'] === 'Expense' ) $badge_class = 'bg-danger';
+                                                        elseif ( $acc['account_type'] === 'Liability' ) $badge_class = 'bg-warning text-dark';
+                                                    ?>
+                                                    <span class="badge <?php echo esc_attr( $badge_class ); ?> bg-opacity-10 <?php echo $acc['account_type'] === 'Liability' ? 'text-dark' : 'text-custom-primary'; ?> px-2.5 py-1 rounded-pill fw-semibold" style="font-size: 10px;">
+                                                        <?php echo esc_html( $acc['account_type'] ); ?>
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3 text-end font-monospace fw-semibold text-dark">
+                                                    <?php echo $acc['debit'] > 0 ? '₹' . esc_html( NAMMASOCIETY_in_fmt( $acc['debit'] ) ) : '-'; ?>
+                                                </td>
+                                                <td class="px-4 py-3 text-end font-monospace fw-semibold text-dark">
+                                                    <?php echo $acc['credit'] > 0 ? '₹' . esc_html( NAMMASOCIETY_in_fmt( $acc['credit'] ) ) : '-'; ?>
+                                                </td>
+                                                <td class="pe-5 py-3 text-center">
+                                                    <span class="badge bg-light text-secondary border px-2 py-0.5 rounded-pill" style="font-size: 9px;">System Verified</span>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                                <tfoot class="bg-light border-top border-2">
+                                    <tr>
+                                        <th colspan="3" class="ps-5 py-4 fw-bold text-dark">Total Trial Balance</th>
+                                        <th class="px-4 py-4 text-end fw-bold text-dark font-monospace">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $tb_data['total_debit'] ) ); ?></th>
+                                        <th class="px-4 py-4 text-end fw-bold text-dark font-monospace">₹<?php echo esc_html( NAMMASOCIETY_in_fmt( $tb_data['total_credit'] ) ); ?></th>
+                                        <th class="pe-5 py-4 text-center">
+                                            <span class="badge <?php echo $tb_data['is_balanced'] ? 'bg-success' : 'bg-danger'; ?> rounded-pill">
+                                                <?php echo $tb_data['is_balanced'] ? 'BALANCED' : 'VARIANCE'; ?>
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
     </div>
@@ -719,11 +1006,23 @@ add_action('nammasociety51_admin_modals', function() use ($selected_year, $actua
                         <label class="form-label small fw-bold text-secondary">Description</label>
                         <input type="text" name="description" value="Monthly Maintenance - <?php echo esc_html( wp_date('F Y') ); ?>" class="form-control shadow-none rounded-3 border-light" required>
                     </div>
+
+                    <div class="mb-3 p-3 bg-light rounded-3 border border-light">
+                        <div class="form-check form-switch mb-1">
+                            <input class="form-check-input shadow-none" type="checkbox" id="calcFormulaToggle" name="calc_formula" value="1" <?php checked( get_option( 'nammasociety51_billing_calc_type', 'fixed' ), 'sqft' ); ?> onchange="document.getElementById('fixedAmountWrapper').style.display = this.checked ? 'none' : 'block';">
+                            <label class="form-check-label fw-bold small text-dark" for="calcFormulaToggle">Formula-Based Maintenance (ADDA-Grade)</label>
+                        </div>
+                        <div class="small text-muted" style="font-size: 11px;">
+                            Calculates: <code>(SqFt &times; ₹<?php echo esc_html( get_option('nammasociety51_billing_rate_per_sqft', '3.5') ); ?>) + Base + Sinking + Utilities</code>. 
+                            Auto-applies 18% GST (SAC 999598) for units > ₹7,500/mo.
+                        </div>
+                    </div>
                     
                     <div class="row g-3 mb-3">
-                        <div class="col-6">
-                            <label class="form-label small fw-bold text-secondary">Amount (₹)</label>
-                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('nammasociety51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light" required>
+                        <div class="col-6" id="fixedAmountWrapper" style="<?php echo get_option( 'nammasociety51_billing_calc_type', 'fixed' ) === 'sqft' ? 'display:none;' : ''; ?>">
+                            <label class="form-label small fw-bold text-secondary">Fixed Flat Amount (₹)</label>
+                            <input type="number" name="amount" value="<?php echo esc_attr(get_option('nammasociety51_maintenance_amount', '5000')); ?>" class="form-control shadow-none rounded-3 border-light">
+                            <div class="form-text small" style="font-size: 10px;">Used if formula billing is unchecked.</div>
                         </div>
                         <div class="col-6">
                             <label class="form-label small fw-bold text-secondary">Due Date</label>
@@ -737,9 +1036,44 @@ add_action('nammasociety51_admin_modals', function() use ($selected_year, $actua
                 </div>
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">
                     <button type="button" class="btn btn-light text-secondary px-4 fw-medium shadow-none rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3">Generate</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3">Generate Invoices</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Statutory Tax Invoice & Dynamic UPI QR -->
+<div class="modal fade" id="taxInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom p-4 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2 bg-primary bg-opacity-10 text-primary rounded-3">
+                        <i class="bi bi-receipt-cutoff fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark m-0">Statutory Tax Invoice</h5>
+                        <p class="small text-muted m-0">SAC 999598 &bull; CGST (9%) + SGST (9%) &bull; Dynamic UPI Instant Settlement</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 p-md-5" id="tax-invoice-printable-area">
+                <div id="tax-invoice-container">
+                    <div class="text-center py-5 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary mb-2"></div>
+                        <p class="small m-0">Loading Tax Invoice details...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top p-4 d-flex justify-content-between">
+                <button type="button" class="btn btn-light px-4 fw-medium shadow-none rounded-3 border" data-bs-dismiss="modal">Close</button>
+                <button type="button" onclick="printTaxInvoiceModal()" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-printer"></i>
+                    <span>Print Tax Invoice</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>

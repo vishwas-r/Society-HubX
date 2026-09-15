@@ -100,11 +100,32 @@ class NAMMASOCIETY51_Tally_Exporter {
 			$xml[] = '        </TALLYMESSAGE>';
 		}
 
-		// 2. Master Ledgers: General Incomes and Bank
+		// 2. Master Ledgers: General Incomes, GST Heads, and Bank
 		$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
 		$xml[] = '          <LEDGER NAME="Society Maintenance Charges" ACTION="Create">';
 		$xml[] = '            <NAME>Society Maintenance Charges</NAME>';
 		$xml[] = '            <PARENT>Direct Incomes</PARENT>';
+		$xml[] = '            <HSNCODE>999598</HSNCODE>';
+		$xml[] = '          </LEDGER>';
+		$xml[] = '        </TALLYMESSAGE>';
+
+		$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
+		$xml[] = '          <LEDGER NAME="CGST Output (9%)" ACTION="Create">';
+		$xml[] = '            <NAME>CGST Output (9%)</NAME>';
+		$xml[] = '            <PARENT>Duties &amp; Taxes</PARENT>';
+		$xml[] = '            <TAXTYPE>GST</TAXTYPE>';
+		$xml[] = '            <GSTDUTYHEAD>Central Tax</GSTDUTYHEAD>';
+		$xml[] = '            <RATEOFTAXCALCULATION>9</RATEOFTAXCALCULATION>';
+		$xml[] = '          </LEDGER>';
+		$xml[] = '        </TALLYMESSAGE>';
+
+		$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
+		$xml[] = '          <LEDGER NAME="SGST Output (9%)" ACTION="Create">';
+		$xml[] = '            <NAME>SGST Output (9%)</NAME>';
+		$xml[] = '            <PARENT>Duties &amp; Taxes</PARENT>';
+		$xml[] = '            <TAXTYPE>GST</TAXTYPE>';
+		$xml[] = '            <GSTDUTYHEAD>State Tax</GSTDUTYHEAD>';
+		$xml[] = '            <RATEOFTAXCALCULATION>9</RATEOFTAXCALCULATION>';
 		$xml[] = '          </LEDGER>';
 		$xml[] = '        </TALLYMESSAGE>';
 
@@ -115,15 +136,25 @@ class NAMMASOCIETY51_Tally_Exporter {
 		$xml[] = '          </LEDGER>';
 		$xml[] = '        </TALLYMESSAGE>';
 
-		// 3. Vouchers: Invoices (Sales Vouchers)
+		$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
+		$xml[] = '          <LEDGER NAME="Cash" ACTION="Create">';
+		$xml[] = '            <NAME>Cash</NAME>';
+		$xml[] = '            <PARENT>Cash-in-Hand</PARENT>';
+		$xml[] = '          </LEDGER>';
+		$xml[] = '        </TALLYMESSAGE>';
+
+		// 3. Vouchers: Invoices (Sales Vouchers with Statutory GST Breakdown)
 		if ( $export_type === 'all' || $export_type === 'invoices' ) {
 			foreach ( $invoices as $inv ) {
 				$inv_id = $inv['id'] ?? uniqid( 'inv_' );
 				$flat_no = $inv['flat_no'] ?? '';
 				$debtor_name = $debtor_ledgers[ $flat_no ] ?? ( 'Flat ' . $flat_no );
-				$amount = floatval( $inv['amount'] ?? 0 );
+				$total_amount = floatval( $inv['amount'] ?? 0 );
+				$base_amount = floatval( $inv['base_amount'] ?? $total_amount );
+				$cgst_amount = floatval( $inv['cgst_amount'] ?? 0 );
+				$sgst_amount = floatval( $inv['sgst_amount'] ?? 0 );
 				$date_str = ! empty( $inv['created_at'] ) ? date( 'Ymd', strtotime( $inv['created_at'] ) ) : date( 'Ymd' );
-				$narration = $inv['description'] ?? ( 'Maintenance invoice ' . $inv_id );
+				$narration = $inv['description'] ?? ( 'Maintenance invoice ' . $inv_id . ' SAC: 999598' );
 
 				$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
 				$xml[] = '          <VOUCHER VCHTYPE="Sales" ACTION="Create">';
@@ -134,13 +165,29 @@ class NAMMASOCIETY51_Tally_Exporter {
 				$xml[] = '            <ALLLEDGERENTRIES.LIST>';
 				$xml[] = '              <LEDGERNAME>' . esc_html( $debtor_name ) . '</LEDGERNAME>';
 				$xml[] = '              <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>';
-				$xml[] = '              <AMOUNT>-' . number_format( $amount, 2, '.', '' ) . '</AMOUNT>';
+				$xml[] = '              <AMOUNT>-' . number_format( $total_amount, 2, '.', '' ) . '</AMOUNT>';
 				$xml[] = '            </ALLLEDGERENTRIES.LIST>';
 				$xml[] = '            <ALLLEDGERENTRIES.LIST>';
 				$xml[] = '              <LEDGERNAME>Society Maintenance Charges</LEDGERNAME>';
 				$xml[] = '              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>';
-				$xml[] = '              <AMOUNT>' . number_format( $amount, 2, '.', '' ) . '</AMOUNT>';
+				$xml[] = '              <AMOUNT>' . number_format( $base_amount, 2, '.', '' ) . '</AMOUNT>';
 				$xml[] = '            </ALLLEDGERENTRIES.LIST>';
+
+				if ( $cgst_amount > 0 ) {
+					$xml[] = '            <ALLLEDGERENTRIES.LIST>';
+					$xml[] = '              <LEDGERNAME>CGST Output (9%)</LEDGERNAME>';
+					$xml[] = '              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>';
+					$xml[] = '              <AMOUNT>' . number_format( $cgst_amount, 2, '.', '' ) . '</AMOUNT>';
+					$xml[] = '            </ALLLEDGERENTRIES.LIST>';
+				}
+				if ( $sgst_amount > 0 ) {
+					$xml[] = '            <ALLLEDGERENTRIES.LIST>';
+					$xml[] = '              <LEDGERNAME>SGST Output (9%)</LEDGERNAME>';
+					$xml[] = '              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>';
+					$xml[] = '              <AMOUNT>' . number_format( $sgst_amount, 2, '.', '' ) . '</AMOUNT>';
+					$xml[] = '            </ALLLEDGERENTRIES.LIST>';
+				}
+
 				$xml[] = '          </VOUCHER>';
 				$xml[] = '        </TALLYMESSAGE>';
 			}
@@ -181,6 +228,49 @@ class NAMMASOCIETY51_Tally_Exporter {
 				$xml[] = '            </ALLLEDGERENTRIES.LIST>';
 				$xml[] = '            <ALLLEDGERENTRIES.LIST>';
 				$xml[] = '              <LEDGERNAME>' . esc_html( $debtor_name ) . '</LEDGERNAME>';
+				$xml[] = '              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>';
+				$xml[] = '              <AMOUNT>' . number_format( $amount, 2, '.', '' ) . '</AMOUNT>';
+				$xml[] = '            </ALLLEDGERENTRIES.LIST>';
+				$xml[] = '          </VOUCHER>';
+				$xml[] = '        </TALLYMESSAGE>';
+			}
+		}
+
+		// 5. Vouchers: Approved Expenses (Payment Vouchers)
+		if ( $export_type === 'all' || $export_type === 'expenses' ) {
+			$expenses = $db->get( 'expenses' );
+			if ( ! empty( $month ) ) {
+				$expenses = array_filter( $expenses, function( $ex ) use ( $month ) {
+					return isset( $ex['date'] ) && strpos( $ex['date'], $month ) === 0;
+				} );
+			}
+
+			foreach ( $expenses as $ex ) {
+				if ( ( $ex['status'] ?? '' ) !== 'approved' ) {
+					continue;
+				}
+
+				$exp_id = $ex['id'] ?? uniqid( 'exp_' );
+				$amount = floatval( $ex['amount'] ?? 0 );
+				$category = ucwords( str_replace( '_', ' ', $ex['category'] ?? 'Repairs' ) );
+				$method = strtolower( $ex['account_type'] ?? 'bank' );
+				$target_source = ( $method === 'cash' ) ? 'Cash' : $bank_name;
+				$date_str = ! empty( $ex['date'] ) ? date( 'Ymd', strtotime( $ex['date'] ) ) : date( 'Ymd' );
+				$narration = sprintf( 'Expense: %s - Payee: %s', $ex['description'] ?? '', $ex['payee'] ?? 'Vendor' );
+
+				$xml[] = '        <TALLYMESSAGE xmlns:UDF="TallyUDF">';
+				$xml[] = '          <VOUCHER VCHTYPE="Payment" ACTION="Create">';
+				$xml[] = '            <DATE>' . esc_html( $date_str ) . '</DATE>';
+				$xml[] = '            <VOUCHERTYPENAME>Payment</VOUCHERTYPENAME>';
+				$xml[] = '            <VOUCHERNUMBER>' . esc_html( $exp_id ) . '</VOUCHERNUMBER>';
+				$xml[] = '            <NARRATION>' . esc_html( $narration ) . '</NARRATION>';
+				$xml[] = '            <ALLLEDGERENTRIES.LIST>';
+				$xml[] = '              <LEDGERNAME>' . esc_html( $category ) . '</LEDGERNAME>';
+				$xml[] = '              <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>';
+				$xml[] = '              <AMOUNT>-' . number_format( $amount, 2, '.', '' ) . '</AMOUNT>';
+				$xml[] = '            </ALLLEDGERENTRIES.LIST>';
+				$xml[] = '            <ALLLEDGERENTRIES.LIST>';
+				$xml[] = '              <LEDGERNAME>' . esc_html( $target_source ) . '</LEDGERNAME>';
 				$xml[] = '              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>';
 				$xml[] = '              <AMOUNT>' . number_format( $amount, 2, '.', '' ) . '</AMOUNT>';
 				$xml[] = '            </ALLLEDGERENTRIES.LIST>';

@@ -573,10 +573,16 @@ class NAMMASOCIETY51_DB_Router {
 
 		if ( $flat ) {
 			$ids[] = $flat['id'];
-			if ( ! empty( $flat['flat_number'] ) ) {
-				$ids[] = $flat['flat_number'];
-				if ( ! empty( $flat['block'] ) ) {
-					$ids[] = $flat['block'] . '-' . $flat['flat_number'];
+			$b = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $flat['block'] ?? '' ) ) );
+			$n = trim( (string)( $flat['flat_number'] ?? '' ) );
+			if ( ! empty( $n ) ) {
+				$ids[] = $n;
+				if ( ! empty( $b ) ) {
+					$ids[] = $b . '-' . $n;
+					$ids[] = $b . ' - ' . $n;
+					$ids[] = $b . '_' . $n;
+					$ids[] = $b . $n;
+					$ids[] = 'Block ' . $b . ' - ' . $n;
 				}
 			}
 		}
@@ -585,23 +591,105 @@ class NAMMASOCIETY51_DB_Router {
 	}
 
 	/**
-	 * Get a formatted flat name (e.g. A-101) by Flat ID.
+	 * Format flat display uniformly as [Block] - [Number] (e.g. A - 101).
+	 *
+	 * @param string $block Block/Tower identifier.
+	 * @param string $flat_number Flat/Unit number.
+	 * @return string Formatted display string.
 	 */
-	public function get_flat_display_name( $flat_id ) {
-		if ( empty( $flat_id ) ) return 'N/A';
-		
+	public static function format_flat_display( $block, $flat_number ) {
+		$clean_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string) $block ) );
+		$clean_flat  = trim( (string) $flat_number );
+		if ( ! empty( $clean_block ) && ! empty( $clean_flat ) ) {
+			return $clean_block . ' - ' . $clean_flat;
+		}
+		return ! empty( $clean_flat ) ? $clean_flat : ( ! empty( $clean_block ) ? $clean_block : 'N/A' );
+	}
+
+	/**
+	 * Get a formatted flat display name (e.g. A - 101) by Flat ID and optional Block.
+	 *
+	 * @param string $flat_id Flat ID or number (e.g., 'A-101', 'A - 101', '101').
+	 * @param string $fallback_block Optional fallback block/tower name.
+	 * @return string Formatted display name.
+	 */
+	public function get_flat_display_name( $flat_id, $fallback_block = '' ) {
+		if ( empty( $flat_id ) ) {
+			return 'N/A';
+		}
+
+		$flat_id = trim( (string) $flat_id );
+		$flat_id = preg_replace( '/^(flat_|res_|veh_)/i', '', $flat_id );
+		$flat_id = preg_replace( '/(_car|_bike\d*)$/i', '', $flat_id );
+
+		// 1. Check direct match in flats table by ID
 		$flats = $this->get( 'flats', array( 'where' => array( 'id' => $flat_id ) ) );
 		if ( ! empty( $flats ) ) {
 			$f = $flats[0];
-			$block = ! empty( $f['block'] ) ? $f['block'] : '';
-			$num = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
-			
-			if ( ! empty( $block ) ) {
-				return $block . '-' . $num;
-			}
-			return $num;
+			$block = ! empty( $f['block'] ) ? $f['block'] : $fallback_block;
+			$num   = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
+			return self::format_flat_display( $block, $num );
 		}
-		
+
+		// 2. Try parsing hyphen or underscore or space (e.g. "A - 101", "A-101", "A_101", "Block A - 101")
+		$parsed_block = '';
+		$parsed_num   = '';
+		if ( preg_match( '/^(?:block[\s_-]*)?([a-z0-9]+)[\s_-]+(.*)$/i', $flat_id, $m ) ) {
+			$parsed_block = $m[1];
+			$parsed_num   = $m[2];
+		} elseif ( preg_match( '/^([a-z]+)(\d+)$/i', $flat_id, $m ) ) {
+			// E.g. A101
+			$parsed_block = $m[1];
+			$parsed_num   = $m[2];
+		}
+
+		if ( ! empty( $parsed_block ) && ! empty( $parsed_num ) ) {
+			// Check DB with parsed values
+			// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); values prepared.
+			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE (block = %s OR block = %s) AND flat_number = %s",
+				$parsed_block,
+				'Block ' . $parsed_block,
+				$parsed_num
+			), ARRAY_A );
+			// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
+			if ( $flat ) {
+				$block = ! empty( $flat['block'] ) ? $flat['block'] : $parsed_block;
+				$num   = ! empty( $flat['flat_number'] ) ? $flat['flat_number'] : $parsed_num;
+				return self::format_flat_display( $block, $num );
+			}
+			return self::format_flat_display( $parsed_block, $parsed_num );
+		}
+
+		// 3. Try matching flat_number with fallback block
+		if ( ! empty( $fallback_block ) ) {
+			// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); values prepared.
+			$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+				"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE (block = %s OR block = %s) AND flat_number = %s",
+				$fallback_block,
+				'Block ' . $fallback_block,
+				$flat_id
+			), ARRAY_A );
+			// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
+			if ( $flat ) {
+				$block = ! empty( $flat['block'] ) ? $flat['block'] : $fallback_block;
+				$num   = ! empty( $flat['flat_number'] ) ? $flat['flat_number'] : $flat_id;
+				return self::format_flat_display( $block, $num );
+			}
+			return self::format_flat_display( $fallback_block, $flat_id );
+		}
+
+		// 4. Try matching flat_number alone
+		// phpcs:disable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table name from get_table_name(); value prepared.
+		$flat = $this->wpdb->get_row( $this->wpdb->prepare(
+			"SELECT * FROM " . $this->get_table_name( 'flats' ) . " WHERE flat_number = %s",
+			$flat_id
+		), ARRAY_A );
+		// phpcs:enable WordPress.DB.PreparedSQL, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		if ( $flat && ! empty( $flat['block'] ) ) {
+			return self::format_flat_display( $flat['block'], $flat['flat_number'] );
+		}
+
 		return $flat_id;
 	}
 }

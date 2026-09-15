@@ -51,6 +51,7 @@ $nav_items_raw = [
     'rules'        => ['Rules & Regulations', admin_url('admin.php?page=nammasociety51-rules'), 'bi-book', 'rules_manage'],
     'vehicles'     => ['Vehicles', admin_url('admin.php?page=nammasociety51-vehicles'), 'bi-car-front', 'residents_view'],
     'staff'        => ['Staff & Help', admin_url('admin.php?page=nammasociety51-staff'), 'bi-shield-shaded', 'staff_manage'],
+    'helpdesk'     => ['Helpdesk & Tickets', admin_url('admin.php?page=nammasociety51-helpdesk'), 'bi-headset', 'helpdesk_view'],
     'documents'    => ['Documents', admin_url('admin.php?page=nammasociety51-documents'), 'bi-file-earmark-text', 'residents_view'],
     'accounts'     => ['Accounts', admin_url('admin.php?page=nammasociety51-accounts'), 'bi-wallet2', 'finance_view'],
     'expenses'     => ['Expenses', admin_url('admin.php?page=nammasociety51-expenses'), 'bi-cart-dash', 'finance_manage'],

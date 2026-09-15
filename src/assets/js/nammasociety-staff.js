@@ -186,8 +186,18 @@
             }
         }
 
-        const served_flats = staff.flats_served ? (Array.isArray(staff.flats_served) ? staff.flats_served : JSON.parse(staff.flats_served)) : [];
-        $form.find('[name="flats_served[]"]').val(served_flats);
+        const served_flats = staff.flats_served ? (Array.isArray(staff.flats_served) ? staff.flats_served : (function() { try { return JSON.parse(staff.flats_served); } catch(e) { return [staff.flats_served]; } })()) : [];
+        const flatSelect = $form.find('[name="flats_served[]"]');
+        flatSelect.val(served_flats);
+        if ((!flatSelect.val() || flatSelect.val().length === 0) && served_flats.length) {
+            flatSelect.find('option').each(function() {
+                const optVal = $(this).val();
+                const optNum = String($(this).data('number') || '');
+                if (served_flats.includes(optVal) || served_flats.includes(optNum)) {
+                    $(this).prop('selected', true);
+                }
+            });
+        }
 
         $form.find('[name="category"]').val(staff.category || 'Support Staff');
         $form.find('[name="staff_id"]').val(staff.id);
@@ -379,8 +389,103 @@
                     });
                 });
             }
+
+            // Gate Check-in/Check-out Toggle
+            $(document).on('click', '.js-gate-toggle', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) window.gateToggleStaff(id, this);
+            });
+
+            // Star Rating Modal Trigger
+            $(document).on('click', '.js-rate-staff', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const rating = $(this).data('rating');
+                if (id) window.openRateStaffModal(id, name, rating);
+            });
+
+            // Star Selection in Modal
+            $(document).on('click', '#rate-star-selector .js-star', function () {
+                const val = $(this).data('val');
+                setStarRating(val);
+            });
+
+            // Submit Rating Form
+            const $rateForm = $('#rate-staff-form');
+            if ($rateForm.length) {
+                $rateForm.on('submit', function (e) {
+                    e.preventDefault();
+                    const formData = new FormData($rateForm[0]);
+                    NAMMASOCIETY.ajax({
+                        action: 'nammasociety51_rate_staff',
+                        data: formData,
+                        loadingButton: $rateForm.find('button[type="submit"]'),
+                        successMessage: 'Staff rating recorded successfully',
+                        reload: true
+                    });
+                });
+            }
         });
     });
+
+    window.gateToggleStaff = function (id, btn) {
+        const $btn = $(btn);
+        const origHtml = $btn.html();
+        $btn.html('<span class="spinner-border spinner-border-sm" role="status"></span>').prop('disabled', true);
+
+        NAMMASOCIETY.ajax({
+            action: 'nammasociety51_gate_toggle_staff',
+            data: {
+                staff_id: id,
+                _wpnonce: Config.nonce || (document.getElementById('nammasociety51_staff_nonce') ? document.getElementById('nammasociety51_staff_nonce').value : '')
+            },
+            showOverlay: false,
+            successMessage: 'Gate status updated',
+            onSuccess: function (res) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 400);
+            },
+            onError: function () {
+                $btn.html(origHtml).prop('disabled', false);
+            }
+        });
+    };
+
+    window.openRateStaffModal = function (id, name, currentRating) {
+        const modalEl = document.getElementById('rateStaffModal');
+        if (!modalEl) return;
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        document.getElementById('rate-staff-id').value = id;
+        document.getElementById('rate-staff-name').textContent = name || 'Staff Member';
+        setStarRating(5);
+        modal.show();
+    };
+
+    function setStarRating(val) {
+        val = parseInt(val, 10) || 5;
+        document.getElementById('rate-staff-value').value = val;
+        const labels = {
+            1: '1 Star - Poor',
+            2: '2 Stars - Fair',
+            3: '3 Stars - Average',
+            4: '4 Stars - Good',
+            5: '5 Stars - Excellent'
+        };
+        const labelEl = document.getElementById('rate-star-label');
+        if (labelEl) labelEl.textContent = labels[val] || (val + ' Stars');
+
+        $('#rate-star-selector .js-star').each(function () {
+            const starVal = parseInt($(this).data('val'), 10);
+            if (starVal <= val) {
+                $(this).removeClass('bi-star').addClass('bi-star-fill');
+            } else {
+                $(this).removeClass('bi-star-fill').addClass('bi-star');
+            }
+        });
+    }
     
     // --- Attendance Report Generation ---
     window.fetchAttendanceReport = function() {

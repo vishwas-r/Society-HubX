@@ -103,7 +103,7 @@ class NAMMASOCIETY51_Ledger_Manager {
 								'bank_balance' => 0,
 								'cash_balance' => 0,
 								'ref_id'      => isset($pay['id']) ? strtoupper($pay['id']) : 'PAY-' . ($inv['block'] ?? '') . '-' . $inv['flat_no'],
-								'entity'      => 'Flat ' . ($inv['block'] ? $inv['block'] . '-' : '') . $inv['flat_no'],
+								'entity'      => 'Flat ' . NAMMASOCIETY51_DB_Router::format_flat_display( $inv['block'] ?? '', $inv['flat_no'] ),
 								'account_type'=> $pay['account_type'] ?? ( (strtolower($pay['method'] ?? '') === 'cash') ? 'cash' : 'bank' )
 							);
 							$entries_added = true;
@@ -128,7 +128,7 @@ class NAMMASOCIETY51_Ledger_Manager {
 							'bank_balance' => 0,
 							'cash_balance' => 0,
 							'ref_id'      => !empty($inv['payment_ref']) ? $inv['payment_ref'] : 'PAY-' . ($inv['block'] ?? '') . '-' . $inv['flat_no'],
-							'entity'      => 'Flat ' . ($inv['block'] ? $inv['block'] . '-' : '') . $inv['flat_no'],
+							'entity'      => 'Flat ' . NAMMASOCIETY51_DB_Router::format_flat_display( $inv['block'] ?? '', $inv['flat_no'] ),
 							'account_type'=> 'bank' // Default to bank for imported bulk data
 						);
 					}
@@ -156,7 +156,7 @@ class NAMMASOCIETY51_Ledger_Manager {
 							'bank_balance' => 0,
 							'cash_balance' => 0,
 							'ref_id'      => ($is_pending ? 'PENDING-' : 'APR-') . substr($req['id'], -4),
-							'entity'      => 'Flat ' . ($p_payload['block'] ? $p_payload['block'] . '-' : '') . ($p_payload['flat_no'] ?? 'Unknown'),
+							'entity'      => 'Flat ' . NAMMASOCIETY51_DB_Router::format_flat_display( $p_payload['block'] ?? '', $p_payload['flat_no'] ?? 'Unknown' ),
 							'account_type'=> $p_payload['account_type'] ?? ( (strtolower($p_payload['method'] ?? '') === 'cash') ? 'cash' : 'bank' ),
 							'is_pending'  => $is_pending
 						);
@@ -243,11 +243,11 @@ class NAMMASOCIETY51_Ledger_Manager {
         $flats = [];
         $seen = [];
         foreach($all_flats as $f) {
-            $b = trim(strtoupper($f['block'] ?? ''));
-            $n = trim(strtoupper($f['flat_number'] ?? ($f['id'] ?? '')));
+            $b = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($f['block'] ?? '')));
+            $n = trim((string)($f['flat_number'] ?? ($f['id'] ?? '')));
             if (!$n) continue;
             
-            $key = $b . '-' . $n;
+            $key = strtoupper($b . '-' . $n);
             if (!isset($seen[$key])) {
                 $flats[] = [
                     'id'          => $f['id'],
@@ -271,10 +271,13 @@ class NAMMASOCIETY51_Ledger_Manager {
             $has_previous_unpaid = false;
 
             // Sort all invoices by month to detect previous ones
-            $flat_invoices = array_filter($invoices, function($inv) use ($flat_id, $block) {
-                return (string)($inv['flat_no'] ?? '') === (string)$flat_id 
-                    && (string)($inv['block'] ?? '') === (string)$block
-                    && ($inv['type'] ?? '') === 'maintenance';
+            $flat_invoices = array_filter($invoices, function($inv) use ($flat_id, $f, $block) {
+                $i_flat = (string)($inv['flat_no'] ?? '');
+                $i_block = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($inv['block'] ?? '')));
+                $clean_b = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)$block));
+                $matches_flat = ($i_flat === (string)$flat_id || $i_flat === (string)$f['id']);
+                $matches_block = (empty($clean_b) || empty($i_block) || strcasecmp($clean_b, $i_block) === 0);
+                return $matches_flat && $matches_block && ($inv['type'] ?? '') === 'maintenance';
             });
             
             usort($flat_invoices, function($a, $b) { return strcmp($a['month'], $b['month']); });
@@ -338,6 +341,326 @@ class NAMMASOCIETY51_Ledger_Manager {
         });
         
         return $summary;
+    }
+
+    /**
+     * Get Master Chart of Accounts.
+     */
+    public function get_chart_of_accounts() {
+        global $wpdb;
+        $table = "{$wpdb->prefix}nammasociety51_chart_of_accounts";
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $rows = $wpdb->get_results( "SELECT * FROM {$table} ORDER BY account_code ASC", ARRAY_A );
+        return $rows ?: array();
+    }
+
+    /**
+     * Get Journal Entries / Vouchers.
+     *
+     * @param string|null $year
+     * @param string|null $account_code
+     * @return array
+     */
+    public function get_journal_entries( $year = null, $account_code = null ) {
+        global $wpdb;
+        $table = "{$wpdb->prefix}nammasociety51_journal_entries";
+
+        $where = array( '1=1' );
+        $params = array();
+
+        if ( ! empty( $year ) ) {
+            $where[] = 'YEAR(date) = %d';
+            $params[] = intval( $year );
+        }
+
+        if ( ! empty( $account_code ) ) {
+            $where[] = 'account_code = %s';
+            $params[] = sanitize_text_field( $account_code );
+        }
+
+        $where_sql = implode( ' AND ', $where );
+        $query = "SELECT * FROM {$table} WHERE {$where_sql} ORDER BY date DESC, id DESC";
+
+        if ( ! empty( $params ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $query = $wpdb->prepare( $query, $params );
+        }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $rows = $wpdb->get_results( $query, ARRAY_A );
+        return $rows ?: array();
+    }
+
+    /**
+     * Generate Trial Balance.
+     *
+     * @param string|null $year
+     * @return array
+     */
+    public function get_trial_balance( $year = null ) {
+        if ( ! $year ) {
+            $year = wp_date( 'Y' );
+        }
+
+        global $wpdb;
+        $coa = $this->get_chart_of_accounts();
+        $je_table = "{$wpdb->prefix}nammasociety51_journal_entries";
+
+        $accounts_tb = array();
+        $total_debit = 0.00;
+        $total_credit = 0.00;
+
+        foreach ( $coa as $acc ) {
+            $code = $acc['account_code'];
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            $totals = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT SUM(debit) as debits, SUM(credit) as credits FROM {$je_table} WHERE account_code = %s AND YEAR(date) = %d",
+                    $code,
+                    $year
+                ),
+                ARRAY_A
+            );
+
+            $debits = floatval( $totals['debits'] ?? 0 );
+            $credits = floatval( $totals['credits'] ?? 0 );
+
+            // If account has no journal entries yet, compute sensible defaults from live subsystem tables
+            if ( $debits == 0 && $credits == 0 ) {
+                if ( $code === '1010' ) {
+                    $debits = floatval( get_option( 'nammasociety51_opening_cash_' . $year, 0 ) );
+                } elseif ( $code === '1020' ) {
+                    $debits = floatval( get_option( 'nammasociety51_opening_bank_' . $year, 0 ) );
+                } elseif ( $code === '1040' ) {
+                    // Sundry Debtors: Unpaid invoice amounts
+                    $invoices = $this->db->get( 'invoices' );
+                    $unpaid = 0;
+                    foreach ( $invoices as $inv ) {
+                        if ( wp_date( 'Y', strtotime( $inv['month'] ?? '' ) ) == $year && ( $inv['status'] ?? '' ) !== 'paid' ) {
+                            $unpaid += floatval( $inv['amount'] ?? 0 ) - floatval( $inv['total_paid'] ?? 0 );
+                        }
+                    }
+                    $debits = max( 0, $unpaid );
+                } elseif ( $code === '4010' ) {
+                    // Total Maintenance Demanded
+                    $invoices = $this->db->get( 'invoices' );
+                    $income = 0;
+                    foreach ( $invoices as $inv ) {
+                        if ( wp_date( 'Y', strtotime( $inv['month'] ?? '' ) ) == $year ) {
+                            $income += floatval( $inv['base_amount'] ?? $inv['amount'] );
+                        }
+                    }
+                    $credits = $income;
+                }
+            }
+
+            $accounts_tb[] = array(
+                'account_code' => $code,
+                'account_name' => $acc['account_name'],
+                'account_type' => $acc['account_type'],
+                'debit'        => $debits,
+                'credit'       => $credits,
+            );
+
+            $total_debit += $debits;
+            $total_credit += $credits;
+        }
+
+        return array(
+            'year'         => $year,
+            'accounts'     => $accounts_tb,
+            'total_debit'  => round( $total_debit, 2 ),
+            'total_credit' => round( $total_credit, 2 ),
+            'is_balanced'  => ( abs( $total_debit - $total_credit ) < 0.05 ),
+        );
+    }
+
+    /**
+     * Generate Profit & Loss Statement (Income & Expenditure).
+     *
+     * @param string|null $year
+     * @return array
+     */
+    public function get_profit_and_loss( $year = null ) {
+        if ( ! $year ) {
+            $year = wp_date( 'Y' );
+        }
+
+        global $wpdb;
+        $coa = $this->get_chart_of_accounts();
+        $je_table = "{$wpdb->prefix}nammasociety51_journal_entries";
+
+        $incomes = array();
+        $expenses = array();
+        $total_income = 0.00;
+        $total_expense = 0.00;
+
+        // Fallback approved expenses for categories
+        $all_expenses = $this->db->get( 'expenses' );
+        $cat_expenses = array();
+        foreach ( $all_expenses as $ex ) {
+            if ( ( $ex['status'] ?? '' ) === 'approved' && wp_date( 'Y', strtotime( $ex['date'] ?? '' ) ) == $year ) {
+                $c = strtolower( trim( $ex['category'] ?? 'repairs' ) );
+                $cat_expenses[ $c ] = ( $cat_expenses[ $c ] ?? 0 ) + floatval( $ex['amount'] );
+            }
+        }
+
+        foreach ( $coa as $acc ) {
+            $code = $acc['account_code'];
+            $type = $acc['account_type'];
+
+            if ( $type === 'Income' || strpos( $code, '4' ) === 0 ) {
+                // Income: Credit - Debit
+                $totals = $wpdb->get_row(
+                    $wpdb->prepare(
+                        "SELECT (SUM(credit) - SUM(debit)) as net FROM {$je_table} WHERE account_code = %s AND YEAR(date) = %d",
+                        $code,
+                        $year
+                    ),
+                    ARRAY_A
+                );
+                $amt = floatval( $totals['net'] ?? 0 );
+
+                // Fallback to invoices if no journal entry
+                if ( $amt == 0 && $code === '4010' ) {
+                    $invoices = $this->db->get( 'invoices' );
+                    foreach ( $invoices as $inv ) {
+                        if ( wp_date( 'Y', strtotime( $inv['month'] ?? '' ) ) == $year ) {
+                            $amt += floatval( $inv['base_amount'] ?? $inv['amount'] );
+                        }
+                    }
+                }
+
+                $incomes[] = array(
+                    'account_code' => $code,
+                    'account_name' => $acc['account_name'],
+                    'amount'       => $amt,
+                );
+                $total_income += $amt;
+            } elseif ( $type === 'Expense' || strpos( $code, '5' ) === 0 ) {
+                // Expense: Debit - Credit
+                $totals = $wpdb->get_row(
+                    $wpdb->prepare(
+                        "SELECT (SUM(debit) - SUM(credit)) as net FROM {$je_table} WHERE account_code = %s AND YEAR(date) = %d",
+                        $code,
+                        $year
+                    ),
+                    ARRAY_A
+                );
+                $amt = floatval( $totals['net'] ?? 0 );
+
+                // Fallback to categorized expenses table if journal empty
+                if ( $amt == 0 ) {
+                    if ( $code === '5010' ) $amt = $cat_expenses['electricity'] ?? 0;
+                    elseif ( $code === '5020' ) $amt = $cat_expenses['water'] ?? 0;
+                    elseif ( $code === '5030' ) $amt = $cat_expenses['security'] ?? 0;
+                    elseif ( $code === '5040' ) $amt = $cat_expenses['housekeeping'] ?? 0;
+                    elseif ( $code === '5050' ) $amt = $cat_expenses['lift'] ?? 0;
+                    elseif ( $code === '5060' ) $amt = $cat_expenses['diesel'] ?? ( $cat_expenses['fuel'] ?? 0 );
+                    elseif ( $code === '5090' ) $amt = $cat_expenses['repairs'] ?? ( $cat_expenses['maintenance'] ?? 0 );
+                }
+
+                $expenses[] = array(
+                    'account_code' => $code,
+                    'account_name' => $acc['account_name'],
+                    'amount'       => $amt,
+                );
+                $total_expense += $amt;
+            }
+        }
+
+        $net_surplus = $total_income - $total_expense;
+
+        return array(
+            'year'          => $year,
+            'incomes'       => $incomes,
+            'total_income'  => round( $total_income, 2 ),
+            'expenses'      => $expenses,
+            'total_expense' => round( $total_expense, 2 ),
+            'net_surplus'   => round( $net_surplus, 2 ),
+            'is_surplus'    => ( $net_surplus >= 0 ),
+        );
+    }
+
+    /**
+     * Generate Balance Sheet (Statement of Financial Affairs).
+     *
+     * @param string|null $year
+     * @return array
+     */
+    public function get_balance_sheet( $year = null ) {
+        if ( ! $year ) {
+            $year = wp_date( 'Y' );
+        }
+
+        $pl = $this->get_profit_and_loss( $year );
+        $net_surplus = $pl['net_surplus'];
+
+        // Live Balances
+        $opening_bank = floatval( get_option( 'nammasociety51_opening_bank_' . $year, 0 ) );
+        $opening_cash = floatval( get_option( 'nammasociety51_opening_cash_' . $year, 0 ) );
+        $actual_bank = floatval( get_option( 'nammasociety51_actual_bank_' . $year, $opening_bank ) );
+        $actual_cash = floatval( get_option( 'nammasociety51_actual_cash_' . $year, $opening_cash ) );
+
+        // Sundry Debtors (Resident dues)
+        $invoices = $this->db->get( 'invoices', array( 'load_relations' => true ) );
+        $sundry_debtors = 0.00;
+        $gst_liability = 0.00;
+
+        foreach ( $invoices as $inv ) {
+            if ( wp_date( 'Y', strtotime( $inv['month'] ?? '' ) ) == $year ) {
+                $paid = floatval( $inv['total_paid'] ?? 0 );
+                $due = floatval( $inv['amount'] ?? 0 );
+                if ( $due > $paid ) {
+                    $sundry_debtors += ( $due - $paid );
+                }
+                $gst_liability += floatval( $inv['cgst_amount'] ?? 0 ) + floatval( $inv['sgst_amount'] ?? 0 );
+            }
+        }
+
+        $sinking_fund_fd = floatval( get_option( 'nammasociety51_sinking_fund_fd', 500000 ) );
+
+        // ASSETS
+        $assets = array(
+            array( 'code' => '1010', 'name' => 'Cash in Hand', 'amount' => $actual_cash ),
+            array( 'code' => '1020', 'name' => 'Bank Operating Account', 'amount' => $actual_bank ),
+            array( 'code' => '1030', 'name' => 'Sinking Fund Fixed Deposit', 'amount' => $sinking_fund_fd ),
+            array( 'code' => '1040', 'name' => 'Sundry Debtors (Resident Dues)', 'amount' => $sundry_debtors ),
+        );
+        $total_assets = array_sum( array_column( $assets, 'amount' ) );
+
+        // LIABILITIES
+        $sinking_reserve = $sinking_fund_fd; // Matched reserve
+        $sundry_creditors = 0.00;
+
+        $liabilities = array(
+            array( 'code' => '2010', 'name' => 'Sinking Fund Reserve', 'amount' => $sinking_reserve ),
+            array( 'code' => '2020', 'name' => 'Sundry Creditors (Vendor Payables)', 'amount' => $sundry_creditors ),
+            array( 'code' => '2050', 'name' => 'GST Output Liability (18%)', 'amount' => $gst_liability ),
+        );
+        $total_liabilities = array_sum( array_column( $liabilities, 'amount' ) );
+
+        // EQUITY / CAPITAL FUND
+        $general_reserve = max( 0, $total_assets - $total_liabilities - $net_surplus );
+        $equity = array(
+            array( 'code' => '3010', 'name' => 'General Reserves & Surplus B/F', 'amount' => $general_reserve ),
+            array( 'code' => 'PL-CURR', 'name' => 'Current Year Net Surplus / (Deficit)', 'amount' => $net_surplus ),
+        );
+        $total_equity = array_sum( array_column( $equity, 'amount' ) );
+
+        $total_liab_equity = $total_liabilities + $total_equity;
+
+        return array(
+            'year'                    => $year,
+            'assets'                  => $assets,
+            'total_assets'            => round( $total_assets, 2 ),
+            'liabilities'             => $liabilities,
+            'total_liabilities'       => round( $total_liabilities, 2 ),
+            'equity'                  => $equity,
+            'total_equity'            => round( $total_equity, 2 ),
+            'total_liab_and_equity'   => round( $total_liab_equity, 2 ),
+            'is_balanced'             => ( abs( $total_assets - $total_liab_equity ) < 1.00 ),
+        );
     }
 }
 

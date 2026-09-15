@@ -250,7 +250,15 @@ $all_flats = $flats;
                                                     </a>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="text-primary font-monospace" style="font-size: 11px;"><?php echo esc_html($s['sex'] ?? 'N/A'); ?></div>
+                                            <div class="d-flex align-items-center gap-2 mt-1">
+                                                <span class="text-primary font-monospace" style="font-size: 11px;"><?php echo esc_html($s['sex'] ?? 'N/A'); ?></span>
+                                                <span class="text-muted" style="font-size: 10px;">•</span>
+                                                <span class="text-warning d-inline-flex align-items-center gap-1" style="font-size: 11px;">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    <span class="fw-bold text-dark"><?php echo number_format(floatval($s['rating'] ?? 5.0), 1); ?></span>
+                                                    <span class="text-muted" style="font-size: 10px;">(<?php echo intval($s['total_ratings'] ?? 0); ?>)</span>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -265,13 +273,26 @@ $all_flats = $flats;
                                     </span>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
-                                    <?php 
-                                    if ($status === 'deletion_pending') {
-                                        echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
-                                    } else {
-                                        echo NAMMASOCIETY51_Admin_UI::render_status_badge( $status ); 
-                                    }
-                                    ?>
+                                    <div class="d-flex flex-column gap-1.5 align-items-start">
+                                        <?php 
+                                        if ($status === 'deletion_pending') {
+                                            echo '<span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-10 px-3 py-1.5 rounded-pill fw-bold" style="font-size: 9px;">DELETION PENDING</span>';
+                                        } else {
+                                            echo NAMMASOCIETY51_Admin_UI::render_status_badge( $status ); 
+                                        }
+                                        ?>
+                                        <?php if ($status === 'approved'): 
+                                            $is_in_campus = ($s['current_status'] ?? '') === 'in_campus';
+                                        ?>
+                                            <span class="badge <?php echo $is_in_campus ? 'bg-success text-success border-success' : 'bg-secondary text-secondary border-secondary'; ?> bg-opacity-10 border border-opacity-25 rounded-pill px-2.5 py-1 fw-bold d-inline-flex align-items-center gap-1.5 staff-presence-badge" style="font-size: 9px; letter-spacing: 0.03em;">
+                                                <?php if ($is_in_campus): ?>
+                                                    <span class="spinner-grow spinner-grow-sm text-success" style="width: 5px; height: 5px;" role="status"></span> IN CAMPUS
+                                                <?php else: ?>
+                                                    <i class="bi bi-circle-fill text-muted" style="font-size: 5px;"></i> OUT OF CAMPUS
+                                                <?php endif; ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                                 <td class="px-3 px-md-4 py-4">
                                     <div class="text-dark fw-bold small"><?php echo esc_html( NAMMASOCIETY51_Privacy_Manager::mask_data( $s['phone'] ) ); ?></div>
@@ -285,8 +306,10 @@ $all_flats = $flats;
                                             <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10 px-2 py-1 rounded-1 fw-bold" style="font-size: 10px;">Society Dedicated</span>
                                         <?php else: ?>
                                             <div class="d-flex flex-wrap gap-1">
-                                                <?php foreach($served_flats as $f_id): ?>
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 10px;"><?php echo esc_html($f_id); ?></span>
+                                                <?php foreach($served_flats as $f_id): 
+                                                    $f_disp = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $f_id );
+                                                ?>
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 10px;"><?php echo esc_html($f_disp); ?></span>
                                                 <?php endforeach; ?>
                                             </div>
                                         <?php endif; ?>
@@ -304,7 +327,16 @@ $all_flats = $flats;
                                             </button>
                                         <?php elseif ( $status === 'archived' ): ?>
                                             <button onclick="restoreStaff('<?php echo esc_html( esc_js($s['id']) ); ?>')" class="btn btn-sm btn-success px-3 fw-bold shadow-none rounded-3" style="font-size: 10px;">RESTORE</button>
-                                        <?php else: ?>
+                                        <?php else: 
+                                            $is_in_camp = ($s['current_status'] ?? '') === 'in_campus';
+                                        ?>
+                                            <button type="button" class="btn btn-sm <?php echo $is_in_camp ? 'btn-outline-danger' : 'btn-outline-success'; ?> border shadow-sm rounded-3 px-2 py-1 js-gate-toggle" data-id="<?php echo esc_attr($s['id']); ?>" data-status="<?php echo $is_in_camp ? 'in_campus' : 'out_of_campus'; ?>" title="<?php echo $is_in_camp ? 'Gate Check-Out' : 'Gate Check-In'; ?>">
+                                                <i class="bi <?php echo $is_in_camp ? 'bi-box-arrow-right' : 'bi-box-arrow-in-right'; ?> me-1"></i>
+                                                <span style="font-size: 11px;"><?php echo $is_in_camp ? 'Exit' : 'Entry'; ?></span>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-light text-warning border shadow-sm rounded-3 p-2 js-rate-staff" data-id="<?php echo esc_attr($s['id']); ?>" data-name="<?php echo esc_attr($s['name']); ?>" data-rating="<?php echo esc_attr($s['rating'] ?? 5.0); ?>" title="Rate Staff">
+                                                <i class="bi bi-star-fill fs-6"></i>
+                                            </button>
                                             <button type="button" class="btn btn-sm btn-light text-success border shadow-sm rounded-3 p-2 js-mark-attendance" data-id="<?php echo esc_attr($s['id']); ?>" title="Mark Attendance">
                                                 <i class="bi bi-clock fs-6"></i>
                                             </button>
@@ -437,16 +469,16 @@ add_action('nammasociety51_admin_modals', function() use ($all_flats) {
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-bold text-secondary">Assigned Flats (Multiple)</label>
-                            <select name="flats_served[]" id="staff-flat" class="form-select shadow-none rounded-3 border-light" multiple style="height: 100px;">
-                                <?php if(!empty($all_flats)): ?>
-                                    <?php foreach($all_flats as $f): 
-                                        $val = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                                        $label = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                                        if(!empty($f['block'])) $label = $f['block'] . ' - ' . $label;
-                                    ?>
-                                        <option value="<?php echo esc_attr($val); ?>"><?php echo esc_html($label); ?></option>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                            <select name="flats_served[]" id="staff-flat" class="form-select shadow-none rounded-3 border-light" multiple style="height: 100px;">                                 <?php if(!empty($all_flats)): ?>
+                                     <?php foreach($all_flats as $f): 
+                                         $val = $f['id'];
+                                         $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
+                                         $clean_b = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($f['block'] ?? '')));
+                                         $label = NAMMASOCIETY51_DB_Router::format_flat_display($clean_b, $f_num);
+                                     ?>
+                                         <option value="<?php echo esc_attr($val); ?>" data-number="<?php echo esc_attr($f_num); ?>" data-block="<?php echo esc_attr($clean_b); ?>"><?php echo esc_html($label); ?></option>
+                                     <?php endforeach; ?>
+                                 <?php endif; ?>
                             </select>
                             <div class="form-text small">Hold Ctrl/Cmd to select multiple flats.</div>
                         </div>
@@ -563,6 +595,36 @@ add_action('nammasociety51_admin_modals', function() use ($all_flats) {
                 <div class="modal-footer border-top-0 bg-light px-4 py-3">
                     <button type="button" class="btn btn-light text-secondary px-4 fw-medium shadow-none rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm rounded-3">Submit Concern</button>
+                </div>
+            </form>
+        </div>
+<!-- Rate Staff Modal -->
+<div class="modal fade" id="rateStaffModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                <h5 class="fw-bold m-0 text-dark">Rate Staff</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="rate-staff-form">
+                <input type="hidden" name="action" value="nammasociety51_rate_staff">
+                <input type="hidden" name="staff_id" id="rate-staff-id" value="">
+                <input type="hidden" name="rating" id="rate-staff-value" value="5">
+                <?php wp_nonce_field( 'nammasociety51_staff_nonce' ); ?>
+                <div class="modal-body p-4 text-center">
+                    <p class="small text-muted mb-2">Provide star feedback for <span id="rate-staff-name" class="fw-bold text-dark">Staff Member</span>:</p>
+                    <div class="d-flex justify-content-center gap-2 fs-2 text-warning my-3" id="rate-star-selector" style="cursor: pointer;">
+                        <i class="bi bi-star-fill js-star" data-val="1"></i>
+                        <i class="bi bi-star-fill js-star" data-val="2"></i>
+                        <i class="bi bi-star-fill js-star" data-val="3"></i>
+                        <i class="bi bi-star-fill js-star" data-val="4"></i>
+                        <i class="bi bi-star-fill js-star" data-val="5"></i>
+                    </div>
+                    <div id="rate-star-label" class="fw-bold small text-primary">5 Stars - Excellent</div>
+                </div>
+                <div class="modal-footer border-top-0 bg-light px-4 py-3">
+                    <button type="button" class="btn btn-light text-secondary px-3 fw-medium shadow-none rounded-3 border-0" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm rounded-3">Submit Rating</button>
                 </div>
             </form>
         </div>

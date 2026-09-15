@@ -204,6 +204,7 @@
             };
 
             setVal('name', r.name);
+            setVal('block', r.block || '');
 
             // Checkbox flat matching
             const flatChecks = form.querySelectorAll('input[name="flat_ids[]"]');
@@ -211,10 +212,43 @@
                 // Clear existing
                 flatChecks.forEach(cb => cb.checked = false);
                 
-                const targetFlats = Array.isArray(r.flat_ids) ? r.flat_ids : (r.flat_no ? [r.flat_no] : []);
+                const targetFlats = Array.isArray(r.flat_ids) && r.flat_ids.length ? r.flat_ids : (r.flat_no ? [r.flat_no] : []);
+
+                const normalizeKey = (val, blk) => {
+                    if (!val) return '';
+                    let str = String(val).trim().toLowerCase().replace(/^(flat_|res_|veh_)/i, '');
+                    let b = String(blk || '').trim().toLowerCase().replace(/^block\s*/i, '');
+                    const m = str.match(/^([a-z]+)[-_\s]*(.*)$/i);
+                    if (m && m[2]) {
+                        b = m[1];
+                        str = m[2];
+                    }
+                    const cleanB = b.replace(/[^a-z0-9]/gi, '');
+                    const cleanN = str.replace(/[^a-z0-9]/gi, '');
+                    return cleanB ? cleanB + '_' + cleanN : cleanN;
+                };
+
                 targetFlats.forEach(fid => {
-                    const cb = form.querySelector(`input[name="flat_ids[]"][value="${fid}"]`);
-                    if (cb) cb.checked = true;
+                    const targetNorm = normalizeKey(fid, r.block);
+                    let matched = false;
+                    flatChecks.forEach(cb => {
+                        if (matched) return;
+                        if (cb.value === String(fid) || cb.dataset.number === String(fid) || cb.dataset.display === String(fid)) {
+                            cb.checked = true;
+                            matched = true;
+                            return;
+                        }
+                        const cbNorm = normalizeKey(cb.value, cb.dataset.block);
+                        if (cbNorm && targetNorm && cbNorm === targetNorm) {
+                            cb.checked = true;
+                            matched = true;
+                            return;
+                        }
+                        if (r.block && cb.dataset.block && cb.dataset.block.toLowerCase().replace(/^block\s*/i, '') === String(r.block).toLowerCase().replace(/^block\s*/i, '') && cb.dataset.number === String(fid)) {
+                            cb.checked = true;
+                            matched = true;
+                        }
+                    });
                 });
 
                 // Update primary dropdown and hidden input by triggering change event on first checkbox
@@ -224,8 +258,12 @@
                 // Set primary flat dropdown selection
                 const primarySelect = form.querySelector('[name="primary_flat_id"]');
                 if (primarySelect && r.flat_no) {
-                    primarySelect.value = r.flat_no;
-                    // Trigger change so hidden input gets updated
+                    let matchedOpt = Array.from(primarySelect.options).find(opt => opt.value === r.flat_no || opt.textContent.includes(r.flat_no));
+                    if (matchedOpt) {
+                        primarySelect.value = matchedOpt.value;
+                    } else if (primarySelect.options.length) {
+                        primarySelect.selectedIndex = 0;
+                    }
                     primarySelect.dispatchEvent(event);
                 }
             }

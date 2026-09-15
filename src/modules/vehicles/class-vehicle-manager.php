@@ -112,15 +112,25 @@ class NAMMASOCIETY51_Vehicle_Manager implements NAMMASOCIETY51_Module {
 			}
 		}
 
+		$block = isset( $data['block'] ) ? sanitize_text_field( $data['block'] ) : '';
+		$block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', $block ) );
+		if ( empty( $block ) && ! empty( $flat_no ) ) {
+			$matched_flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $flat_no ) ) );
+			if ( ! empty( $matched_flats[0]['block'] ) ) {
+				$block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)$matched_flats[0]['block'] ) );
+			}
+		}
+
 		$db_data = array(
-			'number'  => $number,
-			'plate_no'=> $number, 
-			'type'    => $type,
-			'brand'   => $brand,
-			'model'   => $model,
-			'sticker' => $sticker,
-			'status'  => $status,
-			'owner_name' => $owner_name
+			'number'     => $number,
+			'plate_no'   => $number, 
+			'type'       => $type,
+			'brand'      => $brand,
+			'model'      => $model,
+			'sticker'    => $sticker,
+			'status'     => $status,
+			'owner_name' => $owner_name,
+			'block'      => $block,
 		);
 		
 		if($flat_no) $db_data['flat_no'] = $flat_no;
@@ -136,15 +146,16 @@ class NAMMASOCIETY51_Vehicle_Manager implements NAMMASOCIETY51_Module {
             // If found, merge and update
             if ( ! empty( $existing ) ) {
                 $db_data = array(
-                    'number'  => $number ?: ($existing['number'] ?? ''),
-                    'plate_no'=> $number ?: ($existing['number'] ?? ''),
-                    'type'    => $type ?: ($existing['type'] ?? ''),
-                    'brand'   => $brand ?: ($existing['brand'] ?? ''),
-                    'model'   => $model ?: ($existing['model'] ?? ''),
-                    'sticker' => $sticker ?: ($existing['sticker'] ?? ''),
-                    'status'  => 'approved', // Reset to approved upon edit approval or admin edit
+                    'number'     => $number ?: ($existing['number'] ?? ''),
+                    'plate_no'   => $number ?: ($existing['number'] ?? ''),
+                    'type'       => $type ?: ($existing['type'] ?? ''),
+                    'brand'      => $brand ?: ($existing['brand'] ?? ''),
+                    'model'      => $model ?: ($existing['model'] ?? ''),
+                    'sticker'    => $sticker ?: ($existing['sticker'] ?? ''),
+                    'status'     => 'approved', // Reset to approved upon edit approval or admin edit
                     'owner_name' => $owner_name ?: ($existing['owner_name'] ?? ''),
-                    'flat_no'    => $flat_no ?: ($existing['flat_no'] ?? '')
+                    'flat_no'    => $flat_no ?: ($existing['flat_no'] ?? ''),
+                    'block'      => $block ?: ($existing['block'] ?? ''),
                 );
                 $db_data['id'] = $id;
 

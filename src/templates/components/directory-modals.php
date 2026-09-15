@@ -375,16 +375,52 @@ window.nammasocietyDirectoryData = {
 };
 
 (function() {
-	function normalizeFlat(val) {
+	function getCanonicalUnitKey(val, fallbackBlock) {
 		if (!val) return '';
-		return String(val).toLowerCase().replace(/[^a-z0-9]/g, '');
+		let flatStr = '';
+		let blockStr = fallbackBlock || '';
+
+		if (typeof val === 'object' && val !== null) {
+			flatStr = String(val.flat_no || val.flat_number || val.id || '');
+			blockStr = val.block || fallbackBlock || '';
+		} else {
+			flatStr = String(val).trim();
+		}
+
+		// Remove entity prefixes like 'flat_', 'res_', 'veh_'
+		flatStr = flatStr.replace(/^(flat_|res_|veh_)/i, '');
+		// Remove vehicle type suffixes like '_car', '_bike1'
+		flatStr = flatStr.replace(/(_car|_bike\d*)$/i, '');
+
+		// Normalize block string
+		let normalizedBlock = String(blockStr).trim().replace(/^block\s*/i, '').trim().toLowerCase();
+
+		// Check if flatStr contains block prefix, e.g. 'A-101', 'A 101', 'A_101', 'Block A-101'
+		flatStr = flatStr.replace(/^block\s*/i, '');
+		const match = flatStr.match(/^([a-z0-9]+)[-_\s]+(.*)$/i);
+		if (match) {
+			if (/^[a-z]+$/i.test(match[1])) {
+				normalizedBlock = match[1].toLowerCase();
+				flatStr = match[2];
+			}
+		}
+
+		const cleanFlat = flatStr.replace(/[^a-z0-9]/gi, '').toLowerCase();
+		const cleanBlock = normalizedBlock.replace(/[^a-z0-9]/gi, '').toLowerCase();
+
+		if (cleanBlock && cleanFlat) {
+			return cleanBlock + '_' + cleanFlat;
+		}
+		return cleanFlat || cleanBlock;
 	}
 
-	function matchFlat(flat1, flat2) {
-		const c1 = normalizeFlat(flat1);
-		const c2 = normalizeFlat(flat2);
-		if (!c1 || !c2) return false;
-		return c1 === c2 || c1.endsWith(c2) || c2.endsWith(c1);
+	function formatBlockName(block) {
+		if (!block) return 'Main Block';
+		let str = String(block).trim();
+		if (!/^block\s+/i.test(str)) {
+			str = 'Block ' + str;
+		}
+		return str;
 	}
 
 	function switchModal(hideModalId, showModalId) {
@@ -406,22 +442,24 @@ window.nammasocietyDirectoryData = {
 	}
 
 	// 1. Open Unit Details Modal
-	window.nammasocietyOpenUnitModal = function(query) {
+	window.nammasocietyOpenUnitModal = function(query, blockContext) {
 		const data = window.nammasocietyDirectoryData;
-		const queryStr = String(query);
-		const flat = data.flats.find(f => 
-			String(f.id) === queryStr || 
-			String(f.flat_number) === queryStr || 
-			matchFlat(f.flat_number || f.id, queryStr)
-		) || { id: queryStr, flat_number: queryStr, block: '', status: 'Occupied' };
+		const queryStr = String(query || '').trim();
+		const targetKey = getCanonicalUnitKey(queryStr, blockContext);
 
-		const unitNo = flat.flat_number || flat.id || queryStr;
-		const block = flat.block ? 'Block ' + flat.block : 'Main Block';
-		const status = flat.status || 'Occupied';
-		const isOccupied = String(status).toLowerCase() === 'occupied';
+		// Match flat by canonical key first, then by exact id or flat_number
+		const flat = data.flats.find(f => getCanonicalUnitKey(f) === targetKey) ||
+			data.flats.find(f => String(f.id) === queryStr || (String(f.flat_number) === queryStr && (!blockContext || getCanonicalUnitKey(f, blockContext) === targetKey))) ||
+			{ id: queryStr, flat_number: queryStr, block: blockContext || '', status: 'Occupied' };
 
-		document.getElementById('unitModalTitle').textContent = 'Unit ' + unitNo;
-		document.getElementById('unitModalSubtitle').textContent = block + ' • ' + (flat.floor ? 'Floor ' + flat.floor : 'Residential Unit');
+		const unitKey = getCanonicalUnitKey(flat, blockContext || flat.block);
+		const rawBlock = String(flat.block || blockContext || '').trim().replace(/^block\s*/i, '');
+		let displayUnit = unitNo;
+		if (rawBlock && !String(unitNo).toLowerCase().startsWith(rawBlock.toLowerCase())) {
+			displayUnit = rawBlock + ' - ' + unitNo;
+		}
+		document.getElementById('unitModalTitle').textContent = 'Unit ' + displayUnit;
+		document.getElementById('unitModalSubtitle').textContent = blockDisplay + ' • ' + (flat.floor ? 'Floor ' + flat.floor : 'Residential Unit');
 		
 		const badge = document.getElementById('unitModalStatusBadge');
 		badge.textContent = isOccupied ? 'Occupied' : 'Vacant';
@@ -432,8 +470,8 @@ window.nammasocietyDirectoryData = {
 		document.getElementById('unitModalParking').textContent = flat.parking_slot || 'P-12';
 		document.getElementById('unitModalIntercom').textContent = flat.intercom_num || 'Ext 204';
 
-		// Linked Residents
-		const linkedResidents = data.residents.filter(r => matchFlat(r.flat_no, unitNo));
+		// Linked Residents: Strictly matching canonical unit key (never merge across blocks!)
+		const linkedResidents = data.residents.filter(r => getCanonicalUnitKey(r) === unitKey);
 		const resListEl = document.getElementById('unitModalResidentsList');
 		document.getElementById('unitModalResidentsCount').textContent = linkedResidents.length;
 		resListEl.innerHTML = '';
@@ -473,8 +511,8 @@ window.nammasocietyDirectoryData = {
 			`;
 		}
 
-		// Linked Vehicles
-		const linkedVehicles = data.vehicles.filter(v => matchFlat(v.flat_no, unitNo));
+		// Linked Vehicles: Strictly matching canonical unit key (never merge across blocks!)
+		const linkedVehicles = data.vehicles.filter(v => getCanonicalUnitKey(v) === unitKey);
 		const vehListEl = document.getElementById('unitModalVehiclesList');
 		document.getElementById('unitModalVehiclesCount').textContent = linkedVehicles.length;
 		vehListEl.innerHTML = '';
@@ -536,7 +574,7 @@ window.nammasocietyDirectoryData = {
 	// 2. Open Vehicle Details Modal
 	window.nammasocietyOpenVehicleModal = function(query) {
 		const data = window.nammasocietyDirectoryData;
-		const queryStr = String(query).toLowerCase();
+		const queryStr = String(query || '').toLowerCase().trim();
 		const vehicle = data.vehicles.find(v => 
 			String(v.id).toLowerCase() === queryStr || 
 			String(v.plate_no || '').toLowerCase() === queryStr ||
@@ -553,31 +591,48 @@ window.nammasocietyDirectoryData = {
 		document.getElementById('vehicleModalMakeModel').textContent = makeModel;
 		document.getElementById('vehicleModalCategory').textContent = isBike ? '2-Wheeler' : '4-Wheeler';
 		document.getElementById('vehicleModalSlot').textContent = vehicle.parking_slot || 'Designated Bay';
-		document.getElementById('vehicleModalAssignedUnit').textContent = 'Unit ' + (vehicle.flat_no || '-');
+		
+		let vehFlatDisp = vehicle.flat_no || '-';
+		const vehBlock = String(vehicle.block || '').trim().replace(/^block\s*/i, '');
+		if (vehBlock && !String(vehFlatDisp).toLowerCase().startsWith(vehBlock.toLowerCase())) {
+			vehFlatDisp = vehBlock + ' - ' + vehFlatDisp;
+		}
+		document.getElementById('vehicleModalAssignedUnit').textContent = 'Unit ' + vehFlatDisp;
 		document.getElementById('vehicleModalSticker').textContent = vehicle.sticker ? '#' + vehicle.sticker : 'Verified Active';
 
 		const iconBox = document.getElementById('vehicleModalIconBox');
 		const iconEl = document.getElementById('vehicleModalIcon');
 		iconEl.className = 'bi ' + (isBike ? 'bi-bicycle' : 'bi-car-front') + ' fs-4';
 
-		// Mapped Unit Link
-		const mappedFlat = data.flats.find(f => matchFlat(f.flat_number || f.id, vehicle.flat_no)) || { id: vehicle.flat_no, flat_number: vehicle.flat_no, block: '', status: 'Occupied' };
-		document.getElementById('vehicleModalFlatTitle').textContent = 'Flat ' + (mappedFlat.flat_number || mappedFlat.id || vehicle.flat_no);
-		document.getElementById('vehicleModalFlatSub').textContent = (mappedFlat.block ? 'Block ' + mappedFlat.block + ' • ' : '') + (mappedFlat.status || 'Occupied');
+		// Mapped Unit Link: Strictly match unit canonical key
+		const vehKey = getCanonicalUnitKey(vehicle);
+		const mappedFlat = data.flats.find(f => getCanonicalUnitKey(f) === vehKey) || { id: vehicle.flat_no, flat_number: vehicle.flat_no, block: vehicle.block || '', status: 'Occupied' };
+		const flatBlockDisplay = formatBlockName(mappedFlat.block || vehicle.block);
+
+		let vFlatDisp = mappedFlat.flat_number || mappedFlat.id || vehicle.flat_no;
+		const vBlock = String(mappedFlat.block || vehicle.block || '').trim().replace(/^block\s*/i, '');
+		if (vBlock && !String(vFlatDisp).toLowerCase().startsWith(vBlock.toLowerCase())) {
+			vFlatDisp = vBlock + ' - ' + vFlatDisp;
+		}
+		document.getElementById('vehicleModalFlatTitle').textContent = 'Flat ' + vFlatDisp;
+		document.getElementById('vehicleModalFlatSub').textContent = flatBlockDisplay + ' • ' + (mappedFlat.status || 'Occupied');
 
 		const viewUnitBtn = document.getElementById('vehicleModalViewUnitBtn');
 		viewUnitBtn.onclick = function() {
 			switchModal('vehicleDetailsModal', 'unitDetailsModal');
-			setTimeout(() => window.nammasocietyOpenUnitModal(vehicle.flat_no), 190);
+			setTimeout(() => window.nammasocietyOpenUnitModal(vehicle.flat_no, vehicle.block), 190);
 		};
 
-		// Registered Owner
+		// Registered Owner: Strictly match resident in same unit/block
 		let owner = null;
 		if (vehicle.owner_name) {
-			owner = data.residents.find(r => r.name && r.name.toLowerCase() === vehicle.owner_name.toLowerCase());
+			owner = data.residents.find(r => 
+				r.name && r.name.toLowerCase() === vehicle.owner_name.toLowerCase() &&
+				getCanonicalUnitKey(r) === vehKey
+			) || data.residents.find(r => r.name && r.name.toLowerCase() === vehicle.owner_name.toLowerCase());
 		}
 		if (!owner) {
-			const flatRes = data.residents.filter(r => matchFlat(r.flat_no, vehicle.flat_no));
+			const flatRes = data.residents.filter(r => getCanonicalUnitKey(r) === vehKey);
 			owner = flatRes.find(r => String(r.type || '').toLowerCase() === 'owner') || flatRes[0] || null;
 		}
 
@@ -623,7 +678,7 @@ window.nammasocietyDirectoryData = {
 	// 3. Open Resident Details Modal
 	window.nammasocietyOpenResidentModal = function(query) {
 		const data = window.nammasocietyDirectoryData;
-		const queryStr = String(query).toLowerCase();
+		const queryStr = String(query || '').toLowerCase().trim();
 		const resident = data.residents.find(r => 
 			String(r.id).toLowerCase() === queryStr || 
 			String(r.name || '').toLowerCase() === queryStr
@@ -640,26 +695,40 @@ window.nammasocietyDirectoryData = {
 		typeBadge.textContent = (resident.type || 'Resident').toUpperCase();
 		typeBadge.className = 'badge ' + (isOwner ? 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10' : 'bg-info bg-opacity-10 text-info border border-info border-opacity-10') + ' rounded-pill px-2 py-1 small fw-bold';
 
-		document.getElementById('residentModalSub').textContent = 'Unit ' + (resident.flat_no || '-') + ' • ' + (resident.status || 'Active Member');
+		let resFlatDisp = resident.flat_no || '-';
+		const resBlock = String(resident.block || '').trim().replace(/^block\s*/i, '');
+		if (resBlock && !String(resFlatDisp).toLowerCase().startsWith(resBlock.toLowerCase())) {
+			resFlatDisp = resBlock + ' - ' + resFlatDisp;
+		}
+		document.getElementById('residentModalSub').textContent = 'Unit ' + resFlatDisp + ' • ' + (resident.status || 'Active Member');
 
 		document.getElementById('residentModalType').textContent = resident.type ? resident.type.charAt(0).toUpperCase() + resident.type.slice(1) : 'Resident';
-		document.getElementById('residentModalBlock').textContent = resident.block ? 'Block ' + resident.block : 'Main Block';
+		const resBlockDisplay = formatBlockName(resident.block);
+		document.getElementById('residentModalBlock').textContent = resBlockDisplay;
 		document.getElementById('residentModalBlood').textContent = resident.blood_group || 'Not Specified';
 		document.getElementById('residentModalStatus').textContent = resident.status || 'Active';
 
-		// Mapped Unit Link
-		const mappedFlat = data.flats.find(f => matchFlat(f.flat_number || f.id, resident.flat_no)) || { id: resident.flat_no, flat_number: resident.flat_no, block: '', status: 'Occupied' };
-		document.getElementById('residentModalFlatTitle').textContent = 'Unit ' + (mappedFlat.flat_number || mappedFlat.id || resident.flat_no);
-		document.getElementById('residentModalFlatSub').textContent = (mappedFlat.block ? 'Block ' + mappedFlat.block + ' • ' : '') + (mappedFlat.status || 'Occupied');
+		// Mapped Unit Link: Strictly match unit canonical key
+		const resKey = getCanonicalUnitKey(resident);
+		const mappedFlat = data.flats.find(f => getCanonicalUnitKey(f) === resKey) || { id: resident.flat_no, flat_number: resident.flat_no, block: resident.block || '', status: 'Occupied' };
+		const flatBlockDisplay = formatBlockName(mappedFlat.block || resident.block);
+
+		let mFlatDisp = mappedFlat.flat_number || mappedFlat.id || resident.flat_no;
+		const mBlock = String(mappedFlat.block || resident.block || '').trim().replace(/^block\s*/i, '');
+		if (mBlock && !String(mFlatDisp).toLowerCase().startsWith(mBlock.toLowerCase())) {
+			mFlatDisp = mBlock + ' - ' + mFlatDisp;
+		}
+		document.getElementById('residentModalFlatTitle').textContent = 'Unit ' + mFlatDisp;
+		document.getElementById('residentModalFlatSub').textContent = flatBlockDisplay + ' • ' + (mappedFlat.status || 'Occupied');
 
 		const viewUnitBtn = document.getElementById('residentModalViewUnitBtn');
 		viewUnitBtn.onclick = function() {
 			switchModal('residentDetailsModal', 'unitDetailsModal');
-			setTimeout(() => window.nammasocietyOpenUnitModal(resident.flat_no), 190);
+			setTimeout(() => window.nammasocietyOpenUnitModal(resident.flat_no, resident.block), 190);
 		};
 
-		// Family Members
-		const familyMembers = data.family.filter(f => matchFlat(f.flat_no, resident.flat_no));
+		// Family Members: Strictly matching resident's unit key
+		const familyMembers = data.family.filter(f => getCanonicalUnitKey(f, resident.block) === resKey);
 		const famListEl = document.getElementById('residentModalFamilyList');
 		document.getElementById('residentModalFamilyCount').textContent = familyMembers.length;
 		famListEl.innerHTML = '';
@@ -693,8 +762,8 @@ window.nammasocietyDirectoryData = {
 			`;
 		}
 
-		// Registered Vehicles for this resident's unit
-		const linkedVehicles = data.vehicles.filter(v => matchFlat(v.flat_no, resident.flat_no));
+		// Registered Vehicles for this resident's unit: Strictly matching resident's unit key
+		const linkedVehicles = data.vehicles.filter(v => getCanonicalUnitKey(v, resident.block) === resKey);
 		const vehListEl = document.getElementById('residentModalVehiclesList');
 		document.getElementById('residentModalVehiclesCount').textContent = linkedVehicles.length;
 		vehListEl.innerHTML = '';
@@ -769,7 +838,8 @@ window.nammasocietyDirectoryData = {
 		if (unitTrigger) {
 			e.preventDefault();
 			const flatId = unitTrigger.getAttribute('data-unit-id') || unitTrigger.getAttribute('data-flat-id') || unitTrigger.getAttribute('data-id') || unitTrigger.textContent.trim();
-			window.nammasocietyOpenUnitModal(flatId);
+			const block = unitTrigger.getAttribute('data-block') || '';
+			window.nammasocietyOpenUnitModal(flatId, block);
 			return;
 		}
 

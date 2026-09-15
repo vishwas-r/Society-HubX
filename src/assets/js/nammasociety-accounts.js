@@ -34,9 +34,10 @@
 
         // Delegated click handling
         document.addEventListener('click', function (e) {
-            const btn = e.target.closest && e.target.closest('.js-edit-invoice, .js-record-payment, .js-open-receipt, .js-delete-invoice, .js-delete-payment, .js-approve-payment, .js-reject-payment');
+            const btn = e.target.closest && e.target.closest('.js-edit-invoice, .js-record-payment, .js-open-receipt, .js-delete-invoice, .js-delete-payment, .js-approve-payment, .js-reject-payment, .js-view-tax-invoice');
             if (!btn) return;
             e.preventDefault();
+            if (btn.classList.contains('js-view-tax-invoice')) return openTaxInvoice(btn);
             if (btn.classList.contains('js-edit-invoice')) return openEditInvoice(btn);
             if (btn.classList.contains('js-record-payment')) return openRecordPayment(btn);
             if (btn.classList.contains('js-open-receipt')) return openAdminReceipt(btn);
@@ -86,7 +87,162 @@
         return window._NAMMASOCIETY_modals[id];
     }
 
+    function openTaxInvoice(btn) {
+        const invId = btn.getAttribute('data-id');
+        const modal = getModal('taxInvoiceModal');
+        const container = document.getElementById('tax-invoice-container');
+        if (!container) return;
 
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <div class="spinner-border spinner-border-sm text-primary mb-2"></div>
+                <p class="small m-0">Generating Statutory Tax Invoice...</p>
+            </div>
+        `;
+        if (modal) modal.show();
+
+        jQuery.ajax({
+            url: ajaxurl,
+            type: 'GET',
+            data: {
+                action: 'nammasociety51_get_tax_invoice',
+                invoice_id: invId,
+                _wpnonce: window.nammasociety51AccountNonce || ''
+            },
+            success: function (res) {
+                if (!res || !res.success || !res.data) {
+                    container.innerHTML = `<div class="alert alert-danger">Failed to load invoice details: ${(res && res.data && res.data.message) ? res.data.message : 'Unknown error'}</div>`;
+                    return;
+                }
+                renderTaxInvoiceHtml(container, res.data);
+            },
+            error: function () {
+                container.innerHTML = `<div class="alert alert-danger">Error fetching Tax Invoice. Please try again.</div>`;
+            }
+        });
+    }
+
+    function renderTaxInvoiceHtml(container, data) {
+        const inv = data.invoice;
+        const upi = data.upi || {};
+        const total = parseFloat(data.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const base = parseFloat(data.base_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const cgst = parseFloat(data.cgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const sgst = parseFloat(data.sgst || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+        container.innerHTML = `
+            <div class="tax-invoice-sheet bg-white p-4 border rounded-3 text-dark">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-start border-bottom pb-4 mb-4">
+                    <div>
+                        <h4 class="fw-bold m-0 text-dark">${data.society_name}</h4>
+                        <div class="small text-muted mt-1">${data.society_address}</div>
+                        <div class="small fw-semibold text-secondary mt-1">
+                            <span class="me-3">GSTIN: <strong class="text-dark font-monospace">${data.society_gstin}</strong></span>
+                            <span>PAN: <strong class="text-dark font-monospace">${data.society_pan}</strong></span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="font-size: 11px;">TAX INVOICE</span>
+                        <div class="small text-muted font-monospace mt-2">#INV-${String(inv.id).substr(-6)}</div>
+                        <div class="small text-muted">Date: ${inv.created_at ? inv.created_at.split(' ')[0] : 'Today'}</div>
+                        <div class="small text-danger fw-semibold">Due: ${inv.due_date || 'N/A'}</div>
+                    </div>
+                </div>
+
+                <!-- Billed To -->
+                <div class="row g-3 bg-light p-3 rounded-3 mb-4">
+                    <div class="col-sm-6">
+                        <span class="small fw-bold text-secondary text-uppercase" style="font-size: 10px;">Billed To / Unit Owner</span>
+                        <div class="fw-bold text-dark fs-6">${inv.resident_name || 'Resident'}</div>
+                        <div class="small text-muted">Unit: <strong>${(inv.block ? inv.block + '-' : '') + inv.flat_no}</strong></div>
+                    </div>
+                    <div class="col-sm-6 text-sm-end">
+                        <span class="small fw-bold text-secondary text-uppercase" style="font-size: 10px;">Service Period & SAC</span>
+                        <div class="fw-bold text-dark font-monospace">SAC: ${data.sac_code}</div>
+                        <div class="small text-muted">${data.sac_description}</div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small text-secondary fw-bold text-uppercase">
+                                <th class="py-2">Description</th>
+                                <th class="py-2 text-center">SAC Code</th>
+                                <th class="py-2 text-end">Rate / Base (₹)</th>
+                                <th class="py-2 text-end">CGST (9%)</th>
+                                <th class="py-2 text-end">SGST (9%)</th>
+                                <th class="py-2 text-end">Total Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">${inv.description || 'Monthly Society Maintenance'}</div>
+                                    <div class="small text-muted" style="font-size: 11px;">RWA Maintenance Charges for ${inv.month}</div>
+                                </td>
+                                <td class="text-center font-monospace">${data.sac_code}</td>
+                                <td class="text-end font-monospace">₹${base}</td>
+                                <td class="text-end font-monospace">₹${cgst}</td>
+                                <td class="text-end font-monospace">₹${sgst}</td>
+                                <td class="text-end font-monospace fw-bold text-dark">₹${total}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light fw-bold">
+                            <tr>
+                                <td colspan="5" class="text-end text-uppercase">Total Payable (INR):</td>
+                                <td class="text-end text-primary fs-6 font-monospace">₹${total}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Payment QR & Banking -->
+                <div class="row g-4 align-items-center bg-light p-3 rounded-3 border">
+                    <div class="col-sm-4 text-center border-end">
+                        <img src="${upi.qr_url}" alt="UPI QR" class="rounded-2 shadow-sm border bg-white p-1" style="width: 140px; height: 140px;">
+                        <div class="small fw-bold text-secondary mt-1" style="font-size: 10px;">Scan with GPay, PhonePe, Paytm</div>
+                    </div>
+                    <div class="col-sm-8 ps-sm-3">
+                        <h6 class="fw-bold text-dark mb-2">Instant UPI & Direct Bank Transfer</h6>
+                        <div class="small mb-1"><span class="text-secondary">VPA / UPI ID:</span> <strong class="font-monospace text-primary">${upi.upi_id}</strong></div>
+                        <div class="small mb-1"><span class="text-secondary">Payee Name:</span> <strong class="text-dark">${upi.payee_name}</strong></div>
+                        <div class="small mb-1"><span class="text-secondary">Payment Ref Note:</span> <code class="font-monospace text-dark">${upi.note}</code></div>
+                        <div class="small mt-2 pt-2 border-top text-muted" style="font-size: 11px;">
+                            <i class="bi bi-shield-check text-success me-1"></i>Computer-generated Tax Invoice under Rule 54 of CGST Rules 2017. No physical signature required.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.printTaxInvoiceModal = function () {
+        const printable = document.getElementById('tax-invoice-printable-area');
+        if (!printable) return;
+        const printWin = window.open('', '_blank', 'width=800,height=900');
+        printWin.document.write(`
+            <html>
+                <head>
+                    <title>Statutory Tax Invoice</title>
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+                    <style>
+                        body { padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+                        @media print { .no-print { display: none !important; } }
+                    </style>
+                </head>
+                <body>
+                    ${printable.innerHTML}
+                    <script>
+                        window.onload = function() { window.print(); window.close(); };
+                    </script>
+                </body>
+            </html>
+        `);
+        printWin.document.close();
+    };
 
     function openEditInvoice(btn) {
         try {

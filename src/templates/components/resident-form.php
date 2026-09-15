@@ -79,27 +79,63 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
              <label class="form-label small fw-bold text-secondary text-uppercase">Flat / Unit(s) Owned <span class="text-danger">*</span></label>
              <?php
              $selected_flat_ids = isset($r['flat_ids']) ? $r['flat_ids'] : ( !empty($flat_no) ? array($flat_no) : array() );
+             $sorted_flats = !empty($args['flats']) ? $args['flats'] : array();
+             if (!empty($sorted_flats)) {
+                 usort($sorted_flats, function($a, $b) {
+                     $b1 = trim(preg_replace('/^(block[\s_-]*)+/i', '', $a['block'] ?? ''));
+                     $b2 = trim(preg_replace('/^(block[\s_-]*)+/i', '', $b['block'] ?? ''));
+                     $cmp = strcasecmp($b1, $b2);
+                     if ($cmp !== 0) return $cmp;
+                     return strnatcasecmp($a['flat_number'] ?? $a['id'], $b['flat_number'] ?? $b['id']);
+                 });
+             }
              ?>
              <div class="row g-2 px-1 mb-2">
-                 <?php if(!empty($args['flats'])): ?>
-                     <?php foreach($args['flats'] as $f): 
+                 <?php if(!empty($sorted_flats)): ?>
+                     <?php foreach($sorted_flats as $f): 
                          $val = $f['id']; 
                          $f_num = !empty($f['flat_number']) ? $f['flat_number'] : $f['id'];
-                         $is_sel = in_array($val, $selected_flat_ids) || in_array($f_num, $selected_flat_ids);
+                         $clean_block = trim(preg_replace('/^(block[\s_-]*)+/i', '', (string)($f['block'] ?? '')));
+                         $full_display = NAMMASOCIETY51_DB_Router::format_flat_display($clean_block, $f_num);
+                         
+                         $is_sel = false;
+                         foreach ($selected_flat_ids as $sf) {
+                             $sf_clean = trim((string)$sf);
+                             if ($sf_clean === $val || $sf_clean === $f_num || $sf_clean === $full_display) {
+                                 $is_sel = true; break;
+                             }
+                             $norm_sf = strtolower(preg_replace('/[^a-z0-9]/i', '', $sf_clean));
+                             $norm_val = strtolower(preg_replace('/[^a-z0-9]/i', '', $val));
+                             if ($norm_sf && $norm_sf === $norm_val) {
+                                 $is_sel = true; break;
+                             }
+                         }
                      ?>
                          <div class="col-md-4 col-6">
                              <div class="form-check">
-                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" type="checkbox" name="flat_ids[]" value="<?php echo esc_attr($val); ?>" id="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" data-number="<?php echo esc_attr($f_num); ?>" <?php checked($is_sel); ?>>
-                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>">
-                                     <?php echo esc_html($f_num); ?>
+                                 <input class="form-check-input js-flat-checkbox-<?= $context ?>" 
+                                        type="checkbox" 
+                                        name="flat_ids[]" 
+                                        value="<?php echo esc_attr($val); ?>" 
+                                        id="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" 
+                                        data-number="<?php echo esc_attr($f_num); ?>" 
+                                        data-block="<?php echo esc_attr($clean_block); ?>" 
+                                        data-display="<?php echo esc_attr($full_display); ?>" 
+                                        <?php checked($is_sel); ?>>
+                                 <label class="form-check-label small" for="flat-<?php echo esc_attr($val); ?>-<?php echo esc_html( $context ); ?>" title="<?php echo esc_attr($full_display); ?>">
+                                     <?php if (!empty($clean_block)): ?>
+                                         <span class="badge bg-light text-primary border me-1 fw-bold" style="font-size: 10px;"><?php echo esc_html($clean_block); ?></span>
+                                     <?php endif; ?>
+                                     <span class="fw-semibold text-dark"><?php echo esc_html($f_num); ?></span>
                                  </label>
                              </div>
                          </div>
                      <?php endforeach; ?>
                  <?php endif; ?>
              </div>
-             <!-- Hidden input to stay in sync with legacy flat_no for simple form post fallbacks -->
+             <!-- Hidden input to stay in sync with canonical flat_no and block for form post fallbacks -->
              <input type="hidden" name="flat_no" id="flat-no-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($flat_no); ?>">
+             <input type="hidden" name="block" id="block-hidden-<?php echo esc_html( $context ); ?>" value="<?php echo esc_attr($r['block'] ?? ''); ?>">
              
              <!-- Primary Flat Selection (Shown only when multiple selected) -->
              <div class="mb-3" id="primary-flat-wrapper-<?php echo esc_html( $context ); ?>" style="display: none;">
@@ -121,10 +157,11 @@ $role          = $r['roles'] ?? ($r['role'] ?? '');
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Flat No.</label>
             <?php 
-            $display_flat = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $flat_no );
+            $display_flat = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $flat_no, $r['block'] ?? '' );
             ?>
             <input type="text" class="form-control rounded-3 border-light shadow-none bg-light" value="<?php echo esc_attr($display_flat); ?>" disabled>
             <input type="hidden" name="flat_no" value="<?php echo esc_attr($flat_no); ?>">
+            <input type="hidden" name="block" value="<?php echo esc_attr($r['block'] ?? ''); ?>">
         </div>
         <div class="col-md-6">
             <label class="form-label small fw-bold text-secondary text-uppercase">Type</label>

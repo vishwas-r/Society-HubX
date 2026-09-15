@@ -30,6 +30,8 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
         add_action('wp_ajax_nammasociety51_delete_staff', array($this, 'handle_delete_staff'));
         add_action('wp_ajax_nammasociety51_restore_staff', array($this, 'handle_restore_staff'));
         add_action('wp_ajax_nammasociety51_mark_attendance', array($this, 'handle_mark_attendance'));
+        add_action('wp_ajax_nammasociety51_gate_toggle_staff', array($this, 'handle_gate_toggle_staff'));
+        add_action('wp_ajax_nammasociety51_rate_staff', array($this, 'handle_rate_staff'));
         add_action('wp_ajax_nammasociety51_raise_concern', array($this, 'handle_raise_concern'));
         add_action('wp_ajax_nammasociety51_get_attendance_report', array($this, 'handle_get_attendance_report'));
 
@@ -48,6 +50,12 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
             $this->db->verify_column('daily_help', 'flat_no', 'varchar(50) DEFAULT "" NOT NULL'); // Legacy flat link
             $this->db->verify_column('daily_help', 'category', 'varchar(50) DEFAULT "" NOT NULL');
             $this->db->verify_column('daily_help', 'id_proof', 'text DEFAULT NULL'); // Separate ID Proof
+            $this->db->verify_column('daily_help', 'current_status', 'varchar(20) DEFAULT "out_of_campus" NOT NULL');
+            $this->db->verify_column('daily_help', 'rating', 'decimal(3,2) DEFAULT 5.00 NOT NULL');
+            $this->db->verify_column('daily_help', 'total_ratings', 'int(10) DEFAULT 0 NOT NULL');
+            $this->db->verify_column('daily_help', 'active_session_id', 'varchar(50) DEFAULT "" NOT NULL');
+            $this->db->verify_column('staff_attendance', 'time_out', 'time DEFAULT NULL');
+            $this->db->verify_column('staff_attendance', 'duration_minutes', 'int(10) DEFAULT 0 NOT NULL');
         }
 
         // Register Module
@@ -180,6 +188,8 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
     private function perform_add_staff($data)
     {
         $id = isset($data['id']) ? $data['id'] : uniqid('staff_');
+        $flats_served = isset($data['flats_served']) && is_array($data['flats_served']) ? array_values(array_map('sanitize_text_field', $data['flats_served'])) : [];
+
         $db_data = array(
             'name' => sanitize_text_field($data['name']),
             'role' => sanitize_text_field($data['role']),
@@ -190,7 +200,11 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
             'created_at' => current_time('mysql'),
             'id' => $id,
             'status' => isset($data['status']) ? $data['status'] : 'approved',
-            'flat_no' => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ''),
+            'current_status' => 'out_of_campus',
+            'rating' => 5.00,
+            'total_ratings' => 0,
+            'flats_served' => !empty($flats_served) ? json_encode($flats_served) : '',
+            'flat_no' => !empty($flats_served) ? $flats_served[0] : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ''),
             'profile_photo' => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : '',
             'id_proof' => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ''
         );
@@ -218,9 +232,8 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
         }
 
         $res = $this->db->insert('daily_help', $db_data);
-        if (!is_wp_error($res) && isset($data['flats_served']) && is_array($data['flats_served'])) {
-            $sanitized_flats = array_map('sanitize_text_field', $data['flats_served']);
-            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $sanitized_flats);
+        if (!is_wp_error($res) && !empty($flats_served)) {
+            $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $flats_served);
         }
         return $res;
     }
@@ -255,6 +268,8 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
             }
         }
 
+        $sanitized_flats = isset($data['flats_served']) && is_array($data['flats_served']) ? array_values(array_map('sanitize_text_field', $data['flats_served'])) : null;
+
         $update_data = array(
             'name' => isset($data['name']) ? sanitize_text_field($data['name']) : ($existing['name'] ?? ''),
             'role' => isset($data['role']) ? sanitize_text_field($data['role']) : ($existing['role'] ?? ''),
@@ -265,10 +280,14 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
             // Preserve other fields
             'status' => 'approved', // Reset to approved upon edit approval or admin edit
             'created_by' => $existing['created_by'] ?? '',
-            'flat_no' => !empty($data['flats_served']) && is_array($data['flats_served']) ? sanitize_text_field($data['flats_served'][0]) : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? '')),
+            'flat_no' => ($sanitized_flats !== null && !empty($sanitized_flats)) ? $sanitized_flats[0] : (isset($data['flat_no']) ? sanitize_text_field($data['flat_no']) : ($existing['flat_no'] ?? '')),
             'profile_photo' => isset($data['profile_photo']) ? esc_url_raw($data['profile_photo']) : ($existing['profile_photo'] ?? ''),
             'id_proof' => isset($data['id_proof']) ? esc_url_raw($data['id_proof']) : ($existing['id_proof'] ?? '')
         );
+
+        if ($sanitized_flats !== null) {
+            $update_data['flats_served'] = !empty($sanitized_flats) ? json_encode($sanitized_flats) : '';
+        }
 
         // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce check is performed in handle_edit_staff caller method; $_FILES is sanitized via sanitize_file_array.
         if (!empty($_FILES['id_proof']) && !empty($_FILES['id_proof']['name'])) {
@@ -293,8 +312,7 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
         }
 
         $res = $this->db->update('daily_help', $update_data, ['id' => $id]);
-        if (!is_wp_error($res) && isset($data['flats_served']) && is_array($data['flats_served'])) {
-            $sanitized_flats = array_map('sanitize_text_field', $data['flats_served']);
+        if (!is_wp_error($res) && $sanitized_flats !== null) {
             $this->db->save_relations('staff_flats', 'staff_id', $id, 'flat_id', $sanitized_flats);
         }
         return $res;
@@ -364,6 +382,24 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
         $rm = new NAMMASOCIETY51_Request_Manager();
         $unified = $rm->get_unified_data('daily_help', 'daily_help', '', true);
         $flats = $this->db->get('flats');
+
+        if (!empty($unified['active'])) {
+            foreach ($unified['active'] as &$s) {
+                if (empty($s['flats_served']) && !empty($s['flat_no'])) {
+                    $s['flats_served'] = [$s['flat_no']];
+                }
+                if (empty($s['current_status'])) {
+                    $s['current_status'] = 'out_of_campus';
+                }
+                if (!isset($s['rating'])) {
+                    $s['rating'] = 5.00;
+                }
+                if (!isset($s['total_ratings'])) {
+                    $s['total_ratings'] = 0;
+                }
+            }
+            unset($s);
+        }
 
         NAMMASOCIETY51_Admin_App::render_view('staff', [
             'staff' => $unified['active'],
@@ -586,6 +622,213 @@ class NAMMASOCIETY51_Staff_Manager implements NAMMASOCIETY51_Module
             'size'     => isset( $file['size'] ) ? intval( $file['size'] ) : 0,
         );
     }
+
+    public function handle_gate_toggle_staff() {
+        if (wp_doing_ajax()) {
+            check_ajax_referer('nammasociety51_staff_nonce');
+        } else {
+            if (!check_admin_referer('nammasociety51_staff_nonce')) wp_die('Security check failed');
+        }
+
+        $rbac = new NAMMASOCIETY51_RBAC_Manager();
+        if (!$rbac->has_capability(get_current_user_id(), 'staff_manage')) {
+            wp_send_json_error(['message' => 'Permission denied: requires staff_manage capability']);
+        }
+
+        $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
+        $requested_action = isset($_POST['direction']) ? sanitize_text_field(wp_unslash($_POST['direction'])) : '';
+
+        if (!$staff_id) {
+            wp_send_json_error(['message' => 'Staff ID is required']);
+        }
+
+        $staff_rows = $this->db->get('daily_help', array('where' => array('id' => $staff_id), 'load_relations' => true));
+        if (empty($staff_rows)) {
+            wp_send_json_error(['message' => 'Staff member not found']);
+        }
+
+        $staff = $staff_rows[0];
+        $current_status = !empty($staff['current_status']) ? $staff['current_status'] : 'out_of_campus';
+
+        if (empty($requested_action)) {
+            $new_status = ($current_status === 'in_campus') ? 'out_of_campus' : 'in_campus';
+        } else {
+            $new_status = ($requested_action === 'checkin') ? 'in_campus' : 'out_of_campus';
+        }
+
+        $today = current_time('Y-m-d');
+        $now_time = current_time('H:i:s');
+        $now_mysql = current_time('mysql');
+
+        // Resolve assigned flats
+        $served_flats = isset($staff['flats_served']) && is_array($staff['flats_served']) ? $staff['flats_served'] : [];
+        if (empty($served_flats) && !empty($staff['flat_no'])) {
+            $served_flats = [$staff['flat_no']];
+        }
+
+        $nammasociety = class_exists('NAMMASOCIETY51_Plugin') ? NAMMASOCIETY51_Plugin::get_instance() : null;
+
+        if ($new_status === 'in_campus') {
+            // Check-in
+            $session_id = uniqid('sess_');
+            $this->db->update('daily_help', array(
+                'current_status' => 'in_campus',
+                'active_session_id' => $session_id
+            ), array('id' => $staff_id));
+
+            $this->db->insert('staff_attendance', array(
+                'staff_id' => $staff_id,
+                'date' => $today,
+                'time_in' => $now_time,
+                'time_out' => null,
+                'duration_minutes' => 0,
+                'status' => 'present',
+                'marked_by' => get_current_user_id(),
+                'created_at' => $now_mysql
+            ));
+
+            // Notify flat residents
+            if ($nammasociety && !empty($served_flats)) {
+                $residents = $this->db->get('residents');
+                $flat_match_pool = array();
+                foreach ($served_flats as $sf) {
+                    $flat_match_pool = array_merge($flat_match_pool, $this->db->get_flat_identifiers($sf));
+                }
+                $flat_match_pool = array_unique(array_filter($flat_match_pool));
+
+                foreach ($residents as $r) {
+                    $r_ids = $this->db->get_flat_identifiers($r['flat_no']);
+                    $matched = !empty(array_intersect($r_ids, $flat_match_pool));
+                    if ($matched && ($r['status'] ?? '') === 'approved' && !empty($r['wp_user_id'])) {
+                        $nammasociety->notifications->trigger('staff_checkin', $r['wp_user_id'], array(
+                            'staff_name' => $staff['name'],
+                            'role' => $staff['role'] ?? 'Daily Help',
+                            'flat_no' => $r['flat_no']
+                        ), false);
+                    }
+                }
+            }
+
+            wp_send_json_success([
+                'message' => "{$staff['name']} checked in to campus at {$now_time}.",
+                'new_status' => 'in_campus',
+                'time' => $now_time
+            ]);
+        } else {
+            // Check-out: calculate duration and close active attendance
+            $all_att = $this->db->get('staff_attendance', array(
+                'where' => array(
+                    'staff_id' => $staff_id,
+                    'date' => $today
+                )
+            ));
+
+            $duration_minutes = 0;
+            $duration_str = '0m';
+
+            if (!empty($all_att)) {
+                $open_record = null;
+                foreach (array_reverse($all_att) as $rec) {
+                    if (empty($rec['time_out'])) {
+                        $open_record = $rec;
+                        break;
+                    }
+                }
+
+                if ($open_record) {
+                    $time_in = $open_record['time_in'];
+                    $t_in_sec = strtotime($time_in);
+                    $t_out_sec = strtotime($now_time);
+                    if ($t_out_sec > $t_in_sec) {
+                        $duration_minutes = max(1, round(($t_out_sec - $t_in_sec) / 60));
+                    }
+                    $hours = floor($duration_minutes / 60);
+                    $mins = $duration_minutes % 60;
+                    $duration_str = $hours > 0 ? "{$hours}h {$mins}m" : "{$mins}m";
+
+                    $this->db->update('staff_attendance', array(
+                        'time_out' => $now_time,
+                        'duration_minutes' => $duration_minutes
+                    ), array('id' => $open_record['id']));
+                }
+            }
+
+            $this->db->update('daily_help', array(
+                'current_status' => 'out_of_campus',
+                'active_session_id' => ''
+            ), array('id' => $staff_id));
+
+            // Notify flat residents
+            if ($nammasociety && !empty($served_flats)) {
+                $residents = $this->db->get('residents');
+                $flat_match_pool = array();
+                foreach ($served_flats as $sf) {
+                    $flat_match_pool = array_merge($flat_match_pool, $this->db->get_flat_identifiers($sf));
+                }
+                $flat_match_pool = array_unique(array_filter($flat_match_pool));
+
+                foreach ($residents as $r) {
+                    $r_ids = $this->db->get_flat_identifiers($r['flat_no']);
+                    $matched = !empty(array_intersect($r_ids, $flat_match_pool));
+                    if ($matched && ($r['status'] ?? '') === 'approved' && !empty($r['wp_user_id'])) {
+                        $nammasociety->notifications->trigger('staff_checkout', $r['wp_user_id'], array(
+                            'staff_name' => $staff['name'],
+                            'role' => $staff['role'] ?? 'Daily Help',
+                            'duration' => $duration_str,
+                            'flat_no' => $r['flat_no']
+                        ), false);
+                    }
+                }
+            }
+
+            wp_send_json_success([
+                'message' => "{$staff['name']} checked out of campus. Duration: {$duration_str}",
+                'new_status' => 'out_of_campus',
+                'duration' => $duration_str,
+                'time' => $now_time
+            ]);
+        }
+    }
+
+    public function handle_rate_staff() {
+        if (wp_doing_ajax()) {
+            check_ajax_referer('nammasociety51_staff_nonce');
+        } else {
+            if (!check_admin_referer('nammasociety51_staff_nonce')) wp_die('Security check failed');
+        }
+
+        $staff_id = isset($_POST['staff_id']) ? sanitize_text_field(wp_unslash($_POST['staff_id'])) : '';
+        $rating = isset($_POST['rating']) ? floatval($_POST['rating']) : 0;
+        $rating = max(1, min(5, $rating));
+
+        if (!$staff_id || $rating <= 0) {
+            wp_send_json_error(['message' => 'Invalid staff ID or rating value (1-5 required).']);
+        }
+
+        $staff_rows = $this->db->get('daily_help', array('where' => array('id' => $staff_id)));
+        if (empty($staff_rows)) {
+            wp_send_json_error(['message' => 'Staff member not found.']);
+        }
+
+        $staff = $staff_rows[0];
+        $current_rating = isset($staff['rating']) ? floatval($staff['rating']) : 5.0;
+        $total_ratings = isset($staff['total_ratings']) ? intval($staff['total_ratings']) : 0;
+
+        $new_total = $total_ratings + 1;
+        $new_rating = round((($current_rating * $total_ratings) + $rating) / $new_total, 2);
+
+        $this->db->update('daily_help', array(
+            'rating' => $new_rating,
+            'total_ratings' => $new_total
+        ), array('id' => $staff_id));
+
+        wp_send_json_success([
+            'message' => 'Thank you! Rating recorded successfully.',
+            'rating' => $new_rating,
+            'total_ratings' => $new_total
+        ]);
+    }
+
     public function handle_mark_attendance() {
         if (wp_doing_ajax()) {
             check_ajax_referer('nammasociety51_staff_nonce');

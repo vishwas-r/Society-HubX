@@ -142,9 +142,12 @@ class NAMMASOCIETY51_Flat_Manager {
 			wp_die( 'Unauthorized' );
 		}
 
+		$clean_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $_POST['block'] ?? '' ) ) );
+		$flat_number = trim( (string)( $_POST['flat_number'] ?? '' ) );
+
 		$data = array(
-			'block'          => isset( $_POST['block'] ) ? sanitize_text_field( wp_unslash( $_POST['block'] ) ) : '',
-			'flat_number'    => isset( $_POST['flat_number'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_number'] ) ) : '',
+			'block'          => $clean_block,
+			'flat_number'    => $flat_number,
 			'floor'          => isset( $_POST['floor'] ) ? sanitize_text_field( wp_unslash( $_POST['floor'] ) ) : '',
 			'sq_foot'        => isset( $_POST['sq_foot'] ) ? floatval( wp_unslash( $_POST['sq_foot'] ) ) : 0,
 			'parking_slot'   => isset( $_POST['parking_slot'] ) ? sanitize_text_field( wp_unslash( $_POST['parking_slot'] ) ) : '',
@@ -155,7 +158,7 @@ class NAMMASOCIETY51_Flat_Manager {
 
 		// Determine the original ID (hidden field) and the new ID (based on edited values)
 		$original_id = isset( $_POST['flat_id'] ) ? sanitize_text_field( wp_unslash( $_POST['flat_id'] ) ) : '';
-		$new_id = $data['block'] . '-' . $data['flat_number'];
+		$new_id = ( $clean_block ? $clean_block . '-' : '' ) . $flat_number;
 
 		// If the user changed block/flat_number, set the new id value in data so it updates the record
 		if ( ! empty( $original_id ) && $original_id !== $new_id ) {
@@ -297,9 +300,12 @@ class NAMMASOCIETY51_Flat_Manager {
 	 * Core Logic to Add Flat.
 	 */
 	private function process_add_flat( $post_data ) {
+		$clean_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $post_data['block'] ?? '' ) ) );
+		$flat_number = trim( (string)( $post_data['flat_number'] ?? '' ) );
+
 		$data = array(
-			'block'        => $post_data['block'],
-			'flat_number'  => $post_data['flat_number'],
+			'block'        => $clean_block,
+			'flat_number'  => $flat_number,
 			'floor'        => isset($post_data['floor']) ? $post_data['floor'] : '',
 			'sq_foot'      => isset($post_data['sq_foot']) ? floatval( $post_data['sq_foot'] ) : 0.00,
 			'parking_slot' => isset($post_data['parking_slot']) ? $post_data['parking_slot'] : '',
@@ -309,7 +315,7 @@ class NAMMASOCIETY51_Flat_Manager {
 		);
 
 		// Generate Unique Display Key
-		$data['id'] = $data['block'] . '-' . $data['flat_number']; // e.g. A-101
+		$data['id'] = ( $clean_block ? $clean_block . '-' : '' ) . $flat_number; // e.g. A-101
 
 		// Check duplicate
 		$existing = $this->db->get( 'flats' );

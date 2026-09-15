@@ -145,6 +145,12 @@ class NAMMASOCIETY51_DB_Schema {
 			flat_no varchar(50) NOT NULL,
 			resident_name varchar(255) DEFAULT '' NOT NULL,
 			amount decimal(15,2) NOT NULL,
+			base_amount decimal(15,2) DEFAULT 0.00 NOT NULL,
+			cgst_amount decimal(15,2) DEFAULT 0.00 NOT NULL,
+			sgst_amount decimal(15,2) DEFAULT 0.00 NOT NULL,
+			utility_amount decimal(15,2) DEFAULT 0.00 NOT NULL,
+			late_fee_amount decimal(15,2) DEFAULT 0.00 NOT NULL,
+			formula_breakdown longtext DEFAULT NULL,
 			total_paid decimal(15,2) DEFAULT 0.00 NOT NULL,
 			month varchar(20) NOT NULL,
 			type varchar(50) DEFAULT 'maintenance' NOT NULL,
@@ -258,6 +264,10 @@ class NAMMASOCIETY51_DB_Schema {
 			flats_served text NOT NULL,
 			profile_photo text NOT NULL,
 			status varchar(20) DEFAULT 'pending' NOT NULL,
+			current_status varchar(20) DEFAULT 'out_of_campus' NOT NULL,
+			active_session_id varchar(50) DEFAULT '' NOT NULL,
+			rating decimal(3,2) DEFAULT 5.00 NOT NULL,
+			total_ratings int(10) DEFAULT 0 NOT NULL,
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
 			PRIMARY KEY  (id)
 		) $charset_collate;";
@@ -574,6 +584,7 @@ class NAMMASOCIETY51_DB_Schema {
 			date date NOT NULL,
 			time_in time DEFAULT NULL,
 			time_out time DEFAULT NULL,
+			duration_minutes int(10) DEFAULT 0 NOT NULL,
 			status varchar(20) DEFAULT 'present' NOT NULL,
 			marked_by bigint(20) DEFAULT 0 NOT NULL,
 			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
@@ -764,6 +775,39 @@ class NAMMASOCIETY51_DB_Schema {
 			KEY created_at (created_at)
 		) $charset_collate;";
 
+		// 38. Chart of Accounts (Double-Entry General Ledger)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_chart_of_accounts (
+			id varchar(50) NOT NULL,
+			account_code varchar(20) NOT NULL,
+			account_name varchar(100) NOT NULL,
+			account_type varchar(30) NOT NULL,
+			parent_id varchar(50) DEFAULT '' NOT NULL,
+			is_system tinyint(1) DEFAULT 0 NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY account_code (account_code)
+		) $charset_collate;";
+
+		// 39. Journal Entries (Double-Entry Accounting Vouchers)
+		$tables[] = "CREATE TABLE {$wpdb->prefix}nammasociety51_journal_entries (
+			id bigint(20) NOT NULL AUTO_INCREMENT,
+			entry_number varchar(50) NOT NULL,
+			date date NOT NULL,
+			account_code varchar(20) NOT NULL,
+			account_name varchar(100) NOT NULL,
+			debit decimal(15,2) DEFAULT 0.00 NOT NULL,
+			credit decimal(15,2) DEFAULT 0.00 NOT NULL,
+			reference_type varchar(30) NOT NULL,
+			reference_id varchar(50) NOT NULL,
+			narration text NOT NULL,
+			created_at datetime DEFAULT '1970-01-01 00:00:01' NOT NULL,
+			PRIMARY KEY  (id),
+			KEY entry_number (entry_number),
+			KEY date (date),
+			KEY account_code (account_code),
+			KEY reference_id (reference_id)
+		) $charset_collate;";
+
 		foreach ( $tables as $sql ) {
 			dbDelta( $sql );
 		}
@@ -825,7 +869,14 @@ class NAMMASOCIETY51_DB_Schema {
 			['event_slug' => 'appeal_rejected', 'module' => 'rules', 'default_channels' => 'inapp,email'],
 			// Staff Events
 			['event_slug' => 'society_staff_concern', 'module' => 'staff', 'default_channels' => 'inapp,email'],
-			['event_slug' => 'flat_staff_concern', 'module' => 'staff', 'default_channels' => 'inapp,email,whatsapp']
+			['event_slug' => 'flat_staff_concern', 'module' => 'staff', 'default_channels' => 'inapp,email,whatsapp'],
+			// Staff Check-in/Check-out Events
+			['event_slug' => 'staff_checkin', 'module' => 'staff', 'default_channels' => 'inapp,whatsapp'],
+			['event_slug' => 'staff_checkout', 'module' => 'staff', 'default_channels' => 'inapp,whatsapp'],
+			// Helpdesk Events
+			['event_slug' => 'ticket_assigned', 'module' => 'helpdesk', 'default_channels' => 'inapp,email'],
+			['event_slug' => 'ticket_resolved', 'module' => 'helpdesk', 'default_channels' => 'inapp,email,whatsapp'],
+			['event_slug' => 'ticket_closed', 'module' => 'helpdesk', 'default_channels' => 'inapp,email']
 		];
 
 		foreach ($default_events as $event) {
@@ -889,7 +940,22 @@ class NAMMASOCIETY51_DB_Schema {
 			
 			['event_slug' => 'flat_staff_concern', 'channel' => 'inapp', 'subject' => 'Flat Staff Concern', 'content' => 'Your staff {staff_name} raised a concern: {description}'],
 			['event_slug' => 'flat_staff_concern', 'channel' => 'email', 'subject' => 'Staff Concern: {staff_name}', 'content' => 'Hello {resident_name},<br><br>Your flat staff member <b>{staff_name}</b> has raised a concern.<br><br>Details: {description}'],
-			['event_slug' => 'flat_staff_concern', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Your staff {staff_name} raised a concern. Login to view details.']
+			['event_slug' => 'flat_staff_concern', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Your staff {staff_name} raised a concern. Login to view details.'],
+
+			// Staff Attendance Templates
+			['event_slug' => 'staff_checkin', 'channel' => 'inapp', 'subject' => 'Daily Staff Arrived', 'content' => 'Your staff {staff_name} ({role}) has checked in at the gate.'],
+			['event_slug' => 'staff_checkin', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Your staff {staff_name} ({role}) has checked in at the gate.'],
+			['event_slug' => 'staff_checkout', 'channel' => 'inapp', 'subject' => 'Daily Staff Departed', 'content' => 'Your staff {staff_name} ({role}) has checked out. Duration: {duration}'],
+			['event_slug' => 'staff_checkout', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY Alert: Your staff {staff_name} ({role}) has left the campus. Duration: {duration}'],
+
+			// Helpdesk Templates
+			['event_slug' => 'ticket_assigned', 'channel' => 'inapp', 'subject' => 'Ticket Assigned', 'content' => 'Ticket #{ticket_number} has been assigned to technician {technician_name}.'],
+			['event_slug' => 'ticket_assigned', 'channel' => 'email', 'subject' => 'Ticket Assigned: #{ticket_number}', 'content' => 'Hello {resident_name},<br><br>Your complaint/ticket <b>#{ticket_number}</b> ({title}) has been assigned to technician <b>{technician_name}</b>.'],
+			['event_slug' => 'ticket_resolved', 'channel' => 'inapp', 'subject' => 'Ticket Resolved - OTP Generated', 'content' => 'Ticket #{ticket_number} marked resolved. Share OTP {closure_otp} with technician to close.'],
+			['event_slug' => 'ticket_resolved', 'channel' => 'email', 'subject' => 'Ticket Resolved: #{ticket_number} - Closure OTP', 'content' => 'Hello {resident_name},<br><br>Your complaint <b>#{ticket_number}</b> has been marked resolved. Please provide 4-digit closure OTP: <b>{closure_otp}</b> to verify completion.'],
+			['event_slug' => 'ticket_resolved', 'channel' => 'whatsapp', 'subject' => '', 'content' => 'NAMMASOCIETY: Complaint #{ticket_number} resolved. Provide OTP {closure_otp} to technician to close.'],
+			['event_slug' => 'ticket_closed', 'channel' => 'inapp', 'subject' => 'Ticket Closed', 'content' => 'Ticket #{ticket_number} ({title}) has been verified and successfully closed.'],
+			['event_slug' => 'ticket_closed', 'channel' => 'email', 'subject' => 'Ticket Closed: #{ticket_number}', 'content' => 'Hello {resident_name},<br><br>Your ticket <b>#{ticket_number}</b> ({title}) is now officially closed. Thank you!']
 		];
 
 		foreach ($default_templates as $tpl) {
@@ -960,6 +1026,36 @@ class NAMMASOCIETY51_DB_Schema {
 				$role['created_at'] = current_time('mysql');
 				$role['updated_at'] = current_time('mysql');
 				$wpdb->insert($roles_table, $role);
+			}
+		}
+
+		// 6. Seed Chart of Accounts (Double-Entry General Ledger)
+		$coa_table = "{$wpdb->prefix}nammasociety51_chart_of_accounts";
+		$existing_coa = $wpdb->get_var( "SELECT COUNT(*) FROM $coa_table" );
+		if ( $existing_coa == 0 ) {
+			$standard_accounts = array(
+				array( 'id' => 'acc_1010', 'account_code' => '1010', 'account_name' => 'Cash in Hand', 'account_type' => 'Asset', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_1020', 'account_code' => '1020', 'account_name' => 'Bank Operating Account', 'account_type' => 'Asset', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_1030', 'account_code' => '1030', 'account_name' => 'Sinking Fund Fixed Deposit', 'account_type' => 'Asset', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_1040', 'account_code' => '1040', 'account_name' => 'Sundry Debtors (Residents)', 'account_type' => 'Asset', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_2010', 'account_code' => '2010', 'account_name' => 'Sinking Fund Reserve', 'account_type' => 'Liability', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_2020', 'account_code' => '2020', 'account_name' => 'Sundry Creditors (Vendors)', 'account_type' => 'Liability', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_2050', 'account_code' => '2050', 'account_name' => 'GST Output Liability (18%)', 'account_type' => 'Liability', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_3010', 'account_code' => '3010', 'account_name' => 'General Reserves & Surplus', 'account_type' => 'Equity', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_4010', 'account_code' => '4010', 'account_name' => 'Maintenance Charges Income', 'account_type' => 'Income', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_4020', 'account_code' => '4020', 'account_name' => 'Late Payment Interest', 'account_type' => 'Income', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_4030', 'account_code' => '4030', 'account_name' => 'Facility Booking Revenue', 'account_type' => 'Income', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5010', 'account_code' => '5010', 'account_name' => 'Electricity & BESCOM Charges', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5020', 'account_code' => '5020', 'account_name' => 'Water Tanker & Supply', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5030', 'account_code' => '5030', 'account_name' => 'Security Agency Fees', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5040', 'account_code' => '5040', 'account_name' => 'Housekeeping & Janitorial', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5050', 'account_code' => '5050', 'account_name' => 'Lift / Elevator AMC', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5060', 'account_code' => '5060', 'account_name' => 'DG Set Fuel & Maintenance', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+				array( 'id' => 'acc_5090', 'account_code' => '5090', 'account_name' => 'Repairs & General Maintenance', 'account_type' => 'Expense', 'parent_id' => '', 'is_system' => 1 ),
+			);
+			foreach ( $standard_accounts as $acc ) {
+				$acc['created_at'] = current_time( 'mysql' );
+				$wpdb->insert( $coa_table, $acc );
 			}
 		}
 	}
@@ -1038,7 +1134,9 @@ class NAMMASOCIETY51_DB_Schema {
             'nammasociety51_resident_role_map',
             'nammasociety51_payments',
             'nammasociety51_staff_attendance',
-            'nammasociety51_staff_concerns'
+            'nammasociety51_staff_concerns',
+            'nammasociety51_chart_of_accounts',
+            'nammasociety51_journal_entries'
         );
         
         foreach($tables as $t) {

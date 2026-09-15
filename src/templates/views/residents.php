@@ -167,12 +167,24 @@ sort($unique_blocks);
                 </thead>
                 <tbody class="border-top-0">
                     <?php 
-                    // 0. Build Flat Mapping for display
+                    // 0. Build Flat Mapping for canonical uniform display: [Block] - [Number] (e.g. A - 101)
                     $flat_map = array();
                     if ( ! empty( $flats ) ) {
                         foreach ( $flats as $f ) {
-                            // User requested ONLY flat number
-                            $flat_map[$f['id']] = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
+                            $f_id = $f['id'];
+                            $f_num = ! empty( $f['flat_number'] ) ? $f['flat_number'] : $f['id'];
+                            $clean_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $f['block'] ?? '' ) ) );
+                            $f_disp = NAMMASOCIETY51_DB_Router::format_flat_display( $clean_block, $f_num );
+
+                            $flat_map[$f_id] = $f_disp;
+                            $flat_map[$f_num] = $f_disp;
+                            if ( ! empty( $clean_block ) ) {
+                                $flat_map[$clean_block . '-' . $f_num] = $f_disp;
+                                $flat_map[$clean_block . ' - ' . $f_num] = $f_disp;
+                                $flat_map[$clean_block . '_' . $f_num] = $f_disp;
+                                $flat_map[$clean_block . $f_num] = $f_disp;
+                                $flat_map['flat_' . $clean_block . '_' . $f_num] = $f_disp;
+                            }
                         }
                     }
 
@@ -270,10 +282,27 @@ sort($unique_blocks);
                         ?>
                         <tr class="resident-row border-bottom border-light" 
                             data-status="<?php echo esc_attr($status); ?>" 
+                            <?php 
+                                $f_ids = ! empty( $row['flat_ids'] ) ? (array) $row['flat_ids'] : ( ! empty( $row['flat_no'] ) ? array( $row['flat_no'] ) : array( '-' ) );
+                                $row_disp_flats = array();
+                                $r_blk = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $row['block'] ?? '' ) ) );
+                                foreach ( $f_ids as $f_id ) {
+                                    $lookup_k = trim((string)$f_id);
+                                    $d_f = $flat_map[$lookup_k] ?? null;
+                                    if ( ! $d_f && $r_blk ) {
+                                        $d_f = $flat_map[$r_blk . '-' . $lookup_k] ?? ( $flat_map[$r_blk . '_' . $lookup_k] ?? null );
+                                    }
+                                    if ( ! $d_f ) {
+                                        $d_f = NAMMASOCIETY51_Plugin::get_instance()->db->get_flat_display_name( $f_id, $row['block'] ?? '' );
+                                    }
+                                    $row_disp_flats[] = $d_f;
+                                }
+                                $row_flats_search = implode(' ', $row_disp_flats);
+                            ?>
                             data-type="<?php echo esc_attr($type); ?>"
                             data-block="<?php echo esc_attr($block); ?>"
                             data-blood="<?php echo esc_attr($blood); ?>"
-                            data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['name']??''))); ?>">
+                            data-search="<?php echo esc_attr(strtolower(($row['flat_no']??'') . ' ' . ($row['block']??'') . ' ' . $row_flats_search . ' ' . ($row['name']??''))); ?>">
                             <td class="ps-3 ps-md-5 py-4">
                                 <input type="checkbox" value="<?php echo esc_attr($request_id); ?>" class="form-check-input nammasociety-bulk-checkbox shadow-none">
                             </td>
@@ -296,10 +325,9 @@ sort($unique_blocks);
                             <td class="px-4 py-4">
                                 <div class="d-flex align-items-center gap-2">
                                     <?php 
-                                        $f_ids = ! empty( $row['flat_ids'] ) ? (array) $row['flat_ids'] : ( ! empty( $row['flat_no'] ) ? array( $row['flat_no'] ) : array( '-' ) );
-                                        foreach ( $f_ids as $f_id ) {
-                                            $display_f = $flat_map[$f_id] ?? $f_id;
-                                            echo '<a href="#" class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold text-decoration-none js-view-unit" data-unit-id="' . esc_attr( $f_id ) . '" style="font-size: 11px; margin-right: 2px;" title="View Unit Details">' . esc_html( $display_f ) . '</a>';
+                                        foreach ( $f_ids as $idx => $f_id ) {
+                                            $display_f = $row_disp_flats[$idx] ?? $f_id;
+                                            echo '<a href="#" class="badge bg-light text-dark border-0 px-2 py-1.5 fw-bold text-decoration-none js-view-unit" data-unit-id="' . esc_attr( $f_id ) . '" data-block="' . esc_attr( $row['block'] ?? '' ) . '" style="font-size: 11px; margin-right: 2px;" title="View Unit Details">' . esc_html( $display_f ) . '</a>';
                                         }
                                     ?>
                                     <span class="badge <?php echo $type === 'owner' ? 'bg-success' : ($type === 'tenant' ? 'bg-info text-dark' : 'bg-primary'); ?> rounded-pill" style="font-size: 9px;"><?php echo esc_html( $type_label ); ?></span>

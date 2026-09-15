@@ -15,7 +15,37 @@ $db = new NAMMASOCIETY51_DB_Router();
 $flats = $db->get( 'flats' );
 $residents = $db->get( 'residents' );
 
-// Map Residents to Flats (Robust Mapping)
+// Map Residents to Flats (Canonical Mapping by Block and Flat)
+if ( ! function_exists( 'nammasociety_get_unit_key' ) ) {
+    function nammasociety_get_unit_key( $item, $fallback_block = '' ) {
+        if ( is_array( $item ) ) {
+            $flat = $item['flat_no'] ?? ( $item['flat_number'] ?? ( $item['id'] ?? '' ) );
+            $block = $item['block'] ?? $fallback_block;
+        } else {
+            $flat = (string) $item;
+            $block = $fallback_block;
+        }
+
+        $flat = preg_replace( '/^(flat_|res_|veh_)/i', '', trim( (string) $flat ) );
+        $flat = preg_replace( '/(_car|_bike\d*)$/i', '', $flat );
+        $block = preg_replace( '/^block\s*/i', '', trim( (string) $block ) );
+
+        $flat = preg_replace( '/^block\s*/i', '', $flat );
+        if ( preg_match( '/^([a-z]+)[-_ ]*(.*)$/i', $flat, $matches ) ) {
+            $block = $matches[1];
+            $flat = $matches[2];
+        }
+
+        $clean_block = strtolower( preg_replace( '/[^a-z0-9]/i', '', (string) $block ) );
+        $clean_flat = strtolower( preg_replace( '/[^a-z0-9]/i', '', (string) $flat ) );
+
+        if ( $clean_block && $clean_flat ) {
+            return $clean_block . '_' . $clean_flat;
+        }
+        return $clean_flat ? $clean_flat : $clean_block;
+    }
+}
+
 $flat_owners = [];
 if ( ! empty( $residents ) && is_array( $residents ) ) {
     // Priority 1: Owners
@@ -25,19 +55,18 @@ if ( ! empty( $residents ) && is_array( $residents ) ) {
         $is_owner = (strtolower($r['type'] ?? '') === 'owner');
         if (!$is_owner) continue;
 
-        $f_id = trim($r['flat_no']);
-        // Store by whatever ID is present (could be A-101 or 101)
-        if ( ! isset( $flat_owners[ $f_id ] ) ) {
-            $flat_owners[ $f_id ] = $r['name'];
+        $key = nammasociety_get_unit_key( $r );
+        if ( $key && ! isset( $flat_owners[ $key ] ) ) {
+            $flat_owners[ $key ] = $r['name'];
         }
     }
     // Priority 2: Others (if no owner found yet)
     foreach ( $residents as $r ) {
         if ( empty($r['flat_no']) || ($r['status'] ?? '') === 'archived' ) continue;
         
-        $f_id = trim($r['flat_no']);
-        if ( ! isset( $flat_owners[ $f_id ] ) ) {
-            $flat_owners[ $f_id ] = $r['name'];
+        $key = nammasociety_get_unit_key( $r );
+        if ( $key && ! isset( $flat_owners[ $key ] ) ) {
+            $flat_owners[ $key ] = $r['name'];
         }
     }
 }
@@ -177,8 +206,8 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         $flat_no = $f['flat_number'] ?? '-';
                         $full_id = $f['id'] ?? '';
                         
-                        // Robust lookup: Try ID first (A-101), then Flat Number (101)
-                        $owner_name = $flat_owners[$full_id] ?? ($flat_owners[$flat_no] ?? null);
+                        $unit_key = nammasociety_get_unit_key( $f );
+                        $owner_name = $flat_owners[ $unit_key ] ?? null;
                         
                         $f_block = strtolower($f['block'] ?? '');
                         $f_type = strtolower($f['type'] ?? '');
@@ -188,9 +217,13 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         data-block="<?php echo esc_attr($f_block); ?>"
                         data-type="<?php echo esc_attr($f_type); ?>"
                         data-parking="<?php echo esc_attr($p_status); ?>"
-                        data-search="<?php echo esc_attr(strtolower(($f['id']??'') . ' ' . ($owner_name??''))); ?>">
+                        data-search="<?php echo esc_attr(strtolower(($f['flat_number']??'') . ' ' . ($f['block']??'') . ' ' . ($f['id']??'') . ' ' . ($owner_name??''))); ?>">
                         <td class="ps-3 ps-md-5 py-4 fw-bold text-dark">
-                            <a href="#" class="text-dark fw-bold text-decoration-none js-view-unit" data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" title="Click to view unit details">
+                            <a href="#" class="text-dark fw-bold text-decoration-none js-view-unit" 
+                               data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" 
+                               data-block="<?php echo esc_attr( $f['block'] ?? '' ); ?>"
+                               data-flat-no="<?php echo esc_attr( $flat_no ); ?>"
+                               title="Click to view unit details">
                                 <?php echo esc_html( $flat_no ); ?>
                                 <i class="bi bi-box-arrow-up-right ms-1 text-primary opacity-50" style="font-size: 11px;"></i>
                             </a>
@@ -225,7 +258,11 @@ $success_msg = isset( $_GET['success'] ) ? 'Society units updated successfully.'
                         </td>
                         <td class="pe-3 pe-md-5 py-4 text-end">
                             <div class="d-flex justify-content-end gap-2">
-                                <button type="button" class="btn btn-sm btn-light text-dark border shadow-sm rounded-3 p-2 js-view-unit" data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" title="View Unit Details">
+                                <button type="button" class="btn btn-sm btn-light text-dark border shadow-sm rounded-3 p-2 js-view-unit" 
+                                        data-unit-id="<?php echo esc_attr( $full_id ? $full_id : $flat_no ); ?>" 
+                                        data-block="<?php echo esc_attr( $f['block'] ?? '' ); ?>"
+                                        data-flat-no="<?php echo esc_attr( $flat_no ); ?>"
+                                        title="View Unit Details">
                                     <i class="bi bi-eye fs-6"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-light text-primary border shadow-sm rounded-3 p-2 js-edit-flat" data-flat="<?php echo esc_attr(wp_json_encode($f)); ?>" title="Edit Unit">

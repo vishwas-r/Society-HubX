@@ -124,6 +124,11 @@
         });
     };
 
+    $(document).on('change', '#v-flat', function () {
+        const sel = $(this).find(':selected');
+        $('#v-block').val(sel.data('block') || '');
+    });
+
     window.editVehicle = function (vehicle) {
         if (!vehicleModal) vehicleModal = new bootstrap.Modal(document.getElementById('vehicleModal'));
         const $form = $('#add-vehicle-form');
@@ -133,7 +138,29 @@
         $form.find('[name="brand"]').val(vehicle.brand || '');
         $form.find('[name="model"]').val(vehicle.model || '');
         $form.find('[name="sticker"]').val(vehicle.sticker || '');
-        $form.find('[name="flat_no"]').val(vehicle.flat_no || '');
+        
+        const flatSelect = $form.find('[name="flat_no"]');
+        let matched = false;
+        if (vehicle.flat_no) {
+            flatSelect.val(vehicle.flat_no);
+            if (flatSelect.val() === vehicle.flat_no) matched = true;
+            if (!matched) {
+                flatSelect.find('option').each(function() {
+                    if (matched) return;
+                    const optVal = $(this).val();
+                    const optNum = String($(this).data('number') || '');
+                    const optBlock = String($(this).data('block') || '').toLowerCase().replace(/^block\s*/i, '');
+                    const vehBlock = String(vehicle.block || '').toLowerCase().replace(/^block\s*/i, '');
+                    if (optVal === vehicle.flat_no || optNum === vehicle.flat_no) {
+                        if (!vehBlock || optBlock === vehBlock) {
+                            flatSelect.val(optVal);
+                            matched = true;
+                        }
+                    }
+                });
+            }
+        }
+        $form.find('[name="block"]').val(vehicle.block || flatSelect.find(':selected').data('block') || '');
         $form.find('[name="vehicle_id"]').val(vehicle.id);
         $form.find('[name="action"]').val('nammasociety51_edit_vehicle');
 
@@ -144,6 +171,7 @@
     function resetVehicleForm() {
         const $form = $('#add-vehicle-form');
         $form[0].reset();
+        $form.find('[name="block"]').val('');
         $form.find('[name="action"]').val('nammasociety51_add_vehicle');
         $('#vehicleModalTitle').text('Add New Vehicle');
     }

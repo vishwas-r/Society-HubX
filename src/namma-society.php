@@ -215,6 +215,8 @@ final class NAMMASOCIETY51_Plugin {
 		if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'helpdesk' ) ) {
 			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/class-general-request-manager.php';
 			new NAMMASOCIETY51_General_Request_Manager();
+			require_once NAMMASOCIETY51_PLUGIN_DIR . 'modules/helpdesk/class-helpdesk-manager.php';
+			new NAMMASOCIETY51_Helpdesk_Manager();
 		}
 
 		if ( NAMMASOCIETY51_Module_Registry::is_enabled( 'rules' ) ) {
@@ -470,6 +472,15 @@ final class NAMMASOCIETY51_Plugin {
             // Config fetched dynamically via AJAX
         }
 
+        // Helpdesk View Specific JS
+        if ( $page === 'nammasociety51-helpdesk' ) {
+            wp_enqueue_script( 'nammasociety51-helpdesk-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-helpdesk.js', array('jquery', 'nammasociety51-admin-app'), time(), true );
+            wp_localize_script( 'nammasociety51-helpdesk-js', 'nammasociety51HelpdeskVars', array(
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'nonce'   => wp_create_nonce( 'nammasociety51_helpdesk_nonce' ),
+            ) );
+        }
+
 		// Rules View Specific JS
 		if ( $page === 'nammasociety51-rules' ) {
 			wp_enqueue_script( 'nammasociety51-rules-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-rules.js', array('jquery', 'nammasociety51-admin-app'), time(), true );
@@ -496,7 +507,7 @@ final class NAMMASOCIETY51_Plugin {
 		// Accounts View Specific JS (Invoices & Ledger)
 		if ( $page === 'nammasociety51-accounts' ) {
 			wp_enqueue_script( 'nammasociety51-accounts-js', NAMMASOCIETY51_PLUGIN_URL . 'assets/js/nammasociety-accounts.js', array('jquery', 'nammasociety51-admin-app'), time(), true );
-			// Config fetched dynamically via AJAX
+			wp_add_inline_script( 'nammasociety51-accounts-js', 'var nammasociety51AccountNonce = "' . wp_create_nonce( 'nammasociety51_account_action' ) . '";', 'before' );
 		}
 
 		// Notifications View Specific JS (Now also on Settings for Communication tab)

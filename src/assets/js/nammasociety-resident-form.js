@@ -40,10 +40,11 @@
 
 	// 2. Multi-Flat Checkbox Selection Logic
 	function initFlatSelector( context ) {
-		const checkboxes    = document.querySelectorAll( '.js-flat-checkbox-' + context );
+		const checkboxes     = document.querySelectorAll( '.js-flat-checkbox-' + context );
 		const primaryWrapper = document.getElementById( 'primary-flat-wrapper-' + context );
 		const primarySelect  = document.getElementById( 'primary-flat-select-' + context );
 		const hiddenFlatNo   = document.getElementById( 'flat-no-hidden-' + context );
+		const hiddenBlock    = document.getElementById( 'block-hidden-' + context );
 
 		if ( ! checkboxes.length || ! primarySelect ) {
 			return;
@@ -67,16 +68,21 @@
 				checkedBoxes.forEach( function ( cb ) {
 					const opt       = document.createElement( 'option' );
 					opt.value       = cb.value;
-					opt.textContent = cb.dataset.number || cb.value;
+					opt.dataset.block = cb.dataset.block || '';
+					opt.textContent = cb.dataset.display || ( (cb.dataset.block ? cb.dataset.block + ' - ' : '') + (cb.dataset.number || cb.value) );
 					if ( cb.value === selectedVal ) {
 						opt.selected = true;
 					}
 					primarySelect.appendChild( opt );
 				} );
 
-				// Update hidden input to match the chosen primary flat
-				if ( hiddenFlatNo ) {
-					hiddenFlatNo.value = primarySelect.value;
+				// Update hidden inputs to match the chosen primary flat
+				const activeOpt = primarySelect.selectedOptions[0] || primarySelect.options[0];
+				if ( hiddenFlatNo && activeOpt ) {
+					hiddenFlatNo.value = activeOpt.value;
+				}
+				if ( hiddenBlock && activeOpt ) {
+					hiddenBlock.value = activeOpt.dataset.block || '';
 				}
 			} else {
 				if ( primaryWrapper ) {
@@ -89,9 +95,15 @@
 					if ( hiddenFlatNo ) {
 						hiddenFlatNo.value = checkedBoxes[ 0 ].value;
 					}
+					if ( hiddenBlock ) {
+						hiddenBlock.value = checkedBoxes[ 0 ].dataset.block || '';
+					}
 				} else {
 					if ( hiddenFlatNo ) {
 						hiddenFlatNo.value = '';
+					}
+					if ( hiddenBlock ) {
+						hiddenBlock.value = '';
 					}
 				}
 			}
@@ -105,6 +117,10 @@
 			primarySelect.addEventListener( 'change', function () {
 				if ( hiddenFlatNo ) {
 					hiddenFlatNo.value = this.value;
+				}
+				const selOpt = this.selectedOptions[0];
+				if ( hiddenBlock && selOpt ) {
+					hiddenBlock.value = selOpt.dataset.block || '';
 				}
 			} );
 		}

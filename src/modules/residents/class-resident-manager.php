@@ -350,7 +350,24 @@ class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
 
 		$primary_flat_id = ! empty( $data['primary_flat_id'] ) ? $data['primary_flat_id'] : ( ! empty( $flat_ids ) ? $flat_ids[0] : ( $existing_resident['flat_no'] ?? '' ) );
 
+		// Resolve clean block and canonical flat identifier
+		$resolved_block = isset( $data['block'] ) ? sanitize_text_field( $data['block'] ) : '';
+		$resolved_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', $resolved_block ) );
+		if ( ! empty( $primary_flat_id ) ) {
+			$matched_flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $primary_flat_id ) ) );
+			if ( ! empty( $matched_flats ) ) {
+				$primary_flat_id = $matched_flats[0]['id'];
+				if ( empty( $resolved_block ) && ! empty( $matched_flats[0]['block'] ) ) {
+					$resolved_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)$matched_flats[0]['block'] ) );
+				}
+			}
+		}
+		if ( empty( $resolved_block ) && ! empty( $existing_resident['block'] ) ) {
+			$resolved_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)$existing_resident['block'] ) );
+		}
+
 		$update_data = array(
+			'block'         => $resolved_block,
 			'flat_no'       => !empty($primary_flat_id) ? $primary_flat_id : ($existing_resident['flat_no'] ?? ''),
 			'name'          => isset($data['name']) ? sanitize_text_field( $data['name'] ) : ($existing_resident['name'] ?? ''),
 			'email'         => isset($data['email']) ? sanitize_email( $data['email'] ) : ($existing_resident['email'] ?? ''),
@@ -703,8 +720,20 @@ class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
 			$cols = str_getcsv( trim( $row ) );
 			if ( count( $cols ) < 2 ) continue; // Skip empty/invalid
 
+			$raw_flat = sanitize_text_field( $cols[0] );
+			$parsed_block = '';
+			$parsed_num = $raw_flat;
+			if ( preg_match( '/^(?:block[\s_-]*)?([a-z0-9]+)[\s_-]+(.*)$/i', $raw_flat, $m ) ) {
+				$parsed_block = $m[1];
+				$parsed_num   = $m[2];
+			} elseif ( preg_match( '/^([a-z]+)(\d+)$/i', $raw_flat, $m ) ) {
+				$parsed_block = $m[1];
+				$parsed_num   = $m[2];
+			}
+			$clean_b = trim( preg_replace( '/^(block[\s_-]*)+/i', '', $parsed_block ) );
 			$p = array(
-				'flat_no'       => sanitize_text_field( $cols[0] ),
+				'flat_no'       => $clean_b ? $clean_b . '-' . $parsed_num : $raw_flat,
+				'block'         => $clean_b,
 				'name'          => sanitize_text_field( $cols[1] ),
 				'email'         => isset( $cols[2] ) ? sanitize_email( $cols[2] ) : '',
 				'phone'         => isset( $cols[3] ) ? sanitize_text_field( $cols[3] ) : '',
@@ -735,7 +764,21 @@ class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
 		
 		$primary_flat_id = ! empty( $post_data['primary_flat_id'] ) ? $post_data['primary_flat_id'] : ( ! empty( $flat_ids ) ? $flat_ids[0] : '' );
 
+		// Resolve clean block and canonical flat identifier
+		$resolved_block = isset( $post_data['block'] ) ? sanitize_text_field( $post_data['block'] ) : '';
+		$resolved_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', $resolved_block ) );
+		if ( ! empty( $primary_flat_id ) ) {
+			$matched_flats = $this->db->get( 'flats', array( 'where' => array( 'id' => $primary_flat_id ) ) );
+			if ( ! empty( $matched_flats ) ) {
+				$primary_flat_id = $matched_flats[0]['id'];
+				if ( empty( $resolved_block ) && ! empty( $matched_flats[0]['block'] ) ) {
+					$resolved_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)$matched_flats[0]['block'] ) );
+				}
+			}
+		}
+
 		$data = array(
+			'block'   => $resolved_block,
 			'flat_no' => $primary_flat_id,
 			'name'    => $post_data['name'],
 		);
@@ -850,6 +893,40 @@ class NAMMASOCIETY51_Resident_Manager implements NAMMASOCIETY51_Module {
         $rm = new NAMMASOCIETY51_Request_Manager();
         $unified = $rm->get_unified_data( 'residents', 'residents', 'resident_history', true ); // Added load_relations
         $flats = $this->db->get('flats');
+
+        // Self-heal & normalize resident flat representations and blocks in DB
+        if ( ! empty( $flats ) && ! empty( $unified['active'] ) ) {
+            foreach ( $unified['active'] as &$res_item ) {
+                $r_flat = trim( (string)( $res_item['flat_no'] ?? '' ) );
+                $r_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $res_item['block'] ?? '' ) ) );
+                
+                $matched_flat = null;
+                foreach ( $flats as $fl ) {
+                    $clean_b = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $fl['block'] ?? '' ) ) );
+                    $f_num = trim( (string)( $fl['flat_number'] ?? $fl['id'] ) );
+                    if ( $fl['id'] === $r_flat || ( $r_block && strcasecmp( $clean_b, $r_block ) === 0 && strcasecmp( $f_num, $r_flat ) === 0 ) ) {
+                        $matched_flat = $fl;
+                        break;
+                    }
+                    $norm_rf = strtolower( preg_replace( '/[^a-z0-9]/i', '', $r_flat ) );
+                    $norm_fid = strtolower( preg_replace( '/[^a-z0-9]/i', '', $fl['id'] ) );
+                    if ( $norm_rf && $norm_rf === $norm_fid ) {
+                        $matched_flat = $fl;
+                        break;
+                    }
+                }
+                if ( $matched_flat ) {
+                    $norm_block = trim( preg_replace( '/^(block[\s_-]*)+/i', '', (string)( $matched_flat['block'] ?? '' ) ) );
+                    $norm_flat_id = $matched_flat['id'];
+                    if ( $res_item['block'] !== $norm_block || $res_item['flat_no'] !== $norm_flat_id ) {
+                        $res_item['block'] = $norm_block;
+                        $res_item['flat_no'] = $norm_flat_id;
+                        $this->db->update( 'residents', array( 'block' => $norm_block, 'flat_no' => $norm_flat_id ), array( 'id' => $res_item['id'] ) );
+                    }
+                }
+            }
+            unset( $res_item );
+        }
 		
 		NAMMASOCIETY51_Admin_App::render_view('residents', [
 			'residents' => $unified['active'], 

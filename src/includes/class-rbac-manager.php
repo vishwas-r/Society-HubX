@@ -145,6 +145,8 @@ class NAMMASOCIETY51_RBAC_Manager {
 			'vehicles_manage'   => 'Manage Vehicle Registry',
 			'polls_view'        => 'View Society Polls',
 			'polls_manage'      => 'Manage Society Polls',
+			'helpdesk_view'     => 'View Helpdesk & Tickets',
+			'helpdesk_manage'   => 'Manage Helpdesk & Assign Tickets',
 			'requests_view'     => 'View Approval Requests',
 			'requests_manage'   => 'Manage Approval Requests',
 			'settings_manage'   => 'Manage Plugin Settings',
